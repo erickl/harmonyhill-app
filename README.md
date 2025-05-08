@@ -1,4 +1,15 @@
-<<<<<<< HEAD
+# harmonyhill-app
+
+# Getting Started with Firebase
+Make sure your node version is compatible with Firebase 11
+- nvm install 20
+- nvm use 20
+- nvm alias default 20
+Install and login to Firebase
+- npm install -g firebase-tools
+- firebase login
+- firebase install
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -69,6 +80,3 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-=======
-# harmonyhill-app
->>>>>>> 212d9abc0a9918101e1a36a6ca036d2075db6aaa
