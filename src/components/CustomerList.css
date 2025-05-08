@@ -1,0 +1,37 @@
+.villa-info {
+    font-style: italic;
+    color: green;
+    margin: 5px 0;
+    /* Add some spacing around villa info */
+    text-align: left;
+    /* Ensure left alignment for villa info */
+}
+
+.stay-dates {
+    color: #777;
+    margin: 2px 0;
+    /* Add some spacing around stay dates */
+    text-align: left;
+    /* Ensure left alignment for stay dates */
+}
+
+.customer-list-item {
+    display: block;
+    /* Make it take the full width of the li */
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    text-align: left;
+    background-color: white;
+    /* Make it look like a list item background */
+    cursor: pointer;
+    /* Indicate it's clickable */
+    /* Remove default button styling */
+    border-radius: 0;
+    outline: none;
+}
+
+.customer-list-item:hover {
+    background-color: #f0f0f0;
+}
