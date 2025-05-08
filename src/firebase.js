@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, collection, addDoc, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -20,38 +20,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
-
-
-async function addCustomer() {
-    try {
-        const docRef = await addDoc(collection(db, "customers"), {
-            name: "John Doe",
-        });
-        console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-        console.error("Error adding document: ", e);
-    }
-}
-
-async function getCustomers() {
-    const querySnapshot = await getDocs(collection(db, "customers"));
-    querySnapshot.forEach((doc) => {
-        console.log(`${doc.id} =>`, doc.data());
-    });
-}
-
-async function updateCustomer(userId) {
-    const userRef = doc(db, "customers", userId);
-    await updateDoc(userRef, {
-        name: "Jane Doe"
-    });
-}
-
-function testFirebase() {
-  console.log("Testing Firebase...");
-
-  getCustomers();
-}
-testFirebase();
 
 export { db };
