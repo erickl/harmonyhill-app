@@ -4,15 +4,9 @@ import CustomerList from './components/CustomerList';
 import AddCustomer from './components/AddCustomer';
 import CustomerTab from './components/CustomerTab';
 
-import * as guestService from "./services/guestService.js"; 
+import * as bookingService from "./services/bookingService.js"; 
 
 function App() {
-
-  // Example usage:
-  // guestService.get();
-  // guestService.add({
-  //   "name": "Linnie",
-  // });
 
   // Dummy customers
   const [customers, setCustomers] = useState([
