@@ -10,6 +10,7 @@ import {
 import { db } from "../firebase.js";
 import * as constant from "./daoConst.js";
 import * as utils from "../utils.js";
+import * as userService from "../services/userService.js";
 
 export { constant }
 
@@ -26,7 +27,8 @@ export async function getOne(path, id) {
 
 export async function get(path, filters = [], ordering = []) {
     try {
-        const docQuery = query(collection(db, ...path), ...filters, ...ordering);
+        const collectionRef = collection(db, ...path);
+        const docQuery = query(collectionRef, ...filters, ...ordering);
         const snapshot = await getDocs(docQuery);
         if (snapshot.empty) {
             //console.log(`No documents found in ${path}`);
@@ -81,6 +83,19 @@ export async function add(path, id, data) {
 
 export async function remove(path, id) {
     try {
+        // Log the deleted data before deleting it
+        let dataToDelete = await getOne(path, id);
+        if (!dataToDelete) {
+            console.log(`Document ${path}/${id} could not be deleted because it was not found`);
+            return false;
+        }
+        
+        dataToDelete.deletedBy = userService.getUserName();
+        dataToDelete.deletedAt = new Date();
+        dataToDelete.deletedFrom = `${path}/${id}`;
+        const deletedRef = await add(["deleted"], `del-${id}`, dataToDelete);
+        
+        // Proceed with deleting
         const ref = doc(db, ...path, id);
         await deleteDoc(ref);
         console.log(`Deleted document ${path}/${id}`);
