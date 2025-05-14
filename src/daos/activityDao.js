@@ -1,47 +1,35 @@
-import { where, query, collection, collectionGroup, addDoc, getDocs, updateDoc, doc, setDoc } from 'firebase/firestore';
-import { db } from "../firebase.js";
-import { act } from 'react';
+import { where } from 'firebase/firestore';
+import * as dao from "./dao.js"
 
 // All meals for all bookings
 //const mealsQuery = query(collectionGroup(db, "activities"), where("category", "==", "meal"));
 
-// for (const meal of mealSnapshot.docs) {
-    //     //console.log(`DAO: ${meal.id} =>`, meal.data()); 
-    //     const items = await getMealItems(bookingId, meal.id);
-    //     let len = items.length;
-    //     const item = items[0].data();
-    //     const name = item.name;
-    //     const price = item.price;
-    // }
-
-export async function add(bookingRef, activityRef, activity) {
-    try {
-        await setDoc(doc(db, "bookings", bookingRef, "activities", activityRef), activity);
-        return true;
-    } catch (e) {
-        console.error("Error adding document: ", e);
-        return false;
-    }
+export async function add(bookingId, activityId, activity) {
+    return await dao.add(["bookings", bookingId, "activities"], activityId, activity);
 }
 
-export async function update(bookingId, activityId, activity) {
-    const activityRef = doc(db, "bookings", bookingId, "activities", activityId);
-    try {
-        await updateDoc(activityRef, activity);
-        return true;
-    } catch (e) {
-        return false;
-    }
+export async function update(bookingId, activityId, activityData) {
+    return await dao.update(["bookings", bookingId, "activities"], activityId, activityData);
 }
 
-export async function addMealItem(bookingRef, mealRef, mealItem) {
-    try {
-        await addDoc(collection(db, "bookings", bookingRef, "activities", mealRef), mealItem);
-        return true;
-    } catch (e) {
-        console.error("Error adding document: ", e);
-        return false;
+export async function addMealItem(bookingId, mealId, mealItemId, mealItem) { 
+    return await dao.add(["bookings", bookingId, "activities", mealId, "mealItems"], mealItemId, mealItem);
+}
+
+// Update meal item not existing. Only delete and add a new one
+//export async function updateMealItem(bookingId, mealId, mealItemId, mealItem) {
+
+export async function deleteMealItem(bookingId, mealId, mealItemId) { 
+    return await dao.deleteDoc(["bookings", bookingId, "activities", mealId, "mealItems"], mealItemId);
+}
+
+// Only delete the whole meal if all mealItems are deleted first
+export async function deleteMeal(bookingId, mealId) {
+    const mealItems = await dao.get(["bookings", bookingId, "activities", mealId,  "mealItems"]);
+    if(mealItems.length === 0) {
+        return await dao.delete(["bookings", bookingId, "activities", mealId, "mealItems"], mealItemId);  
     }
+    return false;
 }
 
 // mealCategory = "breakfast", "lunch", "dinner", "snack", "afternoon tea", "floating breakfast"
@@ -52,9 +40,11 @@ export async function getMeals(bookingId, options = {}) {
 
     const activities = await getActivities(bookingId, options);
     return activities;
+}
 
 // mealCategory = "breakfast", "lunch", "dinner", "snack", "afternoon tea", "floating breakfast"
 export async function getActivities(bookingId, options = {}) {   
+    let filters = [];
     if (Object.hasOwn(options, "category")) {
         filters.push(where("category", "==", options.category));
     }
@@ -63,34 +53,36 @@ export async function getActivities(bookingId, options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    // ServeDate is a string in the format YYYY-MM-DD, without time
-    if (Object.hasOwn(options, "serveDate")) {
-        let yyyyMMdd = options.serveDate.getFullYear() + "-" + (options.serveDate.getMonth() + 1) + "-" + options.serveDate.getDate();
-        filters.push(where("serveDate", "==", yyyyMMdd));
+    // ServeAt is a string in the format YYYY-MM-DD, without time
+    if (Object.hasOwn(options, "serveAt")) {
+        let yyyyMMdd = options.serveAt.getFullYear() + "-" + (options.serveAt.getMonth() + 1) + "-" + options.serveAt.getDate();
+        filters.push(where("serveAt", "==", yyyyMMdd));
     }
 
+    // serveAt is a string with format "YYYY-MM-DD"
     if (Object.hasOwn(options, "date")) {
-        filters.push(where("serveDate", "==", options.date));
+        filters.push(where("date", "==", options.date));
     }
 
-    const query = query(collection(db, "bookings", bookingId, "activities"), ...filters);
-    const snapshot = await getDocs(query);
-
-    return snapshot.docs;
-}
-
-export async function getMealItems(bookingId, mealId) {
-    const orderItemsQuery = query(collection(db, "bookings", bookingId, "activities", mealId, "mealItems"));
-    const orderItemsSnapshot = await getDocs(orderItemsQuery);
-    return orderItemsSnapshot.docs;
-}
-
-export async function get(bookingId, id = null) {
     let path = ["bookings", bookingId, "activities"];
-    if (id) {
-        path.push(id);
-    }
-    const activitiesQuery = query(collection(db, path));
-    const activitiesSnapshot = await getDocs(activitiesQuery);
-    return activitiesSnapshot.docs;
+    return await dao.get(path, filters);
+}
+
+export async function getMealItems(bookingId, mealId, filterOptions = {}) {
+    let path = ["bookings", bookingId, "activities", mealId, "mealItems"];
+    return await dao.get(path, []);
+}
+
+export async function get(bookingId, filterOptions = {}) {
+    let path = ["bookings", bookingId, "activities"];
+    return await dao.get(path, []);
+}
+
+export async function getOne(bookingId, id) {
+    let path = ["bookings", bookingId, "activities"];
+    return await dao.getOne(path, id);
+}
+
+export async function getMealCategories() {
+    return await dao.get(["mealCategories"]); 
 }
