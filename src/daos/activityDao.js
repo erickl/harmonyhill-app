@@ -65,6 +65,7 @@ export async function getActivities(bookingId, options = {}) {
     }
 
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
+    //let ordering = [ orderBy("checkInAt", "asc") ];
     return await dao.get(path, filters);
 }
 

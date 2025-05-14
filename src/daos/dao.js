@@ -24,9 +24,9 @@ export async function getOne(path, id) {
     }
 }
 
-export async function get(path, filters = []) {
+export async function get(path, filters = [], ordering = []) {
     try {
-        const docQuery = query(collection(db, ...path), ...filters);
+        const docQuery = query(collection(db, ...path), ...filters, ...ordering);
         const snapshot = await getDocs(docQuery);
         if (snapshot.empty) {
             //console.log(`No documents found in ${path}`);

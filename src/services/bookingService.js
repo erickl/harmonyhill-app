@@ -93,7 +93,7 @@ function mapBookingObject(data, isUpdate = false) {
 }
 
 export async function testBooking() {
-    //const ss  = await get();
+    const ss  = await get();
 
     let booking = {
         allergies: "sausage",
