@@ -5,7 +5,7 @@ export async function getOne(id) {
     return booking;
 }
 
-// todo: maybe "house" should be an input
+// todo: maybe "house" should be an input?
 export async function getPromotions() {
     return await bookingDao.getPromotions();
 }
@@ -20,7 +20,7 @@ export async function get(filterOptions = {}) {
 }
 
 export async function add(bookingData) {
-    const bookingObject = createBookingObject(bookingData);
+    const bookingObject = mapBookingObject(bookingData);
     const bookingId = createBookingId(bookingObject.name, bookingObject.house, bookingObject.checkInAt);
     const success = await bookingDao.add(bookingId, bookingObject);
     if(success) {
@@ -38,7 +38,6 @@ export async function update(bookingId, bookingUpdateData) {
     if(!Object.hasOwn(bookingUpdateData, "createdAt")) {
         delete bookingUpdateData.createdAt;
     }
-
     return await bookingDao.update(bookingId, bookingUpdateData);
 }
 
@@ -60,24 +59,25 @@ export function createBookingId(guestName, house, checkInAt) {
     return guestName.replace(/ /g, "-") + "-" + houseShort + "-" + yyMmdd.replace(/ /g, "-");
 }
 
-function createBookingObject(data) {
+function mapBookingObject(data) {
     let booking = {
-        allergies    :  Object.hasOwn(data, "allergies")    ? data.allergies    : "",
-        checkInAt    :  Object.hasOwn(data, "checkInAt")    ? data.checkInAt    : "",
-        checkOutAt   :  Object.hasOwn(data, "checkOutAt")   ? data.checkOutAt   : "",
-        country      :  Object.hasOwn(data, "country")      ? data.country      : "",
-        guestCount   :  Object.hasOwn(data, "guestCount")   ? data.guestCount   : 0 ,
-        otherDetails :  Object.hasOwn(data, "otherDetails") ? data.otherDetails : "",
-        promotions   :  Object.hasOwn(data, "promotions")   ? data.promotions   : "",
-        roomRate     :  Object.hasOwn(data, "roomRate")     ? data.roomRate     : 0 ,
-        guestPaid    :  Object.hasOwn(data, "guestPaid")    ? data.guestPaid    : 0 ,
-        hostPayout   :  Object.hasOwn(data, "hostPayout")   ? data.hostPayout   : 0 ,
-        source       :  Object.hasOwn(data, "source")       ? data.source       : "",
-        status       :  Object.hasOwn(data, "status")       ? data.status       : "",
-        house        :  Object.hasOwn(data, "house")        ? data.house        : "",
-        name         :  Object.hasOwn(data, "name")         ? data.name         : "",
+        allergies    : Object.hasOwn(data, "allergies")    ? data.allergies    : "",
+        checkInAt    : Object.hasOwn(data, "checkInAt")    ? data.checkInAt    : "",
+        checkOutAt   : Object.hasOwn(data, "checkOutAt")   ? data.checkOutAt   : "",
+        country      : Object.hasOwn(data, "country")      ? data.country      : "",
+        guestCount   : Object.hasOwn(data, "guestCount")   ? data.guestCount   : 0 ,
+        otherDetails : Object.hasOwn(data, "otherDetails") ? data.otherDetails : "",
+        promotions   : Object.hasOwn(data, "promotions")   ? data.promotions   : "",
+        roomRate     : Object.hasOwn(data, "roomRate")     ? data.roomRate     : 0 ,
+        guestPaid    : Object.hasOwn(data, "guestPaid")    ? data.guestPaid    : 0 ,
+        hostPayout   : Object.hasOwn(data, "hostPayout")   ? data.hostPayout   : 0 ,
+        source       : Object.hasOwn(data, "source")       ? data.source       : "",
+        status       : Object.hasOwn(data, "status")       ? data.status       : "",
+        house        : Object.hasOwn(data, "house")        ? data.house        : "",
+        name         : Object.hasOwn(data, "name")         ? data.name         : "",
 
-        createdAt    :  new Date(), 
+        createdAt    : new Date(), 
+        createdBy    : "admin", // todo: get from auth
     };
 
     return booking;

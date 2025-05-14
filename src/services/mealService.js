@@ -12,8 +12,9 @@ export async function addMeal(bookingId, mealData) {
         return false;
     }
 
-    const mealId = makeMealId(mealData.serveAt, booking.house, mealData.subCategory);
-    const success = await activityDao.add(bookingId, mealId, mealData);
+    const meal = mapMealObject(mealData);
+    const mealId = makeMealId(meal.serveAt, booking.house, meal.subCategory);
+    const success = await activityDao.add(bookingId, mealId, meal);
     return success ? mealId : false;
 }
 
@@ -44,9 +45,10 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
     }
 
     let mealItems = [];   
-    for(const item of mealItemsData) {
-        const mealItemId = makeMealItemId(meal.serveAt, booking.house, meal.subCategory, item.name);
-        const success = await activityDao.addMealItem(bookingId, mealId, mealItemId, item);
+    for(const mealItemData of mealItemsData) {
+        mealItem = mapMealItemObject(mealItemData);
+        const mealItemId = makeMealItemId(meal.serveAt, booking.house, meal.subCategory, mealItem.name);
+        const success = await activityDao.addMealItem(bookingId, mealId, mealItemId, mealItem);
         if(!success) {
             return false;
         }
@@ -96,7 +98,6 @@ export async function deleteMealItem(bookingId, mealId, mealItemId) {
 
 export async function testMeal() {
     const bookingId = "Eric-Klaesson-Harmony-Hill-251010";
-    const house = "Harmony Hill";
 
     const mealCategory = "breakfast";
     const mealId = await addMeal(bookingId, {
@@ -119,4 +120,29 @@ export async function testMeal() {
     }]);
 
     let x = 1;
+}
+
+function mapMealObject(mealData) {
+    let meal = {
+        category    : Object.hasOwn(mealData, "category")    ? mealData.category    : "",
+        subCategory : Object.hasOwn(mealData, "subCategory") ? mealData.subCategory : "",
+        serveAt     : Object.hasOwn(mealData, "serveAt")     ? mealData.serveAt     : "",
+        serveTime   : Object.hasOwn(mealData, "serveTime")   ? mealData.serveTime   : "TBD",
+        status      : Object.hasOwn(mealData, "status")      ? mealData.status      : "",
+        
+        orderedAt   : new Date(),
+        createdBy   : "admin", // todo get from auth
+    };
+    return meal;
+}
+
+function mapMealItemObject(mealItemData) {
+    let meal = {
+        name      : Object.hasOwn(mealItemData, "name")      ? mealItemData.name      : "",
+        quantity  : Object.hasOwn(mealItemData, "quantity")  ? mealItemData.quantity  : 1,
+        price     : Object.hasOwn(mealItemData, "price")     ? mealItemData.price     : "",
+        
+        createdBy : "admin", // todo get from auth
+    };
+    return meal;
 }
