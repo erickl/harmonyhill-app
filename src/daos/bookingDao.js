@@ -1,6 +1,5 @@
 import { where } from 'firebase/firestore';
 import * as dao from "./dao.js"
-import * as dao.constant from "./dao.constant.js";
 
 export async function add(bookingRef, booking) {
     return await dao.add([dao.constant.BOOKINGS], bookingRef, booking);
@@ -29,7 +28,7 @@ export async function get(filterOptions = {}) {
 }
 
 export async function deleteBooking(bookingId) {
-    return await dao.deleteDoc([dao.constant.BOOKINGS], bookingId);
+    return await dao.remove([dao.constant.BOOKINGS], bookingId);
 }
 
 export async function getPromotions() {

@@ -57,7 +57,7 @@ export async function add(path, id, data) {
     }
 }
 
-export async function deleteDoc(path, id) {
+export async function remove(path, id) {
     try {
         const ref = doc(db, ...path, id);
         await deleteDoc(ref);

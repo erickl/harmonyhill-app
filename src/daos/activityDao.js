@@ -27,7 +27,7 @@ export async function deleteMealItem(bookingId, mealId, mealItemId) {
 export async function deleteMeal(bookingId, mealId) {
     const mealItems = await dao.get([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId,  "mealItems"]);
     if(mealItems.length === 0) {
-        return await dao.delete([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId);  
+        return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId);  
     }
     return false;
 }

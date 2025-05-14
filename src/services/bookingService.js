@@ -1,4 +1,6 @@
 import * as bookingDao from "../daos/bookingDao.js";
+import * as utils from "../utils.js";
+import * as userService from "./userService.js";
 
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
@@ -32,20 +34,40 @@ export async function add(bookingData) {
 }
 
 /**
- * Cannot update createdAt date
+ * Creates and includes a change logs string in the new booking object
+ * Cannot update createdAt or createdBy
  */
 export async function update(bookingId, bookingUpdateData) {
-    if(!Object.hasOwn(bookingUpdateData, "createdAt")) {
-        delete bookingUpdateData.createdAt;
+    // Update booking update logs
+    const booking = await bookingDao.getOne(bookingId);
+    const bookingUpdate = mapBookingObject(bookingUpdateData, true);
+    let diffStr = utils.jsonObjectDiffStr(booking, bookingUpdate);
+
+    if(diffStr.length === 0) {
+        console.log(`No changes to update to booking ${bookingId}`);
+        return false;
     }
-    return await bookingDao.update(bookingId, bookingUpdateData);
+
+    bookingUpdate.updateLogs = Object.hasOwn(booking, "updateLogs") ? booking.updateLogs : [];
+    bookingUpdate.updateLogs.push(diffStr);
+
+    // Remove any fields which should not be updated
+    if(Object.hasOwn(bookingUpdate, "createdAt")) {
+        delete bookingUpdate.createdAt;
+    }
+    if(Object.hasOwn(bookingUpdate, "createdBy")) {
+        delete bookingUpdate.createdBy;
+    }
+
+    // Run update
+    return await bookingDao.update(bookingId, bookingUpdate);
 }
 
 /**
- * todo: Only admin should be able to delete bookings
+ * Only admin should be able to delete bookings
  */
-export async function deleteBooking(bookingId) {
-    if(true /* isAdmin*/) {
+export async function deleteBooking(bookingId) {   
+    if(userService.isAdmin()) {
         return await bookingDao.deleteBooking(bookingId);
     }
     return false;
@@ -59,7 +81,7 @@ export function createBookingId(guestName, house, checkInAt) {
     return guestName.replace(/ /g, "-") + "-" + houseShort + "-" + yyMmdd.replace(/ /g, "-");
 }
 
-function mapBookingObject(data) {
+function mapBookingObject(data, isUpdate = false) {
     let booking = {
         allergies    : Object.hasOwn(data, "allergies")    ? data.allergies    : "",
         checkInAt    : Object.hasOwn(data, "checkInAt")    ? data.checkInAt    : "",
@@ -75,10 +97,12 @@ function mapBookingObject(data) {
         status       : Object.hasOwn(data, "status")       ? data.status       : "",
         house        : Object.hasOwn(data, "house")        ? data.house        : "",
         name         : Object.hasOwn(data, "name")         ? data.name         : "",
-
-        createdAt    : new Date(), 
-        createdBy    : "admin", // todo: get from auth
     };
+
+    if(!isUpdate) {
+        booking.createdAt = new Date(); 
+        booking.createdBy = userService.getUserName();
+    }
 
     return booking;
 }

@@ -8,6 +8,8 @@ import * as bookingService from "./services/bookingService.js";
 
 function App() {
 
+  bookingService.testBooking();
+
   // Dummy customers
   const [customers, setCustomers] = useState([
     {

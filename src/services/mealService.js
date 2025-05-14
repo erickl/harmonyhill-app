@@ -1,5 +1,6 @@
 import * as activityDao from "../daos/activityDao.js";
 import * as bookingDao from "../daos/bookingDao.js";
+import * as userService from "./userService.js";
 
 export async function getMealCategories() {
     return await activityDao.getMealCategories();
@@ -57,7 +58,29 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
     return mealItems;
 }
 
-export async function update(bookingId, mealId, mealData) {
+export async function update(bookingId, mealId, mealUpdateData) {
+    // Update meal update logs
+    const meal = await activityDao.getOne(bookingId, mealId);
+    const mealUpdate = mapMealObject(mealUpdateData, true);
+    let diffStr = utils.jsonObjectDiffStr(meal, mealUpdate);
+
+    if(diffStr.length === 0) {
+        console.log(`No changes to update to meal ${bookingId}/${mealId}`);
+        return false;
+    }
+    
+    mealUpdate.updateLogs = Object.hasOwn(meal, "updateLogs") ? meal.updateLogs : [];
+    mealUpdate.updateLogs.push(diffStr);
+
+    // Remove any fields which should not be updated
+    if(Object.hasOwn(bookingUpdateData, "createdAt")) {
+        delete bookingUpdateData.createdAt;
+    }
+    if(Object.hasOwn(bookingUpdateData, "createdBy")) {
+        delete bookingUpdateData.createdBy;
+    }
+
+    // Run update
     return await activityDao.update(bookingId, mealId, mealData);
 }
 
@@ -122,27 +145,34 @@ export async function testMeal() {
     let x = 1;
 }
 
-function mapMealObject(mealData) {
+function mapMealObject(mealData, isUpdate = false) {
     let meal = {
         category    : Object.hasOwn(mealData, "category")    ? mealData.category    : "",
         subCategory : Object.hasOwn(mealData, "subCategory") ? mealData.subCategory : "",
         serveAt     : Object.hasOwn(mealData, "serveAt")     ? mealData.serveAt     : "",
         serveTime   : Object.hasOwn(mealData, "serveTime")   ? mealData.serveTime   : "TBD",
         status      : Object.hasOwn(mealData, "status")      ? mealData.status      : "",
-        
-        orderedAt   : new Date(),
-        createdBy   : "admin", // todo get from auth
     };
+
+    if(!isUpdate) {
+        meal.createdAt = new Date();
+        meal.createdBy = userService.getUserName();
+    }
+
     return meal;
 }
 
-function mapMealItemObject(mealItemData) {
+function mapMealItemObject(mealItemData, isUpdate = false) {
     let meal = {
         name      : Object.hasOwn(mealItemData, "name")      ? mealItemData.name      : "",
         quantity  : Object.hasOwn(mealItemData, "quantity")  ? mealItemData.quantity  : 1,
         price     : Object.hasOwn(mealItemData, "price")     ? mealItemData.price     : "",
-        
-        createdBy : "admin", // todo get from auth
     };
+
+    if(!isUpdate) {
+        meal.createdAt = new Date();
+        meal.createdBy = userService.getUserName();
+    }
+
     return meal;
 }
