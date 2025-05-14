@@ -82,20 +82,20 @@ export function createBookingId(guestName, house, checkInAt) {
 
 function mapBookingObject(data, isUpdate = false) {
     let booking = {};
-    if(Object.hasOwn(data, "allergies")) booking.allergies =    data.allergies   ;
-    if(Object.hasOwn(data, "checkInAt")) booking.checkInAt =    data.checkInAt   ;
-    if(Object.hasOwn(data, "checkOutAt")) booking.checkOutAt =   data.checkOutAt  ;
-    if(Object.hasOwn(data, "country")) booking.country =      data.country     ;
-    if(Object.hasOwn(data, "guestCount")) booking.guestCount =   data.guestCount  ;
-    if(Object.hasOwn(data, "otherDetails")) booking.otherDetails = data.otherDetails;
-    if(Object.hasOwn(data, "promotions")) booking.promotions =   data.promotions  ;
-    if(Object.hasOwn(data, "roomRate")) booking.roomRate =     data.roomRate    ;
-    if(Object.hasOwn(data, "guestPaid")) booking.guestPaid =    data.guestPaid   ;
-    if(Object.hasOwn(data, "hostPayout")) booking.hostPayout =   data.hostPayout  ;
-    if(Object.hasOwn(data, "source")) booking.source =       data.source      ;
-    if(Object.hasOwn(data, "status")) booking.status =       data.status      ;
-    if(Object.hasOwn(data, "house")) booking.house =        data.house       ;
-    if(Object.hasOwn(data, "name")) booking.name =         data.name        ;
+    if(Object.hasOwn(data, "allergies"))    booking.allergies    = data.allergies    ;
+    if(Object.hasOwn(data, "checkInAt"))    booking.checkInAt    = data.checkInAt    ;
+    if(Object.hasOwn(data, "checkOutAt"))   booking.checkOutAt   = data.checkOutAt   ;
+    if(Object.hasOwn(data, "country"))      booking.country      = data.country      ;
+    if(Object.hasOwn(data, "guestCount"))   booking.guestCount   = data.guestCount   ;
+    if(Object.hasOwn(data, "otherDetails")) booking.otherDetails = data.otherDetails ;
+    if(Object.hasOwn(data, "promotions"))   booking.promotions   = data.promotions   ;
+    if(Object.hasOwn(data, "roomRate"))     booking.roomRate     = data.roomRate     ;
+    if(Object.hasOwn(data, "guestPaid"))    booking.guestPaid    = data.guestPaid    ;
+    if(Object.hasOwn(data, "hostPayout"))   booking.hostPayout   = data.hostPayout   ;
+    if(Object.hasOwn(data, "source"))       booking.source       = data.source       ;
+    if(Object.hasOwn(data, "status"))       booking.status       = data.status       ;
+    if(Object.hasOwn(data, "house"))        booking.house        = data.house        ;
+    if(Object.hasOwn(data, "name"))         booking.name         = data.name         ;
 
     if(!isUpdate) {
         booking.createdAt = new Date(); 

@@ -119,6 +119,38 @@ export async function deleteMealItem(bookingId, mealId, mealItemId) {
     return await activityDao.deleteMealItem(bookingId, mealId, mealItemId);
 }
 
+function mapMealObject(mealData, isUpdate = false) {
+    let meal = {};
+
+    if(Object.hasOwn(mealData, "category"))   meal.category   = mealData.category;
+    if(Object.hasOwn(mealData, "subCategory")) meal.subCategory = mealData.subCategory;
+    if(Object.hasOwn(mealData, "serveAt"))     meal.serveAt     = mealData.serveAt;
+    if(Object.hasOwn(mealData, "serveTime"))   meal.serveTime   = mealData.serveTime;
+    if(Object.hasOwn(mealData, "status"))      meal.status      = mealData.status;
+
+    if(!isUpdate) {
+        meal.createdAt = new Date();
+        meal.createdBy = userService.getUserName();
+    }
+
+    return meal;
+}
+
+function mapMealItemObject(mealItemData, isUpdate = false) {
+    let meal = {};
+
+    if(Object.hasOwn(mealItemData, "name"))     meal.name     = mealItemData.name;
+    if(Object.hasOwn(mealItemData, "quantity")) meal.quantity = mealItemData.quantity;
+    if(Object.hasOwn(mealItemData, "price"))    meal.price    = mealItemData.price;
+
+    if(!isUpdate) {
+        meal.createdAt = new Date();
+        meal.createdBy = userService.getUserName();
+    }
+
+    return meal;
+}
+
 export async function testMeal() {
     const bookingId = "Eric-Klaesson-Harmony-Hill-251010";
 
@@ -143,36 +175,4 @@ export async function testMeal() {
     }]);
 
     let x = 1;
-}
-
-function mapMealObject(mealData, isUpdate = false) {
-    let meal = {
-        category    : Object.hasOwn(mealData, "category")    ? mealData.category    : "",
-        subCategory : Object.hasOwn(mealData, "subCategory") ? mealData.subCategory : "",
-        serveAt     : Object.hasOwn(mealData, "serveAt")     ? mealData.serveAt     : "",
-        serveTime   : Object.hasOwn(mealData, "serveTime")   ? mealData.serveTime   : "TBD",
-        status      : Object.hasOwn(mealData, "status")      ? mealData.status      : "",
-    };
-
-    if(!isUpdate) {
-        meal.createdAt = new Date();
-        meal.createdBy = userService.getUserName();
-    }
-
-    return meal;
-}
-
-function mapMealItemObject(mealItemData, isUpdate = false) {
-    let meal = {
-        name      : Object.hasOwn(mealItemData, "name")      ? mealItemData.name      : "",
-        quantity  : Object.hasOwn(mealItemData, "quantity")  ? mealItemData.quantity  : 1,
-        price     : Object.hasOwn(mealItemData, "price")     ? mealItemData.price     : "",
-    };
-
-    if(!isUpdate) {
-        meal.createdAt = new Date();
-        meal.createdBy = userService.getUserName();
-    }
-
-    return meal;
 }
