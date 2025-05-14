@@ -85,9 +85,9 @@ export async function update(bookingId, mealId, mealUpdateData) {
 }
 
 /**
- * @param {Object} options
- * house=Harmony Hill|Jungle Nook,
- * date=Date object (new Date(...))
+ * @param {Object} options filters for the meal data
+ *      house=Harmony Hill|Jungle Nook,
+ *      date=Date object (new Date(...))
  */
 export async function getMeals(options) {
     const bookings = await bookingDao.get(options);

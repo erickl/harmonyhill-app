@@ -74,30 +74,28 @@ export async function deleteBooking(bookingId) {
 }
 
 export function createBookingId(guestName, house, checkInAt) {
-    const year = checkInAt.getFullYear() - 2000;
-    const yyMmdd = `${year}${checkInAt.getMonth()}${checkInAt.getDate()}`;
+    const yyMmdd = utils.getDateString(checkInAt);
     const houseShort = house == "Harmony Hill" ? "hh" : "jn";
 
     return guestName.replace(/ /g, "-") + "-" + houseShort + "-" + yyMmdd.replace(/ /g, "-");
 }
 
 function mapBookingObject(data, isUpdate = false) {
-    let booking = {
-        allergies    : Object.hasOwn(data, "allergies")    ? data.allergies    : "",
-        checkInAt    : Object.hasOwn(data, "checkInAt")    ? data.checkInAt    : "",
-        checkOutAt   : Object.hasOwn(data, "checkOutAt")   ? data.checkOutAt   : "",
-        country      : Object.hasOwn(data, "country")      ? data.country      : "",
-        guestCount   : Object.hasOwn(data, "guestCount")   ? data.guestCount   : 0 ,
-        otherDetails : Object.hasOwn(data, "otherDetails") ? data.otherDetails : "",
-        promotions   : Object.hasOwn(data, "promotions")   ? data.promotions   : "",
-        roomRate     : Object.hasOwn(data, "roomRate")     ? data.roomRate     : 0 ,
-        guestPaid    : Object.hasOwn(data, "guestPaid")    ? data.guestPaid    : 0 ,
-        hostPayout   : Object.hasOwn(data, "hostPayout")   ? data.hostPayout   : 0 ,
-        source       : Object.hasOwn(data, "source")       ? data.source       : "",
-        status       : Object.hasOwn(data, "status")       ? data.status       : "",
-        house        : Object.hasOwn(data, "house")        ? data.house        : "",
-        name         : Object.hasOwn(data, "name")         ? data.name         : "",
-    };
+    let booking = {};
+    if(Object.hasOwn(data, "allergies")) booking.allergies =    data.allergies   ;
+    if(Object.hasOwn(data, "checkInAt")) booking.checkInAt =    data.checkInAt   ;
+    if(Object.hasOwn(data, "checkOutAt")) booking.checkOutAt =   data.checkOutAt  ;
+    if(Object.hasOwn(data, "country")) booking.country =      data.country     ;
+    if(Object.hasOwn(data, "guestCount")) booking.guestCount =   data.guestCount  ;
+    if(Object.hasOwn(data, "otherDetails")) booking.otherDetails = data.otherDetails;
+    if(Object.hasOwn(data, "promotions")) booking.promotions =   data.promotions  ;
+    if(Object.hasOwn(data, "roomRate")) booking.roomRate =     data.roomRate    ;
+    if(Object.hasOwn(data, "guestPaid")) booking.guestPaid =    data.guestPaid   ;
+    if(Object.hasOwn(data, "hostPayout")) booking.hostPayout =   data.hostPayout  ;
+    if(Object.hasOwn(data, "source")) booking.source =       data.source      ;
+    if(Object.hasOwn(data, "status")) booking.status =       data.status      ;
+    if(Object.hasOwn(data, "house")) booking.house =        data.house       ;
+    if(Object.hasOwn(data, "name")) booking.name =         data.name        ;
 
     if(!isUpdate) {
         booking.createdAt = new Date(); 
@@ -108,6 +106,8 @@ function mapBookingObject(data, isUpdate = false) {
 }
 
 export async function testBooking() {
+    const ss  = await get();
+
     let booking = {
         allergies: "sausage",
         checkInAt: new Date(2025, 10, 10, 14, 0, 0),
@@ -130,8 +130,6 @@ export async function testBooking() {
 
     let bookingUpdate = {
         allergies: "sausage",
-        checkInAt: new Date(2025, 10, 10, 14, 0, 0),
-        checkOutAt: new Date(2025, 10, 12, 11, 0, 0),
         country: "Norway",
         guestCount: 4,
         otherDetails: "updated",

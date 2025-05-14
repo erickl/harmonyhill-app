@@ -27,7 +27,12 @@ export async function get(path, filters = []) {
     try {
         const docQuery = query(collection(db, ...path), ...filters);
         const snapshot = await getDocs(docQuery);
-    return snapshot.docs;
+        if (snapshot.empty) {
+            //console.log(`No documents found in ${path}`);
+            return [];
+        }
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return docs
     } catch (e) {
         console.error(`Error getting documents from ${path}: `, e);
         return [];
