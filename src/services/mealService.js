@@ -59,29 +59,17 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
 }
 
 export async function update(bookingId, mealId, mealUpdateData) {
-    // Update meal update logs
-    const meal = await activityDao.getOne(bookingId, mealId);
     const mealUpdate = mapMealObject(mealUpdateData, true);
-    let diffStr = utils.jsonObjectDiffStr(meal, mealUpdate);
-
-    if(diffStr.length === 0) {
-        console.log(`No changes to update to meal ${bookingId}/${mealId}`);
-        return false;
-    }
-    
-    mealUpdate.updateLogs = Object.hasOwn(meal, "updateLogs") ? meal.updateLogs : [];
-    mealUpdate.updateLogs.push(diffStr);
 
     // Remove any fields which should not be updated
-    if(Object.hasOwn(bookingUpdateData, "createdAt")) {
-        delete bookingUpdateData.createdAt;
+    if(Object.hasOwn(mealUpdateData, "createdAt")) {
+        delete mealUpdateData.createdAt;
     }
-    if(Object.hasOwn(bookingUpdateData, "createdBy")) {
-        delete bookingUpdateData.createdBy;
+    if(Object.hasOwn(mealUpdateData, "createdBy")) {
+        delete mealUpdateData.createdBy;
     }
 
-    // Run update
-    return await activityDao.update(bookingId, mealId, mealData);
+    return await activityDao.update(bookingId, mealId, mealUpdateData);
 }
 
 /**

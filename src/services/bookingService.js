@@ -34,22 +34,10 @@ export async function add(bookingData) {
 }
 
 /**
- * Creates and includes a change logs string in the new booking object
  * Cannot update createdAt or createdBy
  */
 export async function update(bookingId, bookingUpdateData) {
-    // Update booking update logs
-    const booking = await bookingDao.getOne(bookingId);
     const bookingUpdate = mapBookingObject(bookingUpdateData, true);
-    let diffStr = utils.jsonObjectDiffStr(booking, bookingUpdate);
-
-    if(diffStr.length === 0) {
-        console.log(`No changes to update to booking ${bookingId}`);
-        return false;
-    }
-
-    bookingUpdate.updateLogs = Object.hasOwn(booking, "updateLogs") ? booking.updateLogs : [];
-    bookingUpdate.updateLogs.push(diffStr);
 
     // Remove any fields which should not be updated
     if(Object.hasOwn(bookingUpdate, "createdAt")) {
@@ -59,7 +47,6 @@ export async function update(bookingId, bookingUpdateData) {
         delete bookingUpdate.createdBy;
     }
 
-    // Run update
     return await bookingDao.update(bookingId, bookingUpdate);
 }
 
@@ -106,12 +93,12 @@ function mapBookingObject(data, isUpdate = false) {
 }
 
 export async function testBooking() {
-    const ss  = await get();
+    //const ss  = await get();
 
     let booking = {
         allergies: "sausage",
-        checkInAt: new Date(2025, 10, 10, 14, 0, 0),
-        checkOutAt: new Date(2025, 10, 12, 11, 0, 0),
+        checkInAt: new Date(2025, 11, 15, 14, 0, 0),
+        checkOutAt: new Date(2025, 11, 17, 11, 0, 0),
         createdAt: new Date(),
         country: "Norway",
         guestCount: 4,
@@ -123,7 +110,7 @@ export async function testBooking() {
         source: "AirBnB",
         status: "confirmed",
         house: "Harmony Hill",
-        name: "Eric Klaesson",              
+        name: "Boerje Ingvar",              
     };
 
     const ref = await add(booking);
@@ -134,11 +121,9 @@ export async function testBooking() {
         guestCount: 4,
         otherDetails: "updated",
         promotions: "updated",
-        roomRate: 10000000,
         source: "AirBnB",
         status: "confirmed",
-        house: "Harmony Hill",
-        name: "Eric Klaesson",        
+        house: "Harmony Hill",      
     }
     
     const success = await update(ref, bookingUpdate);

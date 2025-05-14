@@ -9,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import { db } from "../firebase.js";
 import * as constant from "./daoConst.js";
+import * as utils from "../utils.js";
 
 export { constant }
 
@@ -39,8 +40,24 @@ export async function get(path, filters = []) {
     }
 }
 
+/**
+ * Creates and includes a change logs string in the new booking object
+ */
 export async function update(path, id, updatedData) { 
     try {
+        // Add change to the update logs
+        const originalData = await getOne(path, id);
+        let diffStr = utils.jsonObjectDiffStr(originalData, updatedData);
+    
+        if(diffStr.length === 0) {
+            console.log(`No changes to update to ${path}/${id}`);
+            return false;
+        }
+            
+        updatedData.updateLogs = Object.hasOwn(originalData, "updateLogs") ? originalData.updateLogs : [];
+        updatedData.updateLogs.push(diffStr);
+
+        // Run the update
         const ref = doc(db, ...path, id);
         await updateDoc(ref, updatedData);
         return true;
