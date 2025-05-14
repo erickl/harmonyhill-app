@@ -1,17 +1,16 @@
 import { 
     where, 
     query, 
-    collection, 
-    collectionGroup, 
-    addDoc, 
-    getDocs, 
-    getDoc, 
-    updateDoc, 
+    collection, collectionGroup,  
+    getDocs, getDoc, 
+    addDoc, setDoc, updateDoc, 
     doc, 
-    setDoc,
     deleteDoc
 } from 'firebase/firestore';
 import { db } from "../firebase.js";
+import * as constant from "./daoConst.js";
+
+export { constant }
 
 export async function getOne(path, id) {
     try {
