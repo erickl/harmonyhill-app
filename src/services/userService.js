@@ -7,7 +7,7 @@ export async function signUp(username, email, password) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        await userDao.add(user.uid, {
+        const success = await userDao.add(user.uid, {
             name: username,
             email: email,
             role: "staff",
