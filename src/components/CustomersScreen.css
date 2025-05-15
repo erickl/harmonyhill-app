@@ -1,0 +1,35 @@
+.customer-list-item {
+    padding: 1rem 0.5rem;
+    margin: 1rem 0;
+    font-weight: 600;
+    color: white;
+}
+
+.bg-jn {
+    background-color: darkblue;
+}
+
+.bg-hh {
+    background-color: darkcyan;
+}
+
+.customer-details {
+    padding: 0 0.5rem;
+    margin: 0;
+}
+
+.customer-details p {
+    margin: 0.5rem 0;
+}
+
+.customer-details .detail-label {
+    color: black;
+    font-weight: 600;
+}
+
+.allergies {
+    background-color: red;
+    color: white;
+    font-weight: 600;
+    padding: 2px 5px;
+}
