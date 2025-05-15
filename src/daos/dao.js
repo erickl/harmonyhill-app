@@ -3,7 +3,7 @@ import {
     query, 
     collection, collectionGroup,  
     getDocs, getDoc, 
-    addDoc, setDoc, updateDoc, 
+    setDoc, updateDoc, 
     doc, 
     deleteDoc
 } from 'firebase/firestore';

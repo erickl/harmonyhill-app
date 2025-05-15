@@ -33,18 +33,36 @@ export async function deleteMeal(bookingId, mealId) {
 }
 
 // mealCategory = "breakfast", "lunch", "dinner", "snack", "afternoon tea", "floating breakfast"
-export async function getMeals(bookingId, options = {}) {   
+export async function getMeals(bookingId, options = {}) {  
+    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
+
     if(!Object.hasOwn(options, "category")) {
         options.category = "meal";
     }
 
-    const activities = await getActivities(bookingId, options);
-    return activities;
+    // serveAt is a string in the format YYYY-MM-DD, without time
+    if (Object.hasOwn(options, "serveAt")) {
+        filters.push(where("serveAt", "==", options.serveAt));
+    }
+
+    if (Object.hasOwn(options, "category")) {
+        filters.push(where("category", "==", options.category));
+    }
+
+    if (Object.hasOwn(options, "subCategory")) {
+        filters.push(where("subCategory", "==", options.subCategory));
+    }
+    
+    let ordering = [ orderBy("serveAt", "asc") ];
+
+    return await dao.get(path, filters, ordering);
 }
 
-// mealCategory = "breakfast", "lunch", "dinner", "snack", "afternoon tea", "floating breakfast"
-export async function getActivities(bookingId, options = {}) {   
+export async function getActivities(bookingId, options = {}) { 
+    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
+
     let filters = [];
+    
     if (Object.hasOwn(options, "category")) {
         filters.push(where("category", "==", options.category));
     }
@@ -53,20 +71,17 @@ export async function getActivities(bookingId, options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    // ServeAt is a string in the format YYYY-MM-DD, without time
-    if (Object.hasOwn(options, "serveAt")) {
-        let yyyyMMdd = options.serveAt.getFullYear() + "-" + (options.serveAt.getMonth() + 1) + "-" + options.serveAt.getDate();
-        filters.push(where("serveAt", "==", yyyyMMdd));
+    if (Object.hasOwn(options, "before")) {
+        filters.push(where("date", ">=", options.before));
     }
 
-    // serveAt is a string with format "YYYY-MM-DD"
-    if (Object.hasOwn(options, "date")) {
-        filters.push(where("date", "==", options.date));
+    if (Object.hasOwn(options, "after")) {
+        filters.push(where("date", "<=", options.after));
     }
+    
+    let ordering = [ orderBy("date", "asc") ];
 
-    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
-    //let ordering = [ orderBy("checkInAt", "asc") ];
-    return await dao.get(path, filters);
+    return await dao.get(path, filters, ordering);
 }
 
 export async function getMealItems(bookingId, mealId, filterOptions = {}) {

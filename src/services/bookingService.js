@@ -54,14 +54,14 @@ export async function update(bookingId, bookingUpdateData) {
  * Only admin should be able to delete bookings
  */
 export async function deleteBooking(bookingId) {   
-    //if(userService.isAdmin()) {
+    if(userService.isAdmin()) {
         return await bookingDao.deleteBooking(bookingId);
-    //}
+    }
     return false;
 }
 
 export function createBookingId(guestName, house, checkInAt) {
-    const yyMmdd = utils.getDateString(checkInAt);
+    const yyMmdd = utils.getDateStringYYMMdd(checkInAt);
     const houseShort = house == "Harmony Hill" ? "hh" : "jn";
 
     return guestName.replace(/ /g, "-") + "-" + houseShort + "-" + yyMmdd.replace(/ /g, "-");
@@ -93,7 +93,7 @@ function mapBookingObject(data, isUpdate = false) {
 }
 
 export async function testBooking() {
-    const ss  = await get();
+    const all = await get();
 
     let booking = {
         allergies: "sausage",
@@ -126,11 +126,9 @@ export async function testBooking() {
         house: "Harmony Hill",      
     }
     
-    const success = await update(ref, bookingUpdate);
+    const updateSuccess = await update(ref, bookingUpdate);
 
-    const booking2 = await get(ref);
-
-    const deleteSuccess = await deleteBooking(ref);
+    //const deleteSuccess = await deleteBooking(ref);
 
     let x = 1;
 }
