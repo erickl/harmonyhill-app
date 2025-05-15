@@ -56,12 +56,20 @@ export function getUser() {
 
 export function getUserName() {
     const user = getUser();
-    return user ? user.displayName : "unknown";
+    return user && user.displayName ? user.displayName : "unknown";
 }
 
-export function isAdmin() {
+export async function isAdmin() {
     const user = getUser();
-    return user ? user.displayName === "admin" : false;
+    if (!user) {
+        return false;
+    }
+    
+    const userData = await userDao.getOne(user.uid);
+    if (!userData) {
+        return false;
+    }
+    return userData.role === "admin";
 }
 
 export async function isApproved(email) {

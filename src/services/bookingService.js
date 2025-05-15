@@ -51,10 +51,11 @@ export async function update(bookingId, bookingUpdateData) {
 }
 
 /**
- * Only admin should be able to delete bookings
+ * Only admin can delete bookings
  */
 export async function deleteBooking(bookingId) {   
-    if(userService.isAdmin()) {
+    const isAdmin = userService.isAdmin();
+    if(isAdmin) {
         return await bookingDao.deleteBooking(bookingId);
     }
     return false;
