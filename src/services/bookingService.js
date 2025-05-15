@@ -93,6 +93,9 @@ function mapBookingObject(data, isUpdate = false) {
 }
 
 export async function testBooking() {
+    //const signUpSuccess = userService.signUp("ericklaesson", "ericklaesson@gmail.com", "password");
+    const signInSuccess = await userService.login("ericklaesson@gmail.com", "password");
+
     const all = await get();
 
     let booking = {

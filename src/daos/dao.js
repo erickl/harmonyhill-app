@@ -45,19 +45,21 @@ export async function get(path, filters = [], ordering = []) {
 /**
  * Creates and includes a change logs string in the new booking object
  */
-export async function update(path, id, updatedData) { 
+export async function update(path, id, updatedData, updateLogs = true) { 
     try {
-        // Add change to the update logs
-        const originalData = await getOne(path, id);
-        let diffStr = utils.jsonObjectDiffStr(originalData, updatedData);
-    
-        if(diffStr.length === 0) {
-            console.log(`No changes to update to ${path}/${id}`);
-            return false;
+        if(updateLogs) {
+            // Add change to the update logs
+            const originalData = await getOne(path, id);
+            let diffStr = utils.jsonObjectDiffStr(originalData, updatedData);
+        
+            if(diffStr.length === 0) {
+                console.log(`No changes to update to ${path}/${id}`);
+                return false;
+            }
+                
+            updatedData.updateLogs = Object.hasOwn(originalData, "updateLogs") ? originalData.updateLogs : [];
+            updatedData.updateLogs.push(diffStr);
         }
-            
-        updatedData.updateLogs = Object.hasOwn(originalData, "updateLogs") ? originalData.updateLogs : [];
-        updatedData.updateLogs.push(diffStr);
 
         // Run the update
         const ref = doc(db, ...path, id);

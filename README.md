@@ -9,6 +9,8 @@ Install and login to Firebase
 - npm install -g firebase-tools
 - firebase login
 - firebase install
+For the authentication flow
+- npm install firebase-admin
 
 # Getting Started with Create React App
 
