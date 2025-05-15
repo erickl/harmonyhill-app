@@ -1,4 +1,4 @@
-import { where } from 'firebase/firestore';
+import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js"
 
 export async function add(bookingRef, booking) {
@@ -24,7 +24,9 @@ export async function get(filterOptions = {}) {
         queryFilter.push(where("checkInAt", "<=", filterOptions.date));
         queryFilter.push(where("checkOutAt", ">=", filterOptions.date));
     }
-    return await dao.get(path, queryFilter);
+
+    let ordering = [ orderBy("checkInAt", "asc") ];
+    return await dao.get(path, queryFilter, ordering);
 }
 
 export async function deleteBooking(bookingId) {

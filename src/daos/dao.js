@@ -3,12 +3,14 @@ import {
     query, 
     collection, collectionGroup,  
     getDocs, getDoc, 
-    addDoc, setDoc, updateDoc, 
+    setDoc, updateDoc, 
     doc, 
     deleteDoc
 } from 'firebase/firestore';
 import { db } from "../firebase.js";
 import * as constant from "./daoConst.js";
+import * as utils from "../utils.js";
+import * as userService from "../services/userService.js";
 
 export { constant }
 
@@ -23,9 +25,10 @@ export async function getOne(path, id) {
     }
 }
 
-export async function get(path, filters = []) {
+export async function get(path, filters = [], ordering = []) {
     try {
-        const docQuery = query(collection(db, ...path), ...filters);
+        const collectionRef = collection(db, ...path);
+        const docQuery = query(collectionRef, ...filters, ...ordering);
         const snapshot = await getDocs(docQuery);
         if (snapshot.empty) {
             //console.log(`No documents found in ${path}`);
@@ -39,8 +42,24 @@ export async function get(path, filters = []) {
     }
 }
 
+/**
+ * Creates and includes a change logs string in the new booking object
+ */
 export async function update(path, id, updatedData) { 
     try {
+        // Add change to the update logs
+        const originalData = await getOne(path, id);
+        let diffStr = utils.jsonObjectDiffStr(originalData, updatedData);
+    
+        if(diffStr.length === 0) {
+            console.log(`No changes to update to ${path}/${id}`);
+            return false;
+        }
+            
+        updatedData.updateLogs = Object.hasOwn(originalData, "updateLogs") ? originalData.updateLogs : [];
+        updatedData.updateLogs.push(diffStr);
+
+        // Run the update
         const ref = doc(db, ...path, id);
         await updateDoc(ref, updatedData);
         return true;
@@ -64,6 +83,19 @@ export async function add(path, id, data) {
 
 export async function remove(path, id) {
     try {
+        // Log the deleted data before deleting it
+        let dataToDelete = await getOne(path, id);
+        if (!dataToDelete) {
+            console.log(`Document ${path}/${id} could not be deleted because it was not found`);
+            return false;
+        }
+        
+        dataToDelete.deletedBy = userService.getUserName();
+        dataToDelete.deletedAt = new Date();
+        dataToDelete.deletedFrom = `${path}/${id}`;
+        const deletedRef = await add(["deleted"], `del-${id}`, dataToDelete);
+        
+        // Proceed with deleting
         const ref = doc(db, ...path, id);
         await deleteDoc(ref);
         console.log(`Deleted document ${path}/${id}`);
