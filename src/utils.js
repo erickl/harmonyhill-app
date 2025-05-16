@@ -55,3 +55,25 @@ export function getDateStringYYMMdd(date = new Date()) {
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}${month}${day}`;
 }
+
+
+export function YYMMdd_to_ddMMM(dateString) {
+    // replace hyphens with empty string
+    dateString = dateString.replace(/-/g, "");
+
+    // Cut the first 2 characters if the string is longer than 8 characters
+    if(dateString.length === 8) {
+        dateString = dateString.slice(2);
+    }
+
+    const year = dateString.slice(0, 2);
+    const month = dateString.slice(2, 4);
+    const day = dateString.slice(4, 6);
+
+    const monthNames = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    return `${day} ${monthNames[parseInt(month) - 1]}`;// '${year}`;
+}

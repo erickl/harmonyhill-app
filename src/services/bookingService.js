@@ -18,6 +18,13 @@ export async function getPromotions() {
  */
 export async function get(filterOptions = {}) {
     const bookings = await bookingDao.get(filterOptions);
+    
+    // return dates of a few different formats
+    bookings.map((booking) => {
+        booking.checkInAt_ddMMM = utils.YYMMdd_to_ddMMM(booking.checkInAt);
+        booking.checkOutAt_ddMMM = utils.YYMMdd_to_ddMMM(booking.checkOutAt);
+    });
+    
     return bookings;
 }
 
@@ -94,8 +101,11 @@ function mapBookingObject(data, isUpdate = false) {
 }
 
 export async function testBooking() {
+    // const xx  = utils.YYMMdd_to_ddMMM("20250101");
+    // const x2  = utils.YYMMdd_to_ddMMM("250101");
+
     //const signUpSuccess = userService.signUp("ericklaesson", "ericklaesson@gmail.com", "password");
-    const signInSuccess = await userService.login("ericklaesson@gmail.com", "password");
+    //const signInSuccess = await userService.login("ericklaesson@gmail.com", "password");
 
     const all = await get();
 
