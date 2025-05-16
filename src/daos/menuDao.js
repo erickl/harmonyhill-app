@@ -1,14 +1,11 @@
 import * as dao from './dao.js';
+import { where, orderBy } from 'firebase/firestore';
 
 export async function get(options = {}) {
     let filters = [];
 
-    if(Object.hasOwn(options, 'mealCategory')) {
-        filters.push(where("mealCategories", "array-contains", options.mealCategory));
-    }
-
-    if(Object.hasOwn(options, 'house')) {
-        filters.push(where("houseAvailability", "array-contains", options.house));
+    if(Object.hasOwn(options, 'isFavorite')) {
+        filters.push(where("isFavorite", "==", options.isFavorite));
     }
 
     // E.g. when menu items go out of season
@@ -25,27 +22,21 @@ export async function get(options = {}) {
         return [];
     }
 
-    // Remove any menu items which contain any of the given allergens
-    let menuWithoutAllergens = [];
-    if(Object.hasOwn(options, 'allergens')) {
-        for(const item of menu) {
-            let allergenic = false;
-            for(const allergen of options.allergens) {
-                if(item.allergens.includes(allergen)) { 
-                    allergenic = true;
-                    break;
-                }
-            }
-            if(!allergenic) {
-                menuWithoutAllergens.push(item);
-            }
-        }
+    // Cannot have more than 1 array-contains filter in one firestore query (??), so we'll do it manually here instead 
+    if(Object.hasOwn(options, 'mealCategory')) {
+        menu = menu.filter(item => item.mealCategories.includes(options.mealCategory));
+    }
+
+    if(Object.hasOwn(options, 'house')) {
+        menu = menu.filter(item => item.houseAvailability.includes(options.house));
     }
 
     // Remove any menu items which contain any of the given allergens
-    // if (Object.hasOwn(options, 'allergens')) {
-    //     menuWithoutAllergens = menu.filter(item =>
-    //         !options.allergens.some(allergen => item.allergens.includes(allergen))
-    //     );
-    // }
+    if (Object.hasOwn(options, 'allergens')) {
+        menu = menu.filter(item =>
+            !options.allergens.some(allergen => item.allergens.includes(allergen))
+        );
+    }
+
+    return menu;
 }

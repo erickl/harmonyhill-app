@@ -37,8 +37,7 @@ export async function get(path, filters = [], ordering = []) {
         const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         return docs
     } catch (e) {
-        console.error(`Error getting documents from ${path}: `, e);
-        return [];
+        throw new Error(`Error getting documents from ${path}: `, e);
     }
 }
 

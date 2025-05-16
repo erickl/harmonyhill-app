@@ -37,7 +37,7 @@ export async function login(email, password) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
     
-        await userDao.updateLastLoggedIn(user.uid);
+        const success = await userDao.updateLastLoggedIn(user.uid);
         return success;
     } catch (error) {
         console.error("Error logging in: ", error);

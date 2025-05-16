@@ -4,6 +4,9 @@ import { Users, List, Upload } from 'lucide-react';
 import CustomersScreen from './components/CustomersScreen';
 import ActivitiesScreen from './components/ActivitiesScreen';
 import ExpensesScreen from './components/ExpensesScreen';
+import * as bookingService from './services/bookingService.js';
+import * as menuService from './services/menuService.js';
+
 
 import './App.css';
 
@@ -39,8 +42,11 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
 
 
 
-
 function App() {
+
+  //bookingService.testBooking();
+  menuService.testGetMenuItems();
+  
   const [activeTab, setActiveTab] = useState('customers');
 
   const handleTabChange = (tab) => {

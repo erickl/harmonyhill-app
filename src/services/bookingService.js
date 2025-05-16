@@ -101,8 +101,8 @@ export async function testBooking() {
 
     let booking = {
         allergies: "sausage",
-        checkInAt: new Date(2025, 11, 15, 14, 0, 0),
-        checkOutAt: new Date(2025, 11, 17, 11, 0, 0),
+        checkInAt: "2025-05-10",
+        checkOutAt: "2025-05-13",
         createdAt: new Date(),
         country: "Norway",
         guestCount: 4,
