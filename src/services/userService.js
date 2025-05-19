@@ -1,9 +1,14 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, deleteUser } from "firebase/auth";
 import { auth } from "../firebase";
 import * as userDao from "../daos/userDao.js";
 
 export async function signUp(username, email, password) {
     try {
+        const existinUsers = await userDao.get({email: email});
+        if (existinUsers && existinUsers.length > 0) {
+            console.error(`User ${email} already exists`);
+        }
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
@@ -15,6 +20,11 @@ export async function signUp(username, email, password) {
             lastLoginAt: null,
             approved: false,
         });
+
+        if (!success) {
+            console.error("Error adding user to database");
+            return false;
+        }
 
         await updateProfile(user, {
             displayName: username,
@@ -29,9 +39,9 @@ export async function signUp(username, email, password) {
   
 export async function login(email, password) {
     try {
-        const isApproved = await isApproved(email);
+        const isApproved = await isEmailApproved(email);
         if(!isApproved) {
-            console.error("User is not approved");
+            console.error(`User ${email} is not approved`);
             return false;
         }
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -45,18 +55,48 @@ export async function login(email, password) {
     }
 }
 
-async function logout() {
-    await signOut(auth);
+export async function isLoggedIn() {
+    const user = getFirebaseUser();
+    // user == null if not logged in
+    if (!user) {
+        return false;
+    }
+
+    const userData = await userDao.getOne(user.uid);
+    if (!userData) {
+        return false;
+    }
+
+    if(!userData.approved) {
+        console.error(`User ${user.email} is not approved`);
+        return false;
+    }
+    
+    return true;
 }
 
-export function getUser() {
+function getFirebaseUser() {
     const user = auth.currentUser;
     return user ? user : null;
 }
 
-export function getUserName() {
-    const user = getUser();
-    return user && user.displayName ? user.displayName : "unknown";
+export async function getUser() {
+    const user = getFirebaseUser();
+    if (!user) {
+        return null;
+    }
+
+    return await userDao.getOne(user.uid);
+}
+
+
+export async function logout() {
+    await signOut(auth);
+}
+
+export async function getUserName() {
+    const user = await getUser();
+    return user && user.username ? user.username : "unknown";
 }
 
 export async function isAdmin() {
@@ -65,18 +105,49 @@ export async function isAdmin() {
         return false;
     }
     
-    const userData = await userDao.getOne(user.uid);
-    if (!userData) {
-        return false;
-    }
-    return userData.role === "admin";
+    return user.role === "admin";
 }
 
-export async function isApproved(email) {
+export async function approve(id) {
+    if(isAdmin()) {
+        const user = await userDao.getOne(id);
+        if (!user) {
+            console.error(`User ${id} not found`);
+            return false;
+        }
+        const success = await userDao.update(id, {approved: true});
+        return success;
+    }
+    
+    return false;
+}
+
+export async function isEmailApproved(email) {
     const users = await userDao.get({email: email});
     if (!users || users.length === 0) {
         return false;
     }
     const user = users[0];
     return user.approved;
+}
+
+export async function testLogin() {
+    const email = process.env.REACT_APP_TEST_USER_EMAIL;
+    const password = process.env.REACT_APP_TEST_USER_EMAIL;
+
+    const signUpSuccess = await signUp("Eric Klaesson", email, password);
+
+    const isLoggedIn1 = await isLoggedIn();
+
+    const signInSuccess = await login(email, password);
+
+    const isLoggedIn2 = await isLoggedIn();
+
+    try {
+        const user = auth.currentUser
+        await deleteUser(user);
+        console.log('Current user deleted successfully.');
+    } catch (error) {
+        console.error('Error deleting current user:', error);
+    }
 }

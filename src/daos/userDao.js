@@ -1,4 +1,5 @@
 import * as dao from './dao.js';
+import { where, orderBy } from 'firebase/firestore';
 
 export async function getOne(userId) {
     try {
@@ -11,8 +12,13 @@ export async function getOne(userId) {
 }
 
 export async function get(options = {}) {
+    let filters = [];
+    if(Object.hasOwn(options, "email")) { 
+        filters.push(where("email", "==", options.email));
+    }
+
     try {
-        const users = await dao.get(['users'], options);
+        const users = await dao.get(['users'], filters);
         return users;
     } catch (error) {
         console.error('Error fetching all users:', error);
