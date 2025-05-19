@@ -45,17 +45,26 @@ export function getDateStringWithTimeAndZone(date = new Date()) {
 }
 
 /**
-
- * @returns date string in the format YYMMDD
+ * @returns date string formatted as YYMMDD, without the hyphens
  */
-export function getDateStringYYMMdd(date = new Date()) {
-    // Get parts
-    const year = String(date.getFullYear()).slice(-2);
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // 0-indexed
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}${month}${day}`;
-}
+export function getDateStringYYMMdd(date) {
+    if(date instanceof Date) {
+        const year = String(date.getFullYear()).slice(-2);
+        const month = String(date.getMonth() + 1).padStart(2, "0"); // 0-indexed
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}${month}${day}`;
+    } else if(typeof date === "string") {
+        date = date.replace(/-/g, "");
 
+        if(date.length === 8) {
+            date = date.slice(2);
+        } else {
+            return date;
+        }
+    } else {
+        throw new Error("Invalid date type. Expected Date object or string.");
+    }   
+}
 
 export function YYMMdd_to_ddMMM(dateString) {
     // replace hyphens with empty string
