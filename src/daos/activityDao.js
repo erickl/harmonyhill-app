@@ -1,4 +1,4 @@
-import { where } from 'firebase/firestore';
+import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js"
 
 // All meals for all bookings
@@ -20,14 +20,14 @@ export async function addMealItem(bookingId, mealId, mealItemId, mealItem) {
 //export async function updateMealItem(bookingId, mealId, mealItemId, mealItem) {
 
 export async function deleteMealItem(bookingId, mealId, mealItemId) { 
-    return await dao.deleteDoc([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId);
+    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId);
 }
 
 // Only delete the whole meal if all mealItems are deleted first
 export async function deleteMeal(bookingId, mealId) {
     const mealItems = await dao.get([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId,  "mealItems"]);
     if(mealItems.length === 0) {
-        return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId);  
+        return await remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], mealId);  
     }
     return false;
 }
@@ -35,6 +35,7 @@ export async function deleteMeal(bookingId, mealId) {
 // mealCategory = "breakfast", "lunch", "dinner", "snack", "afternoon tea", "floating breakfast"
 export async function getMeals(bookingId, options = {}) {  
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
+    let filters = [];
 
     if(!Object.hasOwn(options, "category")) {
         options.category = "meal";
@@ -71,12 +72,12 @@ export async function getActivities(bookingId, options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    if (Object.hasOwn(options, "before")) {
-        filters.push(where("date", ">=", options.before));
-    }
-
     if (Object.hasOwn(options, "after")) {
         filters.push(where("date", "<=", options.after));
+    }
+
+    if (Object.hasOwn(options, "before")) {
+        filters.push(where("date", ">=", options.before));
     }
     
     let ordering = [ orderBy("date", "asc") ];
@@ -84,13 +85,12 @@ export async function getActivities(bookingId, options = {}) {
     return await dao.get(path, filters, ordering);
 }
 
-export async function getMealItems(bookingId, mealId, filterOptions = {}) {
-    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"];
-    return await dao.get(path, []);
+export async function remove(bookingId, activityId) {
+    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId);
 }
 
-export async function get(bookingId, filterOptions = {}) {
-    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
+export async function getMealItems(bookingId, mealId, filterOptions = {}) {
+    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"];
     return await dao.get(path, []);
 }
 
@@ -99,6 +99,8 @@ export async function getOne(bookingId, id) {
     return await dao.getOne(path, id);
 }
 
-export async function getMealCategories() {
-    return await dao.get([dao.constant.MEAL_CATEGORIES]); 
+// category = "meal"|"transport"|"massage"
+export async function getSubCategories(category) {
+    const filters = [where("category", "==", category)];
+    return await dao.get([dao.constant.ACTIVITY_SUB_CATEGORIES], filters); 
 }
