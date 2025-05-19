@@ -4,13 +4,10 @@ import { Users, List, Upload } from 'lucide-react';
 import CustomersScreen from './components/CustomersScreen';
 import ActivitiesScreen from './components/ActivitiesScreen';
 import ExpensesScreen from './components/ExpensesScreen';
-<<<<<<< Updated upstream
 import * as bookingService from './services/bookingService.js';
 import * as menuService from './services/menuService.js';
 
-=======
 import AddCustomerScreen from './components/AddCustomerScreen';
->>>>>>> Stashed changes
 
 import './App.css';
 
@@ -50,7 +47,7 @@ function App() {
 
   //bookingService.testBooking();
   menuService.testGetMenuItems();
-  
+
   const [activeTab, setActiveTab] = useState('customers');
   const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
 

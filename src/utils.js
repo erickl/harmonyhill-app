@@ -2,9 +2,9 @@ import * as userService from "./services/userService.js";
 
 export function jsonObjectDiffStr(obj1, obj2) {
     let diff = "";
-  
+
     for (const key in obj2) {
-        if(!Object.hasOwn(obj1, key)) {
+        if (!Object.hasOwn(obj1, key)) {
             diff += ` ${key}: ${obj1[key]} added, `;
         }
         if (obj2[key] !== obj1[key]) {
@@ -16,10 +16,10 @@ export function jsonObjectDiffStr(obj1, obj2) {
     if (diff.length > 0) {
         const username = userService.getUserName();
         const nowStr = getDateStringWithTimeAndZone();
-        diff = `Updated by ${username} at ${nowStr}: ${diff}`; 
+        diff = `Updated by ${username} at ${nowStr}: ${diff}`;
         diff = diff.slice(0, -2);
     }
-  
+
     return diff;
 }
 
@@ -31,16 +31,16 @@ export function getDateStringWithTimeAndZone(date = new Date()) {
     const year = String(date.getFullYear()).slice(-2);
     const month = String(date.getMonth() + 1).padStart(2, "0"); // 0-indexed
     const day = String(date.getDate()).padStart(2, "0");
-    
+
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    
+
     // Timezone offset in minutes
     const tzOffsetMin = date.getTimezoneOffset(); // e.g., -480 for GMT+8
     const tzOffsetHr = -tzOffsetMin / 60;         // Flip sign to match GMT+X
-    
+
     const tz = `GMT${tzOffsetHr >= 0 ? "+" : ""}${tzOffsetHr}`;
-    
+
     return `${year}${month}${day} ${hours}:${minutes} ${tz}`;
 }
 
@@ -48,22 +48,22 @@ export function getDateStringWithTimeAndZone(date = new Date()) {
  * @returns date string formatted as YYMMDD, without the hyphens
  */
 export function getDateStringYYMMdd(date) {
-    if(date instanceof Date) {
+    if (date instanceof Date) {
         const year = String(date.getFullYear()).slice(-2);
         const month = String(date.getMonth() + 1).padStart(2, "0"); // 0-indexed
         const day = String(date.getDate()).padStart(2, "0");
         return `${year}${month}${day}`;
-    } else if(typeof date === "string") {
+    } else if (typeof date === "string") {
         date = date.replace(/-/g, "");
 
-        if(date.length === 8) {
+        if (date.length === 8) {
             date = date.slice(2);
         } else {
             return date;
         }
     } else {
         throw new Error("Invalid date type. Expected Date object or string.");
-    }   
+    }
 }
 
 export function YYMMdd_to_ddMMM(dateString) {
@@ -71,7 +71,7 @@ export function YYMMdd_to_ddMMM(dateString) {
     dateString = dateString.replace(/-/g, "");
 
     // Cut the first 2 characters if the string is longer than 8 characters
-    if(dateString.length === 8) {
+    if (dateString.length === 8) {
         dateString = dateString.slice(2);
     }
 
@@ -85,4 +85,10 @@ export function YYMMdd_to_ddMMM(dateString) {
     ];
 
     return `${day} ${monthNames[parseInt(month) - 1]}`;// '${year}`;
+}
+
+export function dateStringToDate(dateString) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
+    return date;
 }

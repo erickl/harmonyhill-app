@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
+import * as utils from '../utils.js';
 
 import './CustomersScreen.css';
 import AddCustomerScreen from './AddCustomerScreen';
@@ -21,8 +22,8 @@ const CustomersScreen = ({ onNavigate }) => {
                 const fetchedCustomers = await bookingService.get();
                 // Modify each customer object to include checkInDate and checkOutDate as Date objects.
                 const modifiedCustomers = fetchedCustomers.map(customer => {
-                    const checkInDate = new Date(customer.checkInAt.seconds * 1000); //Date constructor expects milliseconds
-                    const checkOutDate = new Date(customer.checkOutAt.seconds * 1000);
+                    const checkInDate = utils.dateStringToDate(customer.checkInAt); //Date constructor expects milliseconds
+                    const checkOutDate = utils.dateStringToDate(customer.checkOutAt);
                     checkInDate.setHours(0, 0, 0, 0);
                     checkOutDate.setHours(0, 0, 0, 0);
                     return {
@@ -134,15 +135,19 @@ const CustomersScreen = ({ onNavigate }) => {
                                     className={`customer-list-item clickable-item ${getHouseColor(customer.house)}`} // Added house color
                                     onClick={() => handleCustomerClick(customer)}
                                 >
+                                    {/* <span className="customer-name-in-list">{customer.name}</span> <br></br> {customer.checkInDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {customer.checkOutDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} */
+                                    }
+
                                     <span className="customer-name-in-list">{customer.name}</span> <br></br> {customer.checkInDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {customer.checkOutDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                                 </div>
                                 {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
                                     <div className="customer-details">
                                         <p><span className="detail-label">Villa:</span> {customer.house}</p>
-                                        <p><span className="detail-label">Check In:</span> {customer.checkInDate.toLocaleDateString()}</p>
-                                        <p><span className="detail-label">Check Out:</span> {customer.checkOutDate.toLocaleDateString()}</p>
+                                        <p><span className="detail-label">Check In:</span> {customer.checkInDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                        <p><span className="detail-label">Check Out:</span> {customer.checkOutDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                        <p><span className="detail-label">Length of Stay:</span> {(customer.checkOutDate - customer.checkInDate) / (1000 * 60 * 60 * 24)} nights</p>
                                         <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
-                                        <p><span className="detail-label">Allergies:</span> <span className="allergies">{customer.allergies}</span></p>
+                                        <p><span className="detail-label">Allergies: </span><span className="allergies">{customer.allergies}</span></p>
                                         <p><span className="detail-label">Other Details:</span> {customer.otherDetails}</p>
                                         <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
                                         <p><span className="detail-label">Country:</span> {customer.country}</p>
