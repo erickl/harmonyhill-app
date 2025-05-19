@@ -4,15 +4,19 @@ import * as userDao from "../daos/userDao.js";
 
 export async function signUp(username, email, password) {
     try {
-        const existinUsers = await userDao.get({email: email});
-        if (existinUsers && existinUsers.length > 0) {
+        const existingUsers = await userDao.get({email: email});
+        if (existingUsers && existingUsers.length > 0) {
             console.error(`User ${email} already exists`);
+            return false;
         }
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        await updateProfile(user, {
+            displayName: username,
+        });
 
-        const success = await userDao.add(user.uid, {
+        const addUserDataSuccess = await userDao.add(user.uid, {
             name: username,
             email: email,
             role: "staff",
@@ -21,14 +25,10 @@ export async function signUp(username, email, password) {
             approved: false,
         });
 
-        if (!success) {
+        if (!addUserDataSuccess) {
             console.error("Error adding user to database");
             return false;
         }
-
-        await updateProfile(user, {
-            displayName: username,
-        });
 
         return true;
     } catch (error) {
@@ -56,8 +56,8 @@ export async function login(email, password) {
 }
 
 export async function isLoggedIn() {
-    const user = getFirebaseUser();
     // user == null if not logged in
+    const user = getFirebaseUser();
     if (!user) {
         return false;
     }
@@ -89,7 +89,6 @@ export async function getUser() {
     return await userDao.getOne(user.uid);
 }
 
-
 export async function logout() {
     await signOut(auth);
 }
@@ -108,14 +107,15 @@ export async function isAdmin() {
     return user.role === "admin";
 }
 
-export async function approve(id) {
+export async function approve(email) {
     if(isAdmin()) {
-        const user = await userDao.getOne(id);
-        if (!user) {
-            console.error(`User ${id} not found`);
+        const users = await userDao.get({email: email});
+        if (!users || users.length === 0) {
+            console.error(`User ${email} not found`);
             return false;
         }
-        const success = await userDao.update(id, {approved: true});
+        const user = users[0];
+        const success = await userDao.update(user.id, {approved: true});
         return success;
     }
     
@@ -133,11 +133,19 @@ export async function isEmailApproved(email) {
 
 export async function testLogin() {
     const email = process.env.REACT_APP_TEST_USER_EMAIL;
-    const password = process.env.REACT_APP_TEST_USER_EMAIL;
+    const password = process.env.REACT_APP_TEST_USER_PASSWORD;
 
     const signUpSuccess = await signUp("Eric Klaesson", email, password);
 
+    const isApproved = await isEmailApproved(email);
+    if(!isApproved) {
+        const approveSuccess = await approve(email);
+    }
+    
     const isLoggedIn1 = await isLoggedIn();
+    if(isLoggedIn1) {
+        await logout();
+    }
 
     const signInSuccess = await login(email, password);
 
@@ -145,7 +153,7 @@ export async function testLogin() {
 
     try {
         const user = auth.currentUser
-        await deleteUser(user);
+        //await deleteUser(user);
         console.log('Current user deleted successfully.');
     } catch (error) {
         console.error('Error deleting current user:', error);

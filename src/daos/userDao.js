@@ -36,9 +36,19 @@ export async function add(id, userData) {
     }
 }
 
+export async function update(id, userData) {
+    try {
+        const success = await dao.update(['users'], id, userData, false);
+        return success;
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return false;
+    }
+}
+
 export async function updateLastLoggedIn(id) {
     try {
-        const success = await dao.update(['users'], id, { lastLoginAt: new Date()}, false);
+        const success = await update(id, { lastLoginAt: new Date()});
         return success;
     } catch (error) {
         console.error('Error updating last login:', error);
