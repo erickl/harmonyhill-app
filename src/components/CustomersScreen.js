@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
 
 import './CustomersScreen.css';
+import AddCustomerScreen from './AddCustomerScreen';
 
-const CustomersScreen = () => {
+const CustomersScreen = ({ onNavigate }) => {
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedCustomer, setSelectedCustomer] = useState(null); // State to store the selected customer
+    const [pastExpanded, setPastExpanded] = useState(false); // State to expand past customer section
+    const [futureExpanded, setFutureExpanded] = useState(false); // State to expand future customer section
 
 
     // useEffect with argument [] ensures the code is run only once, when the component is first mounted
@@ -108,43 +111,50 @@ const CustomersScreen = () => {
     };
 
     // Function to render customer list section
-    const renderCustomerListSection = (title, customers, customerTypeClass) => {
-        if (customers.length === 0) {
-            return (
-                <div>
-                    <h3>{title}</h3>
-                    <p>No customers found.</p>
-                </div>
-            );
-        }
+    const renderCustomerListSection = (title, customers, customerTypeClass, isExpanded, setIsExpanded) => {
+        const hasCustomers = customers.length > 0;
         return (
             <div>
-                <h3>{title}</h3>
-                <div>
-                    {customers.map((customer) => (
-                        <React.Fragment key={customer.id}>
-                            <div
-                                className={`customer-list-item clickable-item ${getHouseColor(customer.house)}`} // Added house color
-                                onClick={() => handleCustomerClick(customer)}
-                            >
-                                {customer.name} ~ ({customer.checkInAt.seconds} - {customer.checkOutAt.seconds})
-                            </div>
-                            {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
-                                <div className="customer-details">
-                                    <p><span className="detail-label">Villa:</span> {customer.house}</p>
-                                    <p><span className="detail-label">Check In:</span> {customer.checkInDate.toLocaleDateString()}</p>
-                                    <p><span className="detail-label">Check Out:</span> {customer.checkOutDate.toLocaleDateString()}</p>
-                                    <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
-                                    <p><span className="detail-label">Allergies:</span> <span className="allergies">{customer.allergies}</span></p>
-                                    <p><span className="detail-label">Other Details:</span> {customer.otherDetails}</p>
-                                    <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
-                                    <p><span className="detail-label">Country:</span> {customer.country}</p>
-                                    <p><span className="detail-label">Source:</span> {customer.source}</p>
+                <h3
+                    className={`customer-group-header ${hasCustomers ? 'clickable-header' : ''}`} // Added clickable-header
+                    onClick={() => hasCustomers && setIsExpanded(!isExpanded)} // Added onClick
+                >
+                    {title}
+                    {hasCustomers && (
+                        <span className="expand-icon">
+                            {isExpanded ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
+                        </span>
+                    )}
+                </h3>
+                {isExpanded && hasCustomers ? (
+                    <div>
+                        {customers.map((customer) => (
+                            <React.Fragment key={customer.id}>
+                                <div
+                                    className={`customer-list-item clickable-item ${getHouseColor(customer.house)}`} // Added house color
+                                    onClick={() => handleCustomerClick(customer)}
+                                >
+                                    <span className="customer-name-in-list">{customer.name}</span> <br></br> {customer.checkInDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {customer.checkOutDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                                 </div>
-                            )}
-                        </React.Fragment>
-                    ))}
-                </div>
+                                {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
+                                    <div className="customer-details">
+                                        <p><span className="detail-label">Villa:</span> {customer.house}</p>
+                                        <p><span className="detail-label">Check In:</span> {customer.checkInDate.toLocaleDateString()}</p>
+                                        <p><span className="detail-label">Check Out:</span> {customer.checkOutDate.toLocaleDateString()}</p>
+                                        <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
+                                        <p><span className="detail-label">Allergies:</span> <span className="allergies">{customer.allergies}</span></p>
+                                        <p><span className="detail-label">Other Details:</span> {customer.otherDetails}</p>
+                                        <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
+                                        <p><span className="detail-label">Country:</span> {customer.country}</p>
+                                        <p><span className="detail-label">Source:</span> {customer.source}</p>
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                ) : (
+                    null
+                )}
             </div>
         );
     };
@@ -152,17 +162,21 @@ const CustomersScreen = () => {
     return (
         <div className="card">
             <div className="card-header">
-                <h2 className="card-title">Customers</h2>
+                <h2 className="card-title">Customers
+                    <button className="add-customer-button" onClick={() => onNavigate('add-customer')}>
+                        +
+                    </button></h2>
             </div>
             <div className="card-content">
                 {/* Past Customers */}
-                {renderCustomerListSection("Past Customers", pastCustomers, "past-customer")}
+                {renderCustomerListSection("Past Customers", pastCustomers, "past-customer", pastExpanded, setPastExpanded)}
 
                 {/* Current Customers */}
-                {renderCustomerListSection("Current Customers", currentCustomers, "current-customer")}
+                {renderCustomerListSection("Current Customers", currentCustomers, "current-customer", true, () => { })} {/* Always expanded */}
 
                 {/* Future Customers */}
-                {renderCustomerListSection("Future Customers", futureCustomers, "future-customer")}
+                {renderCustomerListSection("Future Customers", futureCustomers, "future-customer", futureExpanded, setFutureExpanded)}
+
 
 
 

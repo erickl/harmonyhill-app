@@ -42,16 +42,22 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+
+    background-color: rgb(247, 243, 243);
+    box-shadow: 5px 5px 10px -1px rgb(119, 179, 176);
 }
 
 .card-header {
-    padding: 1rem;
-    border-bottom: 1px solid #ddd;
+    margin: 0;
+    padding: 1.5rem;
+    background-color: rgb(229, 226, 226);
+    box-shadow: 5px 5px 10px -1px rgb(119, 179, 176);
+    /* border-bottom: 1px solid #ddd; */
 }
 
 .card-title {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin: 0;
 }
 
 .card-content {

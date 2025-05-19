@@ -4,9 +4,13 @@ import { Users, List, Upload } from 'lucide-react';
 import CustomersScreen from './components/CustomersScreen';
 import ActivitiesScreen from './components/ActivitiesScreen';
 import ExpensesScreen from './components/ExpensesScreen';
+<<<<<<< Updated upstream
 import * as bookingService from './services/bookingService.js';
 import * as menuService from './services/menuService.js';
 
+=======
+import AddCustomerScreen from './components/AddCustomerScreen';
+>>>>>>> Stashed changes
 
 import './App.css';
 
@@ -48,23 +52,34 @@ function App() {
   menuService.testGetMenuItems();
   
   const [activeTab, setActiveTab] = useState('customers');
+  const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tab) => { // For navigation between tabs
     setActiveTab(tab);
+    // if (tab !== 'add-customer') { // Don't change screen for add-customer (handled separately)
+    //   setCurrentScreen(tab);
+    // }
+    setCurrentScreen(tab);
   };
 
-  let currentScreen;
-  if (activeTab === 'customers') {
-    currentScreen = <CustomersScreen />;
-  } else if (activeTab === 'activities') {
-    currentScreen = <ActivitiesScreen />;
-  } else if (activeTab === 'expenses') {
-    currentScreen = <ExpensesScreen />;
+  const navigate = (screen) => { // For navigation within a tab
+    setCurrentScreen(screen);
+  };
+
+  let screenToDisplay; // Changed from currentScreen to screenToDisplay
+  if (currentScreen === 'customers') {
+    screenToDisplay = <CustomersScreen onNavigate={navigate} />; // Pass navigate
+  } else if (currentScreen === 'activities') {
+    screenToDisplay = <ActivitiesScreen />;
+  } else if (currentScreen === 'expenses') {
+    screenToDisplay = <ExpensesScreen />;
+  } else if (currentScreen === 'add-customer') {
+    screenToDisplay = <AddCustomerScreen onNavigate={navigate} />; // Pass navigate
   }
 
   return (
     <div className="app-container">
-      <div className="content">{currentScreen}</div>
+      <div className="content">{screenToDisplay}</div> {/* Use screenToDisplay */}
       <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
