@@ -29,7 +29,7 @@ export async function get(filterOptions = {}) {
 }
 
 export async function add(bookingData) {
-    const bookingObject = mapBookingObject(bookingData);
+    const bookingObject = await mapBookingObject(bookingData);
     const bookingId = createBookingId(bookingObject.name, bookingObject.house, bookingObject.checkInAt);
     const success = await bookingDao.add(bookingId, bookingObject);
     if(success) {
@@ -44,7 +44,7 @@ export async function add(bookingData) {
  * Cannot update createdAt or createdBy
  */
 export async function update(bookingId, bookingUpdateData) {
-    const bookingUpdate = mapBookingObject(bookingUpdateData, true);
+    const bookingUpdate = await mapBookingObject(bookingUpdateData, true);
 
     // Remove any fields which should not be updated
     if(Object.hasOwn(bookingUpdate, "createdAt")) {
@@ -58,11 +58,10 @@ export async function update(bookingId, bookingUpdateData) {
 }
 
 /**
- * Only admin can delete bookings
+ * Only admin can delete bookings. It will be logged in the deleted collection
  */
 export async function deleteBooking(bookingId) {   
-    const isAdmin = userService.isAdmin();
-    if(isAdmin) {
+    if(userService.isAdmin()) {
         return await bookingDao.deleteBooking(bookingId);
     }
     return false;
@@ -71,11 +70,10 @@ export async function deleteBooking(bookingId) {
 export function createBookingId(guestName, house, checkInAt) {
     const yyMmdd = utils.getDateStringYYMMdd(checkInAt);
     const houseShort = house == "Harmony Hill" ? "hh" : "jn";
-
-    return guestName.replace(/ /g, "-") + "-" + houseShort + "-" + yyMmdd;
+    return yyMmdd + "-" + houseShort + "-" + guestName.replace(/ /g, "-");
 }
 
-function mapBookingObject(data, isUpdate = false) {
+async function mapBookingObject(data, isUpdate = false) {
     let booking = {};
     if(Object.hasOwn(data, "allergies"))    booking.allergies    = data.allergies    ;
     if(Object.hasOwn(data, "checkInAt"))    booking.checkInAt    = data.checkInAt    ;
@@ -94,7 +92,7 @@ function mapBookingObject(data, isUpdate = false) {
 
     if(!isUpdate) {
         booking.createdAt = new Date(); 
-        booking.createdBy = userService.getUserName();
+        booking.createdBy = await userService.getUserName();
     }
 
     return booking;

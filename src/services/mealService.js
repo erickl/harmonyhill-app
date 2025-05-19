@@ -1,9 +1,10 @@
 import * as activityDao from "../daos/activityDao.js";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as userService from "./userService.js";
+import * as utils from "../utils.js";
 
 export async function getMealCategories() {
-    return await activityDao.getMealCategories();
+    return await activityDao.getSubCategories("meal");
 }
 
 export async function addMeal(bookingId, mealData) {
@@ -13,7 +14,7 @@ export async function addMeal(bookingId, mealData) {
         return false;
     }
 
-    const meal = mapMealObject(mealData);
+    const meal = await mapMealObject(mealData);
     const mealId = makeMealId(meal.serveAt, booking.house, meal.subCategory);
     const success = await activityDao.add(bookingId, mealId, meal);
     return success ? mealId : false;
@@ -59,17 +60,17 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
 }
 
 export async function update(bookingId, mealId, mealUpdateData) {
-    const mealUpdate = mapMealObject(mealUpdateData, true);
+    const mealUpdate = await mapMealObject(mealUpdateData, true);
 
     // Remove any fields which should not be updated
-    if(Object.hasOwn(mealUpdateData, "createdAt")) {
-        delete mealUpdateData.createdAt;
+    if(Object.hasOwn(mealUpdate, "createdAt")) {
+        delete mealUpdate.createdAt;
     }
     if(Object.hasOwn(mealUpdateData, "createdBy")) {
-        delete mealUpdateData.createdBy;
+        delete mealUpdate.createdBy;
     }
 
-    return await activityDao.update(bookingId, mealId, mealUpdateData);
+    return await activityDao.update(bookingId, mealId, mealUpdate);
 }
 
 /**
@@ -107,18 +108,27 @@ export async function deleteMealItem(bookingId, mealId, mealItemId) {
     return await activityDao.deleteMealItem(bookingId, mealId, mealItemId);
 }
 
-function mapMealObject(mealData, isUpdate = false) {
+async function mapMealObject(mealData, isUpdate = false) {
     let meal = {};
 
-    if(Object.hasOwn(mealData, "category"))   meal.category   = mealData.category;
+    if(Object.hasOwn(mealData, "category"))    meal.category    = mealData.category;
+    else meal.category = "meal";
+
     if(Object.hasOwn(mealData, "subCategory")) meal.subCategory = mealData.subCategory;
-    if(Object.hasOwn(mealData, "serveAt"))     meal.serveAt     = mealData.serveAt;
-    if(Object.hasOwn(mealData, "serveTime"))   meal.serveTime   = mealData.serveTime;
+
+    if(Object.hasOwn(mealData, "serveAt")) {
+        meal.serveAt = utils.getDateStringYYMMdd(mealData.serveAt);
+    }
+
+    if(Object.hasOwn(mealData, "serveTime")) {
+        meal.serveTime = mealData.serveTime;
+    }
+
     if(Object.hasOwn(mealData, "status"))      meal.status      = mealData.status;
 
     if(!isUpdate) {
         meal.createdAt = new Date();
-        meal.createdBy = userService.getUserName();
+        meal.createdBy = await userService.getUserName();
     }
 
     return meal;

@@ -1,6 +1,5 @@
 import * as menuDao from '../daos/menuDao.js';
 
-
 /**
  * filters = {
  *      mealCategory: "breakfast"|"lunch"|"dinner"
