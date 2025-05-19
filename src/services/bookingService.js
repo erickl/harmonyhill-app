@@ -72,7 +72,7 @@ export function createBookingId(guestName, house, checkInAt) {
     const yyMmdd = utils.getDateStringYYMMdd(checkInAt);
     const houseShort = house == "Harmony Hill" ? "hh" : "jn";
 
-    return guestName.replace(/ /g, "-") + "-" + houseShort + "-" + yyMmdd.replace(/ /g, "-");
+    return guestName.replace(/ /g, "-") + "-" + houseShort + "-" + yyMmdd;
 }
 
 function mapBookingObject(data, isUpdate = false) {
