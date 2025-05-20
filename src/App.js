@@ -4,13 +4,13 @@ import { Users, List, Upload } from 'lucide-react';
 import CustomersScreen from './components/CustomersScreen';
 import ActivitiesScreen from './components/ActivitiesScreen';
 import ExpensesScreen from './components/ExpensesScreen';
-<<<<<<< Updated upstream
+import LoginScreen from './components/LoginScreen';
 import * as bookingService from './services/bookingService.js';
 import * as menuService from './services/menuService.js';
+import * as activityService from './services/activityService.js';
+import * as userService from './services/userService.js';
 
-=======
 import AddCustomerScreen from './components/AddCustomerScreen';
->>>>>>> Stashed changes
 
 import './App.css';
 
@@ -47,9 +47,10 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
 
 
 function App() {
-
   //bookingService.testBooking();
-  menuService.testGetMenuItems();
+  //activityService.testActivities();
+
+  const [isLoggedIn, setIsLoggedIn] = useState(userService.isLoggedIn());
   
   const [activeTab, setActiveTab] = useState('customers');
   const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
@@ -67,7 +68,9 @@ function App() {
   };
 
   let screenToDisplay; // Changed from currentScreen to screenToDisplay
-  if (currentScreen === 'customers') {
+  if(!userService.isLoggedIn()) {
+    screenToDisplay = <LoginScreen onLogin={userService.login} onLoginSuccess={navigate} />;
+  } else if (currentScreen === 'customers') {
     screenToDisplay = <CustomersScreen onNavigate={navigate} />; // Pass navigate
   } else if (currentScreen === 'activities') {
     screenToDisplay = <ActivitiesScreen />;
@@ -79,8 +82,14 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="content">{screenToDisplay}</div> {/* Use screenToDisplay */}
-      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+      {isLoggedIn ? (
+        <>
+            <div className="content">{screenToDisplay}</div> { /* Use screenToDisplay */}
+            <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+       ) : (
+        <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
+    )}
     </div>
   );
 }
