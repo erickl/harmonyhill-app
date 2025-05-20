@@ -5,8 +5,8 @@ import * as bookingService from '../services/bookingService.js'; // Import the b
 const AddCustomerScreen = ({ onNavigate }) => {
     const [formData, setFormData] = useState({
         house: '',
-        checkInDate: '',
-        checkOutDate: '',
+        checkInAt: '',
+        checkOutAt: '',
         guestCount: 1,
         allergies: '',
         otherDetails: '',
@@ -19,16 +19,16 @@ const AddCustomerScreen = ({ onNavigate }) => {
     const [stayDuration, setStayDuration] = useState('');
 
     useEffect(() => {
-        if (formData.checkInDate && formData.checkOutDate) {
-            const checkIn = new Date(formData.checkInDate);
-            const checkOut = new Date(formData.checkOutDate);
+        if (formData.checkInAt && formData.checkOutAt) {
+            const checkIn = new Date(formData.checkInAt);
+            const checkOut = new Date(formData.checkOutAt);
             const timeDiff = checkOut - checkIn;
             const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
             setStayDuration(`${diffDays} days`);
         } else {
             setStayDuration('');
         }
-    }, [formData.checkInDate, formData.checkOutDate]);
+    }, [formData.checkInAt, formData.checkOutAt]);
 
     const handleInputChange = (field, value) => {
         setFormData({ ...formData, [field]: value });
@@ -36,7 +36,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
 
     const handleSubmit = async () => { // for submitting to the database
         // Basic validation
-        if (!formData.house || !formData.checkInDate || !formData.checkOutDate) {
+        if (!formData.house || !formData.checkInAt || !formData.checkOutAt || !formData.name) {
             alert('Please fill in all required fields.'); // Use a better UI alert
             return;
         }
@@ -50,12 +50,13 @@ const AddCustomerScreen = ({ onNavigate }) => {
 
         // Call the onAddCustomer function (passed from App.js)
         try {
-            await bookingService.get(bookingData);
+            await bookingService.add(bookingData);
             // Optionally, reset the form or show a success message
             setFormData({  //reset form
                 house: '',
-                checkInDate: '',
-                checkOutDate: '',
+                name: '',
+                checkInAt: '',
+                checkOutAt: '',
                 guestCount: 1,
                 allergies: '',
                 otherDetails: '',
@@ -115,13 +116,26 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     </div>
                 </div>
 
+                {/* Name */}
+                <div>
+                    <h3>
+                        Guest Name
+                    </h3>
+                    <textarea
+                        placeholder="Enter guest name"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+
+                    />
+                </div>
+
                 {/* Check-in Date */}
                 <div>
                     <h3>Check-in Date</h3>
                     <input
                         type="date"
-                        value={formData.checkInDate}
-                        onChange={(e) => handleInputChange('checkInDate', e.target.value)}
+                        value={formData.checkInAt}
+                        onChange={(e) => handleInputChange('checkInAt', e.target.value)}
 
                     />
                 </div>
@@ -131,10 +145,10 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     <h3>Check-out Date</h3>
                     <input
                         type="date"
-                        value={formData.checkOutDate}
-                        onChange={(e) => handleInputChange('checkOutDate', e.target.value)}
+                        value={formData.checkOutAt}
+                        onChange={(e) => handleInputChange('checkOutAt', e.target.value)}
 
-                        min={formData.checkInDate}
+                    // min={formData.checkInDate}
                     />
                 </div>
 

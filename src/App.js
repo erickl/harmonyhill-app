@@ -47,9 +47,6 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
 
 
 function App() {
-  //bookingService.testBooking();
-  //activityService.testActivities();
-
   const [isLoggedIn, setIsLoggedIn] = useState(userService.isLoggedIn());
   
   const [activeTab, setActiveTab] = useState('customers');

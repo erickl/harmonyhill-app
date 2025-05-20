@@ -37,11 +37,12 @@ export async function signUp(username, email, password) {
     }
 }
   
-export async function login(email, password) {
+export async function login(email, password, onError) {
     try {
         const isApproved = await isEmailApproved(email);
         if(!isApproved) {
             console.error(`User ${email} is not approved`);
+            onError(`User ${email} is not approved`);
             return false;
         }
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -51,27 +52,18 @@ export async function login(email, password) {
         return success;
     } catch (error) {
         console.error("Error logging in: ", error);
+        onError("Error logging in: ", error);
         return false;
     }
 }
 
-export async function isLoggedIn() {
+export function isLoggedIn() {
     // user == null if not logged in
     const user = getFirebaseUser();
     if (!user) {
         return false;
     }
 
-    const userData = await userDao.getOne(user.uid);
-    if (!userData) {
-        return false;
-    }
-
-    if(!userData.approved) {
-        console.error(`User ${user.email} is not approved`);
-        return false;
-    }
-    
     return true;
 }
 
