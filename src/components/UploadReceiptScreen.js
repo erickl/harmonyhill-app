@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { storage } from '../firebase'; // Adjust path if your firebase.js is elsewhere
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { uploadPurchaseInvoice } from "../services/invoiceService";
 
 // Helper function to access camera
 const accessCamera = async (setVideoStream) => {
@@ -21,16 +22,18 @@ const uploadImageToFirebase = async (imageDataURL, onProgress, onSuccess, onErro
   }
 
   const fileName = `receipts/test1.png`; // Create a unique filename
-  const storageRef = ref(storage, fileName);
-
+  
   try {
     onProgress('Uploading...');
 
-    const snapshot = await uploadString(storageRef, imageDataURL, 'data_url');
-    onProgress('Processing...');
+    const downloadURL = await uploadPurchaseInvoice(fileName, imageDataURL);
 
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    onSuccess(downloadURL);
+    // const storageRef = ref(storage, fileName);
+    // const snapshot = await uploadString(storageRef, imageDataURL, 'data_url');
+    // onProgress('Processing...');
+
+    // const downloadURL = await getDownloadURL(snapshot.ref);
+    // onSuccess(downloadURL);
 
   } catch (error) {
     console.error("Error uploading image: ", error);
