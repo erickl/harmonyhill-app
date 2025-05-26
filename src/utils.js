@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase/firestore";
 import * as userService from "./services/userService.js";
 
 export function jsonObjectDiffStr(obj1, obj2) {
@@ -67,6 +68,16 @@ export function getDateStringYYMMdd(date) {
 }
 
 export function YYMMdd_to_ddMMM(dateString) {
+    if (dateString instanceof Timestamp) {
+        dateString = dateString.toDate();  
+    }
+    if (dateString instanceof Date) {
+        const year = String(dateString.getFullYear()).slice(-2);
+        const month = String(dateString.getMonth() + 1).padStart(2, "0"); // 0-indexed
+        const day = String(dateString.getDate()).padStart(2, "0");
+        dateString = `${year}${month}${day}`;
+    }
+    
     // replace hyphens with empty string
     dateString = dateString.replace(/-/g, "");
 
