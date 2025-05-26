@@ -8,6 +8,7 @@ import LoginScreen from './components/LoginScreen';
 import * as bookingService from './services/bookingService.js';
 import * as menuService from './services/menuService.js';
 import * as activityService from './services/activityService.js';
+import * as invoiceService from './services/invoiceService.js';
 import * as userService from './services/userService.js';
 
 import AddCustomerScreen from './components/AddCustomerScreen';
@@ -65,7 +66,7 @@ function App() {
   };
 
   let screenToDisplay; // Changed from currentScreen to screenToDisplay
-  if(!userService.isLoggedIn()) {
+  if(!isLoggedIn) {
     screenToDisplay = <LoginScreen onLogin={userService.login} onLoginSuccess={navigate} />;
   } else if (currentScreen === 'customers') {
     screenToDisplay = <CustomersScreen onNavigate={navigate} />; // Pass navigate
