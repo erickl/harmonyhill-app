@@ -1,13 +1,10 @@
+import { act } from 'react';
 import * as activityDao from '../daos/activityDao.js';
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 
 export async function getSubCategories(category) {
     return await activityDao.getSubCategories(category);
-}
-
-export async function getPersonnel() {
-    //return await activityDao.getSubCategories(category);
 }
 
 /**
@@ -19,7 +16,9 @@ export async function getPersonnel() {
 export async function get(bookingId, filterOptions = {}) {
     const activities = await activityDao.getActivities(bookingId, filterOptions);
     activities.map((activity) => {
-        activity.date_ddMMM = utils.YYMMdd_to_ddMMM(activity.date);
+        if(Object.hasOwn(activity, "date")) {
+            activity.date_ddMMM = utils.YYMMdd_to_ddMMM(activity.date);
+        }
     });
     return activities; 
 }
@@ -44,15 +43,6 @@ export async function assign(bookingId, activityId, personnelName) {
 
 export async function update(bookingId, activityId, activityUpdateData) {
     const activityUpdate = await mapObject(activityUpdateData, true);
-
-    // Remove any fields which should not be updated
-    if(Object.hasOwn(activityUpdate, "createdAt")) {
-        delete activityUpdate.createdAt;
-    }
-    if(Object.hasOwn(activityUpdate, "createdBy")) {
-        delete activityUpdate.createdBy;
-    }
-
     return await activityDao.update(bookingId, activityId, activityUpdate);
 }
 

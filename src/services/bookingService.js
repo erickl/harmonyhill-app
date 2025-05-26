@@ -40,20 +40,8 @@ export async function add(bookingData) {
     }
 }
 
-/**
- * Cannot update createdAt or createdBy
- */
 export async function update(bookingId, bookingUpdateData) {
     const bookingUpdate = await mapBookingObject(bookingUpdateData, true);
-
-    // Remove any fields which should not be updated
-    if(Object.hasOwn(bookingUpdate, "createdAt")) {
-        delete bookingUpdate.createdAt;
-    }
-    if(Object.hasOwn(bookingUpdate, "createdBy")) {
-        delete bookingUpdate.createdBy;
-    }
-
     return await bookingDao.update(bookingId, bookingUpdate);
 }
 

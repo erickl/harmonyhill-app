@@ -5,7 +5,8 @@ import {
     getDocs, getDoc, 
     setDoc, updateDoc, 
     doc, 
-    deleteDoc
+    deleteDoc,
+    runTransaction
 } from 'firebase/firestore';
 import { db } from "../firebase.js";
 import * as constant from "./daoConst.js";
@@ -42,10 +43,19 @@ export async function get(path, filters = [], ordering = []) {
 }
 
 /**
- * Creates and includes a change logs string in the new booking object
+ * Creates and includes a change logs string in the new booking object.
+ * Cannot update createdAt or createdBy
  */
 export async function update(path, id, updatedData, updateLogs = true) { 
     try {
+        // Remove any field which should not be updated
+        if(Object.hasOwn(updatedData, "createdAt")) {
+            delete updatedData.createdAt;
+        }
+        if(Object.hasOwn(updatedData, "createdBy")) {
+            delete updatedData.createdBy;
+        }
+
         if(updateLogs) {
             // Add change to the update logs
             const originalData = await getOne(path, id);
@@ -103,6 +113,33 @@ export async function remove(path, id) {
         return true;
     } catch (e) {
         console.error(`Error deleting document ${path}/${id}: `, e);
+        return false;
+    }
+}
+
+// export async function transaction(path, id, data) {
+//     try {
+//         const ref = doc(db, ...path, id);
+//         await runTransaction(db, async (transaction) => {
+//             const doc = await transaction.get(ref);
+//             if (!doc.exists()) {
+//                 throw new Error("Document does not exist!");
+//             }
+//             transaction.update(ref, data);
+//         });
+//         return true;
+//     } catch (e) {
+//         console.error(`Error in transaction ${path}/${id}: `, e);
+//         return false;
+//     }
+// }
+
+export async function transaction(inTransaction) {
+    try {
+        await runTransaction(db, inTransaction);
+        return true;
+    } catch (e) {
+        console.error(`Error in DB transaction`, e);
         return false;
     }
 }
