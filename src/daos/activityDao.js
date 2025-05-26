@@ -16,6 +16,10 @@ export async function addMealItem(bookingId, mealId, mealItemId, mealItem) {
     return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId, mealItem);
 }
 
+export async function transaction(inTransaction) {
+    return dao.transaction(inTransaction);
+}
+
 // Update meal item not existing. Only delete and add a new one
 //export async function updateMealItem(bookingId, mealId, mealItemId, mealItem) {
 
@@ -41,9 +45,9 @@ export async function getMeals(bookingId, options = {}) {
         options.category = "meal";
     }
 
-    // serveAt is a string in the format YYYY-MM-DD, without time
-    if (Object.hasOwn(options, "serveAt")) {
-        filters.push(where("serveAt", "==", options.serveAt));
+    // startingAt is a string in the format YYYY-MM-DD, without time
+    if (Object.hasOwn(options, "startingAt")) {
+        filters.push(where("startingAt", "==", options.startingAt));
     }
 
     if (Object.hasOwn(options, "category")) {
@@ -54,7 +58,7 @@ export async function getMeals(bookingId, options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
     
-    let ordering = [ orderBy("serveAt", "asc") ];
+    let ordering = [ orderBy("startingAt", "asc") ];
 
     return await dao.get(path, filters, ordering);
 }
@@ -73,14 +77,14 @@ export async function getActivities(bookingId, options = {}) {
     }
 
     if (Object.hasOwn(options, "after")) {
-        filters.push(where("date", "<=", options.after));
+        filters.push(where("startingAt", "<=", options.after));
     }
 
     if (Object.hasOwn(options, "before")) {
-        filters.push(where("date", ">=", options.before));
+        filters.push(where("startingAt", ">=", options.before));
     }
     
-    let ordering = [ orderBy("date", "asc") ];
+    let ordering = [ orderBy("startingAt", "asc") ];
 
     return await dao.get(path, filters, ordering);
 }

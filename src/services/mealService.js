@@ -15,61 +15,67 @@ export async function addMeal(bookingId, mealData) {
     }
 
     const meal = await mapMealObject(mealData);
-    const mealId = makeMealId(meal.serveAt, booking.house, meal.subCategory);
+    const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
     const success = await activityDao.add(bookingId, mealId, meal);
     return success ? mealId : false;
 }
 
 // Example result: 250530-hh-breakfast
-export function makeMealId(serveAt, house, mealCategory) {
+export function makeMealId(startingAt, house, mealCategory) {
     const houseShort = house == "Harmony Hill" ? "hh" : "jn";
-    serveAt = serveAt.replace(/-/g, "");
-    return `${serveAt}-${houseShort}-${mealCategory.replace(/ /g, "-")}`;
+    startingAt = startingAt.replace(/-/g, "");
+    return `${startingAt}-${houseShort}-${mealCategory.replace(/ /g, "-")}`;
 }
 
 // Example result: 250530-hh-breakfast-lentil-bolo
-export function makeMealItemId(serveAt, house, mealCategory, mealItemName) {
-    const mealId = makeMealId(serveAt, house, mealCategory);
+export function makeMealItemId(startingAt, house, mealCategory, mealItemName) {
+    const mealId = makeMealId(startingAt, house, mealCategory);
     return `${mealId}-${mealItemName.replace(/ /g, "-")}`;
 }
 
 export async function addMealItems(bookingId, mealId, mealItemsData) {
+    // Get booking
     const booking = await bookingDao.getOne(bookingId, mealId);
     if(!booking) {
         console.error(`Booking ${bookingId} not found`);
         return false;
     }
 
+    // Get meal
     const meal = await activityDao.getOne(bookingId, mealId);
     if(!meal) {
         console.error(`Meal ${bookingId}/${mealId} not found`);
         return false;
     }
 
+    // Add each meal item
     let mealItems = [];   
     for(const mealItemData of mealItemsData) {
-        mealItem = mapMealItemObject(mealItemData);
-        const mealItemId = makeMealItemId(meal.serveAt, booking.house, meal.subCategory, mealItem.name);
-        const success = await activityDao.addMealItem(bookingId, mealId, mealItemId, mealItem);
-        if(!success) {
-            return false;
+        const mealItem = await mapMealItemObject(mealItemData);
+        const mealItemId = makeMealItemId(meal.startingAt, booking.house, meal.subCategory, mealItem.name);
+        
+        // Atomic transaction: either both DB updates happen, or none does
+        const transactionSuccess = await activityDao.transaction(async () => {
+            // Add meal item to the meal
+            const success1 = await activityDao.addMealItem(bookingId, mealId, mealItemId, mealItem);
+            if(!success1) {
+                throw new Error("Cannot add meal item");
+            }
+            // Update the meal total price
+            const success2 = await update(bookingId, mealId, { price: meal.price + mealItem.price });
+            if(!success2) {
+                throw new Error("Cannot update total meal price");
+            }
+        });
+        if(transactionSuccess) {
+            mealItems.push(mealItemId);
         }
-        mealItems.push(mealItemId);
     }
     return mealItems;
 }
 
 export async function update(bookingId, mealId, mealUpdateData) {
     const mealUpdate = await mapMealObject(mealUpdateData, true);
-
-    // Remove any fields which should not be updated
-    if(Object.hasOwn(mealUpdate, "createdAt")) {
-        delete mealUpdate.createdAt;
-    }
-    if(Object.hasOwn(mealUpdateData, "createdBy")) {
-        delete mealUpdate.createdBy;
-    }
-
     return await activityDao.update(bookingId, mealId, mealUpdate);
 }
 
@@ -90,7 +96,7 @@ export async function getMeals(options) {
 }
 
 export async function getMeal(bookingId, mealId) {
-    const meal = await activityDao.get(bookingId, mealId);
+    const meal = await activityDao.getOne(bookingId, mealId);
     return meal;
 }
 
@@ -116,8 +122,8 @@ async function mapMealObject(mealData, isUpdate = false) {
 
     if(Object.hasOwn(mealData, "subCategory")) meal.subCategory = mealData.subCategory;
 
-    if(Object.hasOwn(mealData, "serveAt")) {
-        meal.serveAt = utils.getDateStringYYMMdd(mealData.serveAt);
+    if(Object.hasOwn(mealData, "startingAt")) {
+        meal.startingAt = utils.getDateStringYYMMdd(mealData.startingAt);
     }
 
     if(Object.hasOwn(mealData, "serveTime")) {
@@ -134,7 +140,7 @@ async function mapMealObject(mealData, isUpdate = false) {
     return meal;
 }
 
-function mapMealItemObject(mealItemData, isUpdate = false) {
+async function mapMealItemObject(mealItemData, isUpdate = false) {
     let meal = {};
 
     if(Object.hasOwn(mealItemData, "name"))     meal.name     = mealItemData.name;
@@ -143,7 +149,7 @@ function mapMealItemObject(mealItemData, isUpdate = false) {
 
     if(!isUpdate) {
         meal.createdAt = new Date();
-        meal.createdBy = userService.getUserName();
+        meal.createdBy = await userService.getUserName();
     }
 
     return meal;
@@ -156,13 +162,13 @@ export async function testMeal() {
     const mealId = await addMeal(bookingId, {
         category: "meal",
         subCategory: mealCategory,
-        serveAt: "2025-10-10",
+        startingAt: "2025-10-10",
         serveTime: "08:00",
         status: "confirmed",
         orderedAt: new Date(),
     });
 
-    const mealIds = await addMealItems(bookingId, mealId, [{
+    const mealItemIds = await addMealItems(bookingId, mealId, [{
         name: "Wingko Waffle",
         price: 100,
         quantity: 2,
@@ -171,6 +177,17 @@ export async function testMeal() {
         price: 50,
         quantity: 1,
     }]);
+
+    const meal = await getMeal(bookingId, mealId);
+    if(!meal) {
+        return false;
+    }
+    if(meal.price !== 150) {
+        return false;
+    }
+
+    const returnedMealItems = await getMealItems(bookingId, mealId);
+    const wingkoMealItem = returnedMealItems.find(mealItem => mealItem.name === "Wingko Waffle");
 
     let x = 1;
 }
