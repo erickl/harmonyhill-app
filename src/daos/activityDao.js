@@ -103,8 +103,11 @@ export async function getOne(bookingId, id) {
     return await dao.getOne(path, id);
 }
 
-// category = "meal"|"transport"|"massage"
-export async function getSubCategories(category) {
-    const filters = [where("category", "==", category)];
-    return await dao.get([dao.constant.ACTIVITY_SUB_CATEGORIES], filters); 
+export async function getTypes(filterOptions = {}) {
+    let filters = [];
+    if (Object.hasOwn(filterOptions, "category")) {
+        filters.push(where("category", "==", filterOptions.category));
+    }
+
+    return await dao.get([dao.constant.ACTIVITY_TYPES], filters); 
 }

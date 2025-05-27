@@ -3,8 +3,12 @@ import * as activityDao from '../daos/activityDao.js';
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 
-export async function getSubCategories(category) {
-    return await activityDao.getSubCategories(category);
+/**
+ * @param {*} filterOptions = {category=transport|yoga|etc..,}
+ * @returns all activity types (categories and subcategories)
+ */
+export async function getTypes(filterOptions = {}) {
+    return await activityDao.getTypes(filterOptions);
 }
 
 /**
@@ -101,6 +105,9 @@ async function mapObject(activityData, isUpdate = false) {
 }
 
 export async function testActivities() {
+    const activityTypes1 = await getTypes();
+    const activityTypes2 = await getTypes("transport");
+
     const bookingId = "Eric-Klaesson-hh-251110";
     const activityData = {
         category: "transport",
