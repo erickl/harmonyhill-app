@@ -1,0 +1,57 @@
+body {
+    height: 100vh;
+    /*take up 100% of viewport height */
+
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+    align-items: center;
+
+    /* font stack */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.login-container {
+    height: 100%;
+    /* Take full height of its parent (body) */
+    width: 100%;
+    /* Take full width of its parent (body) */
+    display: flex;
+    /* Enable Flexbox for this container */
+    justify-content: center;
+    /* Center horizontally */
+    align-items: center;
+    /* Center vertically */
+
+    flex-direction: column;
+}
+
+.logo {
+    max-width: 70%;
+}
+
+
+form,
+button {
+    font-size: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+form div {
+    display: flex;
+    justify-content: space-between;
+}
+
+button {
+    background-color: darkcyan;
+    color: white;
+    border-color: grey;
+    border-width: 1px;
+    border-radius: 5px;
+    width: 50%;
+}

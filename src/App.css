@@ -121,3 +121,8 @@
         opacity: 1;
     }
 }
+
+.cancel-button {
+    color: white;
+    background-color: darkred;
+}
