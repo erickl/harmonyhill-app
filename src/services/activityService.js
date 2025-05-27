@@ -12,6 +12,16 @@ export async function getTypes(filterOptions = {}) {
 }
 
 /**
+ * @returns all activity categories
+ */
+export async function getCategories() {
+    const types = await activityDao.getTypes();
+    const categories = types.map((type) => type.category);
+    const uniqueCategories = new Set(categories);
+    return uniqueCategories;
+}
+
+/**
  * 
  * @param {*} bookingId 
  * @param {*} filterOptions = {category=transport|yoga|etc.., subCategory=from-airport|to-ubud|etc, after (date), before (date)}
@@ -105,6 +115,7 @@ async function mapObject(activityData, isUpdate = false) {
 }
 
 export async function testActivities() {
+    const categories = await getCategories();
     const activityTypes1 = await getTypes();
     const activityTypes2 = await getTypes("transport");
 
