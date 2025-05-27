@@ -59,7 +59,7 @@ export async function update(path, id, updatedData, updateLogs = true) {
         if(updateLogs) {
             // Add change to the update logs
             const originalData = await getOne(path, id);
-            let diffStr = utils.jsonObjectDiffStr(originalData, updatedData);
+            let diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
         
             if(diffStr.length === 0) {
                 console.log(`No changes to update to ${path}/${id}`);
