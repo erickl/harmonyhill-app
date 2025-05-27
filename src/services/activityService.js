@@ -5,9 +5,9 @@ import * as userService from "./userService.js";
 
 /**
  * @param {*} filterOptions = {category=transport|yoga|etc..,}
- * @returns all activity types (categories and subcategories)
+ * @returns list of all kinds of activities available (categories and subcategories)
  */
-export async function getTypes(filterOptions = {}) {
+export async function getMenu(filterOptions = {}) {
     return await activityDao.getTypes(filterOptions);
 }
 
@@ -41,6 +41,22 @@ export async function getOne(bookingId, activityId) {
     return await activityDao.getOne(bookingId, activityId);
 }
 
+/**
+ * 
+ * @param {*} bookingId 
+ * @param {*} activityData = {
+        category: "transport",
+        subCategory: "from-airport",
+        date: new Date(2025, 11, 10),
+        isFree: false,
+        time: "07:00",
+        price: 500,
+        status: "requested",
+        details: "They have 5 bags with them",
+        assignedTo: null,
+    }
+ * @returns activityId if successful, otherwise false
+ */
 export async function add(bookingId, activityData) {
     const activity = await mapObject(activityData);
     const activityId = makeId(activity.date, bookingId, activity.subCategory);
@@ -48,9 +64,16 @@ export async function add(bookingId, activityData) {
     return success ? activityId : false;
 }
 
-export async function assign(bookingId, activityId, personnelName) {
+/**
+ * Assigns a personnel to an activity in a booking. Also sets activity status to "confirmed".
+ * @param {*} bookingId ID from the bookings collection
+ * @param {*} activityId ID from the activities collection, inside a booking document
+ * @param {*} personnelId ID from the personnel collection
+ * @returns true if update successful, otherwise false
+ */
+export async function assign(bookingId, activityId, personnelId) {
     return await update(bookingId, activityId, { 
-        assignedTo: personnelName,
+        assignedTo: personnelId,
         status: "confirmed"
     });
 }
