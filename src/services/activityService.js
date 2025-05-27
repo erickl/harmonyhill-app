@@ -1,4 +1,3 @@
-import { act } from 'react';
 import * as activityDao from '../daos/activityDao.js';
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
@@ -139,8 +138,8 @@ async function mapObject(activityData, isUpdate = false) {
 
 export async function testActivities() {
     const categories = await getCategories();
-    const activityTypes1 = await getTypes();
-    const activityTypes2 = await getTypes("transport");
+    const activityTypes1 = await getMenu();
+    const activityTypes2 = await getMenu("transport");
 
     const bookingId = "Eric-Klaesson-hh-251110";
     const activityData = {
