@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Pencil } from 'lucide-react';
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
 import * as utils from '../utils.js';
 
 import './CustomersScreen.css';
 import AddCustomerScreen from './AddCustomerScreen';
+import EditCustomerScreen from './EditCustomerScreen';
 
 const CustomersScreen = ({ onNavigate }) => {
     const [customers, setCustomers] = useState([]);
@@ -12,6 +14,7 @@ const CustomersScreen = ({ onNavigate }) => {
     const [selectedCustomer, setSelectedCustomer] = useState(null); // State to store the selected customer
     const [pastExpanded, setPastExpanded] = useState(false); // State to expand past customer section
     const [futureExpanded, setFutureExpanded] = useState(false); // State to expand future customer section
+    const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
 
 
     // useEffect with argument [] ensures the code is run only once, when the component is first mounted
@@ -100,6 +103,10 @@ const CustomersScreen = ({ onNavigate }) => {
         setSelectedCustomer(customer);
     };
 
+    const handleEditCustomer = (customer) => {
+        setCustomerToEdit(customer); // Set the customer to be edited
+    };
+
     const getHouseColor = (house) => {
         switch (house) {
             case 'The Jungle Nook':
@@ -117,11 +124,11 @@ const CustomersScreen = ({ onNavigate }) => {
         return (
             <div>
                 <h3
-                    className={`customer-group-header ${hasCustomers ? 'clickable-header' : ''}`} // Added clickable-header
-                    onClick={() => hasCustomers && setIsExpanded(!isExpanded)} // Added onClick
+                    className={`customer-group-header ${hasCustomers ? 'clickable-header' : ''}`}
+                    onClick={() => hasCustomers && setIsExpanded(!isExpanded)} //if it has customers inside, toggle the visibility
                 >
                     {title}
-                    {hasCustomers && (
+                    {hasCustomers && customerTypeClass != "current-customer" && (
                         <span className="expand-icon">
                             {isExpanded ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
                         </span>
@@ -132,13 +139,20 @@ const CustomersScreen = ({ onNavigate }) => {
                         {customers.map((customer) => (
                             <React.Fragment key={customer.id}>
                                 <div
-                                    className={`customer-list-item clickable-item ${getHouseColor(customer.house)}`} // Added house color
+                                    className={`customer-list-item clickable-item ${getHouseColor(customer.house)}`} // house color calculated
                                     onClick={() => handleCustomerClick(customer)}
                                 >
-                                    {/* <span className="customer-name-in-list">{customer.name}</span> <br></br> {customer.checkInDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {customer.checkOutDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} */
-                                    }
-
-                                    <span className="customer-name-in-list">{customer.name}</span> <br></br> {customer.checkInDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {customer.checkOutDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+                                    <div className="customer-name-in-list">
+                                        <span>{customer.name}</span>
+                                        <Pencil
+                                            className="cursor-pointer"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditCustomer(customer);
+                                            }}
+                                        />
+                                    </div>
+                                    {customer.checkInDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {customer.checkOutDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                                 </div>
                                 {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
                                     <div className="customer-details">
@@ -164,6 +178,18 @@ const CustomersScreen = ({ onNavigate }) => {
         );
     };
 
+    if (customerToEdit) {
+        return (
+            <EditCustomerScreen
+                customer={customerToEdit}
+                onClose={() => setCustomerToEdit(null)}
+                onNavigate={onNavigate}
+            />
+        );
+    }
+
+
+
     return (
         <div className="card">
             <div className="card-header">
@@ -181,39 +207,6 @@ const CustomersScreen = ({ onNavigate }) => {
 
                 {/* Future Customers */}
                 {renderCustomerListSection("Future Customers", futureCustomers, "future-customer", futureExpanded, setFutureExpanded)}
-
-
-
-
-                {/* {customers.length === 0 ? (
-                    <p>No customers found.</p>
-                ) : (
-                    <div>
-                        {customers.map((customer) => (
-                            <React.Fragment key={customer.id}>
-                                <div
-                                    className={`customer-list-item clickable-item ${getHouseColor(customer.house)}`} // Added house color
-                                    onClick={() => handleCustomerClick(customer)}
-                                >
-                                    {customer.name} ~ ({customer.checkInAt.seconds} - {customer.checkOutAt.seconds})
-                                </div>
-                                {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
-                                    <div className="customer-details">
-                                        <p><span className="detail-label">Villa:</span> {customer.house}</p>
-                                        <p><span className="detail-label">Check In:</span> {customer.checkInAt.seconds}</p>
-                                        <p><span className="detail-label">Check Out:</span> {customer.checkOutAt.seconds}</p>
-                                        <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
-                                        <p><span className="detail-label">Allergies:</span> <span className="allergies">{customer.allergies}</span></p>
-                                        <p><span className="detail-label">Other Details:</span> {customer.otherDetails}</p>
-                                        <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
-                                        <p><span className="detail-label">Country:</span> {customer.country}</p>
-                                        <p><span className="detail-label">Source:</span> {customer.source}</p>
-                                    </div>
-                                )}
-                            </React.Fragment>
-                        ))}
-                    </div>
-                )} */}
 
             </div>
         </div>

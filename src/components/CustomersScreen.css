@@ -32,14 +32,21 @@
 }
 
 .customer-list-item {
+    /* display: flex;
+    justify-content: left; */
     padding: 1rem 0.5rem;
     margin: 1rem 0.5rem;
     color: white;
 }
 
+
 .customer-list-item .customer-name-in-list {
     /* only name is bolded, not the date */
     font-weight: 800;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
 }
 
@@ -75,4 +82,14 @@
     color: white;
     font-weight: 600;
     /* padding: 2px 5px; */
+}
+
+.edit-customer-form {
+    justify-content: left;
+}
+
+.edit-customer-form div {
+    width: 100%;
+    padding: 4px;
+    font-size: 18px;
 }
