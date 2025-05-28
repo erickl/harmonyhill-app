@@ -4,7 +4,7 @@ import * as userService from "./userService.js";
 import * as utils from "../utils.js";
 
 export async function getMealCategories() {
-    return await activityDao.getSubCategories("meal");
+    return await activityDao.getTypes("meal");
 }
 
 export async function addMeal(bookingId, mealData) {
