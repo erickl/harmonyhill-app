@@ -7,6 +7,14 @@ export async function getOne(id) {
     return booking;
 }
 
+export async function getHouse(bookingId) {
+    const booking = await bookingDao.getOne(bookingId);
+    if(booking) {
+        return booking.house;
+    }
+    return "";
+}
+
 // todo: maybe "house" should be an input?
 export async function getPromotions() {
     return await bookingDao.getPromotions();
@@ -66,16 +74,16 @@ async function mapBookingObject(data, isUpdate = false) {
     if(Object.hasOwn(data, "allergies"))    booking.allergies    = data.allergies    ;
     if(Object.hasOwn(data, "checkInAt"))    booking.checkInAt    = data.checkInAt    ;
     if(Object.hasOwn(data, "checkOutAt"))   booking.checkOutAt   = data.checkOutAt   ;
-    if(Object.hasOwn(data, "country"))      booking.country      = data.country      ;
+    if(Object.hasOwn(data, "country"))      booking.country      = data.country.toLowerCase();
     if(Object.hasOwn(data, "guestCount"))   booking.guestCount   = data.guestCount   ;
     if(Object.hasOwn(data, "otherDetails")) booking.otherDetails = data.otherDetails ;
     if(Object.hasOwn(data, "promotions"))   booking.promotions   = data.promotions   ;
     if(Object.hasOwn(data, "roomRate"))     booking.roomRate     = data.roomRate     ;
     if(Object.hasOwn(data, "guestPaid"))    booking.guestPaid    = data.guestPaid    ;
     if(Object.hasOwn(data, "hostPayout"))   booking.hostPayout   = data.hostPayout   ;
-    if(Object.hasOwn(data, "source"))       booking.source       = data.source       ;
-    if(Object.hasOwn(data, "status"))       booking.status       = data.status       ;
-    if(Object.hasOwn(data, "house"))        booking.house        = data.house        ;
+    if(Object.hasOwn(data, "source"))       booking.source       = data.source.toLowerCase();       
+    if(Object.hasOwn(data, "status"))       booking.status       = data.status.toLowerCase();       
+    if(Object.hasOwn(data, "house"))        booking.house        = data.house.toLowerCase();        
     if(Object.hasOwn(data, "name"))         booking.name         = data.name         ;
 
     if(!isUpdate) {

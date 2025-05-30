@@ -1,8 +1,5 @@
-import { where, orderBy } from 'firebase/firestore';
+import { where, orderBy, getDoc } from 'firebase/firestore';
 import * as dao from "./dao.js"
-
-// All meals for all bookings
-//const mealsQuery = query(collectionGroup(db, dao.constant.ACTIVITIES), where("category", "==", "meal"));
 
 export async function add(bookingId, activityId, activity) {
     return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activity);
@@ -63,7 +60,7 @@ export async function getMeals(bookingId, options = {}) {
     return await dao.get(path, filters, ordering);
 }
 
-export async function getActivities(bookingId, options = {}) { 
+export async function getBookingActivities(bookingId, options = {}) { 
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
 
     let filters = [];
@@ -78,6 +75,9 @@ export async function getActivities(bookingId, options = {}) {
 
     if (Object.hasOwn(options, "after")) {
         filters.push(where("startingAt", "<=", options.after));
+    } else {
+        options.after = new Date();
+        options.after.setHours(0, 0, 0, 0); // Set to start of the day
     }
 
     if (Object.hasOwn(options, "before")) {
@@ -87,6 +87,47 @@ export async function getActivities(bookingId, options = {}) {
     let ordering = [ orderBy("startingAt", "asc") ];
 
     return await dao.get(path, filters, ordering);
+}
+
+export async function getAllActivities(options = {}) { 
+    let filters = [];
+    
+    if (Object.hasOwn(options, "category")) {
+        filters.push(where("category", "==", options.category));
+    }
+
+    if (Object.hasOwn(options, "subCategory")) {
+        filters.push(where("subCategory", "==", options.subCategory));
+    }
+
+    if (Object.hasOwn(options, "after")) {
+        filters.push(where("startingAt", "<=", options.after));
+    } else {
+        options.after = new Date();
+        options.after.setHours(0, 0, 0, 0); // Set to start of the day
+    }
+
+    if (Object.hasOwn(options, "before")) {
+        filters.push(where("startingAt", ">=", options.before));
+    }
+    
+    let ordering = [ orderBy("startingAt", "asc") ];
+
+    const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters, ordering);
+ 
+    // Can get parent from the activity, but might decide to duplicate booking data into the activity instead
+    // for (const activity of allActivities) {
+    //     const ref = activity.ref;
+    //     const parent = ref.parent;
+    //     const parentId = parent.id; 
+    //     const grandparent = parent.parent;
+    //     const grandparentId = grandparent.id;
+    //     const bookingDoc = await getDoc(grandparent);
+    //     const bookingData = doc.data();
+    //     let x = 1;
+    // }    
+    
+    return allActivities;
 }
 
 export async function remove(bookingId, activityId) {

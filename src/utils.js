@@ -1,7 +1,7 @@
 import { Timestamp } from "firebase/firestore";
 import * as userService from "./services/userService.js";
 
-export function jsonObjectDiffStr(obj1, obj2) {
+export async function jsonObjectDiffStr(obj1, obj2) {
     let diff = "";
 
     for (const key in obj2) {
@@ -15,7 +15,7 @@ export function jsonObjectDiffStr(obj1, obj2) {
 
     // add prefix with user info & remove the last comma and space
     if (diff.length > 0) {
-        const username = userService.getUserName();
+        const username = await userService.getUserName();
         const nowStr = getDateStringWithTimeAndZone();
         diff = `Updated by ${username} at ${nowStr}: ${diff}`;
         diff = diff.slice(0, -2);

@@ -19,7 +19,13 @@ export async function getOne(path, id) {
     try {
         const docRef = doc(db, ...path, id);
         const snapshot = await getDoc(docRef);
-        return snapshot.exists() ? snapshot.data() : null;
+        if(snapshot.exists()) {
+            let data = snapshot.data();
+            data.id = snapshot.id;
+            data.ref = snapshot.ref;
+            return data;
+        }
+        return null;
     } catch (e) {
         console.error(`Error getting one document ${path}/${id}: `, e);
         return null;
@@ -32,13 +38,29 @@ export async function get(path, filters = [], ordering = []) {
         const docQuery = query(collectionRef, ...filters, ...ordering);
         const snapshot = await getDocs(docQuery);
         if (snapshot.empty) {
-            //console.log(`No documents found in ${path}`);
             return [];
         }
-        const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
         return docs
     } catch (e) {
         throw new Error(`Error getting documents from ${path}: `, e);
+    }
+}
+
+export async function getSubCollections(collectionName, filters = [], ordering = []) {
+    try {
+        const collectionGroupRef = collectionGroup(db, collectionName);
+        const docQuery = query(collectionGroupRef, ...filters, ...ordering);
+        
+        const snapshot = await getDocs(docQuery);
+        if (snapshot.empty) {
+            //console.log(`No documents found in ${collectionName}`);
+            return [];
+        }
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+        return docs;
+    } catch (e) {
+        throw new Error(`Error getting documents from collection ${collectionName}: `, e);
     }
 }
 
