@@ -29,8 +29,8 @@ export async function get(filterOptions = {}) {
     
     // return dates of a few different formats
     bookings.map((booking) => {
-        booking.checkInAt_ddMMM = utils.YYMMdd_to_ddMMM(booking.checkInAt);
-        booking.checkOutAt_ddMMM = utils.YYMMdd_to_ddMMM(booking.checkOutAt);
+        booking.checkInAt_ddMMM = utils.to_ddMMM(booking.checkInAt);
+        booking.checkOutAt_ddMMM = utils.to_ddMMM(booking.checkOutAt);
     });
     
     return bookings;
@@ -64,9 +64,9 @@ export async function deleteBooking(bookingId) {
 }
 
 export function createBookingId(guestName, house, checkInAt) {
-    const yyMmdd = utils.getDateStringYYMMdd(checkInAt);
+    const yyMMdd = utils.to_YYMMdd(checkInAt);
     const houseShort = house == "Harmony Hill" ? "hh" : "jn";
-    return yyMmdd + "-" + houseShort + "-" + guestName.replace(/ /g, "-");
+    return yyMMdd + "-" + houseShort + "-" + guestName.replace(/ /g, "-");
 }
 
 async function mapBookingObject(data, isUpdate = false) {
@@ -95,8 +95,8 @@ async function mapBookingObject(data, isUpdate = false) {
 }
 
 export async function testBooking() {
-    // const xx  = utils.YYMMdd_to_ddMMM("20250101");
-    // const x2  = utils.YYMMdd_to_ddMMM("250101");
+    // const xx  = utils.to_ddMMM("20250101");
+    // const x2  = utils.to_ddMMM("250101");
 
     //const signUpSuccess = userService.signUp("ericklaesson", "ericklaesson@gmail.com", "password");
     //const signInSuccess = await userService.login("ericklaesson@gmail.com", "password");

@@ -117,20 +117,20 @@ export async function deleteMealItem(bookingId, mealId, mealItemId) {
 async function mapMealObject(mealData, isUpdate = false) {
     let meal = {};
 
-    if(Object.hasOwn(mealData, "category"))    meal.category    = mealData.category;
+    if(Object.hasOwn(mealData, "category")) meal.category = mealData.category;
     else meal.category = "meal";
 
     if(Object.hasOwn(mealData, "subCategory")) meal.subCategory = mealData.subCategory;
 
     if(Object.hasOwn(mealData, "startingAt")) {
-        meal.startingAt = utils.getDateStringYYMMdd(mealData.startingAt);
+        meal.startingAt = mealData.startingAt;
     }
 
-    if(Object.hasOwn(mealData, "serveTime")) {
-        meal.serveTime = mealData.serveTime;
-    }
+    // if(Object.hasOwn(mealData, "serveTime")) {
+    //     meal.serveTime = mealData.serveTime;
+    // }
 
-    if(Object.hasOwn(mealData, "status"))      meal.status      = mealData.status;
+    if(Object.hasOwn(mealData, "status")) meal.status = mealData.status;
 
     if(!isUpdate) {
         meal.createdAt = new Date();

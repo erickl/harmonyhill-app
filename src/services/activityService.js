@@ -35,7 +35,7 @@ export async function get(bookingId, filterOptions = {}) {
     const activities = await activityDao.getBookingActivities(bookingId, filterOptions);
     activities.map((activity) => {
         if(Object.hasOwn(activity, "startingAt")) {
-            activity.date_ddMMM = utils.YYMMdd_to_ddMMM(activity.startingAt);
+            activity.date_ddMMM = utils.to_ddMMM(activity.startingAt);
         }
     });
     return activities; 
@@ -49,7 +49,7 @@ export async function getAll(filterOptions = {}) {
     const activities = await activityDao.getAllActivities(filterOptions);
     activities.map((activity) => {
         if(Object.hasOwn(activity, "startingAt")) {
-            activity.date_ddMMM = utils.YYMMdd_to_ddMMM(activity.startingAt);
+            activity.date_ddMMM = utils.to_ddMMM(activity.startingAt);
         }
     });
     return activities; 
@@ -87,7 +87,7 @@ export async function add(bookingId, activityData) {
     activity.name = booking.name;
     activity.house = booking.house;
 
-    const activityId = makeId(activity.date, bookingId, activity.subCategory);
+    const activityId = makeId(activity.startingAt, bookingId, activity.subCategory);
     const success = await activityDao.add(bookingId, activityId, activity);
     return success ? activityId : false;
 }
@@ -139,8 +139,12 @@ async function mapObject(activityData, isUpdate = false) {
 
     if(Object.hasOwn(activityData, "price")) activity.price = activityData.price     ;
     
-    if(Object.hasOwn(activityData, "date")) {
-        activity.date = utils.getDateStringYYMMdd(activityData.date);
+    // if(Object.hasOwn(activityData, "date")) {
+    //     activity.date = utils.getDateStringYYMMdd(activityData.date);
+    // }
+
+    if(Object.hasOwn(activityData, "startingAt")) {
+        activity.startingAt = activityData.startingAt;
     }
 
     if(Object.hasOwn(activityData, "isFree")) {
@@ -174,7 +178,7 @@ async function mapObject(activityData, isUpdate = false) {
     return activity;
 }
 
-export async function testActivities() {
+export async function testActivities(date) {
     const categories = await getCategories();
     const activityTypes1 = await getMenu();
     const activityTypes2 = await getMenu({"category": "transport"});
@@ -182,17 +186,16 @@ export async function testActivities() {
     const bookingId = "Eric-Klaesson-hh-251110";
     const activityData = {
         category: "transport",
-        subCategory: "from-airport",
-        date: new Date(2025, 11, 10),
+        subCategory: "to-airport",
+        startingAt: date.toISO(),
         isFree: false,
-        time: "07:00",
-        price: 500,
+        price: 1500,
         status: "requested",
-        details: "They have 5 bags with them",
+        details: "They have 7 bags with them",
         assignedTo: null,
     };
 
-    // const activityId = await add(bookingId, activityData);
+    const activityId = await add(bookingId, activityData);
 
     // const assigned = await assign(bookingId, activityId, "Rena");
     
