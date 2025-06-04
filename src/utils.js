@@ -1,7 +1,8 @@
 import { Timestamp } from "firebase/firestore";
 import * as userService from "./services/userService.js";
+import { DateTime } from 'luxon';
 
-export function jsonObjectDiffStr(obj1, obj2) {
+export async function jsonObjectDiffStr(obj1, obj2) {
     let diff = "";
 
     for (const key in obj2) {
@@ -15,8 +16,8 @@ export function jsonObjectDiffStr(obj1, obj2) {
 
     // add prefix with user info & remove the last comma and space
     if (diff.length > 0) {
-        const username = userService.getUserName();
-        const nowStr = getDateStringWithTimeAndZone();
+        const username = await userService.getUserName();
+        const nowStr = to_yyMMddHHmmTz();
         diff = `Updated by ${username} at ${nowStr}: ${diff}`;
         diff = diff.slice(0, -2);
     }
@@ -27,79 +28,87 @@ export function jsonObjectDiffStr(obj1, obj2) {
 /**
  * @returns date string in the format YYMMDD HH:MM GMT+X
  */
-export function getDateStringWithTimeAndZone(date = new Date()) {
-    // Get parts
-    const year = String(date.getFullYear()).slice(-2);
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // 0-indexed
-    const day = String(date.getDate()).padStart(2, "0");
-
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-
-    // Timezone offset in minutes
-    const tzOffsetMin = date.getTimezoneOffset(); // e.g., -480 for GMT+8
-    const tzOffsetHr = -tzOffsetMin / 60;         // Flip sign to match GMT+X
-
-    const tz = `GMT${tzOffsetHr >= 0 ? "+" : ""}${tzOffsetHr}`;
-
-    return `${year}${month}${day} ${hours}:${minutes} ${tz}`;
+export function to_yyMMddHHmmTz(date) {
+    const jsDate = toJsDate(date);
+    const data = getData(jsDate);
+    return `${data.yy}${data.month}${data.day} ${data.hours}:${data.minutes} ${data.tz}`;
 }
 
 /**
- * @returns date string formatted as YYMMDD, without the hyphens
+ * @returns date string formatted as YYMMDD, without hyphens
  */
-export function getDateStringYYMMdd(date) {
-    if (date instanceof Date) {
-        const year = String(date.getFullYear()).slice(-2);
-        const month = String(date.getMonth() + 1).padStart(2, "0"); // 0-indexed
-        const day = String(date.getDate()).padStart(2, "0");
-        return `${year}${month}${day}`;
-    } else if (typeof date === "string") {
-        date = date.replace(/-/g, "");
-
-        if (date.length === 8) {
-            date = date.slice(2);
-        } else {
-            return date;
-        }
-    } else {
-        throw new Error("Invalid date type. Expected Date object or string.");
-    }
+export function to_YYMMdd(inputDate) {
+    const jsDate = toJsDate(inputDate);
+    const data = getData(jsDate);
+    return `${data.yy}${data.month}${data.day}`;
 }
 
-export function YYMMdd_to_ddMMM(dateString) {
-    if (dateString instanceof Timestamp) {
-        dateString = dateString.toDate();  
-    }
-    if (dateString instanceof Date) {
-        const year = String(dateString.getFullYear()).slice(-2);
-        const month = String(dateString.getMonth() + 1).padStart(2, "0"); // 0-indexed
-        const day = String(dateString.getDate()).padStart(2, "0");
-        dateString = `${year}${month}${day}`;
-    }
-    
-    // replace hyphens with empty string
-    dateString = dateString.replace(/-/g, "");
-
-    // Cut the first 2 characters if the string is longer than 8 characters
-    if (dateString.length === 8) {
-        dateString = dateString.slice(2);
-    }
-
-    const year = dateString.slice(0, 2);
-    const month = dateString.slice(2, 4);
-    const day = dateString.slice(4, 6);
+function getData(inputDate) {
+    const jsDate = toJsDate(inputDate); 
+    const month = (jsDate.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed, so add 1
 
     const monthNames = [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ];
 
-    return `${day} ${monthNames[parseInt(month) - 1]}`;// '${year}`;
+    // Timezone offset in minutes
+    const tzOffsetMin = jsDate.getTimezoneOffset(); // e.g., -480 for GMT+8
+    const tzOffsetHr = -tzOffsetMin / 60;         // Flip sign to match GMT+X
+    const tz = `GMT${tzOffsetHr >= 0 ? "+" : ""}${tzOffsetHr}`;
+
+    return {
+        yy: jsDate.getFullYear().toString().slice(-2),
+        ccyy: jsDate.getFullYear(), // Full year
+        month: month,
+        day: jsDate.getDate().toString().padStart(2, '0'), // Pad day with leading zero if needed
+        hours: jsDate.getHours().toString().padStart(2, '0'), // Pad hour with leading zero if needed
+        minutes: jsDate.getMinutes().toString().padStart(2, '0'), // Pad minute with leading zero if needed
+        tz: tz,
+        monthName: monthNames[jsDate.getMonth()],
+    };
+}
+
+function toJsDate(inputDate) {
+    // Convert Luxon DateTime to JavaScript Date
+    if (inputDate instanceof DateTime) {
+        return inputDate.toJSDate(); 
+    }
+    // Convert Firestore Timestamp to JavaScript Date 
+    else if (inputDate instanceof Timestamp) {
+        return inputDate.toDate();
+    } else if (inputDate instanceof Date) {
+        return inputDate;
+    } else if (typeof inputDate === "string") {
+        const parsedDate = new Date(inputDate);
+        if (isNaN(parsedDate)) {
+            throw new Error("Invalid date string format.");
+        }
+        return parsedDate;
+    } else {
+        throw new Error("Invalid date type. Expected DateTime, Timestamp, Date, or string.");
+    }
+}
+
+export function to_ddMMM(inputDate) {
+    let jsDate = toJsDate(inputDate);
+    const data = getData(jsDate);
+    return `${data.day} ${data.monthName}`;
 }
 
 export function dateStringToDate(dateString) {
     const [year, month, day] = dateString.split('-').map(Number);
     const date = new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
     return date;
+}
+
+export function toFireStoreTime(inputDate) {
+    const jsDate = toJsDate(inputDate);
+    return Timestamp.fromDate(jsDate);
+}
+
+export function fromFireStoreTime(timestamp) {
+    const jsDate = toJsDate(timestamp);
+    const luxonDateTime = DateTime.fromJSDate(jsDate, { zone: 'Asia/Singapore' });
+    return luxonDateTime;
 }

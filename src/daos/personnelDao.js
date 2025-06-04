@@ -9,11 +9,24 @@ export async function get(options = {}) {
     }
 
     if(Object.hasOwn(options, "activity")) {
-        filters.push(where("activity", "==", options.activity));
+        filters.push(where("activity", "==", options.activity.toLowerCase()));
     }
 
-    const personnel = dao.get(["personnel"], filters);
+    if(Object.hasOwn(options, "location")) {
+        filters.push(where("location", "==", options.location.toLowerCase()));
+    }
+
+    // todo: order by ??
+    //      last used? 
+    //
+    //      cheapest?
+
+    const personnel = dao.get([dao.constant.PERSONNEL], filters);
     return personnel;
+}
+
+export async function getOne(personnelId) {
+    return await dao.getOne([dao.constant.PERSONNEL], personnelId);
 }
 
 export async function add(personnelId, personnel) {
@@ -22,8 +35,4 @@ export async function add(personnelId, personnel) {
 
 export async function update(personnelId, updatedPersonnel) {
     return await dao.update([dao.constant.PERSONNEL], personnelId, updatedPersonnel);
-}
-
-export async function testPersonnel() {
-    
 }
