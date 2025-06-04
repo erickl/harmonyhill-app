@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 import { Users, List, Upload } from 'lucide-react';
 
 import CustomersScreen from './components/CustomersScreen';
@@ -12,6 +13,9 @@ import * as menuService from './services/menuService.js';
 import * as activityService from './services/activityService.js';
 import * as invoiceService from './services/invoiceService.js';
 import * as userService from './services/userService.js';
+import * as personnelService from './services/personnelService.js';
+import { DateTime } from 'luxon';
+import { auth } from "./firebase";
 
 
 import './App.css';
@@ -49,10 +53,26 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
 
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(userService.isLoggedIn());
-
+  //menuService.testGetMenuItems();
+  //personnelService.testPersonnel();
+  //userService.logout();
+  const dt = DateTime.fromObject(
+    { year: 2025, month: 5, day: 20, hour: 14, minute: 30 },
+    { zone: 'Asia/Singapore' } // or 'UTC', 'America/New_York', etc.
+  );
+  //activityService.testActivities(dt);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('customers');
   const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user); // true if user exists
+    });
+
+    // cleanup function to avoid multiple listeners
+    return () => unsubscribe();
+  }, []);
 
   const handleTabChange = (tab) => { // For navigation between tabs
     setActiveTab(tab);
