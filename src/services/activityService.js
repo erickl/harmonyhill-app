@@ -27,7 +27,9 @@ export async function getCategories() {
  *      category=transport|yoga|etc.., 
  *      subCategory=from-airport|to-ubud|etc,
  *      after (date), 
- *      before (date)
+ *      before (date),
+ *      assignedTo=Dewa, Made, (or empty string), etc...
+ *      hasProvider=false|true
  * }
  * @returns activities array, ordered by date (oldest first)
  */
@@ -70,7 +72,8 @@ export async function getOne(bookingId, activityId) {
  *      price: 500,
  *      status: "requested",
  *      details: "They have 5 bags with them",
- *      assignedTo: null,
+ *      assignedTo: "", // staff member taking care of the activity
+ *      provider: "" // The driver or masseuse
  *  }
  * @returns activityId if successful, otherwise false
  */
@@ -99,10 +102,23 @@ export async function add(bookingId, activityData) {
  * @param {*} personnelId ID from the personnel collection
  * @returns true if update successful, otherwise false
  */
-export async function assign(bookingId, activityId, personnelId) {
+export async function assignProvider(bookingId, activityId, personnelId) {
     return await update(bookingId, activityId, { 
-        assignedTo: personnelId,
+        provider: personnelId,
         status: "confirmed"
+    });
+}
+
+/**
+ * Assigns a staff to an activity of a booking, making sure someone is responsible for a good activity execution
+ * @param {*} bookingId ID from the bookings collection
+ * @param {*} activityId ID from the activities collection, inside a booking document
+ * @param {*} userId ID of the staff (i.e. app users)
+ * @returns true if update successful, otherwise false
+ */
+export async function assignStaff(bookingId, activityId, userId) {
+    return await update(bookingId, activityId, { 
+        assignTo: userId,
     });
 }
 
@@ -128,47 +144,54 @@ export function makeId(date, bookingId, subCategory) {
     return `${date}-${bookingId}-${subCategory.replace(/ /g, '-')}`;
 }
 
-async function mapObject(activityData, isUpdate = false) {
+async function mapObject(data, isUpdate = false) {
     let activity = {};
 
-    if(Object.hasOwn(activityData, "category")) {
-        activity.category = activityData.category;
+    if(Object.hasOwn(data, "category")) {
+        activity.category = data.category;
     }
 
-    if(Object.hasOwn(activityData, "subCategory")) activity.subCategory = activityData.subCategory ;
+    if(Object.hasOwn(data, "subCategory")) activity.subCategory = data.subCategory ;
 
-    if(Object.hasOwn(activityData, "price")) activity.price = activityData.price     ;
+    if(Object.hasOwn(data, "price")) activity.price = data.price     ;
     
-    // if(Object.hasOwn(activityData, "date")) {
-    //     activity.date = utils.getDateStringYYMMdd(activityData.date);
+    // if(Object.hasOwn(data, "date")) {
+    //     activity.date = utils.getDateStringYYMMdd(data.date);
     // }
 
-    if(Object.hasOwn(activityData, "startingAt")) {
-        activity.startingAt = activityData.startingAt;
+    if(Object.hasOwn(data, "startingAt")) {
+        activity.startingAt = data.startingAt;
     }
 
-    if(Object.hasOwn(activityData, "isFree")) {
-        activity.isFree = activityData.isFree;
+    if(Object.hasOwn(data, "isFree")) {
+        activity.isFree = data.isFree;
     } else {
         activity.isFree = false;
     }
 
-    if(Object.hasOwn(activityData, "price")) activity.price = activityData.price;
+    if(Object.hasOwn(data, "price")) activity.price = data.price;
 
     // First "requested", then "confirmed" (then "completed"?)
-    if(Object.hasOwn(activityData, "status")) {
-        activity.status = activityData.status;
+    if(Object.hasOwn(data, "status")) {
+        activity.status = data.status;
     } 
     else {
         activity.status = "requested";
     }
-    if(Object.hasOwn(activityData, "assignedTo")) {
-        activity.assignedTo = activityData.assignedTo;
+
+    if(Object.hasOwn(data, "provider")) {
+        activity.provider = data.provider;
     }
 
-    if(Object.hasOwn(activityData, "time")) activity.time   = activityData.time;
+    if(Object.hasOwn(data, "assignedTo")) {
+        activity.assignedTo = data.assignedTo;
+    } else {
+        activity.assignedTo = userService.getUserName();
+    }
+
+    if(Object.hasOwn(data, "time")) activity.time = data.time;
     
-    if(Object.hasOwn(activityData, "details"))     activity.details     = activityData.details     ;
+    if(Object.hasOwn(data, "details")) activity.details = data.details;
     
     if(!isUpdate) {
         activity.createdAt = new Date();
@@ -192,12 +215,17 @@ export async function testActivities(date) {
         price: 1500,
         status: "requested",
         details: "They have 7 bags with them",
-        assignedTo: null,
+        assignedTo: "",
+        provider: "Dewa",
     };
 
     const activityId = await add(bookingId, activityData);
 
-    // const assigned = await assign(bookingId, activityId, "Rena");
+    // const assigned = await assignProvider(bookingId, activityId, "Rena");
+
+
+    //const user = userService.getUser();
+    // const assigned = await assignStaff(bookingId, activityId, userId);
     
     // const updated = await update(bookingId, activityId, { time: "13:00" });
 

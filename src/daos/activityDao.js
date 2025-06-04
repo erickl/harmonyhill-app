@@ -83,6 +83,14 @@ export async function getBookingActivities(bookingId, options = {}) {
     if (Object.hasOwn(options, "before")) {
         filters.push(where("startingAt", ">=", options.before));
     }
+
+    if (Object.hasOwn(options, "assignedTo")) {
+        filters.push(where("assignedTo", "==", options.assignedTo));
+    }
+
+    if (Object.hasOwn(options, "hasProvider")) {
+        filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
+    }
     
     let ordering = [ orderBy("startingAt", "asc") ];
 
