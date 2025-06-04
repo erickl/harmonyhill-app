@@ -1,0 +1,4 @@
+.add-customer-buttons {
+    display: flex;
+    flex-direction: row;
+}

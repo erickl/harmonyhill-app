@@ -5,13 +5,14 @@ import CustomersScreen from './components/CustomersScreen';
 import ActivitiesScreen from './components/ActivitiesScreen';
 import ExpensesScreen from './components/ExpensesScreen';
 import LoginScreen from './components/LoginScreen';
+import AddCustomerScreen from './components/AddCustomerScreen';
+
 import * as bookingService from './services/bookingService.js';
 import * as menuService from './services/menuService.js';
 import * as activityService from './services/activityService.js';
 import * as invoiceService from './services/invoiceService.js';
 import * as userService from './services/userService.js';
 
-import AddCustomerScreen from './components/AddCustomerScreen';
 
 import './App.css';
 
@@ -49,7 +50,7 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(userService.isLoggedIn());
-  
+
   const [activeTab, setActiveTab] = useState('customers');
   const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
 
@@ -65,8 +66,8 @@ function App() {
     setCurrentScreen(screen);
   };
 
-  let screenToDisplay; // Changed from currentScreen to screenToDisplay
-  if(!isLoggedIn) {
+  let screenToDisplay;
+  if (!isLoggedIn) {
     screenToDisplay = <LoginScreen onLogin={userService.login} onLoginSuccess={navigate} />;
   } else if (currentScreen === 'customers') {
     screenToDisplay = <CustomersScreen onNavigate={navigate} />; // Pass navigate
@@ -82,12 +83,12 @@ function App() {
     <div className="app-container">
       {isLoggedIn ? (
         <>
-            <div className="content">{screenToDisplay}</div> { /* Use screenToDisplay */}
-            <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+          <div className="content">{screenToDisplay}</div> { /* Use screenToDisplay */}
+          <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
         </>
-       ) : (
+      ) : (
         <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
-    )}
+      )}
     </div>
   );
 }

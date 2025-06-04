@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil } from 'lucide-react';
+import { Pencil, ShoppingCart } from 'lucide-react';
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
 import * as utils from '../utils.js';
 
 import './CustomersScreen.css';
 import AddCustomerScreen from './AddCustomerScreen';
 import EditCustomerScreen from './EditCustomerScreen';
+import AddPurchaseScreen from './AddPurchaseScreen.js';
 
 const CustomersScreen = ({ onNavigate }) => {
     const [customers, setCustomers] = useState([]);
@@ -15,6 +16,7 @@ const CustomersScreen = ({ onNavigate }) => {
     const [pastExpanded, setPastExpanded] = useState(false); // State to expand past customer section
     const [futureExpanded, setFutureExpanded] = useState(false); // State to expand future customer section
     const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
+    const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
 
 
     // useEffect with argument [] ensures the code is run only once, when the component is first mounted
@@ -107,6 +109,10 @@ const CustomersScreen = ({ onNavigate }) => {
         setCustomerToEdit(customer); // Set the customer to be edited
     };
 
+    const handleAddPurchase = (customer) => {
+        setCustomerPurchasing(customer); // Indicate we need to switch to add purchase screen
+    };
+
     const getHouseColor = (house) => {
         switch (house) {
             case 'The Jungle Nook':
@@ -118,7 +124,7 @@ const CustomersScreen = ({ onNavigate }) => {
         }
     };
 
-    // Function to render customer list section
+    // Function to render previous / current /  future customer list section
     const renderCustomerListSection = (title, customers, customerTypeClass, isExpanded, setIsExpanded) => {
         const hasCustomers = customers.length > 0;
         return (
@@ -144,13 +150,13 @@ const CustomersScreen = ({ onNavigate }) => {
                                 >
                                     <div className="customer-name-in-list">
                                         <span>{customer.name}</span>
-                                        <Pencil
+                                        {<ShoppingCart
                                             className="cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleEditCustomer(customer);
+                                                handleAddPurchase(customer);
                                             }}
-                                        />
+                                        />}
                                     </div>
                                     {customer.checkInDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {customer.checkOutDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                                 </div>
@@ -166,7 +172,15 @@ const CustomersScreen = ({ onNavigate }) => {
                                         <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
                                         <p><span className="detail-label">Country:</span> {customer.country}</p>
                                         <p><span className="detail-label">Source:</span> {customer.source}</p>
+                                        <button
+                                            className="edit-booking"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditCustomer(customer);
+                                            }}> Edit Booking
+                                        </button>
                                     </div>
+
                                 )}
                             </React.Fragment>
                         ))}
@@ -183,6 +197,16 @@ const CustomersScreen = ({ onNavigate }) => {
             <EditCustomerScreen
                 customer={customerToEdit}
                 onClose={() => setCustomerToEdit(null)}
+                onNavigate={onNavigate}
+            />
+        );
+    }
+
+    if (customerPurchasing) {
+        return (
+            <AddPurchaseScreen
+                customer={customerPurchasing}
+                onClose={() => setCustomerPurchasing(null)}
                 onNavigate={onNavigate}
             />
         );

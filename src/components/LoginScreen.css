@@ -46,12 +46,3 @@ form div {
     display: flex;
     justify-content: space-between;
 }
-
-button {
-    background-color: darkcyan;
-    color: white;
-    border-color: grey;
-    border-width: 1px;
-    border-radius: 5px;
-    width: 50%;
-}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
+import './AddCustomerScreen.css';
 
 
 const AddCustomerScreen = ({ onNavigate }) => {
@@ -255,14 +256,15 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     </div>
                 </div>
 
-                <div>
-                    <button onClick={handleSubmit}> {/*Submit button */}
-                        Submit
-                    </button>
+                <div className="add-customer-buttons">
+
                     <button
-                        onClick={() => onNavigate('customers')}
+                        onClick={() => onNavigate('customers')} className="cancel-button"
                     >
                         Back to Customers
+                    </button>
+                    <button onClick={handleSubmit}> {/*Submit button */}
+                        Submit
                     </button>
                 </div>
             </div>
