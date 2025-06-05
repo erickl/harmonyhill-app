@@ -18,21 +18,18 @@ const CustomersScreen = ({ onNavigate }) => {
     const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
     const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
 
+    const fetchCustomers = async () => {
+        try {
+            const fetchedCustomers = await bookingService.get();
+            setCustomers(fetchedCustomers);
+            setLoading(false);
+        } catch (err) {
+            setError(err);
+            setLoading(false);
+        }
+    };
 
-    // useEffect with argument [] ensures the code is run only once, when the component is first mounted
-    // useEffect has to be used when a component interacts with things outside of it; in this case the database
     useEffect(() => {
-        const fetchCustomers = async () => {
-            try {
-                const fetchedCustomers = await bookingService.get();
-                setCustomers(fetchedCustomers);
-                setLoading(false);
-            } catch (err) {
-                setError(err);
-                setLoading(false);
-            }
-        };
-
         fetchCustomers();
     }, []);
 
@@ -95,13 +92,14 @@ const CustomersScreen = ({ onNavigate }) => {
     };
 
     const getHouseColor = (house) => {
+        house  = house.toLowerCase();
         switch (house) {
-            case 'The Jungle Nook':
+            case 'the jungle nooks':
                 return 'bg-jn'; // Tailwind CSS class for light blue
-            case 'Harmony Hill':
+            case 'harmony hill':
                 return 'bg-hh'; // Tailwind CSS class for light green
             default:
-                return ''; // No background color by default
+                return 'bg-none'; // No background color by default
         }
     };
 
@@ -173,11 +171,16 @@ const CustomersScreen = ({ onNavigate }) => {
         );
     };
 
+    const onCustomerEditSubmitted = () => {
+        setCustomerToEdit(null);
+        fetchCustomers();
+    } 
+
     if (customerToEdit) {
         return (
             <EditCustomerScreen
                 customer={customerToEdit}
-                onClose={() => setCustomerToEdit(null)}
+                onClose={() => onCustomerEditSubmitted()}
                 onNavigate={onNavigate}
             />
         );

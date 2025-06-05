@@ -71,6 +71,10 @@
     background-color: darkcyan;
 }
 
+.bg-none {
+    background-color: black;
+}
+
 .customer-details {
     padding: 0 0.5rem;
     margin: 0;
