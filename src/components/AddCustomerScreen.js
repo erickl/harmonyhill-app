@@ -1,31 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
 import './AddCustomerScreen.css';
+import MyDatePicker from "./MyDatePicker.js";
+import * as utils from '../utils.js';
 
 
 const AddCustomerScreen = ({ onNavigate }) => {
-    const [formData, setFormData] = useState({
-        house: '',
-        checkInAt: '',
-        checkOutAt: '',
-        guestCount: 1,
-        allergies: '',
+    const initialFormData = {
+        house:        '',
+        // MyDatePicker requires initial value to be null because of AdapterLuxon
+        checkInAt:    null, 
+        checkOutAt:   null,
+        guestCount:   1,
+        allergies:    '',
         otherDetails: '',
-        promotions: '',
-        country: '',
-        source: '',
-    });
+        promotions:   '',
+        country:      '',
+        source:       '',
+    };
+
+    const [formData, setFormData] = useState(initialFormData);
 
     // for calculating the length of stay based on checkin and checkout date 
     const [stayDuration, setStayDuration] = useState('');
 
     useEffect(() => {
         if (formData.checkInAt && formData.checkOutAt) {
-            const checkIn = new Date(formData.checkInAt);
-            const checkOut = new Date(formData.checkOutAt);
-            const timeDiff = checkOut - checkIn;
+            const timeDiff = formData.checkOutAt - formData.checkInAt;
             const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-            setStayDuration(`${diffDays} days`);
+            setStayDuration(`${diffDays} night${diffDays == 1 ? "" : "s"}`);
         } else {
             setStayDuration('');
         }
@@ -35,39 +38,34 @@ const AddCustomerScreen = ({ onNavigate }) => {
         setFormData({ ...formData, [field]: value });
     };
 
-    const handleSubmit = async () => { // for submitting to the database
+    const handleOtherInputChange = (name, value) => {
+        setFormData({ ...formData, [name]: value }); 
+    };
+
+    const handleSubmit = async () => { 
         // Basic validation
         if (!formData.house || !formData.checkInAt || !formData.checkOutAt || !formData.name) {
-            alert('Please fill in all required fields.'); // Use a better UI alert
+            alert('Please fill in all required fields.'); // todo: Use a better UI alert
             return;
         }
 
-        // Prepare the data for submission.  Convert dates if they are strings
+        // Prepare the data for submission.  Convert data if needed
         const bookingData = {
             ...formData
-            // checkInDate: typeof formData.checkInDate === 'string' ? new Date(formData.checkInDate) : formData.checkInDate,
-            // checkOutDate: typeof formData.checkOutDate === 'string' ? new Date(formData.checkOutDate) : formData.checkOutDate,
         };
 
         // Call the onAddCustomer function (passed from App.js)
         try {
-            await bookingService.add(bookingData);
-            // Optionally, reset the form or show a success message
-            setFormData({  //reset form
-                house: '',
-                name: '',
-                checkInAt: '',
-                checkOutAt: '',
-                guestCount: 1,
-                allergies: '',
-                otherDetails: '',
-                promotions: '',
-                country: '',
-                source: '',
-            });
-            setStayDuration(''); // Clear stay duration
-            alert('Customer added successfully!'); //  provide user feedback
-            onNavigate('customers'); // Go back to customers list
+            const createResult = await bookingService.add(bookingData);
+            if(createResult !== false) {
+                // Optionally, reset the form or show a success message
+                setFormData(initialFormData);
+                setStayDuration(''); // Clear stay duration
+                alert('Customer added successfully!'); //  provide user feedback
+                onNavigate('customers'); // Go back to customers list
+            } else {
+                alert("Failed to add customer.");
+            }
         } catch (error) {
             console.error('Error adding customer:', error);
             alert('Failed to add customer. Please check the console for details.'); // Inform the user
@@ -93,7 +91,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
                                 name="house"
                                 value="Harmony Hill"
                                 checked={formData.house === 'Harmony Hill'}
-                                onChange={() => handleInputChange('house', 'Harmony Hill')}
+                                onChange={() => handleInputChange('house', 'harmony hill')}
 
                             />
                             <label htmlFor="harmonyHill">
@@ -107,7 +105,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
                                 name="house"
                                 value="The Jungle Nook"
                                 checked={formData.house === 'The Jungle Nook'}
-                                onChange={() => handleInputChange('house', 'The Jungle Nook')}
+                                onChange={() => handleInputChange('house', 'the jungle nook')}
 
                             />
                             <label htmlFor="jungleNook">
@@ -130,27 +128,14 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     />
                 </div>
 
-                {/* Check-in Date */}
-                <div>
-                    <h3>Check-in Date</h3>
-                    <input
-                        type="date"
-                        value={formData.checkInAt}
-                        onChange={(e) => handleInputChange('checkInAt', e.target.value)}
-
-                    />
+                <div className="form-group">
+                    <label htmlFor="checkInAt">Check In Date</label>
+                    <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleOtherInputChange}/>
                 </div>
 
-                {/* Check-out Date */}
                 <div>
                     <h3>Check-out Date</h3>
-                    <input
-                        type="date"
-                        value={formData.checkOutAt}
-                        onChange={(e) => handleInputChange('checkOutAt', e.target.value)}
-
-                    // min={formData.checkInDate}
-                    />
+                    <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleOtherInputChange}/>
                 </div>
 
                 {/* Length of Stay */}

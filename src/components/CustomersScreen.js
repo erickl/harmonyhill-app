@@ -94,7 +94,7 @@ const CustomersScreen = ({ onNavigate }) => {
     const getHouseColor = (house) => {
         house  = house.toLowerCase();
         switch (house) {
-            case 'the jungle nooks':
+            case 'the jungle nook':
                 return 'bg-jn'; // Tailwind CSS class for light blue
             case 'harmony hill':
                 return 'bg-hh'; // Tailwind CSS class for light green

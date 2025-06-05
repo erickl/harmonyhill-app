@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DateTime } from 'luxon';
-
-import MyDatePicker from "./MyDatePicker.js"
-
-// import { Pencil } from 'lucide-react';
+import MyDatePicker from "./MyDatePicker.js";
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
 import * as utils from '../utils.js';
 
@@ -24,12 +21,12 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
         status:       customer.status,
     });
 
-    const handleChange = (e) => {
+    const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleOtherChange = (name, value) => {
+    const handleOtherInputChange = (name, value) => {
         setFormData({ ...formData, [name]: value }); 
     };
 
@@ -43,8 +40,6 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
 
         const updatedCustomerData = {
             ...formData,
-            checkInAt: new Date(formData.checkInAt),
-            checkOutAt: new Date(formData.checkOutAt)
         };
 
         try {
@@ -71,31 +66,31 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                 <form onSubmit={handleSubmit} className="edit-customer-form">
                     <div className="form-group">
                         <label htmlFor="name">Name:</label>
-                        <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required className="input" />
+                        <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required className="input" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="house">Villa:</label>
-                        <input type="text" id="house" name="house" value={formData.house} onChange={handleChange} required className="input" />
+                        <input type="text" id="house" name="house" value={formData.house} onChange={handleInputChange} required className="input" />
                     </div>                  
                     <div className="form-group">
                         <label htmlFor="checkInAt">Check In Date</label>
-                        <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleOtherChange}/>
+                        <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleOtherInputChange}/>
                     </div>
                     <div className="form-group">
                         <label htmlFor="checkOutAt">Check Out Date</label>
-                        <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleOtherChange}/>
+                        <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleOtherInputChange}/>
                     </div>
                     <div className="form-group">
                         <label htmlFor="allergies">Allergies:</label>
-                        <input type="text" id="allergies" name="allergies" value={formData.allergies} onChange={handleChange} className="input" />
+                        <input type="text" id="allergies" name="allergies" value={formData.allergies} onChange={handleInputChange} className="input" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="country">Country:</label>
-                        <input type="text" id="country" name="country" value={formData.country} onChange={handleChange} className="input" />
+                        <input type="text" id="country" name="country" value={formData.country} onChange={handleInputChange} className="input" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="guestCount">Guest Count:</label>
-                        <input type="number" id="guestCount" name="guestCount" value={formData.guestCount} onChange={handleChange} className="input" />
+                        <input type="number" id="guestCount" name="guestCount" value={formData.guestCount} onChange={handleInputChange} className="input" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="otherDetails">Other Details:</label>
@@ -103,7 +98,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                             id="otherDetails"
                             name="otherDetails"
                             value={formData.otherDetails}
-                            onChange={handleChange}
+                            onChange={handleInputChange}
                             className="input"
                             rows="4" // Specifies the visible number of lines
                         ></textarea>
@@ -114,22 +109,22 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                             id="otherDetails"
                             name="otherDetails"
                             value={formData.otherDetails}
-                            onChange={handleChange}
+                            onChange={handleInputChange}
                             className="input"
                             rows="4" // Specifies the visible number of lines
                         ></textarea>
                     </div>
                     <div className="form-group">
                         <label htmlFor="roomRate">Room Rate:</label>
-                        <input type="number" id="roomRate" name="roomRate" value={formData.roomRate} onChange={handleChange} className="input" />
+                        <input type="number" id="roomRate" name="roomRate" value={formData.roomRate} onChange={handleInputChange} className="input" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="source">Source:</label>
-                        <input type="text" id="source" name="source" value={formData.source} onChange={handleChange} className="input" />
+                        <input type="text" id="source" name="source" value={formData.source} onChange={handleInputChange} className="input" />
                     </div>
                     {/* <div className="form-group">
                         <label htmlFor="status">Status:</label>
-                        <select id="status" name="status" value={formData.status} onChange={handleChange} className="input">
+                        <select id="status" name="status" value={formData.status} onChange={handleInputChange} className="input">
                             <option value="pending">Pending</option>
                             <option value="confirmed">Confirmed</option>
                             <option value="checkedin">Checked In</option>
