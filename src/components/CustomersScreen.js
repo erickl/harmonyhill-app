@@ -25,26 +25,13 @@ const CustomersScreen = ({ onNavigate }) => {
         const fetchCustomers = async () => {
             try {
                 const fetchedCustomers = await bookingService.get();
-                // Modify each customer object to include checkInDate and checkOutDate as Date objects.
-                const modifiedCustomers = fetchedCustomers.map(customer => {
-                    const checkInDate = utils.dateStringToDate(customer.checkInAt); //Date constructor expects milliseconds
-                    const checkOutDate = utils.dateStringToDate(customer.checkOutAt);
-                    checkInDate.setHours(0, 0, 0, 0);
-                    checkOutDate.setHours(0, 0, 0, 0);
-                    return {
-                        ...customer,
-                        checkInDate: checkInDate, // Store the Date object
-                        checkOutDate: checkOutDate, // Store the Date object
-                    };
-                });
-                setCustomers(modifiedCustomers);
+                setCustomers(fetchedCustomers);
                 setLoading(false);
             } catch (err) {
                 setError(err);
                 setLoading(false);
             }
         };
-
 
         fetchCustomers();
     }, []);
@@ -78,22 +65,16 @@ const CustomersScreen = ({ onNavigate }) => {
     // Logic to group customers into Past / Current / Future
     // Once checkInAt is updated to a string, this needs to be adjusted
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = utils.fromFireStoreTime(new Date()).set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
     const pastCustomers = [];
     const currentCustomers = [];
     const futureCustomers = [];
 
     customers.forEach(customer => {
-        // const checkInDate = new Date(customer.checkInAt.seconds);
-        // const checkOutDate = new Date(customer.checkOutAt.seconds);
-        // checkInDate.setHours(0, 0, 0, 0);
-        // checkOutDate.setHours(0, 0, 0, 0);
-
-        if (customer.checkOutDate < today) {
+        if (customer.checkOutAt < today) {
             pastCustomers.push(customer);
-        } else if (customer.checkInDate <= today && customer.checkOutDate >= today) {
+        } else if (customer.checkInAt <= today && customer.checkOutAt >= today) {
             currentCustomers.push(customer);
         } else {
             futureCustomers.push(customer);
@@ -158,14 +139,14 @@ const CustomersScreen = ({ onNavigate }) => {
                                             }}
                                         />}
                                     </div>
-                                    {customer.checkInDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {customer.checkOutDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+                                    {customer.checkInAt_ddMMM} - {customer.checkOutAt_ddMMM}
                                 </div>
                                 {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
                                     <div className="customer-details">
                                         <p><span className="detail-label">Villa:</span> {customer.house}</p>
-                                        <p><span className="detail-label">Check In:</span> {customer.checkInDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                        <p><span className="detail-label">Check Out:</span> {customer.checkOutDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                        <p><span className="detail-label">Length of Stay:</span> {(customer.checkOutDate - customer.checkInDate) / (1000 * 60 * 60 * 24)} nights</p>
+                                        <p><span className="detail-label">Check In:</span> {customer.checkInAt_ddMMM}</p>
+                                        <p><span className="detail-label">Check Out:</span> {customer.checkOutAt_ddMMM}</p>
+                                        <p><span className="detail-label">Length of Stay:</span> {customer.nightsCount} nights</p>
                                         <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
                                         <p><span className="detail-label">Allergies: </span><span className="allergies">{customer.allergies}</span></p>
                                         <p><span className="detail-label">Other Details:</span> {customer.otherDetails}</p>

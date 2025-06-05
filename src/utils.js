@@ -28,7 +28,7 @@ export async function jsonObjectDiffStr(obj1, obj2) {
 /**
  * @returns date string in the format YYMMDD HH:MM GMT+X
  */
-export function to_yyMMddHHmmTz(date) {
+export function to_yyMMddHHmmTz(date = new Date()) {
     const jsDate = toJsDate(date);
     const data = getData(jsDate);
     return `${data.yy}${data.month}${data.day} ${data.hours}:${data.minutes} ${data.tz}`;
@@ -109,6 +109,10 @@ export function toFireStoreTime(inputDate) {
 
 export function fromFireStoreTime(timestamp) {
     const jsDate = toJsDate(timestamp);
-    const luxonDateTime = DateTime.fromJSDate(jsDate, { zone: 'Asia/Singapore' });
+    const luxonDateTime = DateTime.fromJSDate(jsDate, { zone: getHotelTimezone() });
     return luxonDateTime;
+}
+
+export function getHotelTimezone() {
+    return 'Asia/Singapore';
 }

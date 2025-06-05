@@ -67,10 +67,10 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsLoggedIn(!!user); // true if user exists
+      setIsLoggedIn(!!user); 
     });
 
-    // cleanup function to avoid multiple listeners
+    // cleanup to avoid multiple listeners
     return () => unsubscribe();
   }, []);
 

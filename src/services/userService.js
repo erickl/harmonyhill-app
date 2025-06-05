@@ -87,7 +87,7 @@ export async function logout() {
 
 export async function getUserName() {
     const user = await getUser();
-    return user && user.username ? user.username : "unknown";
+    return user && user.name ? user.name : "unknown";
 }
 
 export async function isAdmin() {

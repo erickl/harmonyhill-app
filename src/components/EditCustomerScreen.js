@@ -1,50 +1,59 @@
 import React, { useState, useEffect } from 'react';
+import { DateTime } from 'luxon';
+
+import MyDatePicker from "./MyDatePicker.js"
+
 // import { Pencil } from 'lucide-react';
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
 import * as utils from '../utils.js';
 
 const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
+
     const [formData, setFormData] = useState({
-        name: customer.name,
-        house: customer.house,
-        // checkInDate: customer.checkInDate ? customer.checkInDate.toISOString().split('T')[0] : '',
-        checkInDate: customer.checkInDate ? new Date(customer.checkInDate) : '',
-        checkOutDate: customer.checkOutDate ? customer.checkOutDate.toISOString().split('T')[0] : '',
-        allergies: customer.allergies,
-        country: customer.country,
-        guestCount: customer.guestCount,
+        name:         customer.name,
+        house:        customer.house,
+        checkInAt:    customer.checkInAt,
+        checkOutAt:   customer.checkOutAt,
+        allergies:    customer.allergies,
+        country:      customer.country,
+        guestCount:   customer.guestCount,
         otherDetails: customer.otherDetails,
-        promotions: customer.promotions,
-        roomRate: customer.roomRate,
-        source: customer.source,
-        status: customer.status,
+        promotions:   customer.promotions,
+        roomRate:     customer.roomRate,
+        source:       customer.source,
+        status:       customer.status,
     });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // const newValue = name.includes('Date') ? value : value;
         setFormData({ ...formData, [name]: value });
+    };
+
+    const handleOtherChange = (name, value) => {
+        setFormData({ ...formData, [name]: value }); 
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.name || !formData.house || !formData.checkInDate || !formData.checkOutDate) {
+        if (!formData.name || !formData.house || !formData.checkInAt || !formData.checkOutAt) {
             alert('Please fill in all required fields.');
             return;
         }
 
         const updatedCustomerData = {
             ...formData,
-            checkInDate: new Date(formData.checkInDate),
-            checkOutDate: new Date(formData.checkOutDate)
+            checkInAt: new Date(formData.checkInAt),
+            checkOutAt: new Date(formData.checkOutAt)
         };
 
         try {
             //  API call to update the customer
-            await bookingService.update(customer.id, updatedCustomerData);
+            const updateResult = await bookingService.update(customer.id, updatedCustomerData);
 
-            alert('Customer updated successfully!');
+            if(updateResult) alert('Customer updated successfully!');
+            else alert("Unsuccessful");
+            
             onNavigate('customers');
             onClose();
         } catch (err) {
@@ -67,14 +76,14 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                     <div className="form-group">
                         <label htmlFor="house">Villa:</label>
                         <input type="text" id="house" name="house" value={formData.house} onChange={handleChange} required className="input" />
+                    </div>                  
+                    <div className="form-group">
+                        <label htmlFor="checkInAt">Check In Date</label>
+                        <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleOtherChange}/>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="checkInDate">Check-in:</label>
-                        <input type="date" id="checkInDate" name="checkInDate" value={formData.checkInDate} onChange={handleChange} required className="input" />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="checkOutDate">Check-out:</label>
-                        <input type="date" id="checkOutDate" name="checkOutDate" value={formData.checkOutDate} onChange={handleChange} required className="input" />
+                        <label htmlFor="checkOutAt">Check Out Date</label>
+                        <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleOtherChange}/>
                     </div>
                     <div className="form-group">
                         <label htmlFor="allergies">Allergies:</label>

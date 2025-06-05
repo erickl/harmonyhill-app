@@ -31,6 +31,14 @@ export async function get(filterOptions = {}) {
     bookings.map((booking) => {
         booking.checkInAt_ddMMM = utils.to_ddMMM(booking.checkInAt);
         booking.checkOutAt_ddMMM = utils.to_ddMMM(booking.checkOutAt);
+
+        booking.checkInAt = utils.fromFireStoreTime(booking.checkInAt);
+        booking.checkOutAt = utils.fromFireStoreTime(booking.checkOutAt);
+
+        booking.nightsCount = (booking.checkOutAt - booking.checkInAt) / (1000 * 60 * 60 * 24);
+
+        booking.checkInAt = booking.checkInAt.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+        booking.checkOutAt = booking.checkOutAt.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
     });
     
     return bookings;
@@ -71,19 +79,20 @@ export function createBookingId(guestName, house, checkInAt) {
 
 async function mapBookingObject(data, isUpdate = false) {
     let booking = {};
+
     if(Object.hasOwn(data, "allergies"))    booking.allergies    = data.allergies    ;
     if(Object.hasOwn(data, "checkInAt"))    booking.checkInAt    = data.checkInAt    ;
     if(Object.hasOwn(data, "checkOutAt"))   booking.checkOutAt   = data.checkOutAt   ;
-    if(Object.hasOwn(data, "country"))      booking.country      = data.country.toLowerCase();
+    if(typeof data?.country === "string")   booking.country      = data.country.toLowerCase();
     if(Object.hasOwn(data, "guestCount"))   booking.guestCount   = data.guestCount   ;
     if(Object.hasOwn(data, "otherDetails")) booking.otherDetails = data.otherDetails ;
     if(Object.hasOwn(data, "promotions"))   booking.promotions   = data.promotions   ;
     if(Object.hasOwn(data, "roomRate"))     booking.roomRate     = data.roomRate     ;
     if(Object.hasOwn(data, "guestPaid"))    booking.guestPaid    = data.guestPaid    ;
     if(Object.hasOwn(data, "hostPayout"))   booking.hostPayout   = data.hostPayout   ;
-    if(Object.hasOwn(data, "source"))       booking.source       = data.source.toLowerCase();       
-    if(Object.hasOwn(data, "status"))       booking.status       = data.status.toLowerCase();       
-    if(Object.hasOwn(data, "house"))        booking.house        = data.house.toLowerCase();        
+    if(typeof data?.source === "string")    booking.source       = data.source.toLowerCase();       
+    if(typeof data?.status === "string")    booking.status       = data.status.toLowerCase();       
+    if(typeof data?.house === "string")     booking.house        = data.house.toLowerCase();        
     if(Object.hasOwn(data, "name"))         booking.name         = data.name         ;
 
     if(!isUpdate) {
