@@ -80,20 +80,22 @@ export function createBookingId(guestName, house, checkInAt) {
 async function mapBookingObject(data, isUpdate = false) {
     let booking = {};
 
-    if(Object.hasOwn(data, "allergies"))    booking.allergies    = data.allergies    ;
-    if(Object.hasOwn(data, "checkInAt"))    booking.checkInAt    = data.checkInAt    ;
-    if(Object.hasOwn(data, "checkOutAt"))   booking.checkOutAt   = data.checkOutAt   ;
-    if(typeof data?.country === "string")   booking.country      = data.country.toLowerCase();
-    if(Object.hasOwn(data, "guestCount"))   booking.guestCount   = data.guestCount   ;
-    if(Object.hasOwn(data, "otherDetails")) booking.otherDetails = data.otherDetails ;
-    if(Object.hasOwn(data, "promotions"))   booking.promotions   = data.promotions   ;
-    if(Object.hasOwn(data, "roomRate"))     booking.roomRate     = data.roomRate     ;
-    if(Object.hasOwn(data, "guestPaid"))    booking.guestPaid    = data.guestPaid    ;
-    if(Object.hasOwn(data, "hostPayout"))   booking.hostPayout   = data.hostPayout   ;
-    if(typeof data?.source === "string")    booking.source       = data.source.toLowerCase();       
-    if(typeof data?.status === "string")    booking.status       = data.status.toLowerCase();       
-    if(typeof data?.house === "string")     booking.house        = data.house.toLowerCase();        
-    if(Object.hasOwn(data, "name"))         booking.name         = data.name         ;
+    if(utils.isString(data?.allergies))    booking.allergies    = data.allergies    ;
+    if(utils.isString(data?.country))      booking.country      = data.country.toLowerCase();
+    if(utils.isString(data?.guestCount))   booking.guestCount   = data.guestCount   ;
+    if(utils.isString(data?.otherDetails)) booking.otherDetails = data.otherDetails ;
+    if(utils.isString(data?.promotions))   booking.promotions   = data.promotions   ;
+    if(utils.isString(data?.source))       booking.source       = data.source.toLowerCase();       
+    if(utils.isString(data?.status))       booking.status       = data.status.toLowerCase();       
+    if(utils.isString(data?.house))        booking.house        = data.house.toLowerCase();        
+    if(utils.isString(data?.name))         booking.name         = data.name         ;
+    
+    if(utils.isAmount(data?.roomRate))     booking.roomRate     = data.roomRate     ;
+    if(utils.isAmount(data?.guestPaid))    booking.guestPaid    = data.guestPaid    ;
+    if(utils.isAmount(data?.hostPayout))   booking.hostPayout   = data.hostPayout   ;
+
+    if(utils.isDate(data?.checkInAt))      booking.checkInAt    = data.checkInAt    ;
+    if(utils.isDate(data?.checkOutAt))     booking.checkOutAt   = data.checkOutAt   ;
 
     if(!isUpdate) {
         booking.createdAt = new Date(); 

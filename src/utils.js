@@ -25,6 +25,22 @@ export async function jsonObjectDiffStr(obj1, obj2) {
     return diff;
 }
 
+export function isAmount(value) {
+    return isNumber(value);
+}
+
+export function isNumber(value) {
+    return typeof value === "number" && !isNaN(value);
+}
+
+export function isString(value) {
+    return typeof value === "string";
+}
+
+export function isDate(value) {
+    return DateTime.isDateTime(value);
+}
+
 /**
  * @returns date string in the format YYMMDD HH:MM GMT+X
  */

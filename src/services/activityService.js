@@ -147,52 +147,22 @@ export function makeId(date, bookingId, subCategory) {
 async function mapObject(data, isUpdate = false) {
     let activity = {};
 
-    if(Object.hasOwn(data, "category")) {
-        activity.category = data.category;
-    }
+    if(utils.isString(data?.category))    activity.category = data.category;
+    if(utils.isString(data?.subCategory)) activity.subCategory = data.subCategory ;
+    if(utils.isString(data?.provider))    activity.provider = data.provider;
+    if(utils.isString(data?.details))     activity.details = data.details;
 
-    if(Object.hasOwn(data, "subCategory")) activity.subCategory = data.subCategory ;
+    if(utils.isDate(data?.startingAt))    activity.startingAt = data.startingAt;
 
-    if(Object.hasOwn(data, "price")) activity.price = data.price     ;
+    if(utils.isAmount(data?.price))       activity.price = data.price;
+
+    activity.isFree = typeof data?.isFree ? data.isFree : false;
     
-    // if(Object.hasOwn(data, "date")) {
-    //     activity.date = utils.getDateStringYYMMdd(data.date);
-    // }
-
-    if(Object.hasOwn(data, "startingAt")) {
-        activity.startingAt = data.startingAt;
-    }
-
-    if(Object.hasOwn(data, "isFree")) {
-        activity.isFree = data.isFree;
-    } else {
-        activity.isFree = false;
-    }
-
-    if(Object.hasOwn(data, "price")) activity.price = data.price;
-
     // First "requested", then "confirmed" (then "completed"?)
-    if(Object.hasOwn(data, "status")) {
-        activity.status = data.status;
-    } 
-    else {
-        activity.status = "requested";
-    }
-
-    if(Object.hasOwn(data, "provider")) {
-        activity.provider = data.provider;
-    }
-
-    if(Object.hasOwn(data, "assignedTo")) {
-        activity.assignedTo = data.assignedTo;
-    } else {
-        activity.assignedTo = userService.getUserName();
-    }
-
-    if(Object.hasOwn(data, "time")) activity.time = data.time;
+    activity.status = utils.isString(data?.status) ? data.status : "requested";
     
-    if(Object.hasOwn(data, "details")) activity.details = data.details;
-    
+    activity.assignedTo = utils.isString(data?.assignedTo) ? data.assignedTo : await userService.getUserName();
+
     if(!isUpdate) {
         activity.createdAt = new Date();
         activity.createdBy = await userService.getUserName();

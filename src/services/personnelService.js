@@ -39,6 +39,7 @@ export async function addPrice(personnelId, priceData) {
     }
 
     const price = mapPriceObject(priceData); 
+    // todo: in progress...
 }
 
 export async function update(personnelId, personnelUpdateData) {
@@ -55,8 +56,8 @@ function makePersonnelId(personnel) {
 async function mapPriceObject(data, isUpdate = false) {
     let object = {};
     if(Object.hasOwn(data, "name"))        object.name     = data.name;
-    if(Object.hasOwn(data, "activity"))    object.activity = data.activity.toLowerCase();
-    if(Object.hasOwn(data, "subCategory")) object.subCategory = data.subCategory.toLowerCase();
+    if(typeof data?.activity === "string") object.activity = data.activity.toLowerCase();
+    if(typeof data?.subCategory === "string") object.subCategory = data.subCategory.toLowerCase();
     if(Object.hasOwn(data, "price"))       object.price = data.price;
     
     // Transport data
@@ -74,11 +75,11 @@ async function mapPriceObject(data, isUpdate = false) {
 async function mapPersonnelObject(data, isUpdate = false) {
     let object = {};
 
-    if(Object.hasOwn(data, "name"))     object.name     = data.name;
-    if(Object.hasOwn(data, "activity")) object.activity = data.activity.toLowerCase();
-    if(Object.hasOwn(data, "location")) object.location = data.location.toLowerCase();
-    if(Object.hasOwn(data, "price"))    object.price    = data.price;
-    if(Object.hasOwn(data, "whatsapp")) {
+    if(utils.isString(data?.name))     object.name     = data.name;
+    if(utils.isString(data?.activity)) object.activity = data.activity.toLowerCase();
+    if(utils.isString(data?.location)) object.location = data.location.toLowerCase();
+    if(utils.isAmount(data?.price))    object.price    = data.price;
+    if(utils.isString(data?.whatsapp)) {
         object.whatsapp = data.whatsapp.replace(/ /g, '');
     }
     
