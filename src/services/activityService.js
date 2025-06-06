@@ -152,7 +152,7 @@ async function mapObject(data, isUpdate = false) {
     if(utils.isString(data?.provider))    activity.provider = data.provider;
     if(utils.isString(data?.details))     activity.details = data.details;
 
-    if(utils.isDate(data?.startingAt))    activity.startingAt = data.startingAt;
+    if(utils.isDate(data?.startingAt))    activity.startingAt = utils.toFireStoreTime(data.startingAt);
 
     if(utils.isAmount(data?.price))       activity.price = data.price;
 

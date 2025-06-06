@@ -81,21 +81,22 @@ async function mapBookingObject(data, isUpdate = false) {
     let booking = {};
 
     if(utils.isString(data?.allergies))    booking.allergies    = data.allergies    ;
-    if(utils.isString(data?.country))      booking.country      = data.country.toLowerCase();
-    if(utils.isString(data?.guestCount))   booking.guestCount   = data.guestCount   ;
+    if(utils.isString(data?.country))      booking.country      = data.country.toLowerCase();  
     if(utils.isString(data?.otherDetails)) booking.otherDetails = data.otherDetails ;
     if(utils.isString(data?.promotions))   booking.promotions   = data.promotions   ;
     if(utils.isString(data?.source))       booking.source       = data.source.toLowerCase();       
     if(utils.isString(data?.status))       booking.status       = data.status.toLowerCase();       
     if(utils.isString(data?.house))        booking.house        = data.house.toLowerCase();        
     if(utils.isString(data?.name))         booking.name         = data.name         ;
+
+    if(!utils.isEmpty(data?.guestCount))   booking.guestCount   = data.guestCount   ;
     
     if(utils.isAmount(data?.roomRate))     booking.roomRate     = data.roomRate     ;
     if(utils.isAmount(data?.guestPaid))    booking.guestPaid    = data.guestPaid    ;
     if(utils.isAmount(data?.hostPayout))   booking.hostPayout   = data.hostPayout   ;
 
-    if(utils.isDate(data?.checkInAt))      booking.checkInAt    = data.checkInAt    ;
-    if(utils.isDate(data?.checkOutAt))     booking.checkOutAt   = data.checkOutAt   ;
+    if(utils.isDate(data?.checkInAt))      booking.checkInAt    = utils.toFireStoreTime(data.checkInAt)    ;
+    if(utils.isDate(data?.checkOutAt))     booking.checkOutAt   = utils.toFireStoreTime(data.checkOutAt)   ;
 
     if(!isUpdate) {
         booking.createdAt = new Date(); 

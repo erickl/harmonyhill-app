@@ -89,8 +89,8 @@ const AddCustomerScreen = ({ onNavigate }) => {
                                 type="radio"
                                 id="harmonyHill"
                                 name="house"
-                                value="Harmony Hill"
-                                checked={formData.house === 'Harmony Hill'}
+                                value="harmony hill"
+                                checked={formData.house === 'harmony hill'}
                                 onChange={() => handleInputChange('house', 'harmony hill')}
 
                             />
@@ -103,8 +103,8 @@ const AddCustomerScreen = ({ onNavigate }) => {
                                 type="radio"
                                 id="jungleNook"
                                 name="house"
-                                value="The Jungle Nook"
-                                checked={formData.house === 'The Jungle Nook'}
+                                value="the jungle nook"
+                                checked={formData.house === 'the jungle nook'}
                                 onChange={() => handleInputChange('house', 'the jungle nook')}
 
                             />

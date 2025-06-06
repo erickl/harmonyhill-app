@@ -26,15 +26,20 @@ export async function jsonObjectDiffStr(obj1, obj2) {
 }
 
 export function isAmount(value) {
-    return isNumber(value);
+    return isNumber(value) || isString(value);
 }
 
 export function isNumber(value) {
     return typeof value === "number" && !isNaN(value);
 }
 
+export function isEmpty(value) {
+    value = isString(value) ? value.trim() : value;
+    return isNaN(value) || value == "" || value == undefined || value == null;
+}
+
 export function isString(value) {
-    return typeof value === "string";
+    return  typeof value === "string";
 }
 
 export function isDate(value) {

@@ -122,7 +122,9 @@ async function mapMealObject(mealData, isUpdate = false) {
     if(utils.isString(mealData?.subCategory)) meal.subCategory = mealData.subCategory;
 
     if(utils.isDate(mealData?.startingAt)) {
-        meal.startingAt = mealData.startingAt;
+        meal.startingAt = utils.toFireStoreTime(mealData.startingAt);
+    } else {
+        throw new Error(`Starting At date invalid: ${mealData?.startingAt}`);
     }
 
     if(utils.isString(mealData?.status)) meal.status = mealData.status;
@@ -139,7 +141,7 @@ async function mapMealItemObject(mealItemData, isUpdate = false) {
     let meal = {};
 
     if(utils.isString(mealItemData?.name))     meal.name     = mealItemData.name;
-    if(utils.isNumber(mealItemData?.quantity)) meal.quantity = mealItemData.quantity;
+    if(!utils.isEmpty(mealItemData?.quantity)) meal.quantity = mealItemData.quantity;
     if(utils.isAmount(mealItemData?.price))    meal.price    = mealItemData.price;
 
     if(!isUpdate) {
