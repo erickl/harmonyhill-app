@@ -6,11 +6,23 @@ export async function jsonObjectDiffStr(obj1, obj2) {
     let diff = "";
 
     for (const key in obj2) {
-        if (!Object.hasOwn(obj1, key)) {
-            diff += ` ${key}: ${obj1[key]} added, `;
+        const val1 = obj1[key];
+        const val2 = obj2[key];
+
+        if(isEmpty(val2)) continue;
+        
+        else if (!Object.hasOwn(obj1, key)) {
+            diff += ` ${key}: ${val1} added, `;
+        } 
+        else if(isDate(val2)) {
+            const val1DateTime = fromFireStoreTime(val1);
+            const val2DateTime = fromFireStoreTime(val2);
+            if(!val1DateTime.equals(val2DateTime)) {
+                diff += ` ${key}: ${val1} -> ${val2}, `;
+            }
         }
-        if (obj2[key] !== obj1[key]) {
-            diff += ` ${key}: ${obj1[key]} -> ${obj2[key]}, `;
+        else if (val2 !== val1) {
+            diff += ` ${key}: ${val1} -> ${val2}, `;
         }
     }
 
@@ -43,7 +55,13 @@ export function isString(value) {
 }
 
 export function isDate(value) {
-    return DateTime.isDateTime(value);
+    if(value instanceof Date || value instanceof Timestamp || DateTime.isDateTime(value)) {
+        return true;
+    } else if(isString(value)) {
+        const parsedDate = new Date(value);
+        return !isNaN(parsedDate);
+    }
+    else return false;
 }
 
 /**
