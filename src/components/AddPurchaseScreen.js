@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
 // import { Pencil } from 'lucide-react';
-import * as activityService from '../services/activityService.js'; // Import the booking service
+import * as activityService from '../services/activityService.js'; 
+import * as mealService from '../services/mealService.js';
+import * as menuService from '../services/menuService.js';
 import * as utils from '../utils.js';
+import { loadBundle } from 'firebase/firestore';
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
-    // State to hold the categories
-    const [categories, setCategories] = useState([]);
-    const [loadingCategories, setLoadingCategories] = useState(true);
-    const [categoriesError, setCategoriesError] = useState(null);
+    // State to track the currently selected activity (for the purchase form)
+    const [selectedActivity, setSelectedActivity] = useState(null);
 
     // State to track the currently selected category
     const [selectedCategory, setSelectedCategory] = useState(null);
 
     // State to hold the menu items (activities)
+    const [categories, setCategories] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
+    const [dishes, setDishes] = useState([]);
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
-    const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu
-
-    // State to track the currently selected activity (for the purchase form)
-    const [selectedActivity, setSelectedActivity] = useState(null);
+    const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu    
 
     // State for the purchase form data
     const [purchaseFormData, setPurchaseFormData] = useState({
@@ -30,45 +30,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     });
 
 
-
-    // useEffect to fetch categories when the component mounts or customer ID changes
+    // fetch the menu items when the component mounts or customerID changes (ensuring updates come through without restarting the app)
+    // fetching sub categories to choose from
     useEffect(() => {
-        const fetchCategories = async () => {
-            // Only fetch if a customer is provided, as we will add purchase to a specific customer
-            if (!customer) {
-                setLoadingCategories(false);
-                return;
-            }
-            setLoadingCategories(true);
-            setCategoriesError(null);
-            try {
-                const categoryData = await activityService.getCategories();
-                console.log('Fetched category data (raw):', categoryData); // Debugging: Log what's returned
-
-                // Check if it's a Set and convert to array, or if it's already an array (can remove when data structure stable)
-                if (categoryData instanceof Set) {
-                    const categoriesArray = Array.from(categoryData);
-                    console.log('Converted Set to Array:', categoriesArray);
-                    setCategories(categoriesArray);
-                } else if (Array.isArray(categoryData)) {
-                    setCategories(categoryData);
-                } else {
-                    console.error("activityService.getCategories() did not return an array or a Set:", categoryData);
-                    setCategoriesError(new Error("Categories data is not in the expected array or Set format."));
-                }
-                setLoadingCategories(false);
-            } catch (err) {
-                console.error("Failed to fetch categories:", err);
-                setCategoriesError(err);
-                setLoadingCategories(false);
-            }
-        };
-        fetchCategories();
-    }, [customer?.id]); //
-
-    // useEffect to fetch the menu items when the component mounts or customerID changes (ensuring updates come through without restarting the app)
-    useEffect(() => {
-        const fetchMenu = async () => {
+        const load = async () => {
             // Only fetch if a customer is provided, as the screen is for adding purchases for a customer
             if (!customer) {
                 setLoadingMenu(false);
@@ -78,28 +43,46 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             setMenuError(null); // Clear previous errors
 
             try {
-                // Call the service function to get the menu
                 const menuData = await activityService.getMenu();
-                setMenuItems(menuData); // Store the fetched data in state
+                let categories = menuData.map(item => item.category);
+                // getMenu() gets all sub categories (e.g. lunch, dinner), so a category (e.g. meal) can occur multiple times
+                categories = Array.from(new Set(categories));
+                
+                setCategories(categories);
+                setMenuItems(menuData);
                 setLoadingMenu(false);
             } catch (err) {
                 console.error("Failed to fetch menu:", err);
                 setMenuError(err);
                 setLoadingMenu(false);
-            }
-        };
+            }     
+        }   
 
-        fetchMenu();
+        load();
     }, [customer?.id]); // Dependency array: re-run this effect if the customer's ID changes
 
-    // NEW useEffect: Initialize purchaseFormData.price when selectedActivity changes
-    useEffect(() => {
-        if (selectedActivity) {
-            setPurchaseFormData(prevData => ({
-                ...prevData,
-                price: selectedActivity.price || '', // Set initial price from selected activity, or empty string
-            }));
-        }
+        // Initialize purchaseFormData.price when selectedActivity changes
+        useEffect(() => {
+            const load = async () => {
+                // Only fetch if a customer is provided, as the screen is for adding purchases for a customer
+                if (!customer) {
+                    setLoadingMenu(false);
+                    return;
+                }
+
+                if(selectedActivity && selectedCategory === "meal") {
+                    const dishes = await menuService.get({"mealCategory" : selectedActivity.subCategory});
+                    setDishes(dishes);
+                }
+                else if (selectedActivity) {
+                    setPurchaseFormData(prevData => ({
+                        ...prevData,
+                        price: selectedActivity.price || '', // Set initial price from selected activity, or empty string
+                    }));
+                }
+            }
+            load();
+
     }, [selectedActivity]);
 
     const handlePurchaseFormChange = (e) => {
@@ -141,7 +124,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     };
 
 
-    if (loadingCategories || loadingMenu) {
+    if (loadingMenu) {
         return (
             <div className="card">
                 <div className="card-content">
@@ -151,7 +134,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         );
     }
 
-    if (categoriesError || menuError) {
+    if (menuError) {
         return (
             <div className="card">
                 <div className="card-content">
@@ -162,9 +145,47 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     }
 
 
+    // --- Render meal dishes selection
+    if (selectedActivity && selectedCategory === "meal") {
+        return (
+            <div className="card">
+                <div className="card-header">
+                    <h2 className="card-title">
+                        <span className="ml-2">Choose Activity</span>
+                    </h2>
+                </div>
+                <div className="card-content">
+                    <h3>Items in {selectedCategory}:</h3>
+                    {dishes.length > 0 ? (
+                        <div className="activity-button-container">
+                            {dishes.map((dish) => (
+                                <div key={`${dish.id}-wrapper`}>
+                                    <button
+                                        key={`${dish.id}`}
+                                        className="button activity-button"
+                                        onClick={() => {
+                                            alert(`Selected ${dish.name}`);
+                                        }}>
+                                            {dish.name}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>No dishes found</p>
+                    )}
+                </div>
+                <div>
+                    <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
+                        Back to activities</button>
+                </div>
+            </div>
+        )
+    }
+
+
     // --- Render Purchase Form ---
     if (selectedActivity) {
-        console.log('Rendering: Purchase Form');
         return (
             <div className="card">
                 <div className="card-header">
@@ -258,9 +279,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             <div className="card">
                 <div className="card-header">
                     <h2 className="card-title">
-
                         <span className="ml-2">Choose Activity</span>
-
                     </h2>
                 </div>
                 <div className="card-content">

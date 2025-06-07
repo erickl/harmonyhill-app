@@ -18,7 +18,8 @@ export async function getCategories() {
     const types = await activityDao.getTypes();
     const categories = types.map((type) => type.category);
     const uniqueCategories = new Set(categories);
-    return uniqueCategories;
+    const uniqueCategoriesArray = Array.from(uniqueCategories)
+    return uniqueCategoriesArray;
 }
 
 /**
