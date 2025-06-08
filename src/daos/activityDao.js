@@ -1,5 +1,6 @@
 import { where, orderBy, getDoc } from 'firebase/firestore';
 import * as dao from "./dao.js"
+import * as utils from "../utils.js";
 
 export async function add(bookingId, activityId, activity) {
     return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activity);
@@ -44,7 +45,7 @@ export async function getMeals(bookingId, options = {}) {
 
     // startingAt is a string in the format YYYY-MM-DD, without time
     if (Object.hasOwn(options, "startingAt")) {
-        filters.push(where("startingAt", "==", options.startingAt));
+        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.startingAt)));
     }
 
     if (Object.hasOwn(options, "category")) {
@@ -73,15 +74,16 @@ export async function getBookingActivities(bookingId, options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
+    let after = new Date();
     if (Object.hasOwn(options, "after")) {
-        filters.push(where("startingAt", "<=", options.after));
+       after = options.after;
     } else {
-        options.after = new Date();
-        options.after.setHours(0, 0, 0, 0); // Set to start of the day
+        after.setHours(0, 0, 0, 0); // Set to start of the day
     }
+    filters.push(where("startingAt", "<=", utils.toFireStoreTime(after)));
 
     if (Object.hasOwn(options, "before")) {
-        filters.push(where("startingAt", ">=", options.before));
+        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.before)));
     }
 
     if (Object.hasOwn(options, "assignedTo")) {
@@ -108,15 +110,17 @@ export async function getAllActivities(options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
+    let after = new Date();
     if (Object.hasOwn(options, "after")) {
-        filters.push(where("startingAt", "<=", options.after));
+        after = options.after;
     } else {
-        options.after = new Date();
-        options.after.setHours(0, 0, 0, 0); // Set to start of the day
+        after.setHours(0, 0, 0, 0);
     }
+    filters.push(where("startingAt", "<=", utils.toFireStoreTime(after)));
 
     if (Object.hasOwn(options, "before")) {
-        filters.push(where("startingAt", ">=", options.before));
+        const before = utils.toFireStoreTime(options.before);
+        filters.push(where("startingAt", ">=", before));
     }
     
     let ordering = [ orderBy("startingAt", "asc") ];

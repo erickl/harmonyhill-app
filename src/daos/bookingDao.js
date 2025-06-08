@@ -21,8 +21,8 @@ export async function get(filterOptions = {}) {
         queryFilter.push(where("house", "==", filterOptions.house));
     }
     if (Object.hasOwn(filterOptions, "date")) {
-        queryFilter.push(where("checkInAt", "<=", filterOptions.date));
-        queryFilter.push(where("checkOutAt", ">=", filterOptions.date));
+        queryFilter.push(where("checkInAt", "<=", utils.toFireStoreTime(filterOptions.date)));
+        queryFilter.push(where("checkOutAt", ">=", utils.toFireStoreTime(filterOptions.date)));
     }
 
     let ordering = [ orderBy("checkInAt", "asc") ];
