@@ -81,7 +81,11 @@ const CustomersScreen = ({ onNavigate }) => {
 
     // Function to handle customer click
     const handleCustomerClick = (customer) => {
-        setSelectedCustomer(customer);
+        if(selectedCustomer?.id === customer?.id) {
+            setSelectedCustomer(null);
+        } else {
+            setSelectedCustomer(customer);
+        }
     };
 
     const handleEditCustomer = (customer) => {

@@ -9,7 +9,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [selectedCustomer, setSelectedCustomer] = useState(null); // State to store the selected customer
+    const [selectedActivity, setSelectedActivity] = useState(null); // State to store the selected customer
     const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
     const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
     const [expanded, setExpanded] = useState(false); // State to expand past customer section
@@ -60,8 +60,13 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         );
     }
 
-    const handleCustomerClick = (customer) => {
-        setSelectedCustomer(customer);
+    const handleActivityClick = (activity) => {
+        // If clicking on the same activity, depress it again
+        if(selectedActivity?.id === activity?.id) {
+            setSelectedActivity(null);
+        } else {
+            setSelectedActivity(activity);
+        }
     };
 
     const handleEditActivity = (customer) => {
@@ -94,21 +99,15 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                             <React.Fragment key={activity.id}>
                                 <div
                                     className={`customer-list-item clickable-item ${utils.getHouseColor(activity.house)}`} // house color calculated
-                                    onClick={() => handleCustomerClick(activity)}
+                                    onClick={() => handleActivityClick(activity)}
                                 >
                                     <div className="customer-name-in-list">
                                         <span>{`${activity.category}`}</span>
-                                        {<ShoppingCart
-                                            className="cursor-pointer"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleAddPurchase(activity);
-                                            }}
-                                        />}
+                                        
                                     </div>
                                     {activity.subCategory}
                                 </div>
-                                {activity.id && ( // todo: not sure what condition this should be?
+                                {selectedActivity && activity.id && ( // todo: not sure what condition this should be?
                                     <div className="customer-details">
                                         <p><span className="detail-label">Villa:</span> {activity.house}</p>
                                         <p><span className="detail-label">Starting At:</span> {activity.startingAt_ddMMM_HHmm}</p>
