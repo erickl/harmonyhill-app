@@ -15,8 +15,8 @@ export async function jsonObjectDiffStr(obj1, obj2) {
             diff += ` ${key}: ${val1} added, `;
         } 
         else if(isDate(val2)) {
-            const val1DateTime = fromFireStoreTime(val1);
-            const val2DateTime = fromFireStoreTime(val2);
+            const val1DateTime = toDateTime(val1);
+            const val2DateTime = toDateTime(val2);
             if(!val1DateTime.equals(val2DateTime)) {
                 diff += ` ${key}: ${val1} -> ${val2}, `;
             }
@@ -135,6 +135,12 @@ export function to_ddMMM(inputDate) {
     return `${data.day} ${data.monthName}`;
 }
 
+export function to_ddMMM_HHmm(inputDate) {
+    let jsDate = toJsDate(inputDate);
+    const data = getData(jsDate);
+    return `${data.day} ${data.monthName} ${data.hours}:${data.minutes}`;
+}
+
 export function dateStringToDate(dateString) {
     const [year, month, day] = dateString.split('-').map(Number);
     const date = new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
@@ -146,12 +152,31 @@ export function toFireStoreTime(inputDate) {
     return Timestamp.fromDate(jsDate);
 }
 
-export function fromFireStoreTime(timestamp) {
+export function toDateTime(timestamp) {
     const jsDate = toJsDate(timestamp);
     const luxonDateTime = DateTime.fromJSDate(jsDate, { zone: getHotelTimezone() });
     return luxonDateTime;
 }
 
+/**
+ * get a Luxon date time object with time at midnight
+ */
+export function today() {
+    return DateTime.now().setZone(getHotelTimezone()).startOf('day');
+}
+
 export function getHotelTimezone() {
     return 'Asia/Singapore';
 }
+
+export function getHouseColor(house) {
+    house  = house.toLowerCase();
+    switch (house) {
+        case 'the jungle nook':
+            return 'bg-jn'; // Tailwind CSS class for light blue
+        case 'harmony hill':
+            return 'bg-hh'; // Tailwind CSS class for light green
+        default:
+            return 'bg-none'; // No background color by default
+    }
+};

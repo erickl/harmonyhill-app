@@ -74,12 +74,7 @@ export async function getBookingActivities(bookingId, options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    let after = new Date();
-    if (Object.hasOwn(options, "after")) {
-       after = options.after;
-    } else {
-        after.setHours(0, 0, 0, 0); // Set to start of the day
-    }
+    const after = Object.hasOwn(options, "after") ? options.after : utils.today();
     filters.push(where("startingAt", "<=", utils.toFireStoreTime(after)));
 
     if (Object.hasOwn(options, "before")) {
@@ -110,12 +105,7 @@ export async function getAllActivities(options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    let after = new Date();
-    if (Object.hasOwn(options, "after")) {
-        after = options.after;
-    } else {
-        after.setHours(0, 0, 0, 0);
-    }
+    const after = Object.hasOwn(options, "after") ? options.after : utils.today();
     filters.push(where("startingAt", "<=", utils.toFireStoreTime(after)));
 
     if (Object.hasOwn(options, "before")) {

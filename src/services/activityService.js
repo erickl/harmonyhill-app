@@ -36,12 +36,8 @@ export async function getCategories() {
  */
 export async function get(bookingId, filterOptions = {}) {
     const activities = await activityDao.getBookingActivities(bookingId, filterOptions);
-    activities.map((activity) => {
-        if(Object.hasOwn(activity, "startingAt")) {
-            activity.date_ddMMM = utils.to_ddMMM(activity.startingAt);
-        }
-    });
-    return activities; 
+    const enhancedActivities = enhanceActivities(activities);
+    return enhancedActivities; 
 }
 
 /**
@@ -50,9 +46,19 @@ export async function get(bookingId, filterOptions = {}) {
  */
 export async function getAll(filterOptions = {}) {
     const activities = await activityDao.getAllActivities(filterOptions);
+    const enhancedActivities = enhanceActivities(activities);
+    return enhancedActivities; 
+}
+
+/**
+ * @param {*} activities 
+ * @returns enchanced activity data, needed to properly display them to the user
+ */
+function enhanceActivities(activities) {
     activities.map((activity) => {
         if(Object.hasOwn(activity, "startingAt")) {
-            activity.date_ddMMM = utils.to_ddMMM(activity.startingAt);
+            activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
+            activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
         }
     });
     return activities; 

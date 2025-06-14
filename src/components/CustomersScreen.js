@@ -7,6 +7,7 @@ import './CustomersScreen.css';
 import AddCustomerScreen from './AddCustomerScreen';
 import EditCustomerScreen from './EditCustomerScreen';
 import AddPurchaseScreen from './AddPurchaseScreen.js';
+import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 
 const CustomersScreen = ({ onNavigate }) => {
     const [customers, setCustomers] = useState([]);
@@ -62,7 +63,7 @@ const CustomersScreen = ({ onNavigate }) => {
     // Logic to group customers into Past / Current / Future
     // Once checkInAt is updated to a string, this needs to be adjusted
 
-    const today = utils.fromFireStoreTime(new Date()).set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+    const today = utils.today();
 
     const pastCustomers = [];
     const currentCustomers = [];
@@ -91,18 +92,6 @@ const CustomersScreen = ({ onNavigate }) => {
         setCustomerPurchasing(customer); // Indicate we need to switch to add purchase screen
     };
 
-    const getHouseColor = (house) => {
-        house  = house.toLowerCase();
-        switch (house) {
-            case 'the jungle nook':
-                return 'bg-jn'; // Tailwind CSS class for light blue
-            case 'harmony hill':
-                return 'bg-hh'; // Tailwind CSS class for light green
-            default:
-                return 'bg-none'; // No background color by default
-        }
-    };
-
     // Function to render previous / current /  future customer list section
     const renderCustomerListSection = (title, customers, customerTypeClass, isExpanded, setIsExpanded) => {
         const hasCustomers = customers.length > 0;
@@ -124,7 +113,7 @@ const CustomersScreen = ({ onNavigate }) => {
                         {customers.map((customer) => (
                             <React.Fragment key={customer.id}>
                                 <div
-                                    className={`customer-list-item clickable-item ${getHouseColor(customer.house)}`} // house color calculated
+                                    className={`customer-list-item clickable-item ${utils.getHouseColor(customer.house)}`} // house color calculated
                                     onClick={() => handleCustomerClick(customer)}
                                 >
                                     <div className="customer-name-in-list">
@@ -188,7 +177,8 @@ const CustomersScreen = ({ onNavigate }) => {
 
     if (customerPurchasing) {
         return (
-            <AddPurchaseScreen
+            //<AddPurchaseScreen
+            <CustomerPurchasesScreen
                 customer={customerPurchasing}
                 onClose={() => setCustomerPurchasing(null)}
                 onNavigate={onNavigate}

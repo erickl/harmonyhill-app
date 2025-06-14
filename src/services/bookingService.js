@@ -32,13 +32,13 @@ export async function get(filterOptions = {}) {
         booking.checkInAt_ddMMM = utils.to_ddMMM(booking.checkInAt);
         booking.checkOutAt_ddMMM = utils.to_ddMMM(booking.checkOutAt);
 
-        booking.checkInAt = utils.fromFireStoreTime(booking.checkInAt);
-        booking.checkOutAt = utils.fromFireStoreTime(booking.checkOutAt);
+        booking.checkInAt = utils.toDateTime(booking.checkInAt);
+        booking.checkOutAt = utils.toDateTime(booking.checkOutAt);
 
         booking.nightsCount = (booking.checkOutAt - booking.checkInAt) / (1000 * 60 * 60 * 24);
 
-        booking.checkInAt = booking.checkInAt.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
-        booking.checkOutAt = booking.checkOutAt.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+        booking.checkInAt = booking.checkInAt.startOf('day');
+        booking.checkOutAt = booking.checkOutAt.startOf('day');
     });
     
     return bookings;
