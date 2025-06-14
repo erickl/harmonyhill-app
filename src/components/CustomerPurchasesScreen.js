@@ -115,11 +115,11 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                         >
                                             <div className="customer-name-in-list">
                                                 <span>{`${activity.category}`}</span>
-                                                <span> {activity.startingAt_HHmm}</span>
+                                                <span>{activity.startingAt_HHmm}</span>
                                             </div>
                                             {activity.subCategory}
                                         </div>
-                                        {selectedActivity && activity.id && (
+                                        {selectedActivity?.id === activity.id && (
                                             <div className="customer-details">
                                                 <p><span className="detail-label">Villa:</span> {activity.house}</p>
                                                 <p><span className="detail-label">Starting At:</span> {activity.startingAt_ddMMM_HHmm}</p>

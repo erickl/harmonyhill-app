@@ -125,7 +125,7 @@ function toJsDate(inputDate) {
         }
         return parsedDate;
     } else {
-        throw new Error("Invalid date type. Expected DateTime, Timestamp, Date, or string.");
+        throw new Error(`Invalid date type. Expected DateTime, Timestamp, Date, or string: ${inputDate}`);
     }
 }
 

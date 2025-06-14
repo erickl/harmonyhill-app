@@ -52,16 +52,18 @@ export async function getAll(filterOptions = {}) {
 
 /**
  * @param {*} activities 
- * @returns enchanced activity data, needed to properly display them to the user
+ * @returns enhanced activity data, needed to properly display them to the user
  */
 function enhanceActivities(activities) {
-    activities.map((activity) => {
-        if(Object.hasOwn(activity, "startingAt")) {
+    activities.map((activity) => { 
+        try {
             activity.startingAt_ddMMM = utils.to_ddMMM(activity.startingAt);
             activity.startingAt_HHmm = utils.to_HHmm(activity.startingAt);
 
             activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
             activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
+        } catch(e) {
+            throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
         }
     });
     return activities; 
