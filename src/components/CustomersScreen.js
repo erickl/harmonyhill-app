@@ -6,7 +6,6 @@ import * as utils from '../utils.js';
 import './CustomersScreen.css';
 import AddCustomerScreen from './AddCustomerScreen';
 import EditCustomerScreen from './EditCustomerScreen';
-import AddPurchaseScreen from './AddPurchaseScreen.js';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 
 const CustomersScreen = ({ onNavigate }) => {
@@ -17,7 +16,7 @@ const CustomersScreen = ({ onNavigate }) => {
     const [pastExpanded, setPastExpanded] = useState(false); // State to expand past customer section
     const [futureExpanded, setFutureExpanded] = useState(false); // State to expand future customer section
     const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
-    const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
+    const [customerPurchases, setCustomerPurchases] = useState(null); // state to enable adding purchases
 
     const fetchCustomers = async () => {
         try {
@@ -92,8 +91,8 @@ const CustomersScreen = ({ onNavigate }) => {
         setCustomerToEdit(customer); // Set the customer to be edited
     };
 
-    const handleAddPurchase = (customer) => {
-        setCustomerPurchasing(customer); // Indicate we need to switch to add purchase screen
+    const handleEnterPurchasesList = (customer) => {
+        setCustomerPurchases(customer); // Indicate we need to switch to customer purchases list screen
     };
 
     // Function to render previous / current /  future customer list section
@@ -126,7 +125,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                             className="cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleAddPurchase(customer);
+                                                handleEnterPurchasesList(customer);
                                             }}
                                         />}
                                     </div>
@@ -179,24 +178,21 @@ const CustomersScreen = ({ onNavigate }) => {
         );
     }
 
-    if (customerPurchasing) {
+    if (customerPurchases) {
         return (
-            //<AddPurchaseScreen
             <CustomerPurchasesScreen
-                customer={customerPurchasing}
-                onClose={() => setCustomerPurchasing(null)}
+                customer={customerPurchases}
+                onClose={() => setCustomerPurchases(null)}
                 onNavigate={onNavigate}
             />
         );
     }
 
-
-
     return (
         <div className="card">
             <div className="card-header">
                 <h2 className="card-title">Customers
-                    <button className="add-customer-button" onClick={() => onNavigate('add-customer')}>
+                    <button className="add-button" onClick={() => onNavigate('add-customer')}>
                         +
                     </button></h2>
             </div>

@@ -57,6 +57,9 @@ export async function getAll(filterOptions = {}) {
 function enhanceActivities(activities) {
     activities.map((activity) => {
         if(Object.hasOwn(activity, "startingAt")) {
+            activity.startingAt_ddMMM = utils.to_ddMMM(activity.startingAt);
+            activity.startingAt_HHmm = utils.to_HHmm(activity.startingAt);
+
             activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
             activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
         }

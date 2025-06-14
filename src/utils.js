@@ -135,6 +135,12 @@ export function to_ddMMM(inputDate) {
     return `${data.day} ${data.monthName}`;
 }
 
+export function to_HHmm(inputDate) {
+    let jsDate = toJsDate(inputDate);
+    const data = getData(jsDate);
+    return `${data.hours}:${data.minutes}`;
+}
+
 export function to_ddMMM_HHmm(inputDate) {
     let jsDate = toJsDate(inputDate);
     const data = getData(jsDate);
