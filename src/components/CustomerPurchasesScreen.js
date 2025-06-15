@@ -83,6 +83,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         if(allActivities.length === 0) {
             return (<div> <h2>No activities yet</h2></div>);
         }
+        
         const activitiesByDate = allActivities.reduce((m, activity) => {
             if(!m[activity.startingAt_ddMMM]) {
                 m[activity.startingAt_ddMMM] = [];

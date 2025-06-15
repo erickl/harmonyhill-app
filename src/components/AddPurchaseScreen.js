@@ -4,6 +4,7 @@ import * as activityService from '../services/activityService.js';
 import * as mealService from '../services/mealService.js';
 import * as menuService from '../services/menuService.js';
 import * as utils from '../utils.js';
+import DishesPopup from "./DishesPopup.js";
 import { loadBundle } from 'firebase/firestore';
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
@@ -17,9 +18,22 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     // State to hold the menu items (activities)
     const [categories, setCategories] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
-    const [dishes, setDishes] = useState([]);
+    const [allDishes, setAllDishes] = useState([]);
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
-    const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu    
+    const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu   
+    
+    const [showPopup, setShowPopup] = useState(false);
+    const [selectedDishes, setSelectedValue] = useState(null);
+
+    const handleAddDish = (dishes, newDish) => {
+        const updatedDishes = { ...(dishes || {}) }; // Make shallow copy
+      
+        if (!updatedDishes[newDish.name]) updatedDishes[newDish.name] = 0;
+        updatedDishes[newDish.name] += 1;
+      
+        setSelectedValue(updatedDishes);
+        setShowPopup(false);
+    };
 
     // State for the purchase form data
     const [purchaseFormData, setPurchaseFormData] = useState({
@@ -71,8 +85,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 }
 
                 if(selectedActivity && selectedCategory === "meal") {
-                    const dishes = await menuService.get({"mealCategory" : selectedActivity.subCategory});
-                    setDishes(dishes);
+                    const allDishes = await menuService.get({"mealCategory" : selectedActivity.subCategory});
+                    setAllDishes(allDishes);
                 }
                 else if (selectedActivity) {
                     setPurchaseFormData(prevData => ({
@@ -155,25 +169,31 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     </h2>
                 </div>
                 <div className="card-content">
-                    <h3>Items in {selectedCategory}:</h3>
-                    {dishes.length > 0 ? (
-                        <div className="activity-button-container">
-                            {dishes.map((dish) => (
-                                <div key={`${dish.id}-wrapper`}>
-                                    <button
-                                        key={`${dish.id}`}
-                                        className="button activity-button"
-                                        onClick={() => {
-                                            alert(`Selected ${dish.name}`);
-                                        }}>
-                                            {dish.name}
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p>No dishes found</p>
-                    )}
+                    {selectedDishes ? (
+                    <>
+                         <p>You selected:</p>
+                        {Object.entries(selectedDishes).map(([dish, count]) => (
+                            <div key={`${dish}-selected-wrapper`}>
+                                {<p>{count}x {dish}</p>}
+                            </div>
+                        ))}
+                       
+                    </>
+                    ) : null}
+             
+                    <div>
+                        <button onClick={() => setShowPopup(true)}>Choose an option</button>
+                        
+
+                        {showPopup && (
+                            <DishesPopup
+                            options={allDishes}
+                            selectedDishes={selectedDishes}
+                            onAddDish={handleAddDish}
+                            onClose={() => setShowPopup(false)}
+                            />
+                        )}
+                    </div>
                 </div>
                 <div>
                     <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
