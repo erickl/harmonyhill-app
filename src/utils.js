@@ -47,7 +47,7 @@ export function isNumber(value) {
 
 export function isEmpty(value) {
     value = isString(value) ? value.trim() : value;
-    return isNaN(value) || value == "" || value == undefined || value == null;
+    return value == "" || value == undefined || value == null;
 }
 
 export function isString(value) {

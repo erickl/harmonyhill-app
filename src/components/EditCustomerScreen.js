@@ -30,6 +30,11 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
         setFormData({ ...formData, [name]: value }); 
     };
 
+    const onError = (message) => {
+        console.log(message);
+        alert(message);
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -44,16 +49,14 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
 
         try {
             //  API call to update the customer
-            const updateResult = await bookingService.update(customer.id, updatedCustomerData);
+            const updateResult = await bookingService.update(customer.id, updatedCustomerData, onError);
 
-            if(updateResult) alert('Customer updated successfully!');
-            else alert("Unsuccessful");
-            
-            onNavigate('customers');
-            onClose();
-        } catch (err) {
-            console.error('Error updating customer:', err);
-            alert('Error updating customer. Please check the console for details.');
+            if(updateResult) {
+                onNavigate('customers');
+                onClose();
+            }      
+        } catch (e) {
+            onError(`Error updating customer: ${e.message}`);
         }
     };
 
@@ -100,18 +103,18 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                             value={formData.otherDetails}
                             onChange={handleInputChange}
                             className="input"
-                            rows="4" // Specifies the visible number of lines
+                            rows="4" // visible lines count
                         ></textarea>
                     </div>
                     <div className="form-group">
                         <label htmlFor="promotions">Promotions:</label>
                         <textarea
-                            id="otherDetails"
-                            name="otherDetails"
-                            value={formData.otherDetails}
+                            id="promotions"
+                            name="promotions"
+                            value={formData.promotions}
                             onChange={handleInputChange}
                             className="input"
-                            rows="4" // Specifies the visible number of lines
+                            rows="4" // visible lines count
                         ></textarea>
                     </div>
                     <div className="form-group">

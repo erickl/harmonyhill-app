@@ -34,5 +34,5 @@ export async function add(personnelId, personnel) {
 }
 
 export async function update(personnelId, updatedPersonnel) {
-    return await dao.update([dao.constant.PERSONNEL], personnelId, updatedPersonnel);
+    return await dao.update([dao.constant.PERSONNEL], personnelId, updatedPersonnel, true);
 }

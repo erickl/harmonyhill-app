@@ -56,9 +56,9 @@ export async function add(bookingData) {
     }
 }
 
-export async function update(bookingId, bookingUpdateData) {
+export async function update(bookingId, bookingUpdateData, onError) {
     const bookingUpdate = await mapBookingObject(bookingUpdateData, true);
-    return await bookingDao.update(bookingId, bookingUpdate);
+    return await bookingDao.update(bookingId, bookingUpdate, onError);
 }
 
 /**

@@ -68,7 +68,7 @@ export async function getSubCollections(collectionName, filters = [], ordering =
  * Creates and includes a change logs string in the new booking object.
  * Cannot update createdAt or createdBy
  */
-export async function update(path, id, updatedData, updateLogs = true) { 
+export async function update(path, id, updatedData, updateLogs, onError = null) { 
     try {
         // Remove any field which should not be updated
         if(Object.hasOwn(updatedData, "createdAt")) {
@@ -84,7 +84,7 @@ export async function update(path, id, updatedData, updateLogs = true) {
             let diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
         
             if(diffStr.length === 0) {
-                console.log(`No changes to update to ${path}/${id}`);
+                if(onError) onError(`No changes to update to ${path}/${id}`);
                 return false;
             }
                 
@@ -98,7 +98,7 @@ export async function update(path, id, updatedData, updateLogs = true) {
         return true;
     }
     catch (e) {
-        console.error(`Error updating document ${path}/${id}: `, e);
+        if(onError) onError(`No changes to update to ${path}/${id}`);
         return false;
     }
 }

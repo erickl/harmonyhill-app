@@ -6,8 +6,8 @@ export async function add(bookingRef, booking) {
     return await dao.add([dao.constant.BOOKINGS], bookingRef, booking);
 }
 
-export async function update(bookingId, bookingUpdate) {
-    return await dao.update([dao.constant.BOOKINGS], bookingId, bookingUpdate);
+export async function update(bookingId, bookingUpdate, onError) {
+    return await dao.update([dao.constant.BOOKINGS], bookingId, bookingUpdate, true, onError);
 }
 
 export async function getOne(id) {

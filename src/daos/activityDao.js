@@ -7,7 +7,7 @@ export async function add(bookingId, activityId, activity) {
 }
 
 export async function update(bookingId, activityId, activityData) {
-    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activityData);
+    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activityData, true);
 }
 
 export async function addMealItem(bookingId, mealId, mealItemId, mealItem) { 
