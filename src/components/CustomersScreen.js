@@ -136,7 +136,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                         <p><span className="detail-label">Villa:</span> {customer.house}</p>
                                         <p><span className="detail-label">Check In:</span> {customer.checkInAt_ddMMM}</p>
                                         <p><span className="detail-label">Check Out:</span> {customer.checkOutAt_ddMMM}</p>
-                                        <p><span className="detail-label">Length of Stay:</span> {customer.nightsCount} nights</p>
+                                        <p><span className="detail-label">Length of Stay:</span> {customer.nightsCount} night{customer.nightsCount > 1 ? "s" : ""}</p>
                                         <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
                                         <p><span className="detail-label">Allergies: </span><span className="allergies">{customer.allergies}</span></p>
                                         <p><span className="detail-label">Other Details:</span> {customer.otherDetails}</p>

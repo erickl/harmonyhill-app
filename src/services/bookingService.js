@@ -35,13 +35,22 @@ export async function get(filterOptions = {}) {
         booking.checkInAt = utils.toDateTime(booking.checkInAt);
         booking.checkOutAt = utils.toDateTime(booking.checkOutAt);
 
-        booking.nightsCount = (booking.checkOutAt - booking.checkInAt) / (1000 * 60 * 60 * 24);
+        booking.nightsCount = calulateNightsStayed(booking.checkInAt, booking.checkOutAt);
 
         booking.checkInAt = booking.checkInAt.startOf('day');
         booking.checkOutAt = booking.checkOutAt.startOf('day');
     });
     
     return bookings;
+}
+
+export function calulateNightsStayed(checkInAtInput, checkOutAtInput) {
+    let checkInAt = utils.toDateTime(checkInAtInput);
+    let checkOutAt = utils.toDateTime(checkOutAtInput);
+    checkInAt = checkInAt.startOf('day');
+    checkOutAt = checkOutAt.startOf('day');
+    const diffInDays = checkOutAt.diff(checkInAt, 'days');
+    return diffInDays.days;
 }
 
 export async function add(bookingData) {

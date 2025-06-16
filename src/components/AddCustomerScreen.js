@@ -26,8 +26,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
 
     useEffect(() => {
         if (formData.checkInAt && formData.checkOutAt) {
-            const timeDiff = formData.checkOutAt - formData.checkInAt;
-            const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            const diffDays = bookingService.calulateNightsStayed(formData.checkOutAt, formData.checkInAt);
             setStayDuration(`${diffDays} night${diffDays == 1 ? "" : "s"}`);
         } else {
             setStayDuration('');
