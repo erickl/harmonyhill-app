@@ -6,6 +6,7 @@ import * as menuService from '../services/menuService.js';
 import * as utils from '../utils.js';
 import DishesPopup from "./DishesPopup.js";
 import { loadBundle } from 'firebase/firestore';
+import "./AddPurchaseScreen.css";
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
@@ -25,11 +26,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [selectedDishes, setSelectedValue] = useState(null);
 
-    const handleAddDish = (dishes, newDish) => {
+    const handleEditOrder = (dishes, newDish, amount) => {
         const updatedDishes = { ...(dishes || {}) }; // Make shallow copy
       
         if (!updatedDishes[newDish.name]) updatedDishes[newDish.name] = 0;
-        updatedDishes[newDish.name] += 1;
+        updatedDishes[newDish.name] += amount;
+        updatedDishes[newDish.name] = Math.max(updatedDishes[newDish.name], 0);
       
         setSelectedValue(updatedDishes);
         setShowPopup(false);
@@ -169,35 +171,56 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     </h2>
                 </div>
                 <div className="card-content">
-                    {selectedDishes ? (
-                    <>
+                    {selectedDishes ? (<>
                          <p>You selected:</p>
-                        {Object.entries(selectedDishes).map(([dish, count]) => (
+                        {Object.entries(selectedDishes).filter(([_, count]) => count > 0).map(([dish, count]) => (
                             <div key={`${dish}-selected-wrapper`}>
                                 {<p>{count}x {dish}</p>}
                             </div>
                         ))}
                        
-                    </>
-                    ) : null}
-             
-                    <div>
-                        <button onClick={() => setShowPopup(true)}>Choose an option</button>
-                        
-
-                        {showPopup && (
-                            <DishesPopup
-                            options={allDishes}
-                            selectedDishes={selectedDishes}
-                            onAddDish={handleAddDish}
-                            onClose={() => setShowPopup(false)}
-                            />
-                        )}
-                    </div>
+                    </>) : null}
+                    <h3>Items in {selectedCategory}:</h3>
+                    {allDishes.length > 0 ? (
+                        <div className="activity-button-container">
+                            {allDishes.map((dish) => (
+                                <div className="meal-dish-row" key={`${dish.id}-wrapper`}>
+                                    <span>{dish.name}</span>
+                                    <button
+                                        key={`${dish.id}-increment`}
+                                        //className="button activity-button"
+                                        onClick={() => {
+                                            handleEditOrder(selectedDishes, dish, 1);
+                                        }}>
+                                        +
+                                    </button>
+                                    <span>{selectedDishes[dish.name]}</span>
+                                    <button
+                                        key={`${dish.id}-increment`}
+                                        //className="button activity-button"
+                                        onClick={() => {
+                                            handleEditOrder(selectedDishes, dish, -1);
+                                        }}>
+                                        -
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                       <p>No dishes found</p>
+                    )}
+                   
                 </div>
-                <div>
+                <div className="buttons-footer">
                     <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
-                        Back to activities</button>
+                        Back to activities
+                    </button>
+                    <button 
+                        type="button" 
+                        onClick={() => alert("Submitting: In progress")} 
+                    >
+                        Submit
+                    </button>
                 </div>
             </div>
         )
@@ -312,7 +335,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                         key={`${item.category}-${item.subCategory}`}
                                         className="button activity-button"
                                         onClick={() => {
-                                            console.log('Activity button clicked. Setting selectedActivity to:', item);
                                             setSelectedActivity(item)
                                         }}
                                     >
