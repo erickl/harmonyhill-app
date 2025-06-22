@@ -121,7 +121,8 @@ async function mapMealObject(mealData, isUpdate = false) {
 
     if(utils.isString(mealData?.subCategory)) meal.subCategory = mealData.subCategory;
 
-    if(utils.isDate(mealData?.startingAt)) {
+    // The startingAt date might be entered later. It's usually how the guests want it
+    if(utils.isEmpty(mealData?.startingAt) && utils.isDate(mealData?.startingAt)) {
         meal.startingAt = utils.toFireStoreTime(mealData.startingAt);
     } else {
         throw new Error(`Starting At date invalid: ${mealData?.startingAt}`);

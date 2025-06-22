@@ -171,6 +171,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     </h2>
                 </div>
                 <div className="card-content">
+
+                    {/* Display total order thus far */}
                     {selectedDishes ? (<>
                          <p>You selected:</p>
                         {Object.entries(selectedDishes).filter(([_, count]) => count > 0).map(([dish, count]) => (
@@ -178,9 +180,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                 {<p>{count}x {dish}</p>}
                             </div>
                         ))}
-                       
                     </>) : null}
                     <h3>Items in {selectedCategory}:</h3>
+
+                    {/* Display all dishes, inc/dec buttons, and how many of each dish */}
                     {allDishes.length > 0 ? (
                         <div className="activity-button-container">
                             {allDishes.map((dish) => (
@@ -194,7 +197,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                         }}>
                                         +
                                     </button>
-                                    <span>{selectedDishes[dish.name]}</span>
+                                    <span>{selectedDishes && selectedDishes[dish.name] ? selectedDishes[dish.name] : 0}</span>
                                     <button
                                         key={`${dish.id}-increment`}
                                         //className="button activity-button"
@@ -211,13 +214,22 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     )}
                    
                 </div>
+                {/* todo <div className="form-group">
+                    <label htmlFor="startingAt">Check Out Date</label>
+                    <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleOtherInputChange}/>
+                </div> */}
                 <div className="buttons-footer">
                     <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
                         Back to activities
                     </button>
                     <button 
                         type="button" 
-                        onClick={() => alert("Submitting: In progress")} 
+                        onClick={ () => mealService.addMeal(customer.id, {
+                            "category"    : selectedCategory,
+                            "subCategory" : selectedActivity,
+                            "dishes"      : selectedDishes,
+                            "status"      : "requested"
+                        })}
                     >
                         Submit
                     </button>
