@@ -1,6 +1,8 @@
+import { doc } from "firebase/firestore";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
+import * as dataLoader from "../daos/bookingDataLoader.js";
 
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
@@ -35,7 +37,7 @@ export async function get(filterOptions = {}) {
         booking.checkInAt = utils.toDateTime(booking.checkInAt);
         booking.checkOutAt = utils.toDateTime(booking.checkOutAt);
 
-        booking.nightsCount = calulateNightsStayed(booking.checkInAt, booking.checkOutAt);
+        booking.nightsCount = calculateNightsStayed(booking.checkInAt, booking.checkOutAt);
 
         booking.checkInAt = booking.checkInAt.startOf('day');
         booking.checkOutAt = booking.checkOutAt.startOf('day');
@@ -44,7 +46,7 @@ export async function get(filterOptions = {}) {
     return bookings;
 }
 
-export function calulateNightsStayed(checkInAtInput, checkOutAtInput) {
+export function calculateNightsStayed(checkInAtInput, checkOutAtInput) {
     let checkInAt = utils.toDateTime(checkInAtInput);
     let checkOutAt = utils.toDateTime(checkOutAtInput);
     checkInAt = checkInAt.startOf('day');
@@ -160,4 +162,8 @@ export async function testBooking() {
     //const deleteSuccess = await deleteBooking(ref);
 
     let x = 1;
+}
+
+export async function loadData() {
+    return await dataLoader.loadData();
 }

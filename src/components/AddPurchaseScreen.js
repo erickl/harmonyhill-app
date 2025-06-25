@@ -222,6 +222,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
                         Back to activities
                     </button>
+                    
                     <button 
                         type="button" 
                         onClick={ () => mealService.addMeal(customer.id, {
@@ -367,10 +368,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         )
     }
 
-
-
     // --- Render Category Buttons (default view) ---
-
     return (
         <div className="card add-purchase-card">
             <div className="card-header">
