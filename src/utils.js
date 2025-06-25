@@ -37,6 +37,17 @@ export async function jsonObjectDiffStr(obj1, obj2) {
     return diff;
 }
 
+export function toNumber(valueIn) {
+    if(isString(valueIn)) {
+        const value = valueIn.replace(/,/g, '');
+        return Number(value);
+    } else if(isNumber(valueIn)) {
+        return valueIn;
+    } else {
+        throw new Error(`${valueIn} cannot be parsed to a number`);
+    }
+}
+
 export function isAmount(value) {
     return isNumber(value) || isString(value);
 }
@@ -117,12 +128,26 @@ function toJsDate(inputDate) {
     else if (inputDate instanceof Timestamp) {
         return inputDate.toDate();
     } else if (inputDate instanceof Date) {
-        return inputDate;
+        const luxonDateTime = DateTime.fromJSDate(inputDate, { zone: getHotelTimezone() });
+        return luxonDateTime.toJSDate();
     } else if (typeof inputDate === "string") {
-        const parsedDate = new Date(inputDate);
-        if (isNaN(parsedDate)) {
-            throw new Error("Invalid date string format.");
+        let parsedDate = null;
+        const formats = ["yyyy/MM/dd", 
+                         "dd/MM/yyyy", "d/M/yyyy", "dd/M/yyyy", "d/MM/yyyy", 
+                         "dd/MM/yy",   "d/M/yy",   "dd/M/yy",   "d/MM/yy"
+        ];
+        for(const format of formats) {
+            const luxonDateTime = DateTime.fromFormat(inputDate, format, { zone: getHotelTimezone() });
+            if(luxonDateTime.isValid) {
+                parsedDate = luxonDateTime.toJSDate();
+                break;
+            }
         }
+
+        if (!parsedDate) {
+            throw new Error(`Invalid date string format: ${inputDate}`); 
+        }
+        
         return parsedDate;
     } else {
         throw new Error(`Invalid date type. Expected DateTime, Timestamp, Date, or string: ${inputDate}`);
