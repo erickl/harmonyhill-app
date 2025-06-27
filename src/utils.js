@@ -9,9 +9,7 @@ export async function jsonObjectDiffStr(obj1, obj2) {
         const val1 = obj1[key];
         const val2 = obj2[key];
 
-        if(isEmpty(val2)) continue;
-        
-        else if (!Object.hasOwn(obj1, key)) {
+        if (!Object.hasOwn(obj1, key)) {
             diff += ` ${key}: ${val1} added, `;
         } 
         else if(isDate(val2)) {
@@ -22,7 +20,8 @@ export async function jsonObjectDiffStr(obj1, obj2) {
             }
         }
         else if (val2 !== val1) {
-            diff += ` ${key}: ${val1} -> ${val2}, `;
+            const val2_ = isEmpty(val2) ? "[empty]" : val2;
+            diff += ` ${key}: ${val1} -> ${val2_}, `;
         }
     }
 
