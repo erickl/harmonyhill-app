@@ -7,18 +7,21 @@ import * as utils from '../utils.js';
 const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
 
     const [formData, setFormData] = useState({
-        name:         customer.name,
-        house:        customer.house,
-        checkInAt:    customer.checkInAt,
-        checkOutAt:   customer.checkOutAt,
-        allergies:    customer.allergies,
-        country:      customer.country,
-        guestCount:   customer.guestCount,
-        otherDetails: customer.otherDetails,
-        promotions:   customer.promotions,
-        roomRate:     customer.roomRate,
-        source:       customer.source,
-        status:       customer.status,
+        name:                customer.name,
+        phoneNumber:         customer.phoneNumber,
+        email:               customer.email,
+        house:               customer.house,
+        checkInAt:           customer.checkInAt,
+        checkOutAt:          customer.checkOutAt,
+        dietaryRestrictions: customer.dietaryRestrictions,
+        country:             customer.country,
+        guestCount:          customer.guestCount,
+        customerInfo:        customer.customerInfo,
+        specialRequests:     customer.specialRequests,
+        promotions:          customer.promotions,
+        roomRate:            customer.roomRate,
+        source:              customer.source,
+        status:              customer.status,
     });
 
     const handleInputChange = (e) => {
@@ -72,6 +75,14 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                         <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required className="input" />
                     </div>
                     <div className="form-group">
+                        <label htmlFor="phoneNumber">Phone number:</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className="input" />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="email">Phone number:</label>
+                        <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className="input" />
+                    </div>
+                    <div className="form-group">
                         <label htmlFor="house">Villa:</label>
                         <input type="text" id="house" name="house" value={formData.house} onChange={handleInputChange} required className="input" />
                     </div>                  
@@ -84,8 +95,8 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                         <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleOtherInputChange}/>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="allergies">Allergies:</label>
-                        <input type="text" id="allergies" name="allergies" value={formData.allergies} onChange={handleInputChange} className="input" />
+                        <label htmlFor="dietaryRestrictions">Dietary restrictions:</label>
+                        <input type="text" id="dietaryRestrictions" name="dietaryRestrictions" value={formData.dietaryRestrictions} onChange={handleInputChange} className="input" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="country">Country:</label>
@@ -96,11 +107,22 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                         <input type="number" id="guestCount" name="guestCount" value={formData.guestCount} onChange={handleInputChange} className="input" />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="otherDetails">Other Details:</label>
+                        <label htmlFor="customerInfo">Other Customer Information:</label>
                         <textarea
-                            id="otherDetails"
-                            name="otherDetails"
-                            value={formData.otherDetails}
+                            id="customerInfo"
+                            name="customerInfo"
+                            value={formData.customerInfo}
+                            onChange={handleInputChange}
+                            className="input"
+                            rows="4" // visible lines count
+                        ></textarea>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="specialRequests">Special Requests:</label>
+                        <textarea
+                            id="specialRequests"
+                            name="specialRequests"
+                            value={formData.specialRequests}
                             onChange={handleInputChange}
                             className="input"
                             rows="4" // visible lines count

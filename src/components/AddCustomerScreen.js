@@ -7,16 +7,19 @@ import * as utils from '../utils.js';
 
 const AddCustomerScreen = ({ onNavigate }) => {
     const initialFormData = {
-        house:        '',
+        house:               '',
+        phoneNumber:         '',
+        email:               '',
         // MyDatePicker requires initial value to be null because of AdapterLuxon
-        checkInAt:    null, 
-        checkOutAt:   null,
-        guestCount:   1,
-        allergies:    '',
-        otherDetails: '',
-        promotions:   '',
-        country:      '',
-        source:       '',
+        checkInAt:           null, 
+        checkOutAt:          null,
+        guestCount:          1,
+        dietaryRestrictions: '',
+        customerInfo:        '',
+        specialRequests:     '',
+        promotions:          '',
+        country:             '',
+        source:              '',
     };
 
     const [formData, setFormData] = useState(initialFormData);
@@ -127,6 +130,28 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     />
                 </div>
 
+                {/* Phone number */}
+                <div>
+                    <h3>Phone number</h3>
+                    <input
+                        placeholder="Enter phone number"
+                        value={formData.phoneNumber}
+                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+
+                    />
+                </div>
+
+                {/* Email */}
+                <div>
+                    <h3>Email</h3>
+                    <input
+                        placeholder="Enter email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+
+                    />
+                </div>
+
                 <div className="form-group">
                     <label htmlFor="checkInAt">Check In Date</label>
                     <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleOtherInputChange}/>
@@ -165,9 +190,9 @@ const AddCustomerScreen = ({ onNavigate }) => {
                 <div>
                     <h3>Allergies</h3>
                     <textarea
-                        placeholder="Enter allergies"
-                        value={formData.allergies}
-                        onChange={(e) => handleInputChange('allergies', e.target.value)}
+                        placeholder="Enter dietary restrictions"
+                        value={formData.dietaryRestrictions}
+                        onChange={(e) => handleInputChange('dietaryRestrictions', e.target.value)}
 
                     />
                 </div>
@@ -177,8 +202,19 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     <h3>Other Details</h3>
                     <textarea
                         placeholder="Enter other details"
-                        value={formData.otherDetails}
-                        onChange={(e) => handleInputChange('otherDetails', e.target.value)}
+                        value={formData.customerInfo}
+                        onChange={(e) => handleInputChange('customerInfo', e.target.value)}
+
+                    />
+                </div>
+
+                {/* Special Requests */}
+                <div>
+                    <h3>Other Details</h3>
+                    <textarea
+                        placeholder="Enter other details"
+                        value={formData.specialRequests}
+                        onChange={(e) => handleInputChange('specialRequests', e.target.value)}
 
                     />
                 </div>

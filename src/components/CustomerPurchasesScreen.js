@@ -127,7 +127,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                                 <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
                                                 <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
                                                 <p><span className="detail-label">Created At:</span> {activity.createdAt_ddMMM_HHmm}</p>
-                                                <p><span className="detail-label">Allergies: </span><span className="allergies">{activity.allergies}</span></p>
+                                                <p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>
                                                 <p><span className="detail-label">Details:</span> {activity.details}</p>
                                                 <p><span className="detail-label">Status:</span> {activity.status}</p>
                                                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
