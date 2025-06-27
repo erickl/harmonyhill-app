@@ -31,8 +31,8 @@ export async function get(filterOptions = {}) {
     
     // return dates of a few different formats
     bookings.map((booking) => {
-        booking.checkInAt_ddMMM = utils.to_ddMMM(booking.checkInAt);
-        booking.checkOutAt_ddMMM = utils.to_ddMMM(booking.checkOutAt);
+        booking.checkInAt_wwwddMMM = utils.to_www_ddMMM(booking.checkInAt);
+        booking.checkOutAt_wwwddMMM = utils.to_www_ddMMM(booking.checkOutAt);
 
         booking.checkInAt = utils.toDateTime(booking.checkInAt);
         booking.checkOutAt = utils.toDateTime(booking.checkOutAt);

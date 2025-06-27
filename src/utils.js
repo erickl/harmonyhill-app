@@ -112,6 +112,7 @@ function getData(inputDate) {
         ccyy: luxonDateTime.year, // Full year
         month: month,
         day: luxonDateTime.day.toString().padStart(2, '0'), // Pad day with leading zero if needed
+        weekday: luxonDateTime.weekdayShort,
         hours: luxonDateTime.hour.toString().padStart(2, '0'), // Pad hour with leading zero if needed
         minutes: luxonDateTime.minute.toString().padStart(2, '0'), // Pad minute with leading zero if needed
         tz: tz,
@@ -179,6 +180,12 @@ export function to_ddMMM(date = null) {
     date = date ? date : now();
     const data = getData(date);
     return `${data.day} ${data.monthName}`;
+}
+
+export function to_www_ddMMM(date = null) {
+    date = date ? date : now();
+    const data = getData(date);
+    return `${data.weekday}, ${data.day} ${data.monthName}`;
 }
 
 export function to_HHmm(date = null) {

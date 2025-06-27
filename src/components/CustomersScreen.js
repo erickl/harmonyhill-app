@@ -136,24 +136,22 @@ const CustomersScreen = ({ onNavigate }) => {
                                             }}
                                         />}
                                     </div>
-                                    {customer.checkInAt_ddMMM} - {customer.checkOutAt_ddMMM}
+                                    {customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}
                                 </div>
                                 {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
                                     <div className="customer-details">
                                         <p><span className="detail-label">Villa:</span> {customer.house}</p>
-                                        <p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>
-                                        <p><span className="detail-label">Email:</span> {customer.email}</p>
-                                        <p><span className="detail-label">Check In:</span> {customer.checkInAt_ddMMM}</p>
-                                        <p><span className="detail-label">Check Out:</span> {customer.checkOutAt_ddMMM}</p>
                                         <p><span className="detail-label">Length of Stay:</span> {customer.nightsCount} night{customer.nightsCount > 1 ? "s" : ""}</p>
                                         <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
+                                        <p><span className="detail-label">Arrival Information:</span> {customer.arrivalInfo}</p>
                                         <p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{customer.dietaryRestrictions}</span></p>
                                         <p><span className="detail-label">Other Customer Information:</span> {customer.customerInfo}</p>
-                                        <p><span className="detail-label">Arrival Information:</span> {customer.arrivalInfo}</p>
                                         <p><span className="detail-label">Special Requests:</span> {customer.specialRequests}</p>
                                         <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
                                         <p><span className="detail-label">Country:</span> {customer.country}</p>
                                         <p><span className="detail-label">Source:</span> {customer.source}</p>
+                                        <p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>
+                                        { customer.email && ( <p><span className="detail-label">Email:</span> {customer.email}</p> )}
                                         { hasEditPermissions && (
                                             <button
                                                 className="edit-booking"
