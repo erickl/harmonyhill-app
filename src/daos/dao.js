@@ -44,6 +44,7 @@ export async function get(path, filters = [], ordering = []) {
         return docs
     } catch (e) {
         throw new Error(`Error getting documents from ${path}: `, e);
+        //return false; 
     }
 }
 
@@ -98,18 +99,18 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
         return true;
     }
     catch (e) {
-        if(onError) onError(`No changes to update to ${path}/${id}`);
+        if(onError) onError(`Error updating document ${path}/${id}: ${e.message}`);
         return false;
     }
 }
 
-export async function add(path, id, data) {
+export async function add(path, id, data, onError = null) {
     try {
         const ref = doc(db, ...path, id);
         await setDoc(ref, data);
         return true;
     } catch (e) {
-        console.error(`Error adding document ${path}/${id}: `, e);
+        if(onError) onError(`Error adding document ${path}/${id}: ${e.message}`);
         return false;
     }
 }
