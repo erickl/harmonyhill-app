@@ -240,6 +240,10 @@ export function getHouseColor(house) {
     }
 };
 
+export function capitalizeWords(str) {
+    return str.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function generateDateFormats() {
     let formats = [];
     for(const d of ["d", "dd"]) {

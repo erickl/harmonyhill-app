@@ -171,14 +171,14 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                 <h2 className="card-title"> 
                     Activities<br/>{customer.name}
                 </h2>
-                <button 
+                {/* <button 
                     className="add-button"  
                     onClick={(e) => {
                         e.stopPropagation();
                         handleAddPurchase(customer);
                     }}>
                     +
-                </button>  
+                </button>   */}
             </div>
             <div className="card-content">
                 {/* Activities */}

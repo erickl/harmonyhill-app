@@ -140,17 +140,17 @@ const CustomersScreen = ({ onNavigate }) => {
                                 </div>
                                 {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
                                     <div className="customer-details">
-                                        <p><span className="detail-label">Villa:</span> {customer.house}</p>
+                                        <p><span className="detail-label">Villa:</span> {utils.capitalizeWords(customer.house)}</p>
                                         <p><span className="detail-label">Length of Stay:</span> {customer.nightsCount} night{customer.nightsCount > 1 ? "s" : ""}</p>
                                         <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
-                                        <p><span className="detail-label">Arrival Information:</span> {customer.arrivalInfo}</p>
-                                        <p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{customer.dietaryRestrictions}</span></p>
-                                        <p><span className="detail-label">Other Customer Information:</span> {customer.customerInfo}</p>
-                                        <p><span className="detail-label">Special Requests:</span> {customer.specialRequests}</p>
-                                        <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
-                                        <p><span className="detail-label">Country:</span> {customer.country}</p>
+                                        { customer.arrivalInfo && (<p><span className="detail-label">Arrival Information:</span> {customer.arrivalInfo}</p>)}
+                                        { customer.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{customer.dietaryRestrictions}</span></p>)}
+                                        { customer.customerInfo && (<p><span className="detail-label">Other Customer Information:</span> {customer.customerInfo}</p>)}
+                                        { customer.specialRequests && (<p><span className="detail-label">Special Requests:</span> {customer.specialRequests}</p> )}
+                                        { customer.promotions && (<p><span className="detail-label">Promotions:</span> {customer.promotions}</p>)}
+                                        <p><span className="detail-label">Country:</span> {utils.capitalizeWords(customer.country)}</p>
                                         <p><span className="detail-label">Source:</span> {customer.source}</p>
-                                        <p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>
+                                        { customer.phoneNumber && (<p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>)}
                                         { customer.email && ( <p><span className="detail-label">Email:</span> {customer.email}</p> )}
                                         { hasEditPermissions && (
                                             <button
