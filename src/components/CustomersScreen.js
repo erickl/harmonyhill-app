@@ -19,9 +19,9 @@ const CustomersScreen = ({ onNavigate }) => {
     const [customerPurchases, setCustomerPurchases] = useState(null); // state to enable adding purchases
     const [hasEditPermissions, setEditPermissions] = useState(false); // true if current user has persmissions to edit bookings
 
-    const fetchCustomers = async () => {
+    const fetchCustomers = async (customerFilter = {}) => {
         try {
-            const fetchedCustomers = await bookingService.get();
+            const fetchedCustomers = await bookingService.get(customerFilter);
             setCustomers(fetchedCustomers);
             setLoading(false);
         } catch (err) {
@@ -31,7 +31,9 @@ const CustomersScreen = ({ onNavigate }) => {
     };
 
     useEffect(() => {
-        fetchCustomers();
+        const aWeekAgo = utils.today().minus({ days: 7 });
+        const aWeekFromNow = utils.today().plus({ days: 7 });
+        fetchCustomers({after: aWeekAgo, before: aWeekFromNow});
 
         const loadPermissions = async () => {
             const userHasEditPermissions = await userService.hasEditPermissions();
@@ -96,6 +98,10 @@ const CustomersScreen = ({ onNavigate }) => {
 
     const handleEditCustomer = (customer) => {
         setCustomerToEdit(customer); // Set the customer to be edited
+    };
+
+    const handleGetAllCustomers = () => {
+        fetchCustomers();
     };
 
     const handleEnterPurchasesList = (customer) => {
@@ -166,6 +172,15 @@ const CustomersScreen = ({ onNavigate }) => {
                                 )}
                             </React.Fragment>
                         ))}
+                        {((customerTypeClass == "past-customer" || customerTypeClass == "future-customer") &&
+                            <button
+                                className="edit-booking"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleGetAllCustomers();
+                                }}> See All
+                            </button>
+                        )}
                     </div>
                 ) : (
                     null
