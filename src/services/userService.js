@@ -2,7 +2,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, up
 import { auth } from "../firebase";
 import * as userDao from "../daos/userDao.js";
 
-export async function signUp(username, email, password) {
+export async function signUp(username, email, role, password) {
     try {
         const existingUsers = await userDao.get({email: email});
         if (existingUsers && existingUsers.length > 0) {
@@ -19,7 +19,7 @@ export async function signUp(username, email, password) {
         const addUserDataSuccess = await userDao.add(user.uid, {
             name: username,
             email: email,
-            role: "staff",
+            role: role,
             createdAt: new Date(),
             lastLoginAt: null,
             approved: false,
@@ -81,6 +81,12 @@ export async function getUser() {
     return await userDao.getOne(user.uid);
 }
 
+export async function hasEditPermissions() {
+    const user = await getUser();
+    if(!user) return false;
+    return user.role == "admin" || user.role == "manager";
+}
+
 export async function logout() {
     await signOut(auth);
 }
@@ -127,7 +133,7 @@ export async function testLogin() {
     const email = process.env.REACT_APP_TEST_USER_EMAIL;
     const password = process.env.REACT_APP_TEST_USER_PASSWORD;
 
-    const signUpSuccess = await signUp("Eric Klaesson", email, password);
+    const signUpSuccess = await signUp("Eric Klaesson", email, "admin", password);
 
     const isApproved = await isEmailApproved(email);
     if(!isApproved) {

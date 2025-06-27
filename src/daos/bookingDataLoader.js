@@ -48,7 +48,7 @@ export async function loadData(path) {
                 } else {
                     doc[translatedHeader] = interpretedData;
                 }
-            }src/daos/bookingDataLoader.js
+            }
             
             doc["house"] = house;
             documents.push(doc);

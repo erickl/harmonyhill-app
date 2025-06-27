@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, ShoppingCart } from 'lucide-react';
-import * as bookingService from '../services/bookingService.js'; // Import the booking service
+import * as bookingService from '../services/bookingService.js';
+import * as userService from '../services/userService.js';
 import * as utils from '../utils.js';
 
 import './CustomersScreen.css';
-import AddCustomerScreen from './AddCustomerScreen';
 import EditCustomerScreen from './EditCustomerScreen';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 
@@ -17,6 +17,7 @@ const CustomersScreen = ({ onNavigate }) => {
     const [futureExpanded, setFutureExpanded] = useState(false); // State to expand future customer section
     const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
     const [customerPurchases, setCustomerPurchases] = useState(null); // state to enable adding purchases
+    const [hasEditPermissions, setEditPermissions] = useState(false); // true if current user has persmissions to edit bookings
 
     const fetchCustomers = async () => {
         try {
@@ -31,6 +32,12 @@ const CustomersScreen = ({ onNavigate }) => {
 
     useEffect(() => {
         fetchCustomers();
+
+        const loadPermissions = async () => {
+            const userHasEditPermissions = await userService.hasEditPermissions();
+            setEditPermissions(userHasEditPermissions);
+        }
+        loadPermissions();    
     }, []);
 
     if (loading) {
@@ -146,13 +153,15 @@ const CustomersScreen = ({ onNavigate }) => {
                                         <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
                                         <p><span className="detail-label">Country:</span> {customer.country}</p>
                                         <p><span className="detail-label">Source:</span> {customer.source}</p>
-                                        <button
-                                            className="edit-booking"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleEditCustomer(customer);
-                                            }}> Edit Booking
-                                        </button>
+                                        { hasEditPermissions && (
+                                            <button
+                                                className="edit-booking"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEditCustomer(customer);
+                                                }}> Edit Booking
+                                            </button>
+                                        )}
                                     </div>
 
                                 )}
