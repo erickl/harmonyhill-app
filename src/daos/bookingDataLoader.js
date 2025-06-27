@@ -1,10 +1,10 @@
 import * as utils from "../utils.js";
 
-export async function loadData() {
+export async function loadData(path) {
     let documents = [];
-
-    const path = '/Booking list - Bookings Harmony Hill.tsv';
-    const dataSeparator = "\t";
+    
+    const house = path.toLowerCase().includes("harmony hill") ? "harmony hill" : "the jungle nook";
+    const dataSeparator = path.endsWith(".tsv") ? "\t" : ",";
 
     try {
         const response = await fetch(path);
@@ -38,8 +38,19 @@ export async function loadData() {
                 if(!translatedHeader) {
                     continue;
                 }
-                doc[translatedHeader] = interpretData(translatedHeader, columns[c]);
-            }
+                const interpretedData = interpretData(translatedHeader, columns[c]);
+                
+                // Add arrival time info to customerInfo data
+                if((translatedHeader === "arrivalTime" || translatedHeader === "customerInfo") && !utils.isEmpty(interpretedData)) {
+                    doc["customerInfo"] = doc["customerInfo"] ? doc["customerInfo"] + ". " : "";
+                    if(translatedHeader === "arrivalTime") doc["customerInfo"] += "Arrival time: ";
+                    doc["customerInfo"] += interpretedData;
+                } else {
+                    doc[translatedHeader] = interpretedData;
+                }
+            }src/daos/bookingDataLoader.js
+            
+            doc["house"] = house;
             documents.push(doc);
         }
     } catch (error) {
@@ -63,24 +74,35 @@ function translateDataHeader(headerIn) {
         
         "room rate"            : "roomRate",
         "guest paid per night" : "guestPaid",
-        "Total payout (still incl tax & service charge)" : "hostPayout",
+        "total payout (still incl tax & service charge)" : "hostPayout",
         
         "country"              : "country",
         "special promos"       : "promotions",
-        "Other requests"       : "requests",
-        "customer info"        : "otherDetails",
-        
-        "payment method"       : "paymentMethod",
-        "welcome message sent" : "welcomeMessageSent",
+        "customer info"        : "customerInfo",
+        "dietary restrictions" : "dietaryRestrictions",
+        "other requests"       : "specialRequests",
 
-        "pre-check-in message sent" : "preCheckInMessageSent",
+        "customer wa"          : "phoneNumber",
+        "customer email"       : "email",
+
+        "payment method"       : "paymentMethod",
         
+        "arrival time"         : "arrivalTime",  
+
+        //"welcome message sent"      : "welcomeMessageSent",
+        //"pre-check-in message sent" : "preCheckInMessageSent",   
     };
 
     return translator[headerIn];
 }
 
 function interpretData(header, data) {
+    if(utils.isString(data)) {
+        data = data.trim();
+        if(header != "name") {
+            data = data.toLowerCase();
+        }
+    }
     switch(header) {
         case "checkInAt": 
             return utils.toFireStoreTime(data);
