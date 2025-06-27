@@ -29,7 +29,7 @@ export async function jsonObjectDiffStr(obj1, obj2) {
     // add prefix with user info & remove the last comma and space
     if (diff.length > 0) {
         const username = await userService.getUserName();
-        const nowStr = to_yyMMddHHmmTz();
+        const nowStr = to_yyMMddHHmmTz(now());
         diff = `Updated by ${username} at ${nowStr}: ${diff}`;
         diff = diff.slice(0, -2);
     }
@@ -78,45 +78,68 @@ export function isDate(value) {
 /**
  * @returns date string in the format YYMMDD HH:MM GMT+X
  */
-export function to_yyMMddHHmmTz(date = new Date()) {
-    const jsDate = toJsDate(date);
-    const data = getData(jsDate);
+export function to_yyMMddHHmmTz(date = null) {
+    date = date ? date : now();
+    const data = getData(date);
     return `${data.yy}${data.month}${data.day} ${data.hours}:${data.minutes} ${data.tz}`;
 }
 
 /**
  * @returns date string formatted as YYMMDD, without hyphens
  */
-export function to_YYMMdd(inputDate) {
-    const jsDate = toJsDate(inputDate);
-    const data = getData(jsDate);
+export function to_YYMMdd(date = null) {
+    date = date ? date : now();
+    const data = getData(date);
     return `${data.yy}${data.month}${data.day}`;
 }
 
 function getData(inputDate) {
-    const jsDate = toJsDate(inputDate); 
-    const month = (jsDate.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed, so add 1
+    const luxonDateTime = toLuxonDateTime(inputDate); 
+    const month = luxonDateTime.month.toString().padStart(2, '0');
 
     const monthNames = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "0", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ];
 
     // Timezone offset in minutes
-    const tzOffsetMin = jsDate.getTimezoneOffset(); // e.g., -480 for GMT+8
-    const tzOffsetHr = -tzOffsetMin / 60;         // Flip sign to match GMT+X
+    const tzOffsetMin = luxonDateTime.offset; // e.g., -480 for GMT+8
+    const tzOffsetHr = tzOffsetMin / 60;         // Flip sign to match GMT+X
     const tz = `GMT${tzOffsetHr >= 0 ? "+" : ""}${tzOffsetHr}`;
 
     return {
-        yy: jsDate.getFullYear().toString().slice(-2),
-        ccyy: jsDate.getFullYear(), // Full year
+        yy: luxonDateTime.year.toString().slice(-2),
+        ccyy: luxonDateTime.year, // Full year
         month: month,
-        day: jsDate.getDate().toString().padStart(2, '0'), // Pad day with leading zero if needed
-        hours: jsDate.getHours().toString().padStart(2, '0'), // Pad hour with leading zero if needed
-        minutes: jsDate.getMinutes().toString().padStart(2, '0'), // Pad minute with leading zero if needed
+        day: luxonDateTime.day.toString().padStart(2, '0'), // Pad day with leading zero if needed
+        hours: luxonDateTime.hour.toString().padStart(2, '0'), // Pad hour with leading zero if needed
+        minutes: luxonDateTime.minute.toString().padStart(2, '0'), // Pad minute with leading zero if needed
         tz: tz,
-        monthName: monthNames[jsDate.getMonth()],
+        monthName: monthNames[luxonDateTime.month],
     };
+}
+
+function toLuxonDateTime(inputDate) {
+    if (inputDate instanceof DateTime) {
+        return inputDate;
+    } else if (inputDate instanceof Timestamp) {
+        const date = inputDate.toDate();
+        return DateTime.fromJSDate(date, { zone: getHotelTimezone() });
+    } else if (inputDate instanceof Date) {
+        return DateTime.fromJSDate(inputDate, { zone: getHotelTimezone() });
+    } else if (typeof inputDate === "string") {
+        const formats = generateDateFormats();
+        for(const format of formats) {
+            const luxonDateTime = DateTime.fromFormat(inputDate, format, { zone: getHotelTimezone() });
+            if(luxonDateTime.isValid) {
+                return luxonDateTime;
+            }
+        }
+
+        throw new Error(`Invalid date string format: ${inputDate}`);      
+    } else {
+        throw new Error(`Invalid date type. Expected DateTime, Timestamp, Date, or string: ${inputDate}`);
+    }
 }
 
 function toJsDate(inputDate) {
@@ -132,10 +155,8 @@ function toJsDate(inputDate) {
         return luxonDateTime.toJSDate();
     } else if (typeof inputDate === "string") {
         let parsedDate = null;
-        const formats = ["yyyy/MM/dd", 
-                         "dd/MM/yyyy", "d/M/yyyy", "dd/M/yyyy", "d/MM/yyyy", 
-                         "dd/MM/yy",   "d/M/yy",   "dd/M/yy",   "d/MM/yy"
-        ];
+        
+        const formats = generateDateFormats();
         for(const format of formats) {
             const luxonDateTime = DateTime.fromFormat(inputDate, format, { zone: getHotelTimezone() });
             if(luxonDateTime.isValid) {
@@ -154,46 +175,46 @@ function toJsDate(inputDate) {
     }
 }
 
-export function to_ddMMM(inputDate) {
-    let jsDate = toJsDate(inputDate);
-    const data = getData(jsDate);
+export function to_ddMMM(date = null) {
+    date = date ? date : now();
+    const data = getData(date);
     return `${data.day} ${data.monthName}`;
 }
 
-export function to_HHmm(inputDate) {
-    let jsDate = toJsDate(inputDate);
-    const data = getData(jsDate);
+export function to_HHmm(date = null) {
+    date = date ? date : now();
+    const data = getData(date);
     return `${data.hours}:${data.minutes}`;
 }
 
-export function to_ddMMM_HHmm(inputDate) {
-    let jsDate = toJsDate(inputDate);
-    const data = getData(jsDate);
+export function to_ddMMM_HHmm(date = null) {
+    date = date ? date : now();
+    const data = getData(date);
     return `${data.day} ${data.monthName} ${data.hours}:${data.minutes}`;
 }
 
-export function dateStringToDate(dateString) {
-    const [year, month, day] = dateString.split('-').map(Number);
-    const date = new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
-    return date;
-}
-
 export function toFireStoreTime(inputDate) {
-    const jsDate = toJsDate(inputDate);
+    const luxonDateTime = toLuxonDateTime(inputDate);
+    const jsDate = toJsDate(luxonDateTime);
     return Timestamp.fromDate(jsDate);
 }
 
-export function toDateTime(timestamp) {
-    const jsDate = toJsDate(timestamp);
-    const luxonDateTime = DateTime.fromJSDate(jsDate, { zone: getHotelTimezone() });
-    return luxonDateTime;
+export function toDateTime(inputDate) {
+    return toLuxonDateTime(inputDate);
 }
 
 /**
  * get a Luxon date time object with time at midnight
  */
 export function today() {
-    return DateTime.now().setZone(getHotelTimezone()).startOf('day');
+    return now().startOf('day');
+}
+
+/**
+ * get a Luxon date time object with time at this moment
+ */
+export function now() {
+    return DateTime.now().setZone(getHotelTimezone());
 }
 
 export function getHotelTimezone() {
@@ -211,3 +232,19 @@ export function getHouseColor(house) {
             return 'bg-none'; // No background color by default
     }
 };
+
+function generateDateFormats() {
+    let formats = [];
+    for(const d of ["d", "dd"]) {
+        for(const M of ["M", "MM"]) {
+            for(const y of ["yy", "yyyy"]) {
+                for(const sep of ["-", "/"]) {
+                    formats.push(`${d}${sep}${M}${sep}${y}`);
+                } 
+            }
+        }
+    }
+    formats.push("yyyy/MM/dd", "yyyy-MM-dd");
+
+    return formats;
+}
