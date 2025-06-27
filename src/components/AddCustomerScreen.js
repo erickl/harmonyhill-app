@@ -187,9 +187,9 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     </select>
                 </div>
 
-                {/* Dietary Restriction */}
+                {/* Dietary Restrictions */}
                 <div>
-                    <h3>Allergies</h3>
+                    <h3>Dietary Restrictions</h3>
                     <textarea
                         placeholder="Enter dietary restrictions"
                         value={formData.dietaryRestrictions}

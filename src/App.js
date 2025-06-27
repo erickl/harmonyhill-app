@@ -24,7 +24,7 @@ import './App.css';
 const BottomNavigation = ({ activeTab, onTabChange }) => {
   return (
     <nav className="bottom-navigation">
-      <button
+      {/* <button
         className={`nav-button ${activeTab === 'customers' ? 'active' : ''}`}
         onClick={() => onTabChange('customers')}
       >
@@ -44,7 +44,7 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
       >
         <Upload className="h-5 w-5 mb-1" />
         Expenses
-      </button>
+      </button> */}
     </nav>
   );
 };
@@ -53,14 +53,13 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
 
 
 function App() {
-  //menuService.testGetMenuItems();
+  //bookingService.uploadData('/Booking list - Bookings Harmony Hill.tsv');
+  //bookingService.uploadData('/Booking list - Bookings Jungle Nook.tsv');
+  
   //personnelService.testPersonnel();
-  //userService.logout();
-  const dt = DateTime.fromObject(
-    { year: 2025, month: 5, day: 20, hour: 14, minute: 30 },
-    { zone: 'Asia/Singapore' } // or 'UTC', 'America/New_York', etc.
-  );
+  //userService.testLogin();
   //activityService.testActivities(dt);
+  
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('customers');
   const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
