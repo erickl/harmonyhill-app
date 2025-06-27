@@ -119,7 +119,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                         ></textarea>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="arrivalInfo">Other Customer Information:</label>
+                        <label htmlFor="arrivalInfo">Arrival Information:</label>
                         <textarea
                             id="arrivalInfo"
                             name="arrivalInfo"

@@ -19,8 +19,9 @@ const CustomersScreen = ({ onNavigate }) => {
     const [customerPurchases, setCustomerPurchases] = useState(null); // state to enable adding purchases
     const [hasEditPermissions, setEditPermissions] = useState(false); // true if current user has persmissions to edit bookings
 
-    const fetchCustomers = async (customerFilter = {}) => {
+    const fetchCustomers = async (getAllCustomers = false) => {
         try {
+            const customerFilter = getAllCustomers ? {} : {after: utils.today().minus({ days: 7 }), before: utils.today().plus({ days: 7 })};
             const fetchedCustomers = await bookingService.get(customerFilter);
             setCustomers(fetchedCustomers);
             setLoading(false);
@@ -31,9 +32,7 @@ const CustomersScreen = ({ onNavigate }) => {
     };
 
     useEffect(() => {
-        const aWeekAgo = utils.today().minus({ days: 7 });
-        const aWeekFromNow = utils.today().plus({ days: 7 });
-        fetchCustomers({after: aWeekAgo, before: aWeekFromNow});
+        fetchCustomers(false);
 
         const loadPermissions = async () => {
             const userHasEditPermissions = await userService.hasEditPermissions();
@@ -101,7 +100,7 @@ const CustomersScreen = ({ onNavigate }) => {
     };
 
     const handleGetAllCustomers = () => {
-        fetchCustomers();
+        fetchCustomers(true);
     };
 
     const handleEnterPurchasesList = (customer) => {
