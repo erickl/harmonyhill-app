@@ -17,6 +17,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
         country:             customer.country,
         guestCount:          customer.guestCount,
         customerInfo:        customer.customerInfo,
+        arrivalInfo:         customer.arrivalInfo,
         specialRequests:     customer.specialRequests,
         promotions:          customer.promotions,
         roomRate:            customer.roomRate,
@@ -112,6 +113,17 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                             id="customerInfo"
                             name="customerInfo"
                             value={formData.customerInfo}
+                            onChange={handleInputChange}
+                            className="input"
+                            rows="4" // visible lines count
+                        ></textarea>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="arrivalInfo">Other Customer Information:</label>
+                        <textarea
+                            id="arrivalInfo"
+                            name="arrivalInfo"
+                            value={formData.arrivalInfo}
                             onChange={handleInputChange}
                             className="input"
                             rows="4" // visible lines count

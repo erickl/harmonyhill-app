@@ -149,6 +149,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                         <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
                                         <p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{customer.dietaryRestrictions}</span></p>
                                         <p><span className="detail-label">Other Customer Information:</span> {customer.customerInfo}</p>
+                                        <p><span className="detail-label">Arrival Information:</span> {customer.arrivalInfo}</p>
                                         <p><span className="detail-label">Special Requests:</span> {customer.specialRequests}</p>
                                         <p><span className="detail-label">Promotions:</span> {customer.promotions}</p>
                                         <p><span className="detail-label">Country:</span> {customer.country}</p>

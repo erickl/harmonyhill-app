@@ -16,6 +16,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
         guestCount:          1,
         dietaryRestrictions: '',
         customerInfo:        '',
+        arrivalInfo:         '',
         specialRequests:     '',
         promotions:          '',
         country:             '',
@@ -186,7 +187,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     </select>
                 </div>
 
-                {/* Allergies */}
+                {/* Dietary Restriction */}
                 <div>
                     <h3>Allergies</h3>
                     <textarea
@@ -204,7 +205,16 @@ const AddCustomerScreen = ({ onNavigate }) => {
                         placeholder="Enter other details"
                         value={formData.customerInfo}
                         onChange={(e) => handleInputChange('customerInfo', e.target.value)}
+                    />
+                </div>
 
+                {/* Arrival Information */}
+                <div>
+                    <h3>Arrival Information</h3>
+                    <textarea
+                        placeholder="Enter other details"
+                        value={formData.arrivalInfo}
+                        onChange={(e) => handleInputChange('arrivalInfo', e.target.value)}
                     />
                 </div>
 

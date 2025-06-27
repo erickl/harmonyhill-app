@@ -94,6 +94,7 @@ async function mapBookingObject(data, isUpdate = false) {
     if(utils.isString(data?.dietaryRestrictions)) booking.dietaryRestrictions    = data.dietaryRestrictions    ;
     if(utils.isString(data?.country))             booking.country                = data.country.toLowerCase();  
     if(utils.isString(data?.customerInfo))        booking.customerInfo           = data.customerInfo ;
+    if(utils.isString(data?.arrivalInfo))         booking.arrivalInfo            = data.arrivalInfo  ;
     if(utils.isString(data?.specialRequests))     booking.specialRequests        = data.specialRequests ;
     if(utils.isString(data?.promotions))          booking.promotions             = data.promotions   ;
     if(utils.isString(data?.source))              booking.source                 = data.source.toLowerCase();       
@@ -137,6 +138,7 @@ export async function testBooking() {
         country: "Norway",
         guestCount: 4,
         customerInfo: "none",
+        arrivalInfo: "ETA 13:00",
         specialRequests: "none",
         phoneNumber: "123456789",
         email: "meil1@gmail.com",
@@ -157,6 +159,7 @@ export async function testBooking() {
         country: "Norway",
         guestCount: 4,
         customerInfo: "updated",
+        arrivalInfo: "ETA 14:00",
         phoneNumber: "11112222333",
         email: "mail@meil.com",
         specialRequests: "updated",
@@ -173,9 +176,7 @@ export async function testBooking() {
     let x = 1;
 }
 
-export async function uploadData() {
-    const path = '/Booking list - Bookings Harmony Hill.tsv';
-    //const path = '/Booking list - Bookings Jungle Nook.tsv';
+export async function uploadData(path) {
     const documents = await dataLoader.loadData(path);
 
     let uploadedDocuments = [];

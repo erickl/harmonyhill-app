@@ -7,13 +7,16 @@ export async function loadData(path) {
     const dataSeparator = path.endsWith(".tsv") ? "\t" : ",";
 
     try {
+        // Load text file data
         const response = await fetch(path);
         const content = await response.text();
 
+        // Find data headers
         const rows = content.split("\n");
         const headerRow = rows.find((row) => row.includes("Action required?")); // may return undefined
         if(!headerRow) throw new Error(`Cannot find header row of file ${path}`);
         
+        // Find the name data column, among the data headers
         const headers = headerRow.split(dataSeparator);
         const nameIndex = headers.indexOf("Name");
         if(nameIndex == -1) {
@@ -21,6 +24,7 @@ export async function loadData(path) {
         }
         const headerRowIndex = rows.indexOf(headerRow);
         
+        // Create an object from each booking data row
         for(let r = headerRowIndex+1; r < rows.length; r++) {
             const row = rows[r];
             const columns = row.split(dataSeparator);
@@ -28,6 +32,7 @@ export async function loadData(path) {
                 continue;
             }
 
+            // Format the data of each attribute of the booking, if needed, and add it to the object
             let doc = {};
             for(let c = 0; c < columns.length; c++) {
                 const header = headers[c];
@@ -39,15 +44,7 @@ export async function loadData(path) {
                     continue;
                 }
                 const interpretedData = interpretData(translatedHeader, columns[c]);
-                
-                // Add arrival time info to customerInfo data
-                if((translatedHeader === "arrivalTime" || translatedHeader === "customerInfo") && !utils.isEmpty(interpretedData)) {
-                    doc["customerInfo"] = doc["customerInfo"] ? doc["customerInfo"] + ". " : "";
-                    if(translatedHeader === "arrivalTime") doc["customerInfo"] += "Arrival time: ";
-                    doc["customerInfo"] += interpretedData;
-                } else {
-                    doc[translatedHeader] = interpretedData;
-                }
+                doc[translatedHeader] = interpretedData; 
             }
             
             doc["house"] = house;
@@ -63,7 +60,7 @@ export async function loadData(path) {
 function translateDataHeader(headerIn) {
     headerIn = headerIn.trim().toLowerCase();
     const translator = {
-        "# guests"             : "guestCount",
+        "# people"             : "guestCount",
         
         "check in"             : "checkInAt",
         "check out"            : "checkOutAt",
@@ -87,7 +84,7 @@ function translateDataHeader(headerIn) {
 
         "payment method"       : "paymentMethod",
         
-        "arrival time"         : "arrivalTime",  
+        "arrival time"         : "arrivalInfo",  
 
         //"welcome message sent"      : "welcomeMessageSent",
         //"pre-check-in message sent" : "preCheckInMessageSent",   
@@ -113,6 +110,8 @@ function interpretData(header, data) {
         case "guestPaid": 
             return utils.toNumber(data);
         case "hostPayout": 
+            return utils.toNumber(data);
+        case "guestCount": 
             return utils.toNumber(data);
         default:
             return data;
