@@ -26,6 +26,14 @@ export async function get(filterOptions = {}) {
         queryFilter.push(where("checkOutAt", ">=", utils.toFireStoreTime(filterOptions.date)));
     }
 
+    if (Object.hasOwn(filterOptions, "after")) {
+        queryFilter.push(where("checkInAt", ">=", utils.toFireStoreTime(filterOptions.after)));
+    }
+
+    if (Object.hasOwn(filterOptions, "before")) {
+        queryFilter.push(where("checkInAt", "<=", utils.toFireStoreTime(filterOptions.before)));
+    }
+
     let ordering = [ orderBy("checkInAt", "asc") ];
     return await dao.get(path, queryFilter, ordering);
 }
