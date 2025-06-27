@@ -203,10 +203,10 @@ const CustomersScreen = ({ onNavigate }) => {
     return (
         <div className="card">
             <div className="card-header">
-                <h2 className="card-title">Customers
-                    <button className="add-button" onClick={() => onNavigate('add-customer')}>
-                        +
-                    </button></h2>
+                <h2 className="card-title">Customers</h2>
+                <button className="add-button" onClick={() => onNavigate('add-customer')}>
+                    +
+                </button>
             </div>
             <div className="card-content">
                 {/* Past Customers */}

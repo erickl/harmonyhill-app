@@ -178,8 +178,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                         handleAddPurchase(customer);
                     }}>
                     +
-                </button>
-                
+                </button>  
             </div>
             <div className="card-content">
                 {/* Activities */}
