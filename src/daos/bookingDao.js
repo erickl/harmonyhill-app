@@ -2,8 +2,8 @@ import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 
-export async function add(bookingRef, booking) {
-    return await dao.add([dao.constant.BOOKINGS], bookingRef, booking);
+export async function add(bookingRef, booking, onError) {
+    return await dao.add([dao.constant.BOOKINGS], bookingRef, booking, onError);
 }
 
 export async function update(bookingId, bookingUpdate, onError) {

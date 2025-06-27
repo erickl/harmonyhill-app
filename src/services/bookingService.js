@@ -55,10 +55,10 @@ export function calculateNightsStayed(checkInAtInput, checkOutAtInput) {
     return diffInDays.days;
 }
 
-export async function add(bookingData) {
+export async function add(bookingData, onError) {
     const bookingObject = await mapBookingObject(bookingData);
     const bookingId = createBookingId(bookingObject.name, bookingObject.house, bookingObject.checkInAt);
-    const success = await bookingDao.add(bookingId, bookingObject);
+    const success = await bookingDao.add(bookingId, bookingObject, onError);
     if(success) {
         return bookingId;
     }
@@ -84,30 +84,33 @@ export async function deleteBooking(bookingId) {
 
 export function createBookingId(guestName, house, checkInAt) {
     const yyMMdd = utils.to_YYMMdd(checkInAt);
-    const houseShort = house == "Harmony Hill" ? "hh" : "jn";
+    const houseShort = house.toLowerCase() == "harmony hill" ? "hh" : "jn";
     return yyMMdd + "-" + houseShort + "-" + guestName.replace(/ /g, "-");
 }
 
 async function mapBookingObject(data, isUpdate = false) {
     let booking = {};
 
-    if(utils.isString(data?.allergies))    booking.allergies    = data.allergies    ;
-    if(utils.isString(data?.country))      booking.country      = data.country.toLowerCase();  
-    if(utils.isString(data?.otherDetails)) booking.otherDetails = data.otherDetails ;
-    if(utils.isString(data?.promotions))   booking.promotions   = data.promotions   ;
-    if(utils.isString(data?.source))       booking.source       = data.source.toLowerCase();       
-    if(utils.isString(data?.status))       booking.status       = data.status.toLowerCase();       
-    if(utils.isString(data?.house))        booking.house        = data.house.toLowerCase();        
-    if(utils.isString(data?.name))         booking.name         = data.name         ;
+    if(utils.isString(data?.dietaryRestrictions)) booking.dietaryRestrictions    = data.dietaryRestrictions    ;
+    if(utils.isString(data?.country))             booking.country                = data.country.toLowerCase();  
+    if(utils.isString(data?.customerInfo))        booking.customerInfo           = data.customerInfo ;
+    if(utils.isString(data?.specialRequests))     booking.specialRequests        = data.specialRequests ;
+    if(utils.isString(data?.promotions))          booking.promotions             = data.promotions   ;
+    if(utils.isString(data?.source))              booking.source                 = data.source.toLowerCase();       
+    if(utils.isString(data?.status))              booking.status                 = data.status.toLowerCase();       
+    if(utils.isString(data?.house))               booking.house                  = data.house.toLowerCase();        
+    if(utils.isString(data?.name))                booking.name                   = data.name         ;
+    if(utils.isString(data?.phoneNumber))         booking.phoneNumber            = data.phoneNumber  ;
+    if(utils.isString(data?.email))               booking.email                  = data.email        ;
 
-    if(!utils.isEmpty(data?.guestCount))   booking.guestCount   = data.guestCount   ;
+    if(!utils.isEmpty(data?.guestCount))          booking.guestCount             = data.guestCount   ;
     
-    if(utils.isAmount(data?.roomRate))     booking.roomRate     = data.roomRate     ;
-    if(utils.isAmount(data?.guestPaid))    booking.guestPaid    = data.guestPaid    ;
-    if(utils.isAmount(data?.hostPayout))   booking.hostPayout   = data.hostPayout   ;
-
-    if(utils.isDate(data?.checkInAt))      booking.checkInAt    = utils.toFireStoreTime(data.checkInAt)    ;
-    if(utils.isDate(data?.checkOutAt))     booking.checkOutAt   = utils.toFireStoreTime(data.checkOutAt)   ;
+    if(utils.isAmount(data?.roomRate))            booking.roomRate               = data.roomRate     ;
+    if(utils.isAmount(data?.guestPaid))           booking.guestPaid              = data.guestPaid    ;
+    if(utils.isAmount(data?.hostPayout))          booking.hostPayout             = data.hostPayout   ;
+            
+    if(utils.isDate(data?.checkInAt))             booking.checkInAt              = utils.toFireStoreTime(data.checkInAt)    ;
+    if(utils.isDate(data?.checkOutAt))            booking.checkOutAt             = utils.toFireStoreTime(data.checkOutAt)   ;
 
     if(!isUpdate) {
         booking.createdAt = new Date(); 
@@ -127,13 +130,16 @@ export async function testBooking() {
     const all = await get();
 
     let booking = {
-        allergies: "sausage",
+        dietaryRestrictions: "sausage",
         checkInAt: "2025-05-10",
         checkOutAt: "2025-05-13",
         createdAt: new Date(),
         country: "Norway",
         guestCount: 4,
-        otherDetails: "none",
+        customerInfo: "none",
+        specialRequests: "none",
+        phoneNumber: "123456789",
+        email: "meil1@gmail.com",
         promotions: "none",
         roomRate: 10000000,
         guestPaid: 1200000,
@@ -147,10 +153,13 @@ export async function testBooking() {
     const ref = await add(booking);
 
     let bookingUpdate = {
-        allergies: "sausage",
+        dietaryRestrictions: "sausage",
         country: "Norway",
         guestCount: 4,
-        otherDetails: "updated",
+        customerInfo: "updated",
+        phoneNumber: "11112222333",
+        email: "mail@meil.com",
+        specialRequests: "updated",
         promotions: "updated",
         source: "AirBnB",
         status: "confirmed",
@@ -164,6 +173,18 @@ export async function testBooking() {
     let x = 1;
 }
 
-export async function loadData() {
-    return await dataLoader.loadData();
+export async function uploadData() {
+    const path = '/Booking list - Bookings Harmony Hill.tsv';
+    //const path = '/Booking list - Bookings Jungle Nook.tsv';
+    const documents = await dataLoader.loadData(path);
+
+    let uploadedDocuments = [];
+    const onError = (e) => console.log(e);
+    for(const doc of documents) {
+        const id = await add(doc, onError);
+        if(id !== false) {
+            uploadedDocuments.push(id);
+        }
+    }
+    const x = 1;
 }
