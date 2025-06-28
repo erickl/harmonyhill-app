@@ -132,7 +132,7 @@ async function mapMealObject(mealData, isUpdate = false) {
 
     if(!isUpdate) {
         meal.createdAt = new Date();
-        meal.createdBy = await userService.getUserName();
+        meal.createdBy = await userService.getCurrentUserName();
     }
 
     return meal;
@@ -147,7 +147,7 @@ async function mapMealItemObject(mealItemData, isUpdate = false) {
 
     if(!isUpdate) {
         meal.createdAt = new Date();
-        meal.createdBy = await userService.getUserName();
+        meal.createdBy = await userService.getCurrentUserName();
     }
 
     return meal;

@@ -115,7 +115,7 @@ async function mapBookingObject(data, isUpdate = false) {
 
     if(!isUpdate) {
         booking.createdAt = new Date(); 
-        booking.createdBy = await userService.getUserName();
+        booking.createdBy = await userService.getCurrentUserName();
     }
 
     return booking;

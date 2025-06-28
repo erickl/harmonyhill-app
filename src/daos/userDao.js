@@ -17,6 +17,10 @@ export async function get(options = {}) {
         filters.push(where("email", "==", options.email));
     }
 
+    if(Object.hasOwn(options, "username")) { 
+        filters.push(where("name", "==", options.username));
+    }
+
     try {
         const users = await dao.get(['users'], filters);
         return users;

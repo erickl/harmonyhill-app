@@ -17,7 +17,6 @@ import * as personnelService from './services/personnelService.js';
 import { DateTime } from 'luxon';
 import { auth } from "./firebase";
 
-
 import './App.css';
 
 // Bottom Navigation Component
@@ -53,6 +52,7 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
 
 
 function App() {
+  //userService.logout();
   //bookingService.uploadData('/Booking list - Bookings Harmony Hill.tsv');
   //bookingService.uploadData('/Booking list - Bookings Jungle Nook.tsv');
   

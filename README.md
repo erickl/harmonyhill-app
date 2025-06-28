@@ -12,6 +12,14 @@ Install and login to Firebase
 For the authentication flow
 - npm install firebase-admin
 
+# Launching on Firebase
+- npm run build
+- firebase deploy
+- Once complete, you'll get a link like this: https://your-project-id.web.app, which you can share
+- On Android, one can tap the 3-dot menu and chose "Add to Home screen", to make it almost like a real app
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

@@ -173,11 +173,11 @@ async function mapObject(data, isUpdate = false) {
     // First "requested", then "confirmed" (then "completed"?)
     activity.status = utils.isString(data?.status) ? data.status : "requested";
     
-    activity.assignedTo = utils.isString(data?.assignedTo) ? data.assignedTo : await userService.getUserName();
+    activity.assignedTo = utils.isString(data?.assignedTo) ? data.assignedTo : await userService.getCurrentUserName();
 
     if(!isUpdate) {
         activity.createdAt = new Date();
-        activity.createdBy = await userService.getUserName();
+        activity.createdBy = await userService.getCurrentUserName();
     }
 
     return activity;
@@ -206,7 +206,7 @@ export async function testActivities(date) {
     // const assigned = await assignProvider(bookingId, activityId, "Rena");
 
 
-    //const user = userService.getUser();
+    //const user = userService.getCurrentUser();
     // const assigned = await assignStaff(bookingId, activityId, userId);
     
     // const updated = await update(bookingId, activityId, { time: "13:00" });

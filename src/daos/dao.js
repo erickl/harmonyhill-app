@@ -124,7 +124,7 @@ export async function remove(path, id) {
             return false;
         }
         
-        dataToDelete.deletedBy = userService.getUserName();
+        dataToDelete.deletedBy = userService.getCurrentUserName();
         dataToDelete.deletedAt = new Date();
         dataToDelete.deletedFrom = `${path}/${id}`;
         const deletedRef = await add(["deleted"], `del-${id}`, dataToDelete);

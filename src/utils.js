@@ -27,7 +27,7 @@ export async function jsonObjectDiffStr(obj1, obj2) {
 
     // add prefix with user info & remove the last comma and space
     if (diff.length > 0) {
-        const username = await userService.getUserName();
+        const username = await userService.getCurrentUserName();
         const nowStr = to_yyMMddHHmmTz(now());
         diff = `Updated by ${username} at ${nowStr}: ${diff}`;
         diff = diff.slice(0, -2);

@@ -66,7 +66,7 @@ async function mapPriceObject(data, isUpdate = false) {
 
     if(!isUpdate) {
         object.createdAt = new Date();
-        object.createdBy = await userService.getUserName();
+        object.createdBy = await userService.getCurrentUserName();
     }
 
     return object;
@@ -85,7 +85,7 @@ async function mapPersonnelObject(data, isUpdate = false) {
     
     if(!isUpdate) {
         object.createdAt = new Date();
-        object.createdBy = await userService.getUserName();
+        object.createdBy = await userService.getCurrentUserName();
     }
 
     return object;
