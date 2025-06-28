@@ -23,7 +23,7 @@ import './App.css';
 const BottomNavigation = ({ activeTab, onTabChange }) => {
   return (
     <nav className="bottom-navigation">
-      {/* <button
+      <button
         className={`nav-button ${activeTab === 'customers' ? 'active' : ''}`}
         onClick={() => onTabChange('customers')}
       >
@@ -43,7 +43,7 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
       >
         <Upload className="h-5 w-5 mb-1" />
         Expenses
-      </button> */}
+      </button>
     </nav>
   );
 };

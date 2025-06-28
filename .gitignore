@@ -31,3 +31,19 @@ firebase-debug.*.log
 firebase.json.local
 **/serviceAccountKey.json
 dataconnect-generated/
+
+# Capacitor
+ios/
+*.ios.*
+android/app/build/
+android/.gradle/
+android/.idea/
+android/local.properties
+android/capacitor.properties
+
+# Android Studio
+*.iml
+.gradle/
+.idea/
+*.apk
+*.keystore
