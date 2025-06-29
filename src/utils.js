@@ -57,7 +57,7 @@ export function isNumber(value) {
 
 export function isEmpty(value) {
     value = isString(value) ? value.trim() : value;
-    return value == "" || value == undefined || value == null;
+    return value == "" || value == undefined || value == null || value == [] || value == {};
 }
 
 export function isString(value) {
@@ -212,15 +212,15 @@ export function toDateTime(inputDate) {
 /**
  * get a Luxon date time object with time at midnight
  */
-export function today() {
-    return now().startOf('day');
+export function today(addDays) {
+    return now().startOf('day').plus({days: addDays}).setZone(getHotelTimezone());
 }
 
 /**
  * get a Luxon date time object with time at this moment
  */
-export function now() {
-    return DateTime.now().setZone(getHotelTimezone());
+export function now(addDays) {
+    return DateTime.now().plus({days: addDays}).setZone(getHotelTimezone());
 }
 
 export function getHotelTimezone() {
@@ -228,7 +228,7 @@ export function getHotelTimezone() {
 }
 
 export function getHouseColor(house) {
-    house  = house.toLowerCase();
+    house  = house ? house.toLowerCase() : "";
     switch (house) {
         case 'the jungle nook':
             return 'bg-jn'; // Tailwind CSS class for light blue

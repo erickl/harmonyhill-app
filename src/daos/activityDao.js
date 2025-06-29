@@ -75,10 +75,10 @@ export async function getBookingActivities(bookingId, options = {}) {
     }
 
     const after = Object.hasOwn(options, "after") ? options.after : utils.today();
-    filters.push(where("startingAt", "<=", utils.toFireStoreTime(after)));
+    filters.push(where("startingAt", ">=", utils.toFireStoreTime(after)));
 
     if (Object.hasOwn(options, "before")) {
-        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.before)));
+        filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
     }
 
     if (Object.hasOwn(options, "assignedTo")) {

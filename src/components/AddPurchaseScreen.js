@@ -6,6 +6,7 @@ import * as menuService from '../services/menuService.js';
 import * as utils from '../utils.js';
 import DishesPopup from "./DishesPopup.js";
 import { loadBundle } from 'firebase/firestore';
+import MyDatePicker from "./MyDatePicker.js";
 import "./AddPurchaseScreen.css";
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
@@ -26,12 +27,43 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [selectedDishes, setSelectedValue] = useState(null);
 
-    const handleEditOrder = (dishes, newDish, amount) => {
+    const [formData, setFormData] = useState({
+        startingAt: utils.now(1)
+    });
+
+    const onSubmitMeal = async () => {
+        const addMealResult = await mealService.addMeal(customer.id, {
+            "category"    : selectedCategory,
+            "subCategory" : selectedActivity.subCategory,
+            "dishes"      : selectedDishes,
+            "status"      : "requested",
+            "startingAt"  : formData.startingAt,
+        });
+
+        if(addMealResult) {
+            setSelectedCategory(null);
+            setSelectedActivity(null);
+            onClose();
+        }
+    }
+
+    const handleFormInput = (name, value) => {
+        setFormData({ ...formData, [name]: value }); 
+    };
+
+    const handleEditOrder = (dishes, newDish, quantity) => {
+        // todo: do some checks: check if there is already a dinner on this day. 
+        // Check if the dinner is on a day which the customer is not staying there
+
         const updatedDishes = { ...(dishes || {}) }; // Make shallow copy
       
-        if (!updatedDishes[newDish.name]) updatedDishes[newDish.name] = 0;
-        updatedDishes[newDish.name] += amount;
-        updatedDishes[newDish.name] = Math.max(updatedDishes[newDish.name], 0);
+        if (!updatedDishes[newDish.name]) {
+            updatedDishes[newDish.name] = newDish;
+            updatedDishes[newDish.name].quantity = 0;
+        }
+
+        updatedDishes[newDish.name].quantity += quantity;
+        updatedDishes[newDish.name].quantity = Math.max(updatedDishes[newDish.name].quantity, 0);
       
         setSelectedValue(updatedDishes);
         setShowPopup(false);
@@ -171,13 +203,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     </h2>
                 </div>
                 <div className="card-content">
-
                     {/* Display total order thus far */}
                     {selectedDishes ? (<>
                          <p>You selected:</p>
-                        {Object.entries(selectedDishes).filter(([_, count]) => count > 0).map(([dish, count]) => (
-                            <div key={`${dish}-selected-wrapper`}>
-                                {<p>{count}x {dish}</p>}
+                        {Object.entries(selectedDishes).filter(([_, dishData]) => dishData.quantity > 0).map(([dishName, dishData]) => (
+                            <div key={`${dishName}-selected-wrapper`}>
+                                {<p>{dishData.quantity}x {dishName}</p>}
                             </div>
                         ))}
                     </>) : null}
@@ -197,7 +228,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                         }}>
                                         +
                                     </button>
-                                    <span>{selectedDishes && selectedDishes[dish.name] ? selectedDishes[dish.name] : 0}</span>
+                                    <span>{selectedDishes && selectedDishes[dish.name] ? selectedDishes[dish.name].quantity : 0}</span>
                                     <button
                                         key={`${dish.id}-increment`}
                                         //className="button activity-button"
@@ -214,10 +245,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     )}
                    
                 </div>
-                {/* todo <div className="form-group">
-                    <label htmlFor="startingAt">Check Out Date</label>
-                    <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleOtherInputChange}/>
-                </div> */}
+                <div className="form-group">
+                    <label htmlFor="startingAt">Start date</label>
+                    <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormInput}/>
+                </div>
                 <div className="buttons-footer">
                     <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
                         Back to activities
@@ -225,12 +256,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     
                     <button 
                         type="button" 
-                        onClick={ () => mealService.addMeal(customer.id, {
-                            "category"    : selectedCategory,
-                            "subCategory" : selectedActivity,
-                            "dishes"      : selectedDishes,
-                            "status"      : "requested"
-                        })}
+                        onClick={ () => onSubmitMeal() }
                     >
                         Submit
                     </button>

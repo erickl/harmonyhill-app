@@ -21,7 +21,7 @@ const CustomersScreen = ({ onNavigate }) => {
 
     const fetchCustomers = async (getAllCustomers = false) => {
         try {
-            const customerFilter = getAllCustomers ? {} : {after: utils.today().minus({ days: 7 }), before: utils.today().plus({ days: 7 })};
+            const customerFilter = getAllCustomers ? {} : {after: utils.today(-7), before: utils.today(7)};
             const fetchedCustomers = await bookingService.get(customerFilter);
             setCustomers(fetchedCustomers);
             setLoading(false);

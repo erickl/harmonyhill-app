@@ -17,13 +17,22 @@ export async function addMeal(bookingId, mealData) {
     const meal = await mapMealObject(mealData);
     const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
     const success = await activityDao.add(bookingId, mealId, meal);
+    if(!success) {
+        return false; // todo: pass onError to the add function
+    }
+
+    if(!utils.isEmpty(mealData.dishes)) {
+        const dishIds = await addMealItems(bookingId, mealId, Object.values(mealData.dishes));
+        const x = 1;
+    }
+
     return success ? mealId : false;
 }
 
 // Example result: 250530-hh-breakfast
 export function makeMealId(startingAt, house, mealCategory) {
     const houseShort = house == "Harmony Hill" ? "hh" : "jn";
-    startingAt = startingAt.replace(/-/g, "");
+    startingAt = utils.to_YYMMdd(startingAt);
     return `${startingAt}-${houseShort}-${mealCategory.replace(/ /g, "-")}`;
 }
 
@@ -62,7 +71,8 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
                 throw new Error("Cannot add meal item");
             }
             // Update the meal total price
-            const success2 = await update(bookingId, mealId, { price: meal.price + mealItem.price });
+            const currentMealPrice = meal.price ? meal.price : 0;
+            const success2 = await activityDao.update(bookingId, mealId, { price: currentMealPrice + mealItem.price });
             if(!success2) {
                 throw new Error("Cannot update total meal price");
             }
@@ -122,10 +132,8 @@ async function mapMealObject(mealData, isUpdate = false) {
     if(utils.isString(mealData?.subCategory)) meal.subCategory = mealData.subCategory;
 
     // The startingAt date might be entered later. It's usually how the guests want it
-    if(utils.isEmpty(mealData?.startingAt) && utils.isDate(mealData?.startingAt)) {
+    if(utils.isDate(mealData?.startingAt)) {
         meal.startingAt = utils.toFireStoreTime(mealData.startingAt);
-    } else {
-        throw new Error(`Starting At date invalid: ${mealData?.startingAt}`);
     }
 
     if(utils.isString(mealData?.status)) meal.status = mealData.status;

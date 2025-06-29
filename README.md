@@ -18,7 +18,11 @@ For the authentication flow
 - Once complete, you'll get a link like this: https://your-project-id.web.app, which you can share
 - On Android, one can tap the 3-dot menu and chose "Add to Home screen", to make it almost like a real app
 
-
+# Relaunch as APK for android
+- npm run build
+- npx cap copy
+Use this instead of "npx cap copy" when you changed anything related to Capacitor plugins or capacitor.config.ts/json
+- npx cap sync
 
 # Getting Started with Create React App
 
