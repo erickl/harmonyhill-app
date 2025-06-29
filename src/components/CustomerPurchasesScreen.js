@@ -168,22 +168,31 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     return (
         <div className="card">
             <div className="card-header">
-                <h2 className="card-title"> 
-                    Activities<br/>{customer.name}
-                </h2>
-                <button 
-                    className="add-button"  
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddPurchase(customer);
-                    }}>
-                    +
-                </button>  
+                <div>
+                    <h2 className="card-title"> 
+                        Activities<br/>{customer.name}
+                    </h2>
+                    <p>{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</p>
+                </div>
+                <div>   
+                    <button 
+                        className="add-button"  
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddPurchase(customer);
+                        }}>
+                        +
+                    </button> 
+                </div>
             </div>
+            
             <div className="card-content">
                 {/* Activities */}
                 {renderActivitiesListSection("Activities", customerActivities, "date", expanded, setExpanded)}   
             </div>
+            <button type="button" onClick={() => onClose() } className="cancel-button">
+                Back to customers
+            </button>
         </div>
     );
 };

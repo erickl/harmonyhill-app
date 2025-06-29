@@ -1,16 +1,4 @@
-.card {
-    display: flex;
-}
 
-.card-header {
-    display: flex;
-}
-
-.card-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
 .card-content {
     flex-grow: 1;
