@@ -138,6 +138,8 @@ async function mapMealObject(mealData, isUpdate = false) {
 
     if(utils.isString(mealData?.status)) meal.status = mealData.status;
 
+    if(utils.isString(mealData?.provider)) meal.provider = mealData.provider;
+
     if(!isUpdate) {
         meal.createdAt = new Date();
         meal.createdBy = await userService.getCurrentUserName();

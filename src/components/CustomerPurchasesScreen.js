@@ -119,17 +119,20 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                             {activity.subCategory}
                                         </div>
                                         {selectedActivity?.id === activity.id && (
+                                        
                                             <div className="customer-details">
-                                                <p><span className="detail-label">Villa:</span> {activity.house}</p>
-                                                <p><span className="detail-label">Starting At:</span> {activity.startingAt_ddMMM_HHmm}</p>
-                                                <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
+                                                {activity.category !== "meal" && (<p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>)}
                                                 <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
                                                 <p><span className="detail-label">Created At:</span> {activity.createdAt_ddMMM_HHmm}</p>
-                                                <p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>
-                                                <p><span className="detail-label">Details:</span> {activity.details}</p>
+                                                {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
+                                                {activity.details && (<p><span className="detail-label">Details:</span> {activity.details}</p>)}
                                                 <p><span className="detail-label">Status:</span> {activity.status}</p>
                                                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
                                                 <p><span className="detail-label">Price:</span> {activity.price}</p>
+
+                                                <div>
+                                                
+                                                </div>
                                                 
                                                 <button
                                                     className="edit-booking"
@@ -138,6 +141,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                                         handleEditActivity(activity);
                                                     }}> Edit Activity
                                                 </button>
+                                            
                                             </div>
 
                                         )}
