@@ -11,7 +11,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     const [error, setError] = useState(null);
 
     const [selectedActivity, setSelectedActivity] = useState(null); // State to store the selected customer
-    const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
+    const [activityToEdit, setActivityToEdit] = useState(null); // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
     const [expanded, setExpanded] = useState(true); // All dates expanded to boot (all activity headers visible)
 
@@ -20,9 +20,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             return;
         }
         try {
-            const today = utils.today();
-            //const customerActivities = await activityService.getAll({after: today});
-            const customerActivities = await activityService.get(customer.id);//, {after: today});
+            const customerActivities = await activityService.get(customer.id);
             setCustomerActivities(customerActivities);
             setLoading(false);
         } catch (err) {
@@ -70,8 +68,8 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         }
     };
 
-    const handleEditActivity = (customer) => {
-        setCustomerToEdit(customer); // Set the customer to be edited
+    const handleEditActivity = (activity) => {
+        setActivityToEdit(activity); 
     };
 
     const handleAddPurchase = (customer) => {
@@ -159,7 +157,10 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         return (
             <AddPurchaseScreen
                 customer={customerPurchasing}
-                onClose={() => setCustomerPurchasing(null)}
+                onClose={() => {
+                    fetchPurchases();
+                    setCustomerPurchasing(null);
+                }}
                 onNavigate={onNavigate}
             />
         );

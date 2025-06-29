@@ -102,7 +102,7 @@ export async function add(bookingId, activityData) {
     activity.name = booking.name;
     activity.house = booking.house;
 
-    const activityId = makeId(activity.startingAt, bookingId, activity.subCategory);
+    const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
     const success = await activityDao.add(bookingId, activityId, activity);
     return success ? activityId : false;
 }
@@ -152,8 +152,10 @@ export async function remove(bookingId, activityId) {
     return await activityDao.remove(bookingId, activityId);
 }
 
-export function makeId(date, bookingId, subCategory) {
-    return `${date}-${bookingId}-${subCategory.replace(/ /g, '-')}`;
+export function makeId(startingAt, house, subCategory) {
+    const houseShort = house == "Harmony Hill" ? "hh" : "jn";
+    startingAt = utils.to_YYMMdd(startingAt);
+    return `${startingAt}-${houseShort}-${subCategory.replace(/ /g, '-')}`;
 }
 
 async function mapObject(data, isUpdate = false) {
@@ -168,7 +170,7 @@ async function mapObject(data, isUpdate = false) {
 
     if(utils.isAmount(data?.price))       activity.price = data.price;
 
-    activity.isFree = typeof data?.isFree ? data.isFree : false;
+    activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     
     // First "requested", then "confirmed" (then "completed"?)
     activity.status = utils.isString(data?.status) ? data.status : "requested";

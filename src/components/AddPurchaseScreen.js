@@ -5,7 +5,6 @@ import * as mealService from '../services/mealService.js';
 import * as menuService from '../services/menuService.js';
 import * as utils from '../utils.js';
 import DishesPopup from "./DishesPopup.js";
-import { loadBundle } from 'firebase/firestore';
 import MyDatePicker from "./MyDatePicker.js";
 import "./AddPurchaseScreen.css";
 
@@ -27,8 +26,11 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [selectedDishes, setSelectedValue] = useState(null);
 
-    const [formData, setFormData] = useState({
-        startingAt: utils.now(1)
+    // State for the purchase form data
+    const [purchaseFormData, setPurchaseFormData] = useState({
+        startingAt: null,
+        comments: '',
+        price: '',
     });
 
     const onSubmitMeal = async () => {
@@ -37,7 +39,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             "subCategory" : selectedActivity.subCategory,
             "dishes"      : selectedDishes,
             "status"      : "requested",
-            "startingAt"  : formData.startingAt,
+            "startingAt"  : purchaseFormData.startingAt,
         });
 
         if(addMealResult) {
@@ -47,8 +49,19 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         }
     }
 
+    const handleActivityPurchase = async () => {
+        purchaseFormData.category = selectedCategory;
+        purchaseFormData.subCategory = selectedActivity.subCategory;
+        const addActivityResult = await activityService.add(customer.id, purchaseFormData);
+        if(addActivityResult) {
+            setSelectedCategory(null);
+            setSelectedActivity(null);
+            onClose();
+        }
+    }
+
     const handleFormInput = (name, value) => {
-        setFormData({ ...formData, [name]: value }); 
+        setPurchaseFormData({ ...purchaseFormData, [name]: value }); 
     };
 
     const handleEditOrder = (dishes, newDish, quantity) => {
@@ -68,15 +81,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         setSelectedValue(updatedDishes);
         setShowPopup(false);
     };
-
-    // State for the purchase form data
-    const [purchaseFormData, setPurchaseFormData] = useState({
-        date: '',
-        time: '',
-        comments: '',
-        price: '',
-    });
-
 
     // fetch the menu items when the component mounts or customerID changes (ensuring updates come through without restarting the app)
     // fetching sub categories to choose from
@@ -247,7 +251,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 </div>
                 <div className="form-group">
                     <label htmlFor="startingAt">Start date</label>
-                    <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormInput}/>
+                    <MyDatePicker name={"startingAt"} value={purchaseFormData.startingAt} onChange={handleFormInput}/>
                 </div>
                 <div className="buttons-footer">
                     <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
@@ -301,28 +305,9 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                 />
                             </div>
                         </div>
-                        <div className="purchase-form-group">
-                            <label htmlFor="purchaseDate">Date:</label>
-                            <input
-                                type="date"
-                                id="purchaseDate"
-                                name="date"
-                                value={purchaseFormData.date}
-                                onChange={handlePurchaseFormChange}
-                                required
-                                className="input"
-                            />
-                        </div>
-                        <div className="purchase-form-group">
-                            <label htmlFor="purchaseTime">Time:</label>
-                            <input
-                                type="time"
-                                id="purchaseTime"
-                                name="time"
-                                value={purchaseFormData.time}
-                                onChange={handlePurchaseFormChange}
-                                className="input"
-                            />
+                        <div className="form-group">
+                            <label htmlFor="startingAt">Start date</label>
+                            <MyDatePicker name={"startingAt"} value={purchaseFormData.startingAt} onChange={handleFormInput} required/>
                         </div>
                         <div className="purchase-form-group">
                             <label htmlFor="purchaseComments">Comments:</label>
@@ -336,7 +321,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                             ></textarea>
                         </div>
                         <div className="purchase-form-actions">
-                            <button type="submit">Add Purchase</button>
+                            <button 
+                                type="button"
+                                onClick={() => handleActivityPurchase()}
+                            >
+                            Add Purchase
+                            </button>
                             {/* <button type="button" onClick={() => setSelectedActivity(null)} className="button">Cancel</button> */}
                         </div>
                     </form>

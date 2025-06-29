@@ -74,8 +74,9 @@ export async function getBookingActivities(bookingId, options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    const after = Object.hasOwn(options, "after") ? options.after : utils.today();
-    filters.push(where("startingAt", ">=", utils.toFireStoreTime(after)));
+    if (Object.hasOwn(options, "after")) {
+        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
+    }
 
     if (Object.hasOwn(options, "before")) {
         filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
