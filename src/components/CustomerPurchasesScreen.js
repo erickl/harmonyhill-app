@@ -15,7 +15,13 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     const [selectedActivity, setSelectedActivity] = useState(null); // State to store the selected customer
     const [activityToEdit, setActivityToEdit] = useState(null); // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
-    const [expanded, setExpanded] = useState(true); // All dates expanded to boot (all activity headers visible)
+    const [expanded, setExpanded] = useState({}); // All dates expanded to boot (all activity headers visible)
+
+    const handleSetExpanded = (date) => {
+        const updatedExpandedList = { ...(expanded || {}) }; // Make shallow copy
+        updatedExpandedList[date] = updatedExpandedList[date] === true ? false : true;
+        setExpanded(updatedExpandedList);
+    };
 
     const fetchPurchases = async () => {
         if(!customer) {
@@ -84,7 +90,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     };
 
     // Function to render previous / current /  future customer list section
-    const renderActivitiesListSection = (title, allActivities, date, isExpanded, setIsExpanded) => {
+    const renderActivitiesListSection = (allActivities) => {
         if(allActivities.length === 0) {
             return (<div> <h2>No activities yet</h2></div>);
         }
@@ -102,16 +108,16 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                     <div>
                         <h3
                             className={'customer-group-header clickable-header'}
-                            onClick={() => setIsExpanded(!isExpanded)}>
+                            onClick={() => handleSetExpanded(date)}>
                             
                             {date}
                             
                             <span className="expand-icon">
-                                {isExpanded ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
+                                {expanded[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
                             </span>
                             
                         </h3>
-                        {isExpanded ? (
+                        {expanded[date] ? (
                             <div>
                                 {activities.map((activity) => (
                                     <React.Fragment key={activity.id}>
@@ -201,7 +207,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             
             <div className="card-content">
                 {/* Activities */}
-                {renderActivitiesListSection("Activities", customerActivities, "date", expanded, setExpanded)}   
+                {renderActivitiesListSection(customerActivities)}   
             </div>
             <button type="button" onClick={() => onClose() } className="cancel-button">
                 Back to customers
