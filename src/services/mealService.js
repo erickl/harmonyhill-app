@@ -24,7 +24,7 @@ export async function addMeal(bookingId, mealData) {
 
     if(!utils.isEmpty(mealData.dishes)) {
         const returnedDishIds = await addMealItems(bookingId, mealId, Object.values(mealData.dishes));
-        if(returnedDishIds.length !== mealData.dishes.length) {
+        if(returnedDishIds.length !== Object.keys(mealData.dishes).length) {
             // todo: pass onError to the add function: not all dishes were successfully uploaded
             return false;
         }
