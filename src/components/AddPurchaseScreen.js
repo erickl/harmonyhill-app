@@ -224,23 +224,25 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                             {allDishes.map((dish) => (
                                 <div className="meal-dish-row" key={`${dish.id}-wrapper`}>
                                     <span>{dish.name}</span>
-                                    <button
-                                        key={`${dish.id}-increment`}
-                                        //className="button activity-button"
-                                        onClick={() => {
-                                            handleEditOrder(selectedDishes, dish, 1);
-                                        }}>
-                                        +
-                                    </button>
-                                    <span>{selectedDishes && selectedDishes[dish.name] ? selectedDishes[dish.name].quantity : 0}</span>
-                                    <button
-                                        key={`${dish.id}-increment`}
-                                        //className="button activity-button"
-                                        onClick={() => {
-                                            handleEditOrder(selectedDishes, dish, -1);
-                                        }}>
-                                        -
-                                    </button>
+                                    <div className="meal-dish-row-counter">
+                                        <button
+                                            key={`${dish.id}-increment`}
+                                            //className="button activity-button"
+                                            onClick={() => {
+                                                handleEditOrder(selectedDishes, dish, -1);
+                                            }}>
+                                            -
+                                        </button>
+                                        <span>{selectedDishes && selectedDishes[dish.name] ? selectedDishes[dish.name].quantity : 0}</span>
+                                        <button
+                                            key={`${dish.id}-increment`}
+                                            //className="button activity-button"
+                                            onClick={() => {
+                                                handleEditOrder(selectedDishes, dish, 1);
+                                            }}>
+                                            +
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

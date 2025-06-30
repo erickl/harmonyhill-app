@@ -6,6 +6,12 @@
     margin-bottom: 8px; /* optional spacing between rows */
   }
 
+.meal-dish-row-counter {
+  display: flex;
+  align-items: center; 
+  gap: 0.5rem;
+}
+
  .buttons-footer {
     display: flex;
     align-items: center; /* vertically align */
