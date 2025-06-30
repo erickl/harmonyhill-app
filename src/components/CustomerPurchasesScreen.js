@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, ShoppingCart } from 'lucide-react';
 import * as activityService from '../services/activityService.js'; 
+import * as mealService from '../services/mealService.js'; 
 import * as invoiceService from '../services/invoiceService.js'; 
 import * as utils from "../utils.js";
 import AddPurchaseScreen from './AddPurchaseScreen.js';
@@ -76,11 +77,15 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         );
     }
 
-    const handleActivityClick = (activity) => {
+    const handleActivityClick = async (activity) => {
         // If clicking on the same activity, depress it again
         if(selectedActivity?.id === activity?.id) {
             setSelectedActivity(null);
-        } else {
+        } else {   
+            if(activity.category === "meal") {
+                const dishes = await mealService.getMealItems(customer.id, activity?.id);
+                activity.dishes = dishes;
+            }
             setSelectedActivity(activity);
         }
     };
@@ -148,9 +153,14 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
                                                 <p><span className="detail-label">Price:</span> {activity.price}</p>
 
-                                                <div>
-                                                
-                                                </div>
+                                                {/* List dishes if the activity expanded is a meal */}
+                                                {activity.dishes && (
+                                                    activity.dishes.map((dish) => (
+                                                        <React.Fragment key={`${activity.id}-${dish.id}`}>
+                                                            <p>{dish.quantity}x {dish.name}</p>
+                                                        </React.Fragment>
+                                                    ))
+                                                )}
                                                 
                                                 <button
                                                     className="edit-booking"
