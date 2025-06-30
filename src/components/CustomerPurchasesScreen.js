@@ -34,6 +34,10 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             const invoice = await invoiceService.getTotal(customer.id);
             setRunningTotal(invoice.total);
 
+            // Open today's activities by default
+            const today_ddMMM = utils.to_ddMMM(utils.today());
+            handleSetExpanded(today_ddMMM);
+
             setLoading(false);
         } catch (err) {
             setError(err);
@@ -102,13 +106,14 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             m[activity.startingAt_ddMMM].push(activity);
             return m;
         }, {});
+        
         return (<div>
             {Object.entries(activitiesByDate).map(([date, activities]) => (
                 <React.Fragment key={`activities-${date}`}>
                     <div>
                         <h3
                             className={'customer-group-header clickable-header'}
-                            onClick={() => handleSetExpanded(date)}>
+                            onClick={() => handleSetExpanded(date) }>
                             
                             {date}
                             
