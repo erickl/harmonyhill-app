@@ -18,12 +18,16 @@ export async function addMeal(bookingId, mealData) {
     const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
     const success = await activityDao.add(bookingId, mealId, meal);
     if(!success) {
-        return false; // todo: pass onError to the add function
+        // todo: pass onError to the add function
+        return false; 
     }
 
     if(!utils.isEmpty(mealData.dishes)) {
-        const dishIds = await addMealItems(bookingId, mealId, Object.values(mealData.dishes));
-        const x = 1;
+        const returnedDishIds = await addMealItems(bookingId, mealId, Object.values(mealData.dishes));
+        if(returnedDishIds.length !== mealData.dishes.length) {
+            // todo: pass onError to the add function: not all dishes were successfully uploaded
+            return false;
+        }
     }
 
     return success ? mealId : false;
@@ -56,6 +60,7 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
         console.error(`Meal ${bookingId}/${mealId} not found`);
         return false;
     }
+    let runningTotalMealPrice = meal.price ? meal.price : 0;
 
     // Add each meal item
     let mealItems = [];   
@@ -66,17 +71,19 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
         // Atomic transaction: either both DB updates happen, or none does
         const transactionSuccess = await activityDao.transaction(async () => {
             // Add meal item to the meal
-            const success1 = await activityDao.addMealItem(bookingId, mealId, mealItemId, mealItem);
-            if(!success1) {
+            const addMealItemSuccess = await activityDao.addMealItem(bookingId, mealId, mealItemId, mealItem);
+            if(!addMealItemSuccess) {
                 throw new Error("Cannot add meal item");
             }
-            // Update the meal total price
-            const currentMealPrice = meal.price ? meal.price : 0;
-            const success2 = await activityDao.update(bookingId, mealId, { price: currentMealPrice + mealItem.price });
-            if(!success2) {
+
+            // Update the total meal price
+            runningTotalMealPrice += mealItem.price * mealItem.quantity;
+            const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { price: runningTotalMealPrice });
+            if(!updateMealPriceSuccess) {
                 throw new Error("Cannot update total meal price");
             }
         });
+
         if(transactionSuccess) {
             mealItems.push(mealItemId);
         }
@@ -148,19 +155,19 @@ async function mapMealObject(mealData, isUpdate = false) {
     return meal;
 }
 
-async function mapMealItemObject(mealItemData, isUpdate = false) {
-    let meal = {};
+async function mapMealItemObject(data, isUpdate = false) {
+    let object = {};
 
-    if(utils.isString(mealItemData?.name))     meal.name     = mealItemData.name;
-    if(!utils.isEmpty(mealItemData?.quantity)) meal.quantity = mealItemData.quantity;
-    if(utils.isAmount(mealItemData?.price))    meal.price    = mealItemData.price;
+    if(utils.isString(data?.name))     object.name     = data.name;
+    if(!utils.isEmpty(data?.quantity)) object.quantity = data.quantity;
+    if(utils.isAmount(data?.price))    object.price    = data.price;
 
     if(!isUpdate) {
-        meal.createdAt = new Date();
-        meal.createdBy = await userService.getCurrentUserName();
+        object.createdAt = new Date();
+        object.createdBy = await userService.getCurrentUserName();
     }
 
-    return meal;
+    return object;
 }
 
 export async function testMeal() {
