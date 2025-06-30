@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, ShoppingCart } from 'lucide-react';
 import * as activityService from '../services/activityService.js'; 
+import * as invoiceService from '../services/invoiceService.js'; 
 import * as utils from "../utils.js";
 import AddPurchaseScreen from './AddPurchaseScreen.js';
 import './CustomerPurchasesScreen.css'; 
 
 const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     const [customerActivities, setCustomerActivities] = useState([]);
+    const [runningTotal, setRunningTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -22,6 +24,10 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         try {
             const customerActivities = await activityService.get(customer.id);
             setCustomerActivities(customerActivities);
+            
+            const invoice = await invoiceService.getTotal(customer.id);
+            setRunningTotal(invoice.total);
+
             setLoading(false);
         } catch (err) {
             setError(err);
@@ -31,6 +37,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
 
     useEffect(() => {
         fetchPurchases();
+
     }, []);
 
     if (loading) {
@@ -188,6 +195,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                         }}>
                         +
                     </button> 
+                    <p>Total: {runningTotal} Rp</p>   
                 </div>
             </div>
             

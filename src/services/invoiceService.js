@@ -1,6 +1,7 @@
 import * as mealService from './mealService.js';
 import * as activityService from './activityService.js';
 import * as storage from "../daos/storage.js";
+import * as utils from "../utils.js";
 
 /**
  * @param {*} bookingId 
@@ -24,7 +25,7 @@ export async function getTotal(bookingId) {
         })
     );
 
-    const totalSum = itemizedList.reduce((sum, item) => sum + item.price, 0);
+    const totalSum = itemizedList.reduce((sum, item) => sum + (!utils.isEmpty(item.price) ? item.price : 0), 0);
 
     return {
         total: totalSum,
