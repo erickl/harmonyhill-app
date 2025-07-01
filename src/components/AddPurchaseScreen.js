@@ -251,10 +251,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     )}
                    
                 </div>
-                <div className="form-group">
-                    <label htmlFor="startingAt">Start date</label>
-                    <MyDatePicker name={"startingAt"} value={purchaseFormData.startingAt} onChange={handleFormInput}/>
-                </div>
+                
+                   
+                <MyDatePicker name={"startingAt"} value={purchaseFormData.startingAt} onChange={handleFormInput}/>
+                
                 <div className="buttons-footer">
                     <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
                         Back to activities
@@ -345,8 +345,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     // --- Render Activities within Selected Category ---
 
     if (selectedCategory) {
-        console.log('Rendering: activity picker');
-
         const filteredItems = menuItems.filter(item => item.category === selectedCategory);
 
         return (
