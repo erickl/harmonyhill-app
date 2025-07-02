@@ -51,26 +51,36 @@ export async function getAll(filterOptions = {}) {
 }
 
 /**
- * @param {*} activities 
- * @returns enhanced activity data, needed to properly display them to the user
+ * @param {*} activities one object or an array of activity objects
+ * @returns enhanced/enriched activity data, needed to properly display them to the user
  */
-function enhanceActivities(activities) {
-    activities.map((activity) => { 
-        try {
-            activity.startingAt_ddMMM = utils.to_ddMMM(activity.startingAt);
-            activity.startingAt_HHmm = utils.to_HHmm(activity.startingAt);
+export function enhanceActivities(activities) {
+    let activitiesArray = Array.isArray(activities) ? activities : [activities];
 
-            activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
+    activitiesArray.map((activity) => { 
+        try {
+            // Date time stored in timestamp format in database. Convert to Luxon Date time to display correct time zone 
+            if(!utils.isEmpty(activity.startingAt)) {
+                activity.startingAt = utils.toDateTime(activity.startingAt);
+
+                activity.startingAt_ddMMM = utils.to_ddMMM(activity.startingAt);
+                activity.startingAt_HHmm = utils.to_HHmm(activity.startingAt);
+                activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
+            }
+            
             activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
         } catch(e) {
             throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
         }
     });
-    return activities; 
+    
+    return activitiesArray; 
 }
 
 export async function getOne(bookingId, activityId) {
-    return await activityDao.getOne(bookingId, activityId);
+    const activity = await activityDao.getOne(bookingId, activityId);
+    const enhancedActivity = enhanceActivities(activity);
+    return enhancedActivity;
 }
 
 /**

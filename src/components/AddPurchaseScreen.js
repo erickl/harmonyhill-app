@@ -24,7 +24,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu   
     
     const [showPopup, setShowPopup] = useState(false);
-    const [selectedDishes, setSelectedValue] = useState(null);
+    const [selectedDishes, setSelectedDishes] = useState(null);
 
     // State for the purchase form data
     const [purchaseFormData, setPurchaseFormData] = useState({
@@ -34,6 +34,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     });
 
     const onSubmitMeal = async () => {
+        // todo: do some checks: check if there is already a dinner on this day. 
+        // Check if the dinner is on a day which the customer is not staying there
         const addMealResult = await mealService.addMeal(customer.id, {
             "category"    : selectedCategory,
             "subCategory" : selectedActivity.subCategory,
@@ -47,6 +49,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             setSelectedActivity(null);
             onClose();
         }
+    };
+
+    const dishQuantity = (dishName) => {
+        return selectedDishes && selectedDishes[dishName] ? selectedDishes[dishName].quantity : 0
     }
 
     const handleActivityPurchase = async () => {
@@ -64,11 +70,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         setPurchaseFormData({ ...purchaseFormData, [name]: value }); 
     };
 
-    const handleEditOrder = (dishes, newDish, quantity) => {
-        // todo: do some checks: check if there is already a dinner on this day. 
-        // Check if the dinner is on a day which the customer is not staying there
-
-        const updatedDishes = { ...(dishes || {}) }; // Make shallow copy
+    const handleEditOrderQuantity = (newDish, quantity) => {
+        const updatedDishes = { ...(selectedDishes || {}) }; // Make shallow copy
       
         if (!updatedDishes[newDish.name]) {
             updatedDishes[newDish.name] = newDish;
@@ -78,8 +81,18 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         updatedDishes[newDish.name].quantity += quantity;
         updatedDishes[newDish.name].quantity = Math.max(updatedDishes[newDish.name].quantity, 0);
       
-        setSelectedValue(updatedDishes);
-        setShowPopup(false);
+        setSelectedDishes(updatedDishes);
+    };
+
+    const handleEditOrder = (newDish, field, value) => {
+        const updatedDishes = { ...(selectedDishes || {}) }; // Make shallow copy
+      
+        if (!updatedDishes[newDish.name]) {
+            return;
+        }
+
+        updatedDishes[newDish.name][field] = value;
+        setSelectedDishes(updatedDishes);
     };
 
     // fetch the menu items when the component mounts or customerID changes (ensuring updates come through without restarting the app)
@@ -207,7 +220,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     </h2>
                 </div>
                 <div className="card-content">
-                    {/* Display total order thus far */}
+                    {/* Display total order thus far. Todo: put in a pop up instead? */}
                     {selectedDishes ? (<>
                          <p>You selected:</p>
                         {Object.entries(selectedDishes).filter(([_, dishData]) => dishData.quantity > 0).map(([dishName, dishData]) => (
@@ -222,27 +235,40 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     {allDishes.length > 0 ? (
                         <div className="activity-button-container">
                             {allDishes.map((dish) => (
-                                <div className="meal-dish-row" key={`${dish.id}-wrapper`}>
-                                    <span>{dish.name}</span>
-                                    <div className="meal-dish-row-counter">
-                                        <button
-                                            key={`${dish.id}-increment`}
-                                            //className="button activity-button"
-                                            onClick={() => {
-                                                handleEditOrder(selectedDishes, dish, -1);
-                                            }}>
-                                            -
-                                        </button>
-                                        <span>{selectedDishes && selectedDishes[dish.name] ? selectedDishes[dish.name].quantity : 0}</span>
-                                        <button
-                                            key={`${dish.id}-increment`}
-                                            //className="button activity-button"
-                                            onClick={() => {
-                                                handleEditOrder(selectedDishes, dish, 1);
-                                            }}>
-                                            +
-                                        </button>
+                                <div className="meal-dish" key={`${dish.id}-wrapper`}>
+                                    <div className="meal-dish-row" key={`${dish.id}-wrapper-row`}>
+                                        <span>{dish.name}</span>
+                                        <div className="meal-dish-row-counter">
+                                            <button
+                                                key={`${dish.id}-increment`}
+                                                //className="button activity-button"
+                                                onClick={() => {
+                                                    handleEditOrderQuantity(dish, -1);
+                                                }}>
+                                                -
+                                            </button>
+                                            <span>{dishQuantity(dish.name)}</span>
+                                            <button
+                                                key={`${dish.id}-increment`}
+                                                //className="button activity-button"
+                                                onClick={() => {
+                                                    handleEditOrderQuantity(dish, 1);
+                                                }}>
+                                                +
+                                            </button>
+                                        </div>
                                     </div>
+                                    {dishQuantity(dish.name) > 0 && (<div>
+                                        <label htmlFor="purchaseComments">Comments:</label>
+                                        <textarea
+                                            id="purchaseComments"
+                                            name="comments"
+                                            value={dish.comments}
+                                            onChange={(e) => handleEditOrder(dish, e.target.name, e.target.value)}
+                                            rows="1"
+                                            className="input"
+                                        ></textarea>
+                                    </div>)}
                                 </div>
                             ))}
                         </div>
@@ -252,7 +278,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                    
                 </div>
                 
-                   
                 <MyDatePicker name={"startingAt"} value={purchaseFormData.startingAt} onChange={handleFormInput}/>
                 
                 <div className="buttons-footer">
@@ -308,7 +333,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                             </div>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="startingAt">Start date</label>
                             <MyDatePicker name={"startingAt"} value={purchaseFormData.startingAt} onChange={handleFormInput} required/>
                         </div>
                         <div className="purchase-form-group">

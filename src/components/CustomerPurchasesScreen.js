@@ -5,6 +5,7 @@ import * as mealService from '../services/mealService.js';
 import * as invoiceService from '../services/invoiceService.js'; 
 import * as utils from "../utils.js";
 import AddPurchaseScreen from './AddPurchaseScreen.js';
+import EditPurchaseScreen from './EditPurchaseScreen.js';
 import './CustomerPurchasesScreen.css'; 
 
 const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
@@ -185,13 +186,27 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         </div>);
     };
 
+    if(activityToEdit) {
+        return (
+            <EditPurchaseScreen
+                customer={customer}
+                activity={activityToEdit}
+                onClose={() => {
+                    setActivityToEdit(null);
+                    fetchPurchases();
+                }}
+                onNavigate={onNavigate}
+            ></EditPurchaseScreen>
+        );
+    }
+
     if (customerPurchasing) {
         return (
             <AddPurchaseScreen
                 customer={customerPurchasing}
-                onClose={() => {
-                    fetchPurchases();
+                onClose={() => {     
                     setCustomerPurchasing(null);
+                    fetchPurchases();
                 }}
                 onNavigate={onNavigate}
             />

@@ -1,5 +1,6 @@
 import * as activityDao from "../daos/activityDao.js";
 import * as bookingDao from "../daos/bookingDao.js";
+import * as activityService from "./activityService.js";
 import * as userService from "./userService.js";
 import * as utils from "../utils.js";
 
@@ -107,19 +108,22 @@ export async function getMeals(options) {
     for(const booking of bookings) {
         const bookingId = booking.id;
         const meal = await activityDao.getMeals(bookingId, options);
-        meals.push(meal);
+        const enhancedMeal = activityService.enhanceActivities(meal);
+        meals.push(enhancedMeal);
     }
     return meals;
 }
 
 export async function getMeal(bookingId, mealId) {
     const meal = await activityDao.getOne(bookingId, mealId);
-    return meal;
+    const enhancedMeal = activityService.enhanceActivities(meal); 
+    return enhancedMeal;
 }
 
 export async function getMealsByBooking(bookingId, options = {}) {
     const meals = await activityDao.getMeals(bookingId, options);
-    return meals;
+    const enhancedMeals = activityService.enhanceActivities(meals);
+    return enhancedMeals;
 }
 
 export async function getMealItems(bookingId, mealId) {
@@ -161,6 +165,7 @@ async function mapMealItemObject(data, isUpdate = false) {
     if(utils.isString(data?.name))     object.name     = data.name;
     if(!utils.isEmpty(data?.quantity)) object.quantity = data.quantity;
     if(utils.isAmount(data?.price))    object.price    = data.price;
+    if(utils.isString(data?.comments)) object.comments = data.comments;
 
     if(!isUpdate) {
         object.createdAt = new Date();
