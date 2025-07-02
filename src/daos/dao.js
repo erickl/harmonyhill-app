@@ -48,6 +48,30 @@ export async function get(path, filters = [], ordering = []) {
     }
 }
 
+// if startingAt is empty in db, the orderBy() call leaves the objects in db (i.e) not fetching them. So do the sorting ourselves
+// let ordering = [ orderBy("startingAt", "asc") ];
+export function sort(unsorted, fieldName, order = "asc") {
+    order = order.toLowerCase();
+    try {
+        const sorted = unsorted.sort((a, b) => {
+            const aVal = a[fieldName];
+            const bVal = b[fieldName];
+            
+            const aIsNull = utils.isEmpty(aVal)
+            const bIsNull = utils.isEmpty(bVal)
+            
+            if (aIsNull && bIsNull) return 0;
+            if (aIsNull) return 1; // a goes after b
+            if (bIsNull) return -1; // b goes after a
+            
+            return order == "asc" ? aVal - bVal : bVal - aVal;
+        });
+        return sorted;
+    } catch(e) {
+        return false; // todo: message the user somehow
+    }
+}
+
 export async function getSubCollections(collectionName, filters = [], ordering = []) {
     try {
         const collectionGroupRef = collectionGroup(db, collectionName);

@@ -56,9 +56,10 @@ export async function getMeals(bookingId, options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
     
-    let ordering = [ orderBy("startingAt", "asc") ];
+    const meals = await dao.get(path, filters);
+    const sortedMeals = dao.sort(meals, "startingAt");
 
-    return await dao.get(path, filters, ordering);
+    return sortedMeals;
 }
 
 export async function getBookingActivities(bookingId, options = {}) { 
@@ -89,10 +90,11 @@ export async function getBookingActivities(bookingId, options = {}) {
     if (Object.hasOwn(options, "hasProvider")) {
         filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
     }
-    
-    let ordering = [ orderBy("startingAt", "asc") ];
 
-    return await dao.get(path, filters, ordering);
+    const activities = await dao.get(path, filters);
+    const sortedActivities = dao.sort(activities, "startingAt");
+
+    return sortedActivities;
 }
 
 export async function getAllActivities(options = {}) { 
@@ -114,10 +116,9 @@ export async function getAllActivities(options = {}) {
         filters.push(where("startingAt", ">=", before));
     }
     
-    let ordering = [ orderBy("startingAt", "asc") ];
+    const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters);
+    const sortedActivities = dao.sort(allActivities, "startingAt");
 
-    const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters, ordering);
- 
     // Can get parent from the activity, but might decide to duplicate booking data into the activity instead
     // for (const activity of allActivities) {
     //     const ref = activity.ref;
@@ -130,7 +131,7 @@ export async function getAllActivities(options = {}) {
     //     let x = 1;
     // }    
     
-    return allActivities;
+    return sortedActivities;
 }
 
 export async function remove(bookingId, activityId) {
