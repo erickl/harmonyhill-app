@@ -209,6 +209,12 @@ export function toDateTime(inputDate) {
     return toLuxonDateTime(inputDate);
 }
 
+export function isToday(inputDate) {
+    const luxonDateTime = toLuxonDateTime(inputDate);
+    const todayDateTime = today();
+    return luxonDateTime.day == todayDateTime.day;
+}
+
 /**
  * get a Luxon date time object with time at midnight
  */

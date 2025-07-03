@@ -16,6 +16,11 @@
     flex-grow: 1;
 }
 
+.customer-sub-header {
+    display: flex;
+    justify-content: space-between;
+}
+
 .card-title button {
     background-color: lightseagreen;
     border-radius: 50%;

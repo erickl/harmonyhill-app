@@ -68,6 +68,11 @@
     overflow-y: auto;
 }
 
+.small-text {
+    margin: 5px;
+    font-size: 12px;
+}
+
 
 /* .space-y-4>*+* {
     margin-top: 1rem;

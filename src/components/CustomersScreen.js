@@ -5,6 +5,7 @@ import * as userService from '../services/userService.js';
 import * as utils from '../utils.js';
 
 import './CustomersScreen.css';
+import '../App.css';
 import EditCustomerScreen from './EditCustomerScreen';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 
@@ -141,7 +142,11 @@ const CustomersScreen = ({ onNavigate }) => {
                                             }}
                                         />}
                                     </div>
-                                    {customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}
+                                    <div class="customer-sub-header">
+                                        <span class="small-text">{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</span>
+                                        {utils.isToday(customer.checkInAt) && (<span class="small-text">Checking In</span>)}
+                                        {utils.isToday(customer.checkOutAt) && (<span class="small-text">Checking Out</span>)}
+                                    </div>
                                 </div>
                                 {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
                                     <div className="customer-details">
