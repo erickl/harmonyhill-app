@@ -111,7 +111,7 @@ const EditPurchaseScreen = ({ customer, activity, onClose, onNavigate }) => {
     }, [customer?.id]); // Dependency array: re-run this effect if the customer's ID changes
     
 
-    // --- Render Purchase Form ---
+    // --- Render Purchase Edit Form For Meal ---
     if (activity.category == "meal") {
         if (loadingMenu) {
             return (
@@ -224,8 +224,48 @@ const EditPurchaseScreen = ({ customer, activity, onClose, onNavigate }) => {
         );
     }
 
+    // --- Render Purchase Edit Form For Other Activities ---
     return (
-        <h1>Todo...</h1>
+        <div className="card">
+                <div className="card-header">
+                    <h2 className="card-title">
+                        <span className="ml-2">Edit Purchase: {activity.subCategory}</span>
+                    </h2>
+                </div>
+                <div className="card-content">
+                    <h3>Confirm Purchase Details:</h3>
+                    <form onSubmit={handleEditPurchaseSubmit}>
+                        <div className="purchase-form-group">
+                            <label>Activity: {activity.subCategory}</label>
+                            {/* <input type="text" value={activity.subCategory} readOnly /> */}
+                        </div>
+                        
+                        <div className="form-group">
+                            <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleOtherInputChange} required/>
+                        </div>
+
+                        <div className="purchase-form-group">
+                            <label htmlFor="purchaseComments">Comments:</label>
+                            <textarea
+                                id="purchaseComments"
+                                name="comments"
+                                value={formData.comments}
+                                onChange={handleInputChange}
+                                rows="3"
+                                className="input"
+                            ></textarea>
+                        </div>
+                    </form>
+                </div>
+            <div className="buttons-footer">
+                <button type="button" onClick={() => onClose()} className="cancel-button">
+                    Back to activities
+                </button>
+                <button type="button" onClick={() => handleEditPurchaseSubmit()}>
+                    Submit
+                </button>
+            </div>
+        </div>
     )
 };
 
