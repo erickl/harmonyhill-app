@@ -18,7 +18,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
     // State to hold the menu items (activities)
     const [categories, setCategories] = useState([]);
-    const [menuItems, setMenuItems] = useState([]);
+    const [activityMenuItems, setActivityMenuItems] = useState([]);
     const [allDishes, setAllDishes] = useState([]);
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
     const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu   
@@ -108,13 +108,13 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             setMenuError(null); // Clear previous errors
 
             try {
-                const menuData = await activityService.getMenu();
-                let categories = menuData.map(item => item.category);
-                // getMenu() gets all sub categories (e.g. lunch, dinner), so a category (e.g. meal) can occur multiple times
+                const activityMenuData = await activityService.getActivityMenu();
+                let categories = activityMenuData.map(item => item.category);
+                // getActivityMenu() gets all sub categories (e.g. lunch, dinner), so a category (e.g. meal) can occur multiple times
                 categories = Array.from(new Set(categories));
                 
                 setCategories(categories);
-                setMenuItems(menuData);
+                setActivityMenuItems(activityMenuData);
                 setLoadingMenu(false);
             } catch (err) {
                 console.error("Failed to fetch menu:", err);
@@ -126,27 +126,27 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         load();
     }, [customer?.id]); // Dependency array: re-run this effect if the customer's ID changes
 
-        // Initialize purchaseFormData.price when selectedActivity changes
-        useEffect(() => {
-            const load = async () => {
-                // Only fetch if a customer is provided, as the screen is for adding purchases for a customer
-                if (!customer) {
-                    setLoadingMenu(false);
-                    return;
-                }
-
-                if(selectedActivity && selectedCategory === "meal") {
-                    const allDishes = await menuService.get({"mealCategory" : selectedActivity.subCategory});
-                    setAllDishes(allDishes);
-                }
-                else if (selectedActivity) {
-                    setPurchaseFormData(prevData => ({
-                        ...prevData,
-                        price: selectedActivity.price || '', // Set initial price from selected activity, or empty string
-                    }));
-                }
+    // Initialize purchaseFormData.price when selectedActivity changes
+    useEffect(() => {
+        const load = async () => {
+            // Only fetch if a customer is provided, as the screen is for adding purchases for a customer
+            if (!customer) {
+                setLoadingMenu(false);
+                return;
             }
-            load();
+
+            if(selectedActivity && selectedCategory === "meal") {
+                const allDishes = await menuService.get({"mealCategory" : selectedActivity.subCategory});
+                setAllDishes(allDishes);
+            }
+            else if (selectedActivity) {
+                setPurchaseFormData(prevData => ({
+                    ...prevData,
+                    price: selectedActivity.price || '', // Set initial price from selected activity, or empty string
+                }));
+            }
+        }
+        load();
 
     }, [selectedActivity]);
 
@@ -268,7 +268,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                             rows="1"
                                             className="input"
                                         ></textarea>
-                                    </div>)}
+                                    </div>
+                                )}
                                 </div>
                             ))}
                         </div>
@@ -369,7 +370,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     // --- Render Activities within Selected Category ---
 
     if (selectedCategory) {
-        const filteredItems = menuItems.filter(item => item.category === selectedCategory);
+        const filteredItems = activityMenuItems.filter(item => item.category === selectedCategory);
 
         return (
             <div className="card">

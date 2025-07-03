@@ -10,7 +10,7 @@ export async function jsonObjectDiffStr(obj1, obj2) {
         const val2 = obj2[key];
 
         if (!Object.hasOwn(obj1, key)) {
-            diff += ` ${key}: ${val1} added, `;
+            diff += `Added ${key}: ${val2}, `;
         } 
         else if(isDate(val2)) {
             const val1DateTime = toDateTime(val1);

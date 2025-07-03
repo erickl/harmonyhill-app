@@ -49,7 +49,6 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
 
     useEffect(() => {
         fetchPurchases();
-
     }, []);
 
     if (loading) {
@@ -149,14 +148,14 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                                 <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
                                                 <p><span className="detail-label">Created At:</span> {activity.createdAt_ddMMM_HHmm}</p>
                                                 {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
-                                                {activity.details && (<p><span className="detail-label">Details:</span> {activity.details}</p>)}
+                                                {activity.comments && (<p><span className="detail-label">Comments:</span> {activity.comments}</p>)}
                                                 <p><span className="detail-label">Status:</span> {activity.status}</p>
                                                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
                                                 <p><span className="detail-label">Price:</span> {activity.price}</p>
 
                                                 {/* List dishes if the activity expanded is a meal */}
                                                 {activity.dishes && (
-                                                    activity.dishes.map((dish) => (
+                                                    Object.values(activity.dishes).map((dish) => (
                                                         <React.Fragment key={`${activity.id}-${dish.id}`}>
                                                             <p>{dish.quantity}x {dish.name}</p>
                                                         </React.Fragment>

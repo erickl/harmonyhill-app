@@ -1,10 +1,10 @@
 .meal-dish-row {
-  display: flex;
-  align-items: center; /* vertically align */
-  justify-content: space-between; /* space between text and button */
-  gap: 8px; /* optional spacing */
-  margin-bottom: 8px; /* optional spacing between rows */
-}
+    display: flex;
+    align-items: center; /* vertically align */
+    justify-content: space-between; /* space between text and button */
+    gap: 8px; /* optional spacing */
+    margin-bottom: 8px; /* optional spacing between rows */
+  }
 
 .meal-dish-row-counter {
   display: flex;

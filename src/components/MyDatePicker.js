@@ -8,7 +8,9 @@ import { Utensils } from 'lucide-react';
 import * as utils from "../utils";
 
 export default function MyDatePicker({ name, value, onChange }) {
-  const [isTimeTBD, setIsTimeTBD] = useState(false);
+  const isMidnight = (dt) => dt.hour === 0 && dt.minute === 0 && dt.second === 0 && dt.millisecond === 0;
+
+  const [isTimeTBD, setIsTimeTBD] = useState(isMidnight(value));
 
   const handleChange = (newValue) => {
     if (newValue) {

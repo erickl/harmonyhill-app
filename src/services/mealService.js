@@ -126,9 +126,19 @@ export async function getMealsByBooking(bookingId, options = {}) {
     return enhancedMeals;
 }
 
+/**
+ * @param {*} bookingId 
+ * @param {*} mealId 
+ * @returns all dishes for the given booking and meal, as key-value pairs, 
+ * where the dish name is the key, and the dish ithe value
+ */
 export async function getMealItems(bookingId, mealId) {
     const mealItems = await activityDao.getMealItems(bookingId, mealId);
-    return mealItems;
+    const mealItemsByKey = mealItems.reduce((acc, item) => {
+        acc[item.name] = item;
+        return acc;
+    }, {});
+    return mealItemsByKey;
 }
 
 export async function deleteMealItem(bookingId, mealId, mealItemId) {
@@ -150,6 +160,8 @@ async function mapMealObject(mealData, isUpdate = false) {
     if(utils.isString(mealData?.status)) meal.status = mealData.status;
 
     if(utils.isString(mealData?.provider)) meal.provider = mealData.provider;
+
+    if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
 
     if(!isUpdate) {
         meal.createdAt = new Date();

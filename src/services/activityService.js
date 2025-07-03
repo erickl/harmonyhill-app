@@ -7,7 +7,7 @@ import * as userService from "./userService.js";
  * @param {*} filterOptions = {category=transport|yoga|etc..,}
  * @returns list of all kinds of activities available (categories and subcategories)
  */
-export async function getMenu(filterOptions = {}) {
+export async function getActivityMenu(filterOptions = {}) {
     return await activityDao.getTypes(filterOptions);
 }
 
@@ -93,7 +93,7 @@ export async function getOne(bookingId, activityId) {
  *      time: "07:00",
  *      price: 500,
  *      status: "requested",
- *      details: "They have 5 bags with them",
+ *      comments: "They have 5 bags with them",
  *      assignedTo: "", // staff member taking care of the activity
  *      provider: "" // The driver or masseuse
  *  }
@@ -174,7 +174,7 @@ async function mapObject(data, isUpdate = false) {
     if(utils.isString(data?.category))    activity.category = data.category;
     if(utils.isString(data?.subCategory)) activity.subCategory = data.subCategory ;
     if(utils.isString(data?.provider))    activity.provider = data.provider;
-    if(utils.isString(data?.details))     activity.details = data.details;
+    if(utils.isString(data?.comments))    activity.comments = data.comments;
 
     if(utils.isDate(data?.startingAt))    activity.startingAt = utils.toFireStoreTime(data.startingAt);
 
@@ -197,8 +197,8 @@ async function mapObject(data, isUpdate = false) {
 
 export async function testActivities(date) {
     const categories = await getCategories();
-    const activityTypes1 = await getMenu();
-    const activityTypes2 = await getMenu({"category": "transport"});
+    const activityTypes1 = await getActivityMenu();
+    const activityTypes2 = await getActivityMenu({"category": "transport"});
 
     const bookingId = "Eric-Klaesson-hh-251110";
     const activityData = {
@@ -208,7 +208,7 @@ export async function testActivities(date) {
         isFree: false,
         price: 1500,
         status: "requested",
-        details: "They have 7 bags with them",
+        comments: "They have 7 bags with them",
         assignedTo: "",
         provider: "Dewa",
     };
