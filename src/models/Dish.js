@@ -58,10 +58,10 @@ export class Dish {
 
 export async function seed() {
 
-    // todo: might need wingko and "i love bali toast" twice. Extra breakfast items are 80k. But wingko as dessert is 60
+    // todo: might need wingko and "i love bali toast" twice. Extra breakfast items are 80k. But wingko as dessert is 60k
 
     const dishes = [
-    //            name                               allergens         image   house availability                  meal categories                price  instructions   descriptions
+        //        name                               allergens         image   house availability                  meal categories                price  instructions   descriptions
         new Dish("Smoothie Bowl Of Seasonal Fruits", ["nuts"],            "", ["harmony hill"],                    ["breakfast"],                    0,      "", "Topped with our homemade granola and fresh sliced fruits - ask us what's in season if you wish to customize"                                                  ),
         new Dish("Javanese Wingko Waffle",           ["coconut"],         "", ["harmony hill", "the jungle nook"], ["breakfast", "dessert"],         60000,  "", "Chewy, coconutty and crispy, baked in an authentic cast waffle iron, served with our homemade jam and fresh fruit"                                            ),
         new Dish("Plant Power Breakfast",            ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    0,      "", "Scrambled tofu, served with baked potatoes, roasted tomato, garlic, spinach and seasonal sauteed veggies"                                                     ),
