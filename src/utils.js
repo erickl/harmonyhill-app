@@ -249,6 +249,12 @@ export function capitalizeWords(str) {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+export function formatDisplayPrice(price) {
+    return typeof price === 'number' && !isNaN(price)
+            ? price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+            : '';
+}
+
 function generateDateFormats() {
     let formats = [];
     for(const d of ["d", "dd"]) {

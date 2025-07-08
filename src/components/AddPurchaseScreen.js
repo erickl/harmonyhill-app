@@ -30,7 +30,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const [purchaseFormData, setPurchaseFormData] = useState({
         startingAt: null,
         comments: '',
-        price: '',
+        customerPrice: '',
     });
 
     const onSubmitMeal = async () => {
@@ -126,7 +126,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         load();
     }, [customer?.id]); // Dependency array: re-run this effect if the customer's ID changes
 
-    // Initialize purchaseFormData.price when selectedActivity changes
+    // Initialize purchaseFormData.customerPrice when selectedActivity changes
     useEffect(() => {
         const load = async () => {
             // Only fetch if a customer is provided, as the screen is for adding purchases for a customer
@@ -142,7 +142,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             else if (selectedActivity) {
                 setPurchaseFormData(prevData => ({
                     ...prevData,
-                    price: selectedActivity.price || '', // Set initial price from selected activity, or empty string
+                    customerPrice: selectedActivity.customerPrice || '', // Set initial price from selected activity, or empty string
                 }));
             }
         }
@@ -155,7 +155,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
         // Special handling for price to ensure it's a number
         // Special handling for price: Convert to number after removing non-digit characters
-        if (name === 'price') {
+        if (name === 'customerPrice') {
             // Remove all non-digit characters (commas, dots, currency symbols, etc.)
             const cleanValue = value.replace(/[^0-9]/g, '');
             // Convert to integer; use empty string if input is empty
@@ -171,12 +171,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const handlePurchaseSubmit = (e) => {
         e.preventDefault();
         // Here you would typically save the purchase to the database
-        // using selectedActivity.category, selectedActivity.subcategory, selectedActivity.price,
+        // using selectedActivity.category, selectedActivity.subcategory, selectedActivity.customerPrice,
         // and purchaseFormData.date, purchaseFormData.time, purchaseFormData.comments
         console.log("Purchase Details:", {
             customer: customer.name,
             activity: selectedActivity.name,
-            price: purchaseFormData.price,
+            customerPrice: purchaseFormData.customerPrice,
             date: purchaseFormData.date,
             time: purchaseFormData.time,
             comments: purchaseFormData.comments,
@@ -304,16 +304,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             <div className="card">
                 <div className="card-header">
                     <h2 className="card-title">
-                        <span className="ml-2">Add Purchase: {selectedActivity.subCategory}</span>
+                        <span className="ml-2">Add Purchase: {selectedActivity.displayName}</span>
                     </h2>
                 </div>
                 <div className="card-content">
                     <h3>Confirm Purchase Details:</h3>
                     <form onSubmit={handlePurchaseSubmit}>
-                        <div className="purchase-form-group">
-                            <label>Activity: {selectedActivity.subCategory}</label>
-                            {/* <input type="text" value={selectedActivity.subCategory} readOnly /> */}
-                        </div>
                         <div className="purchase-form-group">
                             <label htmlFor="purchasePrice">Price:</label>
                             <div className="price-input-wrapper"> {/* Wrapper for "Rp" and input */}
@@ -321,13 +317,9 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                 <input
                                     type="text" // Changed from "number" to "text"
                                     id="purchasePrice"
-                                    name="price"
+                                    name="customerPrice"
                                     // Apply formatting here for display inside the input
-                                    value={
-                                        typeof purchaseFormData.price === 'number' && !isNaN(purchaseFormData.price)
-                                            ? purchaseFormData.price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-                                            : ''
-                                    }
+                                    value={utils.formatDisplayPrice(purchaseFormData.customerPrice)}
                                     onChange={handlePurchaseFormChange}
                                     className="input"
                                 />
@@ -392,7 +384,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                             setSelectedActivity(item)
                                         }}
                                     >
-                                        {item.subCategory} <br></br>Rp {item.price ? item.price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : 'N/A'}
+                                        {item.displayName} <br></br> 
+                                        { item.customerPrice !== 0 && (<>Rp {utils.formatDisplayPrice(purchaseFormData.customerPrice)}</>)}
                                     </button>
                                 </div>
                             ))}
