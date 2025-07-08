@@ -22,7 +22,7 @@ const CustomersScreen = ({ onNavigate }) => {
 
     const fetchCustomers = async (getAllCustomers = false) => {
         try {
-            const customerFilter = getAllCustomers ? {} : {after: utils.today(-7), before: utils.today(7)};
+            const customerFilter = getAllCustomers ? {} : {after: utils.today(-7), before: utils.today(14)};
             const fetchedCustomers = await bookingService.get(customerFilter);
             setCustomers(fetchedCustomers);
             setLoading(false);
@@ -221,10 +221,15 @@ const CustomersScreen = ({ onNavigate }) => {
     return (
         <div className="card">
             <div className="card-header">
-                <h2 className="card-title">Customers</h2>
-                <button className="add-button" onClick={() => onNavigate('add-customer')}>
-                    +
-                </button>
+                <div>
+                    <h2 className="card-title">Customers</h2>
+                    
+                </div>
+                <div>
+                    <button className="add-button" onClick={() => onNavigate('add-customer')}>
+                        +
+                    </button>
+                </div>
             </div>
             <div className="card-content">
                 {/* Past Customers */}

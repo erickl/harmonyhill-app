@@ -18,7 +18,7 @@ import { DateTime } from 'luxon';
 import { auth } from "./firebase";
 
 import './App.css';
-//import './models/ActivityType.js';
+//import './models/Dish.js';
 
 // Bottom Navigation Component
 const BottomNavigation = ({ activeTab, onTabChange }) => {

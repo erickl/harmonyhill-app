@@ -4,7 +4,6 @@ import * as activityService from '../services/activityService.js';
 import * as mealService from '../services/mealService.js';
 import * as menuService from '../services/menuService.js';
 import * as utils from '../utils.js';
-import DishesPopup from "./DishesPopup.js";
 import MyDatePicker from "./MyDatePicker.js";
 import "./AddPurchaseScreen.css";
 
