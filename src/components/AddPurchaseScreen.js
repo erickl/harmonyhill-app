@@ -10,6 +10,9 @@ import "./AddPurchaseScreen.css";
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
+    // Show purchase summary and confirmation pop up modal
+    const [showConfirm, setShowConfirm] = useState(false);
+
     // State to track the currently selected activity (for the purchase form)
     const [selectedActivity, setSelectedActivity] = useState(null);
 
@@ -33,8 +36,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         customerPrice: '',
     });
 
-    const onSubmitMeal = async () => {
-        // todo: do some checks: check if there is already a dinner on this day. 
+    const onConfirmMeal = async () => {
+         // todo: do some checks: check if there is already a dinner on this day. 
         // Check if the dinner is on a day which the customer is not staying there
         const addMealResult = await mealService.addMeal(customer.id, {
             "category"    : selectedCategory,
@@ -49,7 +52,15 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             setSelectedActivity(null);
             onClose();
         }
+    }
+
+    const onSubmitMeal = async () => {
+        setShowConfirm(true);
     };
+
+    const handleCancelConfirm = () => {
+        setShowConfirm(false);
+      };
 
     const dishQuantity = (dishName) => {
         return selectedDishes && selectedDishes[dishName] ? selectedDishes[dishName].quantity : 0
@@ -220,15 +231,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     </h2>
                 </div>
                 <div className="card-content">
-                    {/* Display total order thus far. Todo: put in a pop up instead? */}
-                    {selectedDishes ? (<>
-                         <p>You selected:</p>
-                        {Object.entries(selectedDishes).filter(([_, dishData]) => dishData.quantity > 0).map(([dishName, dishData]) => (
-                            <div key={`${dishName}-selected-wrapper`}>
-                                {<p>{dishData.quantity}x {dishName}</p>}
-                            </div>
-                        ))}
-                    </>) : null}
                     <h3>Items in {selectedCategory}:</h3>
 
                     {/* Display all dishes, inc/dec buttons, and how many of each dish */}
@@ -280,6 +282,32 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 </div>
                 
                 <MyDatePicker name={"startingAt"} value={purchaseFormData.startingAt} onChange={handleFormInput}/>
+
+                {/* Confirm meal selection before submitting to database */}
+                {showConfirm && (
+                    <div className="modal-overlay">
+                        <div className="modal-box">
+                            <h2>Confirm Your Order</h2>
+                                {/* Display total order thus far */}
+                                {selectedDishes ? (<>
+                                    <p>You selected:</p>
+                                    {Object.entries(selectedDishes).filter(([_, dishData]) => dishData.quantity > 0).map(([dishName, dishData]) => (
+                                        <div key={`${dishName}-selected-wrapper`}>
+                                            <p>{dishData.quantity}x {dishName} 
+                                                {dishData.comments && (<i> ({dishData.comments.trim()})</i>)}
+                                            </p>
+                                       
+                                        </div>
+                                    ))}
+                                </>) : null}
+                            <p>Are you sure you want to submit this order?</p>
+                            <div class="buttons-footer">
+                                <button onClick={handleCancelConfirm}>Cancel</button>
+                                <button onClick={onConfirmMeal}>Confirm</button>    
+                            </div>
+                        </div>
+                    </div>
+                )}
                 
                 <div className="buttons-footer">
                     <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
