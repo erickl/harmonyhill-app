@@ -64,6 +64,10 @@ export function isString(value) {
     return  typeof value === "string";
 }
 
+export function getCurrency() {
+    return "Rp";
+}
+
 export function isDate(value) {
     if(value instanceof Date || value instanceof Timestamp || DateTime.isDateTime(value)) {
         return true;
@@ -249,10 +253,9 @@ export function capitalizeWords(str) {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-export function formatDisplayPrice(price) {
-    return typeof price === 'number' && !isNaN(price)
-            ? price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-            : '';
+export function formatDisplayPrice(price, useCurrencyPrefix = false) {
+    const amount = isAmount(price) ? price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '';
+    return `${(useCurrencyPrefix ? getCurrency() : "")} ${amount}`;
 }
 
 function generateDateFormats() {

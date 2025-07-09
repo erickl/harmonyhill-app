@@ -126,9 +126,14 @@ export async function add(bookingId, activityData) {
  */
 export async function assignProvider(bookingId, activityId, personnelId) {
     return await update(bookingId, activityId, { 
-        provider: personnelId,
-        status: "confirmed"
+        provider : personnelId,
+        status   : "confirmed"
     });
+}
+
+export async function getProviders(category, subCategory) {
+    const providers = await activityDao.getProviders(category, subCategory);
+    return providers;
 }
 
 /**

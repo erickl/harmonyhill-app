@@ -6,6 +6,7 @@ import * as menuService from '../services/menuService.js';
 import * as utils from '../utils.js';
 import MyDatePicker from "./MyDatePicker.js";
 import "./AddPurchaseScreen.css";
+import Dropdown from "./Dropdown.js";
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
@@ -30,10 +31,33 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
     // State for the purchase form data
     const [purchaseFormData, setPurchaseFormData] = useState({
-        startingAt: null,
-        comments: '',
-        customerPrice: '',
+        startingAt    : null,
+        comments      : '',
+        customerPrice : '',
+        provider      : '',
     });
+
+    const handleCategorySelection = async (category) => {
+        setSelectedCategory(category);
+        if(category == null) {
+            onProviderSelect(null);
+            setSelectedCategory(null);
+            return;
+        }
+    }
+
+    const handleActivitySelection = async (activity) => {
+        setSelectedActivity(activity);
+        if(activity == null) {
+            onProviderSelect(null);
+            setSelectedCategory(null);
+            return;
+        }
+
+        if(selectedCategory == null) {
+            console.log(`Error: subCategory ${activity.subCategory} selected without a category`);
+        }
+    }
 
     const onConfirmMeal = async () => {
          // todo: do some checks: check if there is already a dinner on this day. 
@@ -47,8 +71,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         });
 
         if(addMealResult) {
-            setSelectedCategory(null);
-            setSelectedActivity(null);
+            handleCategorySelection(null);
+            handleActivitySelection(null);
             onClose();
         }
     }
@@ -65,14 +89,20 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         return selectedDishes && selectedDishes[dishName] ? selectedDishes[dishName].quantity : 0
     }
 
+    const onProviderSelect = (provider) => {
+        const name = provider ? provider.name : '';
+        handleFormInput("provider", name);
+    }
+
     const handleActivityPurchase = async () => {
         purchaseFormData.category = selectedCategory;
         purchaseFormData.subCategory = selectedActivity.subCategory;
         const addActivityResult = await activityService.add(customer.id, purchaseFormData);
         if(addActivityResult) {
-            setSelectedCategory(null);
-            setSelectedActivity(null);
+            handleCategorySelection(null);
+            handleActivitySelection(null);
             onClose();
+            //setPurchaseFormData({ date: '', time: '', comments: '' }); // todo? Reset form
         }
     }
 
@@ -176,29 +206,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         }
     };
 
-
-    // Handler for submitting the purchase form
-    const handlePurchaseSubmit = (e) => {
-        e.preventDefault();
-        // Here you would typically save the purchase to the database
-        // using selectedActivity.category, selectedActivity.subcategory, selectedActivity.customerPrice,
-        // and purchaseFormData.date, purchaseFormData.time, purchaseFormData.comments
-        console.log("Purchase Details:", {
-            customer: customer.name,
-            activity: selectedActivity.name,
-            customerPrice: purchaseFormData.customerPrice,
-            date: purchaseFormData.date,
-            time: purchaseFormData.time,
-            comments: purchaseFormData.comments,
-        });
-        alert(`Purchase for ${selectedActivity.name} added for ${customer.name} on ${purchaseFormData.date} at ${purchaseFormData.time}`);
-        // After successful purchase, you might want to close the screen or reset states
-        setSelectedActivity(null); // Go back to subcategory selection
-        setPurchaseFormData({ date: '', time: '', comments: '' }); // Reset form
-        // onClose(); // Or close the whole screen
-    };
-
-
     if (loadingMenu) {
         return (
             <div className="card">
@@ -300,7 +307,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                     ))}
                                 </>) : null}
                             <p>Are you sure you want to submit this order?</p>
-                            <div class="buttons-footer">
+                            <div className="buttons-footer">
                                 <button onClick={handleCancelConfirm}>Cancel</button>
                                 <button onClick={onConfirmMeal}>Confirm</button>    
                             </div>
@@ -309,7 +316,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 )}
                 
                 <div className="buttons-footer">
-                    <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
+                    <button type="button" onClick={() => handleActivitySelection(null)} className="cancel-button">
                         Back to activities
                     </button>
                     
@@ -327,6 +334,14 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
     // --- Render Purchase Form ---
     if (selectedActivity) {
+        // Tranform object from {"Rena": 500000}  to  {"Rena - Rp 500000": {"name": Rena, "price": 500000}}
+        const providers = Object.entries(selectedActivity.providerPrices).reduce((m, activity) => {
+            const name = utils.capitalizeWords(activity[0]);
+            const price = utils.formatDisplayPrice(activity[1], true);
+            m[`${name} - ${price}`] = { "name" : name, "price" : activity[1] };
+            return m;
+        }, {});
+           
         return (
             <div className="card">
                 <div className="card-header">
@@ -336,11 +351,11 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 </div>
                 <div className="card-content">
                     <h3>Confirm Purchase Details:</h3>
-                    <form onSubmit={handlePurchaseSubmit}>
+                    <form>
                         <div className="purchase-form-group">
                             <label htmlFor="purchasePrice">Price:</label>
                             <div className="price-input-wrapper"> {/* Wrapper for "Rp" and input */}
-                                <span className="currency-prefix">Rp</span>
+                                <span className="currency-prefix">{utils.getCurrency()}</span>
                                 <input
                                     type="text" // Changed from "number" to "text"
                                     id="purchasePrice"
@@ -352,7 +367,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                 />
                             </div>
                         </div>
-                        <div className="form-group">
+                        <div className="purchase-form-group">
+                            <Dropdown options={providers} onSelect={onProviderSelect}/>
+                        </div>
+                        <div className="purchase-form-group">
                             <MyDatePicker name={"startingAt"} value={purchaseFormData.startingAt} onChange={handleFormInput} required/>
                         </div>
                         <div className="purchase-form-group">
@@ -366,22 +384,22 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                 className="input"
                             ></textarea>
                         </div>
-                        <div className="purchase-form-actions">
-                            <button 
-                                type="button"
-                                onClick={() => handleActivityPurchase()}
-                            >
-                            Add Purchase
-                            </button>
-                            {/* <button type="button" onClick={() => setSelectedActivity(null)} className="button">Cancel</button> */}
-                        </div>
                     </form>
                 </div>
 
-                <div>
-                    <button type="button" onClick={() => setSelectedActivity(null)} className="cancel-button">
-                        Back to activities</button>
+                <div className="buttons-footer">
+                    <button type="button" onClick={() => handleActivitySelection(null)} className="cancel-button">
+                        Back to activities
+                    </button>
+                    
+                    <button 
+                        type="button" 
+                        onClick={ () => handleActivityPurchase() }
+                    >
+                        Submit
+                    </button>
                 </div>
+                
             </div>
         );
     }
@@ -408,11 +426,11 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                                         key={`${item.category}-${item.subCategory}`}
                                         className="button activity-button"
                                         onClick={() => {
-                                            setSelectedActivity(item)
+                                            handleActivitySelection(item)
                                         }}
                                     >
                                         {item.displayName} <br></br> 
-                                        { item.customerPrice !== 0 && (<>Rp {utils.formatDisplayPrice(purchaseFormData.customerPrice)}</>)}
+                                        { item.customerPrice !== 0 && (<>{utils.formatDisplayPrice(item.customerPrice, true)}</>)}
                                     </button>
                                 </div>
                             ))}
@@ -422,10 +440,11 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     )}
                 </div>
                 <div>
-                    <button type="button" onClick={() => setSelectedCategory(null)} className="cancel-button">
-                        Back to categories</button>
+                    <button type="button" onClick={() => handleCategorySelection(null)} className="cancel-button">
+                        Back to categories
+                    </button>
                 </div>
-            </div >
+            </div>
         )
     }
 
@@ -442,7 +461,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                         {categories.map((category) => (
                             <div key={category}><button
                                 className="category-button"
-                                onClick={() => setSelectedCategory(category)}
+                                onClick={() => handleCategorySelection(category)}
                             >
                                 {category}
                             </button></div>

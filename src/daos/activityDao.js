@@ -18,6 +18,16 @@ export async function transaction(inTransaction) {
     return dao.transaction(inTransaction);
 }
 
+export async function getProviders(category, subCategory) {
+    let filters = [
+        where("category",    category   ),
+        where("subCategory", subCategory)
+    ];
+
+    const providers = await dao.get([dao.constant.ACTIVITY_TYPES], filters);
+    return providers;
+}
+
 // Update meal item not existing. Only delete and add a new one
 //export async function updateMealItem(bookingId, mealId, mealItemId, mealItem) {
 
