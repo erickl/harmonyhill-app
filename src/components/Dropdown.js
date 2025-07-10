@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import "./Dropdown.css";
 
+/**
+ * @param {*} options: A JSON object. The keys are displayed in the drop down list, and the value
+ *                     is set as a parameter to onSelect
+ * @param {*} onSelect: The callback to call with the selected option
+ * @returns the dropdown view including the label on the side
+ */
 function Dropdown({ options, onSelect }) {
     const keys = Object.keys(options);
 
@@ -40,6 +46,6 @@ function Dropdown({ options, onSelect }) {
         )}
       </div>
     );
-  }
+}
 
 export default Dropdown;

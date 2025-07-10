@@ -183,7 +183,7 @@ async function mapObject(data, isUpdate = false) {
 
     if(utils.isDate(data?.startingAt))    activity.startingAt = utils.toFireStoreTime(data.startingAt);
 
-    if(utils.isAmount(data?.price))       activity.price = data.price;
+    if(utils.isAmount(data?.customerPrice))       activity.customerPrice = data.customerPrice;
 
     activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     

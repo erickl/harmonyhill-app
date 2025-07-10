@@ -1,0 +1,13 @@
+.buttons-footer {
+    display: flex;
+    align-items: center; /* vertically align */
+    justify-content: space-between; /* space between text and button */
+    gap: 8px; /* optional spacing */
+    margin-bottom: 8px; /* optional spacing between rows */
+}
+
+.cancel-button {
+    color: white;
+    background-color: darkred;
+    /* display: block; */
+}
