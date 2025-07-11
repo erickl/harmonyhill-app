@@ -3,7 +3,7 @@ import "./MealForm.css";
 import MyDatePicker from "./MyDatePicker.js";
 import * as menuService from '../services/menuService.js';
 
-export default function MealForm({ selectedActivity, formData, handleFormDataChange }) {
+export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
     
     const [allDishes, setAllDishes] = useState([]);
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
@@ -11,6 +11,10 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
 
     const dishQuantity = (dishName) => {
         return formData.dishes && formData.dishes[dishName] ? formData.dishes[dishName].quantity : 0
+    }
+
+    const dishComments = (dishName) => {
+        return formData.dishes && formData.dishes[dishName] ? formData.dishes[dishName].comments : "";
     }
 
     const handleEditOrderQuantity = (newDish, quantity) => {
@@ -40,7 +44,7 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
 
     useEffect(() => {
         const load = async () => {
-            const allDishes = await menuService.get({"mealCategory" : selectedActivity.subCategory});
+            const allDishes = selectedActivity ? await menuService.get({"mealCategory" : selectedActivity.subCategory}) : [];
             setAllDishes(allDishes);
             setLoadingMenu(false);
         }
@@ -90,7 +94,7 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
                                 <textarea
                                     id="purchaseComments"
                                     name="comments"
-                                    value={dish.comments}
+                                    value={dishComments(dish.name)}
                                     onChange={(e) => handleEditOrder(dish, e.target.name, e.target.value)}
                                     rows="1"
                                     className="input"

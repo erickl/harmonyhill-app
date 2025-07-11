@@ -11,12 +11,12 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     }
 
     // Transform object from {"Rena": 500000}  to  {"Rena - Rp 500000": {"name": Rena, "price": 500000}}
-    const providers = Object.entries(selectedActivity.providerPrices).reduce((m, activity) => {
+    const providers = selectedActivity ? Object.entries(selectedActivity.providerPrices).reduce((m, activity) => {
         const name = utils.capitalizeWords(activity[0]);
         const price = utils.formatDisplayPrice(activity[1], true);
         m[`${name} - ${price}`] = { "name" : name, "price" : activity[1] };
         return m;
-    }, {});
+    }, {}) : [];
 
     return (
         <div>
@@ -31,7 +31,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                             id="purchasePrice"
                             name="customerPrice"
                             // Apply formatting here for display inside the input
-                            value={utils.formatDisplayPrice(selectedActivity.customerPrice)}
+                            value={utils.formatDisplayPrice(selectedActivity ? selectedActivity.customerPrice : 0)}
                             onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
                             className="input"
                         />

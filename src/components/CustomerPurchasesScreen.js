@@ -151,7 +151,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                                 {activity.comments && (<p><span className="detail-label">Comments:</span> {activity.comments}</p>)}
                                                 <p><span className="detail-label">Status:</span> {activity.status}</p>
                                                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
-                                                <p><span className="detail-label">Price:</span> {activity.price}</p>
+                                                <p><span className="detail-label">Price:</span> {activity.customerPrice}</p>
 
                                                 {/* List dishes if the activity expanded is a meal */}
                                                 {activity.dishes && (
@@ -189,7 +189,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         return (
             <EditPurchaseScreen
                 customer={customer}
-                activity={activityToEdit}
+                activityToEdit={activityToEdit}
                 onClose={() => {
                     setActivityToEdit(null);
                     fetchPurchases();

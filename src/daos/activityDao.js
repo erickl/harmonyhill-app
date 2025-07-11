@@ -160,8 +160,13 @@ export async function getOne(bookingId, id) {
 
 export async function getTypes(filterOptions = {}) {
     let filters = [];
+
     if (Object.hasOwn(filterOptions, "category")) {
         filters.push(where("category", "==", filterOptions.category));
+    }
+
+    if (Object.hasOwn(filterOptions, "subCategory")) {
+        filters.push(where("subCategory", "==", filterOptions.subCategory));
     }
 
     return await dao.get([dao.constant.ACTIVITY_TYPES], filters); 

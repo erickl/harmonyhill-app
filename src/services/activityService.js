@@ -11,6 +11,11 @@ export async function getActivityMenu(filterOptions = {}) {
     return await activityDao.getTypes(filterOptions);
 }
 
+export async function getActivityMenuItem(category, subCategory) {
+    const menuItems = await getActivityMenu({"category" : category, "subCategory" : subCategory});
+    return menuItems.length > 0 ? menuItems[0] : null;
+}
+
 /**
  * @returns all activity categories
  */
@@ -67,6 +72,9 @@ export function enhanceActivities(activities) {
                 activity.startingAt_HHmm = utils.to_HHmm(activity.startingAt);
                 activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
             }
+
+            activity.displayName = activity.subCategory.replace(/-/g, " ");
+            activity.displayName = utils.capitalizeWords(activity.displayName);
             
             activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
         } catch(e) {
@@ -176,14 +184,14 @@ export function makeId(startingAt, house, subCategory) {
 async function mapObject(data, isUpdate = false) {
     let activity = {};
 
-    if(utils.isString(data?.category))    activity.category = data.category;
-    if(utils.isString(data?.subCategory)) activity.subCategory = data.subCategory ;
-    if(utils.isString(data?.provider))    activity.provider = data.provider;
-    if(utils.isString(data?.comments))    activity.comments = data.comments;
+    if(utils.isString(data?.category))      activity.category = data.category;
+    if(utils.isString(data?.subCategory))   activity.subCategory = data.subCategory ;
+    if(utils.isString(data?.provider))      activity.provider = data.provider;
+    if(utils.isString(data?.comments))      activity.comments = data.comments;
 
-    if(utils.isDate(data?.startingAt))    activity.startingAt = utils.toFireStoreTime(data.startingAt);
+    if(utils.isDate(data?.startingAt))      activity.startingAt = utils.toFireStoreTime(data.startingAt);
 
-    if(utils.isAmount(data?.customerPrice))       activity.customerPrice = data.customerPrice;
+    if(utils.isAmount(data?.customerPrice)) activity.customerPrice = data.customerPrice;
 
     activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     

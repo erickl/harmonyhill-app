@@ -57,6 +57,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         if(selectedCategory == null) {
             console.log(`Error: subCategory ${activity.subCategory} selected without a category`);
         }
+
+        handleFormDataChange("customerPrice", activity.customerPrice);
     }
 
     const handleActivityPurchase = async () => {
@@ -94,12 +96,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         setShowConfirm(false);
     };
 
-    const handlePurchaseFormChange = (name, value) => {
+    const handleFormDataChange = (name, value) => {
         // Special handling for price to ensure it's a number
         // Special handling for price: Convert to number after removing non-digit characters
         if (name === 'customerPrice') {
             // Remove all non-digit characters (commas, dots, currency symbols, etc.)
-            const cleanValue = value.replace(/[^0-9]/g, '');
+            const cleanValue = utils.isString(value) ? value.replace(/[^0-9]/g, '') : value;
             // Convert to integer; use empty string if input is empty
             const numericValue = cleanValue === '' ? '' : parseInt(cleanValue, 10);
             setPurchaseFormData(prevData => ({ ...prevData, [name]: numericValue }));
@@ -174,14 +176,14 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                         <MealForm 
                             selectedActivity={selectedActivity}
                             formData={purchaseFormData}
-                            handleFormDataChange={handlePurchaseFormChange}
+                            handleFormDataChange={handleFormDataChange}
                         />
                     // Display form for all other activities
                     ) : ( 
                         <ActivityForm 
                             selectedActivity={selectedActivity}
                             formData={purchaseFormData} 
-                            handleFormDataChange={handlePurchaseFormChange}  
+                            handleFormDataChange={handleFormDataChange}  
                         />
                     )}
                 </div>
