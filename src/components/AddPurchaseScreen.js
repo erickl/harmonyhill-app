@@ -22,16 +22,16 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     // State to hold the menu items (activities)
     const [categories, setCategories] = useState([]);
     const [activityMenuItems, setActivityMenuItems] = useState([]);
+    
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
     const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu   
-
-    const [selectedDishes, setSelectedDishes] = useState(null);
 
     const initialForm = {
         startingAt    : null, // important for Luxon Date time to reset to null, not empty string
         comments      : '',
         customerPrice : '',
         provider      : '',
+        dishes        : null, // only not null when ordering meals, null for all other activities
     };
 
     // State for the purchase form data
@@ -71,7 +71,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             addActivityResult = await mealService.addMeal(customer.id, {
                 "category"    : selectedCategory,
                 "subCategory" : selectedActivity.subCategory,
-                "dishes"      : selectedDishes,
+                "dishes"      : purchaseFormData.dishes,
                 "status"      : "requested",
                 "startingAt"  : purchaseFormData.startingAt,
             });
@@ -173,17 +173,15 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     {selectedActivity.category === "meal" ? (
                         <MealForm 
                             selectedActivity={selectedActivity}
-                            selectedDishes={selectedDishes} 
-                            setSelectedDishes={setSelectedDishes}
                             formData={purchaseFormData}
                             handleFormDataChange={handlePurchaseFormChange}
                         />
                     // Display form for all other activities
                     ) : ( 
                         <ActivityForm 
-                            formData={purchaseFormData} 
-                            handleFormDataChange={handlePurchaseFormChange}
                             selectedActivity={selectedActivity}
+                            formData={purchaseFormData} 
+                            handleFormDataChange={handlePurchaseFormChange}  
                         />
                     )}
                 </div>
@@ -191,7 +189,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 {/* Confirm meal selection before submitting to database */}
                 {showConfirm && (
                     <ConfirmOrderModal 
-                        selected={selectedDishes}
+                        selected={purchaseFormData.dishes}
                         onCancel={handleCancelConfirm}
                         onConfirm={handleActivityPurchase}
                     />

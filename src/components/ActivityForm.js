@@ -4,7 +4,7 @@ import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import * as utils from "../utils.js";
 
-export default function ActivityForm({ formData, handleFormDataChange, selectedActivity }) {
+export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const onProviderSelect = (provider) => {
         const name = provider ? provider.name : '';
         handleFormDataChange("provider", name);

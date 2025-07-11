@@ -3,18 +3,18 @@ import "./MealForm.css";
 import MyDatePicker from "./MyDatePicker.js";
 import * as menuService from '../services/menuService.js';
 
-export default function MealForm({ selectedActivity, selectedDishes, setSelectedDishes, formData, handleFormDataChange  }) {
+export default function MealForm({ selectedActivity, formData, handleFormDataChange }) {
     
     const [allDishes, setAllDishes] = useState([]);
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
     const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu   
 
     const dishQuantity = (dishName) => {
-        return selectedDishes && selectedDishes[dishName] ? selectedDishes[dishName].quantity : 0
+        return formData.dishes && formData.dishes[dishName] ? formData.dishes[dishName].quantity : 0
     }
 
     const handleEditOrderQuantity = (newDish, quantity) => {
-        const updatedDishes = { ...(selectedDishes || {}) }; // Make shallow copy
+        const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
         
         if (!updatedDishes[newDish.name]) {
             updatedDishes[newDish.name] = newDish;
@@ -24,18 +24,18 @@ export default function MealForm({ selectedActivity, selectedDishes, setSelected
         updatedDishes[newDish.name].quantity += quantity;
         updatedDishes[newDish.name].quantity = Math.max(updatedDishes[newDish.name].quantity, 0);
         
-        setSelectedDishes(updatedDishes);
+        handleFormDataChange("dishes", updatedDishes);
     };
 
     const handleEditOrder = (newDish, field, value) => {
-        const updatedDishes = { ...(selectedDishes || {}) }; // Make shallow copy
+        const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
         
         if (!updatedDishes[newDish.name]) {
             return;
         }
 
         updatedDishes[newDish.name][field] = value;
-        setSelectedDishes(updatedDishes);
+        handleFormDataChange("dishes", updatedDishes);
     };
 
     useEffect(() => {
