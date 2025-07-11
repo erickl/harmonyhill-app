@@ -31,6 +31,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         comments      : '',
         customerPrice : '',
         provider      : '',
+        assignedTo    : '',
         dishes        : null, // only not null when ordering meals, null for all other activities
     };
 

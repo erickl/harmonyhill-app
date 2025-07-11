@@ -150,6 +150,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                                 {activity.comments && (<p><span className="detail-label">Comments:</span> {activity.comments}</p>)}
                                                 <p><span className="detail-label">Status:</span> {activity.status}</p>
                                                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
+                                                <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
                                                 <p><span className="detail-label">Price:</span> {activity.customerPrice}</p>
 
                                                 {/* List dishes if the activity expanded is a meal */}

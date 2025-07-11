@@ -7,7 +7,7 @@ import "./Dropdown.css";
  * @param {*} onSelect: The callback to call with the selected option
  * @returns the dropdown view including the label on the side
  */
-function Dropdown({ options, onSelect }) {
+function Dropdown({ label, options, onSelect }) {
     const keys = Object.keys(options);
 
     const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +24,7 @@ function Dropdown({ options, onSelect }) {
     return (
       <div className="dropdown-menu">
         <div className="dropdown-row">
-            <p>Select a provider</p>
+            <p>{label}</p>
             <button type="button" className="open-button" onClick={toggleDropdown}>
                 {selected || 'Select an option'}
             </button>

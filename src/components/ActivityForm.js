@@ -3,11 +3,19 @@ import "./ActivityForm.css";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import * as utils from "../utils.js";
+import * as userService from "../services/userService.js";
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
+    const [teamMembers, setTeamMembers] = useState([]);
+
     const onProviderSelect = (provider) => {
         const name = provider ? provider.name : '';
         handleFormDataChange("provider", name);
+    }
+
+    const onTeamMemberSelect = (teamMember) => {
+        const name = teamMember ? teamMember.name : '';
+        handleFormDataChange("assignedTo", name);
     }
 
     // Transform object from {"Rena": 500000}  to  {"Rena - Rp 500000": {"name": Rena, "price": 500000}}
@@ -17,6 +25,19 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
         m[`${name} - ${price}`] = { "name" : name, "price" : activity[1] };
         return m;
     }, {}) : [];
+
+    useEffect(() => {
+        const fetchTeamMembers = async () => {
+            const teamMembers = await userService.getUsers();
+            const formattedTeamMembers = teamMembers.reduce((m, teamMember) => {
+                m[teamMember.name] = teamMember;
+                return m;
+            }, {})
+            setTeamMembers(formattedTeamMembers);
+        };
+
+        fetchTeamMembers();
+    }, []);
 
     return (
         <div>
@@ -38,7 +59,10 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     </div>
                 </div>
                 <div className="purchase-form-group">
-                    <Dropdown options={providers} onSelect={onProviderSelect}/>
+                    <Dropdown label={"Assign to team member"} options={teamMembers} onSelect={onTeamMemberSelect}/>
+                </div>
+                <div className="purchase-form-group">
+                    <Dropdown label={"Select a provider"} options={providers} onSelect={onProviderSelect}/>
                 </div>
                 <div className="purchase-form-group">
                     <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange} required/>

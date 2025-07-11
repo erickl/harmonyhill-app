@@ -160,6 +160,11 @@ async function getUser(username) {
     return user;
 }
 
+export async function getUsers() {
+    const users = await userDao.get();
+    return users;
+}
+
 /**
  * Check if the user is approved, by email or username
  * @param {*} username can be the username or email
