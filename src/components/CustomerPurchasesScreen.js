@@ -105,10 +105,9 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         }
         
         const activitiesByDate = allActivities.reduce((m, activity) => {
-            if(!m[activity.startingAt_ddMMM]) {
-                m[activity.startingAt_ddMMM] = [];
-            }
-            m[activity.startingAt_ddMMM].push(activity);
+            const date = activity.startingAt_ddMMM ? activity.startingAt_ddMMM : "Date TBD";
+            if(!m[date]) m[date] = [];
+            m[date].push(activity);
             return m;
         }, {});
         
