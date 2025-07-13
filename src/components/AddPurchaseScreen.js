@@ -25,7 +25,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const [activityMenuItems, setActivityMenuItems] = useState([]);
     
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
-    const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu   
 
     const initialForm = {
         startingAt    : null, // important for Luxon Date time to reset to null, not empty string
@@ -129,7 +128,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 return;
             }
             setLoadingMenu(true); // Set loading to true before fetching
-            setMenuError(null); // Clear previous errors
 
             try {
                 const activityMenuData = await activityService.getActivityMenu();
@@ -141,8 +139,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 setActivityMenuItems(activityMenuData);
                 setLoadingMenu(false);
             } catch (err) {
-                console.error("Failed to fetch menu:", err);
-                setMenuError(err);
+                onError(`Failed to fetch menu: ${err.message}`);
                 setLoadingMenu(false);
             }     
         }   
@@ -155,16 +152,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             <div className="card">
                 <div className="card-content">
                     <p>Loading menu items...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (menuError) {
-        return (
-            <div className="card">
-                <div className="card-content">
-                    <p>Error loading menu: {menuError.message}</p>
                 </div>
             </div>
         );

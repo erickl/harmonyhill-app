@@ -3,7 +3,7 @@ import { Pencil, ShoppingCart } from 'lucide-react';
 import * as bookingService from '../services/bookingService.js';
 import * as userService from '../services/userService.js';
 import * as utils from '../utils.js';
-
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 import './CustomersScreen.css';
 import '../App.css';
 import EditCustomerScreen from './EditCustomerScreen';
@@ -12,13 +12,18 @@ import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 const CustomersScreen = ({ onNavigate }) => {
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [selectedCustomer, setSelectedCustomer] = useState(null); // State to store the selected customer
     const [pastExpanded, setPastExpanded] = useState(false); // State to expand past customer section
     const [futureExpanded, setFutureExpanded] = useState(false); // State to expand future customer section
     const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
     const [customerPurchases, setCustomerPurchases] = useState(null); // state to enable adding purchases
     const [hasEditPermissions, setEditPermissions] = useState(false); // true if current user has persmissions to edit bookings
+
+    const [errorMessage, setErrorMessage] = useState(null);
+    
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
+    }
 
     const fetchCustomers = async (getAllCustomers = false) => {
         try {
@@ -27,7 +32,7 @@ const CustomersScreen = ({ onNavigate }) => {
             setCustomers(fetchedCustomers);
             setLoading(false);
         } catch (err) {
-            setError(err);
+            onError(`Error fetching customers: ${err.message}`);
             setLoading(false);
         }
     };
@@ -50,19 +55,6 @@ const CustomersScreen = ({ onNavigate }) => {
                 </div>
                 <div className="card-content">
                     <p>Loading customer data...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="card">
-                <div className="card-header">
-                    <h2 className="card-title">Error</h2>
-                </div>
-                <div className="card-content">
-                    <p>Error: {error.message}</p>
                 </div>
             </div>
         );
@@ -242,6 +234,13 @@ const CustomersScreen = ({ onNavigate }) => {
                 {renderCustomerListSection("Future Customers", futureCustomers, "future-customer", futureExpanded, setFutureExpanded)}
 
             </div>
+
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
+                />
+            )}
         </div>
     );
 };

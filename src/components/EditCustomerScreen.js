@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import MyDatePicker from "./MyDatePicker.js";
 import * as bookingService from '../services/bookingService.js'; // Import the booking service
 import * as utils from '../utils.js';
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
 
@@ -34,16 +35,19 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
         setFormData({ ...formData, [name]: value }); 
     };
 
-    const onError = (message) => {
-        console.log(message);
-        alert(message);
+    const [errorMessage, setErrorMessage] = useState(null);
+        
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
     }
+
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.name || !formData.house || !formData.checkInAt || !formData.checkOutAt) {
-            alert('Please fill in all required fields.');
+            onError('Please fill in all required fields.');
             return;
         }
 
@@ -175,6 +179,13 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                     <button type="button" onClick={onClose} className="cancel-button">Cancel</button>
                 </form>
             </div>
+
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
+                />
+            )}
         </div>
     );
 };

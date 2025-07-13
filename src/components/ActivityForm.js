@@ -4,9 +4,15 @@ import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers, setTeamMembers] = useState([]);
+    const [errorMessage, setErrorMessage] = useState(null);
+            
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
+    }
 
     const onProviderSelect = (provider) => {
         const name = provider ? provider.name : '';
@@ -79,6 +85,13 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     ></textarea>
                 </div>
             </form>
+
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
+                />
+            )}
         </div>
     );
 }

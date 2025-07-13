@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import "./MealForm.css";
 import MyDatePicker from "./MyDatePicker.js";
 import * as menuService from '../services/menuService.js';
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
     
     const [allDishes, setAllDishes] = useState([]);
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
-    const [menuError, setMenuError] = useState(null); // to handle errors with loading the menu   
+    
+    const [errorMessage, setErrorMessage] = useState(null);
+            
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
+    }
 
     const dishQuantity = (dishName) => {
         return formData.dishes && formData.dishes[dishName] ? formData.dishes[dishName].quantity : 0
@@ -53,10 +59,6 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
     if (loadingMenu) {
         return (<div><p>Loading menu items...</p></div>);
-    }
-
-    if (menuError) {
-        return (<div><p>Error loading menu: {menuError.message}</p></div>);
     }
 
     return (
@@ -109,6 +111,13 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             )}
 
             <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange}/>
+
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
+                />
+            )}
         </div>
     );
 }
