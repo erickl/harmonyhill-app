@@ -72,10 +72,13 @@ export function isDate(value) {
     if(value instanceof Date || value instanceof Timestamp || DateTime.isDateTime(value)) {
         return true;
     } else if(isString(value)) {
-        const parsedDate = new Date(value);
-        return !isNaN(parsedDate);
+        const hasDateFormat = /^\d{4}-\d{2}-\d{2}/.test(value); // starts with YYYY-MM-dd
+        if(hasDateFormat) {
+            const parsedDate = new Date(value);
+            return !isNaN(parsedDate);
+        }
     }
-    else return false;
+    return false;
 }
 
 /**
