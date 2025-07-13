@@ -7,6 +7,7 @@ import ActivityForm from "./ActivityForm.js";
 import MealForm from "./MealForm.js";
 import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
@@ -34,6 +35,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         assignedTo    : '',
         dishes        : null, // only not null when ordering meals, null for all other activities
     };
+
+    const [errorMessage, setErrorMessage] = useState(null);
+    
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
+    }
 
     // State for the purchase form data
     const [purchaseFormData, setPurchaseFormData] = useState(initialForm);
@@ -77,9 +84,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 "dishes"      : purchaseFormData.dishes,
                 "status"      : "requested",
                 "startingAt"  : purchaseFormData.startingAt,
-            });
+            }, 
+            onError);
         } else {
-            addActivityResult = await activityService.add(customer.id, purchaseFormData);
+            addActivityResult = await activityService.add(customer.id, purchaseFormData, onError);
         }
         
         if(addActivityResult) {
@@ -197,6 +205,13 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                         onConfirm={handleActivityPurchase}
                     />
                 )}
+
+                {errorMessage && (
+                    <ErrorNoticeModal 
+                        error={errorMessage}
+                        onClose={() => setErrorMessage(null) }
+                    />
+                )}
                 
                 <ButtonsFooter 
                     onCancel={handleActivitySelection} 
@@ -245,6 +260,13 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                         Back to categories
                     </button>
                 </div>
+
+                {errorMessage && (
+                    <ErrorNoticeModal 
+                        error={errorMessage}
+                        onClose={() => setErrorMessage(null) }
+                    />
+                )}
             </div>
         )
     }
@@ -276,6 +298,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             <div>
                 <button type="button" onClick={onClose} className="cancel-button">Cancel</button>
             </div>
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
+                />
+            )}
         </div>
     );
 };

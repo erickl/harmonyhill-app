@@ -9,6 +9,7 @@ import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import "./EditPurchaseScreen.css";
 import "../App.css";
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) => {
 
@@ -16,14 +17,22 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     const [showConfirm, setShowConfirm] = useState(false);
     const [activityMenuItem, setActivityMenuItem] = useState(null);
 
+    const [errorMessage, setErrorMessage] = useState(null);
+
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
+    }
+
     const [formData, setFormData] = useState({
-        startingAt : activityToEdit.startingAt,
-        comments   : activityToEdit.comments,
-        price      : activityToEdit.price, // not editable for meals. Derived from the dishes' costs 
-        provider   : activityToEdit.provider,
-        assignedTo : activityToEdit.assignedTo,
-        status     : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
-        dishes     : activityToEdit.dishes, // not null only for meal activities 
+        startingAt  : activityToEdit.startingAt,
+        category    : activityToEdit.category,
+        subCategory : activityToEdit.subCategory,
+        comments    : activityToEdit.comments,
+        price       : activityToEdit.price, // not editable for meals. Derived from the dishes' costs 
+        provider    : activityToEdit.provider,
+        assignedTo  : activityToEdit.assignedTo,
+        status      : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
+        dishes      : activityToEdit.dishes, // not null only for meal activities 
     });
 
     const handlePurchaseFormChange = (name, value) => {
@@ -49,7 +58,13 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     };
 
     const handleEditPurchaseSubmit = async() => {
-        const editActivitySuccess = await mealService.update(customer.id, activityToEdit.id, formData);
+        let editActivitySuccess = null;
+        if(activityToEdit.category === "meal") {
+            editActivitySuccess = await mealService.update(customer.id, activityToEdit.id, formData, onError);
+        } else {
+            editActivitySuccess = await activityService.update(customer.id, activityToEdit.id, formData, onError);
+        }
+        
         if(editActivitySuccess) {
             onClose();
         } else {
@@ -104,6 +119,13 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
                     selected={formData.dishes}
                     onCancel={handleCancelConfirm}
                     onConfirm={handleEditPurchaseSubmit}
+                />
+            )}
+
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
                 />
             )}
             

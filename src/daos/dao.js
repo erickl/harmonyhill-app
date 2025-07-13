@@ -109,7 +109,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
             let diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
         
             if(diffStr.length === 0) {
-                if(onError) onError(`No changes to update to ${path}/${id}`);
+                if(onError) onError(`Update error: No changes to update to ${path}/${id}`);
                 return false;
             }
                 

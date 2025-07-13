@@ -8,7 +8,7 @@ export async function getMealCategories() {
     return await activityDao.getTypes("meal");
 }
 
-export async function addMeal(bookingId, mealData) {
+export async function addMeal(bookingId, mealData, onError) {
     const booking = await bookingDao.getOne(bookingId);
     if(!booking) {
         console.error(`Booking ${bookingId} not found`);
@@ -17,15 +17,16 @@ export async function addMeal(bookingId, mealData) {
 
     const meal = await mapMealObject(mealData);
     const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
-    const success = await activityDao.add(bookingId, mealId, meal);
+    const success = await activityDao.add(bookingId, mealId, meal, onError);
     if(!success) {
         // todo: pass onError to the add function
         return false; 
     }
 
     if(!utils.isEmpty(mealData.dishes)) {
-        const returnedDishIds = await addMealItems(bookingId, mealId, Object.values(mealData.dishes));
+        const returnedDishIds = await addMealItems(bookingId, mealId, Object.values(mealData.dishes), onError);
         if(returnedDishIds.length !== Object.keys(mealData.dishes).length) {
+            //onError("Not all dishes were successfully uploaded");
             // todo: pass onError to the add function: not all dishes were successfully uploaded
             return false;
         }
@@ -36,7 +37,7 @@ export async function addMeal(bookingId, mealData) {
 
 // Example result: 250530-hh-breakfast
 export function makeMealId(startingAt, house, mealCategory) {
-    const houseShort = house == "Harmony Hill" ? "hh" : "jn";
+    const houseShort = house.toLowerCase().trim() == "harmony hill" ? "hh" : "jn";
     startingAt = utils.to_YYMMdd(startingAt);
     return `${startingAt}-${houseShort}-${mealCategory.replace(/ /g, "-")}`;
 }
@@ -47,7 +48,7 @@ export function makeMealItemId(startingAt, house, mealCategory, mealItemName) {
     return `${mealId}-${mealItemName.replace(/ /g, "-")}`;
 }
 
-export async function addMealItems(bookingId, mealId, mealItemsData) {
+export async function addMealItems(bookingId, mealId, mealItemsData, onError) {
     // Get booking
     const booking = await bookingDao.getOne(bookingId, mealId);
     if(!booking) {
@@ -72,14 +73,14 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
         // Atomic transaction: either both DB updates happen, or none does
         const transactionSuccess = await activityDao.transaction(async () => {
             // Add meal item to the meal
-            const addMealItemSuccess = await activityDao.addMealItem(bookingId, mealId, mealItemId, mealItem);
+            const addMealItemSuccess = await activityDao.addMealItem(bookingId, mealId, mealItemId, mealItem, onError);
             if(!addMealItemSuccess) {
                 throw new Error("Cannot add meal item");
             }
 
             // Update the total meal price
             runningTotalMealPrice += mealItem.price * mealItem.quantity;
-            const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { price: runningTotalMealPrice });
+            const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { price: runningTotalMealPrice }, onError);
             if(!updateMealPriceSuccess) {
                 throw new Error("Cannot update total meal price");
             }
@@ -92,9 +93,9 @@ export async function addMealItems(bookingId, mealId, mealItemsData) {
     return mealItems;
 }
 
-export async function update(bookingId, mealId, mealUpdateData) {
+export async function update(bookingId, mealId, mealUpdateData, onError) {
     const mealUpdate = await mapMealObject(mealUpdateData, true);
-    return await activityDao.update(bookingId, mealId, mealUpdate);
+    return await activityDao.update(bookingId, mealId, mealUpdate, onError);
 }
 
 /**

@@ -2,16 +2,16 @@ import { where, orderBy, getDoc } from 'firebase/firestore';
 import * as dao from "./dao.js"
 import * as utils from "../utils.js";
 
-export async function add(bookingId, activityId, activity) {
-    return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activity);
+export async function add(bookingId, activityId, activity, onError) {
+    return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activity, onError);
 }
 
-export async function update(bookingId, activityId, activityData) {
-    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activityData, true);
+export async function update(bookingId, activityId, activityData, onError) {
+    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activityData, true, onError);
 }
 
-export async function addMealItem(bookingId, mealId, mealItemId, mealItem) { 
-    return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId, mealItem);
+export async function addMealItem(bookingId, mealId, mealItemId, mealItem, onError) { 
+    return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId, mealItem, onError);
 }
 
 export async function transaction(inTransaction) {

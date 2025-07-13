@@ -107,7 +107,7 @@ export async function getOne(bookingId, activityId) {
  *  }
  * @returns activityId if successful, otherwise false
  */
-export async function add(bookingId, activityData) {
+export async function add(bookingId, activityData, onError) {
     const booking = await bookingService.getOne(bookingId);
     if(!booking) {
         console.error(`Booking with ID ${bookingId} does not exist.`);
@@ -121,7 +121,7 @@ export async function add(bookingId, activityData) {
     activity.house = booking.house;
 
     const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
-    const success = await activityDao.add(bookingId, activityId, activity);
+    const success = await activityDao.add(bookingId, activityId, activity, onError);
     return success ? activityId : false;
 }
 
@@ -132,11 +132,11 @@ export async function add(bookingId, activityData) {
  * @param {*} personnelId ID from the personnel collection
  * @returns true if update successful, otherwise false
  */
-export async function assignProvider(bookingId, activityId, personnelId) {
+export async function assignProvider(bookingId, activityId, personnelId, onError) {
     return await update(bookingId, activityId, { 
         provider : personnelId,
         status   : "confirmed"
-    });
+    }, onError);
 }
 
 export async function getProviders(category, subCategory) {
@@ -151,13 +151,13 @@ export async function getProviders(category, subCategory) {
  * @param {*} userId ID of the staff (i.e. app users)
  * @returns true if update successful, otherwise false
  */
-export async function assignStaff(bookingId, activityId, userId) {
+export async function assignStaff(bookingId, activityId, userId, onError) {
     return await update(bookingId, activityId, { 
         assignTo: userId,
-    });
+    }, onError);
 }
 
-export async function update(bookingId, activityId, activityUpdateData) {
+export async function update(bookingId, activityId, activityUpdateData, onError) {
     let activityUpdate = await mapObject(activityUpdateData, true);
     
     // Don't try to update booking name or house
@@ -168,7 +168,7 @@ export async function update(bookingId, activityId, activityUpdateData) {
         delete activityUpdate.house;
     }
 
-    return await activityDao.update(bookingId, activityId, activityUpdate);
+    return await activityDao.update(bookingId, activityId, activityUpdate, onError);
 }
 
 export async function remove(bookingId, activityId) {
@@ -176,7 +176,7 @@ export async function remove(bookingId, activityId) {
 }
 
 export function makeId(startingAt, house, subCategory) {
-    const houseShort = house == "Harmony Hill" ? "hh" : "jn";
+    const houseShort = house.toLowerCase().trim() == "harmony hill" ? "hh" : "jn";
     startingAt = utils.to_YYMMdd(startingAt);
     return `${startingAt}-${houseShort}-${subCategory.replace(/ /g, '-')}`;
 }
@@ -186,7 +186,6 @@ async function mapObject(data, isUpdate = false) {
 
     if(utils.isString(data?.category))      activity.category = data.category;
     if(utils.isString(data?.subCategory))   activity.subCategory = data.subCategory ;
-    if(utils.isString(data?.provider))      activity.provider = data.provider;
     if(utils.isString(data?.comments))      activity.comments = data.comments;
 
     if(utils.isDate(data?.startingAt))      activity.startingAt = utils.toFireStoreTime(data.startingAt);
@@ -195,8 +194,12 @@ async function mapObject(data, isUpdate = false) {
 
     activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     
+    if(utils.isString(data?.provider))      activity.provider = data.provider;
     // First "requested", then "confirmed" (then "completed"?)
     activity.status = utils.isString(data?.status) ? data.status : "requested";
+
+    // If a provider is assigned, e.g. a driver to a tour, this must mean the activity is indeed confirmed to happen
+    activity.status = utils.isEmpty(activity.provider) ? activity.status : "confirmed";
     
     activity.assignedTo = utils.isString(data?.assignedTo) ? data.assignedTo : await userService.getCurrentUserName();
 
