@@ -26,12 +26,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
         status:              customer.status,
     });
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
-
-    const handleOtherInputChange = (name, value) => {
+    const handleInputChange = (name, value) => {
         setFormData({ ...formData, [name]: value }); 
     };
 
@@ -40,8 +35,6 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
     }
-
-    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -77,39 +70,96 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                 <form onSubmit={handleSubmit} className="edit-customer-form">
                     <div className="form-group">
                         <label htmlFor="name">Name:</label>
-                        <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required className="input" />
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            value={formData.name} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            required className="input" 
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="phoneNumber">Phone number:</label>
-                        <input type="tel" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className="input" />
+                        <input 
+                            type="tel" 
+                            id="phoneNumber" 
+                            name="phoneNumber" 
+                            value={formData.phoneNumber} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            className="input" 
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="email">Phone number:</label>
-                        <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className="input" />
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            value={formData.email} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            className="input" 
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="house">Villa:</label>
-                        <input type="text" id="house" name="house" value={formData.house} onChange={handleInputChange} required className="input" />
+                        <input 
+                            type="text" 
+                            id="house" 
+                            name="house" 
+                            value={formData.house} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            required className="input" 
+                        />
                     </div>                  
                     <div className="form-group">
                         <label htmlFor="checkInAt">Check In Date</label>
-                        <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleOtherInputChange}/>
+                        <MyDatePicker 
+                            name={"checkInAt"} 
+                            value={formData.checkInAt} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="checkOutAt">Check Out Date</label>
-                        <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleOtherInputChange}/>
+                        <MyDatePicker 
+                            name={"checkOutAt"} 
+                            value={formData.checkOutAt} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="dietaryRestrictions">Dietary restrictions:</label>
-                        <input type="text" id="dietaryRestrictions" name="dietaryRestrictions" value={formData.dietaryRestrictions} onChange={handleInputChange} className="input" />
+                        <input 
+                            type="text" 
+                            id="dietaryRestrictions" 
+                            name="dietaryRestrictions" 
+                            value={formData.dietaryRestrictions} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            className="input" 
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="country">Country:</label>
-                        <input type="text" id="country" name="country" value={formData.country} onChange={handleInputChange} className="input" />
+                        <input 
+                            type="text" 
+                            id="country" 
+                            name="country" 
+                            value={formData.country} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            className="input" 
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="guestCount">Guest Count:</label>
-                        <input type="number" id="guestCount" name="guestCount" value={formData.guestCount} onChange={handleInputChange} className="input" />
+                        <input 
+                            type="number" 
+                            id="guestCount" 
+                            name="guestCount" v
+                            alue={formData.guestCount} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            className="input" 
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="customerInfo">Other Customer Information:</label>
@@ -117,7 +167,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                             id="customerInfo"
                             name="customerInfo"
                             value={formData.customerInfo}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                             className="input"
                             rows="4" // visible lines count
                         ></textarea>
@@ -128,7 +178,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                             id="arrivalInfo"
                             name="arrivalInfo"
                             value={formData.arrivalInfo}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                             className="input"
                             rows="4" // visible lines count
                         ></textarea>
@@ -139,7 +189,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                             id="specialRequests"
                             name="specialRequests"
                             value={formData.specialRequests}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                             className="input"
                             rows="4" // visible lines count
                         ></textarea>
@@ -150,18 +200,32 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                             id="promotions"
                             name="promotions"
                             value={formData.promotions}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                             className="input"
                             rows="4" // visible lines count
                         ></textarea>
                     </div>
                     <div className="form-group">
                         <label htmlFor="roomRate">Room Rate:</label>
-                        <input type="number" id="roomRate" name="roomRate" value={formData.roomRate} onChange={handleInputChange} className="input" />
+                        <input 
+                            type="number" 
+                            id="roomRate" 
+                            name="roomRate" 
+                            value={formData.roomRate} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            className="input" 
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="source">Source:</label>
-                        <input type="text" id="source" name="source" value={formData.source} onChange={handleInputChange} className="input" />
+                        <input 
+                            type="text" 
+                            id="source" 
+                            name="source" 
+                            value={formData.source} 
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)} 
+                            className="input" 
+                        />
                     </div>
                     {/* <div className="form-group">
                         <label htmlFor="status">Status:</label>

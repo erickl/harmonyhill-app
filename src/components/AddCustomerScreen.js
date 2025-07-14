@@ -41,10 +41,6 @@ const AddCustomerScreen = ({ onNavigate }) => {
         setFormData({ ...formData, [field]: value });
     };
 
-    const handleOtherInputChange = (name, value) => {
-        setFormData({ ...formData, [name]: value }); 
-    };
-
     const handleSubmit = async () => { 
         // Basic validation
         if (!formData.house || !formData.checkInAt || !formData.checkOutAt || !formData.name) {
@@ -155,12 +151,12 @@ const AddCustomerScreen = ({ onNavigate }) => {
 
                 <div className="form-group">
                     <label htmlFor="checkInAt">Check In Date</label>
-                    <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleOtherInputChange}/>
+                    <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleInputChange}/>
                 </div>
 
                 <div>
                     <h3>Check-out Date</h3>
-                    <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleOtherInputChange}/>
+                    <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleInputChange}/>
                 </div>
 
                 {/* Length of Stay */}
