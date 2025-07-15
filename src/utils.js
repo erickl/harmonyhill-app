@@ -47,6 +47,10 @@ export function toNumber(valueIn) {
     }
 }
 
+export function isBoolean(value) {
+    return typeof value === "boolean";
+}
+
 export function isAmount(value) {
     return isNumber(value) || isString(value);
 }

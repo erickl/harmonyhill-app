@@ -3,6 +3,7 @@ import "./MealForm.css";
 import MyDatePicker from "./MyDatePicker.js";
 import * as menuService from '../services/menuService.js';
 import ErrorNoticeModal from './ErrorNoticeModal.js';
+import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
     
@@ -15,12 +16,8 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
         setErrorMessage(errorMessage);
     }
 
-    const dishQuantity = (dishName) => {
-        return formData.dishes && formData.dishes[dishName] ? formData.dishes[dishName].quantity : 0
-    }
-
-    const dishComments = (dishName) => {
-        return formData.dishes && formData.dishes[dishName] ? formData.dishes[dishName].comments : "";
+    const getDishData = (dishName, fieldName, defaultValue) => {
+        return formData.dishes && formData.dishes[dishName] ? formData.dishes[dishName][fieldName] : defaultValue;
     }
 
     const handleEditOrderQuantity = (newDish, quantity) => {
@@ -33,6 +30,10 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
         updatedDishes[newDish.name].quantity += quantity;
         updatedDishes[newDish.name].quantity = Math.max(updatedDishes[newDish.name].quantity, 0);
+
+        if(updatedDishes[newDish.name].quantity == 0) {
+            delete updatedDishes[newDish.name];
+        }
         
         handleFormDataChange("dishes", updatedDishes);
     };
@@ -55,7 +56,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             setLoadingMenu(false);
         }
         load();
-    }, []);
+    }, [selectedActivity]);
 
     if (loadingMenu) {
         return (<div><p>Loading menu items...</p></div>);
@@ -80,7 +81,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                                         }}>
                                         -
                                     </button>
-                                    <span>{dishQuantity(dish.name)}</span>
+                                    <span>{getDishData(dish.name, "quantity", 0)}</span>
                                     <button
                                         key={`${dish.id}-increment`}
                                         //className="button activity-button"
@@ -91,18 +92,28 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                                     </button>
                                 </div>
                             </div>
-                            {dishQuantity(dish.name) > 0 && (<div>
-                                <label htmlFor="purchaseComments">Comments:</label>
-                                <textarea
-                                    id="purchaseComments"
-                                    name="comments"
-                                    value={dishComments(dish.name)}
-                                    onChange={(e) => handleEditOrder(dish, e.target.name, e.target.value)}
-                                    rows="1"
-                                    className="input"
-                                ></textarea>
-                            </div>
-                        )}
+                            {getDishData(dish.name, "quantity", 0) > 0 && (
+                                <div>
+                                    <label htmlFor="purchaseComments">Comments:</label>
+                                    <textarea
+                                        id="purchaseComments"
+                                        name="comments"
+                                        value={getDishData(dish.name, "comments", "")}
+                                        onChange={(e) => handleEditOrder(dish, e.target.name, e.target.value)}
+                                        rows="1"
+                                        className="input"
+                                    ></textarea>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={getDishData(dish.name, "isFree", false)}
+                                                onChange={(e) => handleEditOrder(dish, "isFree", e.target.checked)}
+                                            />
+                                        }
+                                        label="Free"
+                                    />
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

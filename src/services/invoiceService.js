@@ -52,3 +52,22 @@ export async function testInvoice() {
 
     let x = 1;
 }
+
+// Create a description like this "1x Bolognese (free, no spicy)" 
+export function dishReceiptLine(dishData) {
+    const dishItem = `${dishData.quantity}x ${dishData.name}`;
+
+    let dishComments = "";
+    if(dishData.isFree === true) {
+        dishComments += "free";
+    }
+    if(utils.isString(dishData.comments)) {
+        if(dishData.isFree) dishComments += ", "; 
+        dishComments += dishData.comments.trim();
+    }
+    if(dishComments.length > 0) {
+        dishComments = ` (${dishComments})`;
+    }
+    
+    return dishItem + dishComments;
+}

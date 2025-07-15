@@ -1,5 +1,8 @@
+import * as utils from "../utils.js";
+import * as invoiceService from "../services/invoiceService.js";
 
 export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
+
     return (
         <div className="modal-overlay">
             <div className="modal-box">
@@ -9,8 +12,8 @@ export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
                         <p>You selected:</p>
                         {Object.entries(selected).filter(([_, dishData]) => dishData.quantity > 0).map(([dishName, dishData]) => (
                             <div key={`${dishName}-selected-wrapper`}>
-                                <p>{dishData.quantity}x {dishName} 
-                                    {dishData.comments && (<i> ({dishData.comments.trim()})</i>)}
+                                <p>
+                                    {invoiceService.dishReceiptLine(dishData)}
                                 </p>
                             </div>
                         ))}

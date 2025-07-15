@@ -157,7 +157,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                                 {activity.dishes && (
                                                     Object.values(activity.dishes).map((dish) => (
                                                         <React.Fragment key={`${activity.id}-${dish.id}`}>
-                                                            <p>{dish.quantity}x {dish.name}</p>
+                                                            <p>{invoiceService.dishReceiptLine(dish)}</p>
                                                         </React.Fragment>
                                                     ))
                                                 )}

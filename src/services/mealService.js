@@ -79,7 +79,7 @@ export async function addMealItems(bookingId, mealId, mealItemsData, onError) {
             }
 
             // Update the total meal price
-            runningTotalMealPrice += mealItem.price * mealItem.quantity;
+            runningTotalMealPrice += !mealItem.isFree ? mealItem.price * mealItem.quantity : 0;
             const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { price: runningTotalMealPrice }, onError);
             if(!updateMealPriceSuccess) {
                 throw new Error("Cannot update total meal price");
@@ -179,6 +179,7 @@ async function mapMealItemObject(data, isUpdate = false) {
     if(!utils.isEmpty(data?.quantity)) object.quantity = data.quantity;
     if(utils.isAmount(data?.price))    object.price    = data.price;
     if(utils.isString(data?.comments)) object.comments = data.comments;
+    if(utils.isBoolean(data?.isFree))  object.isFree   = data.isFree;
 
     if(!isUpdate) {
         object.createdAt = new Date();
