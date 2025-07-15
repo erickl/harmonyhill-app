@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, deleteUser } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth } from "../firebase.js";
 import * as userDao from "../daos/userDao.js";
 import * as utils from "../utils.js";
 
