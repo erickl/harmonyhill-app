@@ -1,18 +1,34 @@
 import * as menuDao from '../daos/menuDao.js';
 import * as bookingService from './bookingService.js';
+import * as utils from "../utils.js";
 
 /**
  * filters = {
- *      mealCategory: "breakfast"|"lunch"|"dinner"
+ *      meal:         "breakfast"|"lunch"|"dinner"
  *      allergens:    ["gluten", "soy", "nuts", ...]
  *      house:        "harmony hill"|"jungle nook"
  *      isFavorite:    true|false
  *      isAvailable:   Will be true and cannot be be changed
  * }
+ * groupByCourse: if true, group meals by course (e.g. lunch meals), e.g. mains, starters, desserts, etc...
  */
 export async function get(options = {}) {
     const menu = await menuDao.get(options);
     return menu;
+}
+
+export async function groupByCourse(options = {}) {
+    const menu = await menuDao.get(options);
+    
+    // Group by e.g. mains, starters, drinks, etc...
+    const groupedMenu = menu.reduce((m, dish) => {
+        const group = utils.isString(dish.course) ? `${dish.priority},${dish.course}` : "9999,misc";
+        if(!m[group]) m[group] = [];
+        m[group].push(dish);
+        return m;
+    }, {});
+
+    return groupedMenu;
 }
 
 /**

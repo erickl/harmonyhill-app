@@ -5,7 +5,7 @@ import * as userService from "./userService.js";
 import * as utils from "../utils.js";
 
 export async function getMealCategories() {
-    return await activityDao.getTypes("meal");
+    return await activityDao.getTypes({"category" : "meal"});
 }
 
 export async function addMeal(bookingId, mealData, onError) {
@@ -36,15 +36,15 @@ export async function addMeal(bookingId, mealData, onError) {
 }
 
 // Example result: 250530-hh-breakfast
-export function makeMealId(startingAt, house, mealCategory) {
+export function makeMealId(startingAt, house, meal) {
     const houseShort = house.toLowerCase().trim() == "harmony hill" ? "hh" : "jn";
     startingAt = utils.to_YYMMdd(startingAt);
-    return `${startingAt}-${houseShort}-${mealCategory.replace(/ /g, "-")}`;
+    return `${startingAt}-${houseShort}-${meal.replace(/ /g, "-")}`;
 }
 
 // Example result: 250530-hh-breakfast-lentil-bolo
-export function makeMealItemId(startingAt, house, mealCategory, mealItemName) {
-    const mealId = makeMealId(startingAt, house, mealCategory);
+export function makeMealItemId(startingAt, house, meal, mealItemName) {
+    const mealId = makeMealId(startingAt, house, meal);
     return `${mealId}-${mealItemName.replace(/ /g, "-")}`;
 }
 

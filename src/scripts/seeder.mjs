@@ -1,6 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import Dish from '../models/Dish.js';
 import * as utils from "../utils.js";
-import dotenv from 'dotenv';
+
 import path from "path";
 import { fileURLToPath } from "url";
 

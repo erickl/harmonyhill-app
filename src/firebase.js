@@ -4,18 +4,11 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from "firebase/auth";
 
-// Optional: for browser only
-let analytics;
-if (typeof window !== 'undefined') {
-  const { getAnalytics } = await import('firebase/analytics');
-  analytics = getAnalytics(app);
-}
-
 // To enable running this from a script when seeding database data. Only load dotenv if running in Node (not in the browser)
-if (typeof process !== 'undefined' && process?.versions?.node) {
-  const dotenv = await import('dotenv');
-  dotenv.config();
-}
+// if (typeof process !== 'undefined' && process?.versions?.node) {
+//   const dotenv = await import('dotenv');
+//   dotenv.config();
+// }
 
 //import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check"; //DebugAppCheckProvider
 
@@ -46,7 +39,13 @@ const app = initializeApp(firebaseConfig);
 //     isTokenAutoRefreshEnabled: true,
 // });
 
-//const analytics = getAnalytics(app);
+// Optional: for browser only
+let analytics;
+if (typeof window !== 'undefined') {
+  const { getAnalytics } = await import('firebase/analytics');
+  analytics = getAnalytics(app);
+}
+
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app, firebaseConfig.storageBucket);

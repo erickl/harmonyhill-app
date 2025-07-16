@@ -1,4 +1,5 @@
 import * as dao from './dao.js';
+import * as utils from "../utils.js";
 import { where, orderBy } from 'firebase/firestore';
 
 export async function get(options = {}) {
@@ -23,8 +24,8 @@ export async function get(options = {}) {
     }
 
     // Cannot have more than 1 array-contains filter in one firestore query (??), so we'll do it manually here instead 
-    if(Object.hasOwn(options, 'mealCategory')) {
-        menu = menu.filter(item => item.mealCategories.includes(options.mealCategory));
+    if(Object.hasOwn(options, 'meal')) {
+        menu = menu.filter(item => item.meals.includes(options.meal));
     }
 
     if(Object.hasOwn(options, 'house')) {
