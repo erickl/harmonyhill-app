@@ -14,10 +14,10 @@ function LoginScreen({ onLogin, onLoginSuccess }) {
     alert(error);
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = onLogin(email, password, onError);
-    if (success) {
+    const success = await onLogin(email, password, onError);
+    if (success === true) {
       onLoginSuccess(true);
     }
   };
