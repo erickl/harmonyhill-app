@@ -8,6 +8,9 @@ import ExpensesScreen from './components/ExpensesScreen';
 import LoginScreen from './components/LoginScreen';
 import AddCustomerScreen from './components/AddCustomerScreen';
 
+import VeganHamburgerButton from './components/VeganHamburgerButton.js';
+import SideMenu from './components/SideMenu.js';
+
 import * as bookingService from './services/bookingService.js';
 import * as menuService from './services/menuService.js';
 import * as activityService from './services/activityService.js';
@@ -100,16 +103,23 @@ function App() {
   }
 
   return (
-    <div className="app-container">
-      {isLoggedIn ? (
-        <>
-          <div className="content">{screenToDisplay}</div> { /* Use screenToDisplay */}
-          <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-        </>
-      ) : (
-        <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
-      )}
-    </div>
+    <>
+     
+      <div className="app-container">
+        {isLoggedIn ? (
+          <>
+            <VeganHamburgerButton />
+            <SideMenu />
+            <div className="content">
+              {screenToDisplay}
+              </div> { /* Use screenToDisplay */}
+            <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+          </>
+        ) : (
+          <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
+        )}
+      </div>
+    </>
   );
 }
 
