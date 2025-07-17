@@ -1,34 +1,25 @@
 import React, { useState } from 'react';
 
-import "./RegistrationScreen";
-import './LoginScreen.css';
+import './RegistrationScreen.css';
 import logo from '../assets/logowhitegreen.png';
-import RegistrationScreen from './RegistrationScreen';
+import * as userService from "../services/userService.js";
 
-function LoginScreen({ onLogin, onLoginSuccess }) {
+function RegistrationScreen({ onClose }) {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [seeRegistrationForm, setSeeRegistrationForm] = useState(false);
 
   const onError = (error) => {
     alert(error);
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = onLogin(email, password, onError);
+    const success = await userService.signUp(username, email, "staff", password, onError);
     if (success) {
-      onLoginSuccess(true);
+        onClose();
     }
   };
-
-  if(seeRegistrationForm) {
-    return (
-      <RegistrationScreen 
-        onClose={() => setSeeRegistrationForm(false) }
-      />
-    )
-  }
 
   return (
     <div className="login-container">
@@ -40,7 +31,16 @@ function LoginScreen({ onLogin, onLoginSuccess }) {
       />
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Username:</label>
+            <label>Username:</label>
+            <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+            />
+        </div>
+        <div>
+          <label>Email:</label>
           <input
             type="text"
             value={email}
@@ -59,14 +59,11 @@ function LoginScreen({ onLogin, onLoginSuccess }) {
           />
         </div>
         <br></br>
-        <button type="submit">Login</button>
-        {/* <button 
-          type="button" 
-          onClick={() => {setSeeRegistrationForm(true)}}>Register
-        </button> */}
+        <button type="submit">Register</button>
+        <button type="Cancel" onClick={() => onClose() }>Cancel</button>
       </form>
     </div>
   );
 }
 
-export default LoginScreen;
+export default RegistrationScreen;
