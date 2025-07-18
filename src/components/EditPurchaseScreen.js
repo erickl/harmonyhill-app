@@ -24,15 +24,15 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     }
 
     const [formData, setFormData] = useState({
-        startingAt  : activityToEdit.startingAt,
-        category    : activityToEdit.category,
-        subCategory : activityToEdit.subCategory,
-        comments    : activityToEdit.comments,
-        price       : activityToEdit.price, // not editable for meals. Derived from the dishes' costs 
-        provider    : activityToEdit.provider,
-        assignedTo  : activityToEdit.assignedTo,
-        status      : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
-        dishes      : activityToEdit.dishes, // not null only for meal activities 
+        startingAt    : activityToEdit.startingAt,
+        category      : activityToEdit.category,
+        subCategory   : activityToEdit.subCategory,
+        comments      : activityToEdit.comments,
+        customerPrice : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
+        provider      : activityToEdit.provider,
+        assignedTo    : activityToEdit.assignedTo,
+        status        : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
+        dishes        : activityToEdit.dishes, // not null only for meal activities 
     });
 
     const handlePurchaseFormChange = (name, value) => {
