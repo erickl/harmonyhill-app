@@ -99,7 +99,7 @@ export async function getOne(bookingId, activityId) {
  *      date: new Date(2025, 11, 10),
  *      isFree: false,
  *      time: "07:00",
- *      price: 500,
+ *      customerPrice: 500,
  *      status: "requested",
  *      comments: "They have 5 bags with them",
  *      assignedTo: "", // staff member taking care of the activity
@@ -222,7 +222,7 @@ export async function testActivities(date) {
         subCategory: "to-airport",
         startingAt: date.toISO(),
         isFree: false,
-        price: 1500,
+        customerPrice: 1500,
         status: "requested",
         comments: "They have 7 bags with them",
         assignedTo: "",

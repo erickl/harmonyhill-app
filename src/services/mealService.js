@@ -62,7 +62,7 @@ export async function addMealItems(bookingId, mealId, mealItemsData, onError) {
         console.error(`Meal ${bookingId}/${mealId} not found`);
         return false;
     }
-    let runningTotalMealPrice = meal.price ? meal.price : 0;
+    let runningTotalMealPrice = meal.customerPrice ? meal.customerPrice : 0;
 
     // Add each meal item
     let mealItems = [];   
@@ -78,9 +78,9 @@ export async function addMealItems(bookingId, mealId, mealItemsData, onError) {
                 throw new Error("Cannot add meal item");
             }
 
-            // Update the total meal price
-            runningTotalMealPrice += !mealItem.isFree ? mealItem.price * mealItem.quantity : 0;
-            const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { price: runningTotalMealPrice }, onError);
+            // Update the total meal customerPrice
+            runningTotalMealPrice += !mealItem.isFree ? mealItem.customerPrice * mealItem.quantity : 0;
+            const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: runningTotalMealPrice }, onError);
             if(!updateMealPriceSuccess) {
                 throw new Error("Cannot update total meal price");
             }
@@ -175,11 +175,11 @@ async function mapMealObject(mealData, isUpdate = false) {
 async function mapMealItemObject(data, isUpdate = false) {
     let object = {};
 
-    if(utils.isString(data?.name))     object.name     = data.name;
-    if(!utils.isEmpty(data?.quantity)) object.quantity = data.quantity;
-    if(utils.isAmount(data?.price))    object.price    = data.price;
-    if(utils.isString(data?.comments)) object.comments = data.comments;
-    if(utils.isBoolean(data?.isFree))  object.isFree   = data.isFree;
+    if(utils.isString(data?.name))          object.name          = data.name;
+    if(!utils.isEmpty(data?.quantity))      object.quantity      = data.quantity;
+    if(utils.isAmount(data?.customerPrice)) object.customerPrice = data.customerPrice;
+    if(utils.isString(data?.comments))      object.comments      = data.comments;
+    if(utils.isBoolean(data?.isFree))       object.isFree        = data.isFree;
 
     if(!isUpdate) {
         object.createdAt = new Date();
@@ -204,11 +204,11 @@ export async function testMeal() {
 
     const mealItemIds = await addMealItems(bookingId, mealId, [{
         name: "Wingko Waffle",
-        price: 100,
+        customerPrice: 100,
         quantity: 2,
     },{
         name: "Fruit Salad",
-        price: 50,
+        customerPrice: 50,
         quantity: 1,
     }]);
 
@@ -216,7 +216,7 @@ export async function testMeal() {
     if(!meal) {
         return false;
     }
-    if(meal.price !== 150) {
+    if(meal.customerPrice !== 150) {
         return false;
     }
 

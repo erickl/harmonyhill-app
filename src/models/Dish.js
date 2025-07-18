@@ -4,7 +4,7 @@ import * as utils from "../utils.js";
 export default class Dish {
     static COLLECTION = "menu";
 
-    constructor(name, allergens, image, houseAvailability, meals, course, priority, price, instructions, description) {
+    constructor(name, allergens, image, houseAvailability, meals, course, priority, customerPrice, instructions, description) {
         this.name              = name; 
         this.allergens         = allergens;
         this.image             = image;
@@ -12,7 +12,7 @@ export default class Dish {
         this.meals             = meals;
         this.course            = course;
         this.priority          = priority;
-        this.price             = price;
+        this.customerPrice     = customerPrice;
         this.instructions      = instructions;
         this.description       = description;
 
@@ -35,7 +35,7 @@ export default class Dish {
             "course"            : this.course,
             "priority"          : this.priority,
             "name"              : this.name,
-            "price"             : this.price
+            "customerPrice"     : this.customerPrice
         }
     }
 
@@ -63,7 +63,7 @@ export default class Dish {
         // todo: might need wingko and "i love bali toast" twice. Extra breakfast items are 80k. But wingko as dessert is 60k
     
         const dishes = [
-            //        name                               allergens         image   house availability                   meal                              course     priority       price  instructions   descriptions
+            //        name                               allergens         image   house availability                   meal                              course     priority  customerPrice instructions   descriptions
             new Dish("Smoothie Bowl Of Seasonal Fruits", ["nuts"],            "", ["harmony hill"],                    ["breakfast"],                    "mains",    100,             0,      "", "Topped with our homemade granola and fresh sliced fruits - ask us what's in season if you wish to customize"                                                  ),
             new Dish("Javanese Wingko Waffle",           ["coconut"],         "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    100,             0,      "", "Chewy, coconutty and crispy, baked in an authentic cast waffle iron, served with our homemade jam and fresh fruit"                                            ),
             new Dish("Plant Power Breakfast",            ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    100,             0,      "", "Scrambled tofu, served with baked potatoes, roasted tomato, garlic, spinach and seasonal sauteed veggies"                                                     ),

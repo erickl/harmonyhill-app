@@ -14,7 +14,7 @@ export async function getTotal(bookingId) {
         activities.map(async function(activity) {
             let activityItem = {
                 name: activity.category + ": " + activity.subCategory,
-                price: activity.price,
+                customerPrice: activity.customerPrice,
                 date: activity.startingAt
             }
             if(activity.category === "meal") {
@@ -25,7 +25,7 @@ export async function getTotal(bookingId) {
         })
     );
 
-    const totalSum = itemizedList.reduce((sum, item) => sum + (!utils.isEmpty(item.price) ? item.price : 0), 0);
+    const totalSum = itemizedList.reduce((sum, item) => sum + (!utils.isEmpty(item.customerPrice) ? item.customerPrice : 0), 0);
 
     return {
         total: totalSum,
