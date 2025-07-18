@@ -84,9 +84,13 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         } else {   
             if(activity.category === "meal") {
                 const dishes = await mealService.getMealItems(customer.id, activity?.id);
-                activity.dishes = dishes;
+                let newActivity = { ...(activity || {}) }; // Make shallow copy
+                newActivity.dishes = dishes;
+                setSelectedActivity(newActivity);
             }
-            setSelectedActivity(activity);
+            else {
+                setSelectedActivity(activity);
+            }
         }
     };
 
@@ -143,30 +147,30 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                         {selectedActivity?.id === activity.id && (
                                         
                                             <div className="customer-details">
-                                                {activity.category !== "meal" && (<p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>)}
-                                                <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
-                                                <p><span className="detail-label">Created At:</span> {activity.createdAt_ddMMM_HHmm}</p>
-                                                {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
-                                                {activity.comments && (<p><span className="detail-label">Comments:</span> {activity.comments}</p>)}
-                                                <p><span className="detail-label">Status:</span> {activity.status}</p>
-                                                <p><span className="detail-label">Provider:</span> {activity.provider}</p>
-                                                <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
-                                                <p><span className="detail-label">Price:</span> {activity.customerPrice}</p>
+                                                {selectedActivity.category !== "meal" && (<p><span className="detail-label">Assigned To:</span> {selectedActivity.assignedTo}</p>)}
+                                                <p><span className="detail-label">Created By:</span> {selectedActivity.createdBy}</p>
+                                                <p><span className="detail-label">Created At:</span> {selectedActivity.createdAt_ddMMM_HHmm}</p>
+                                                {selectedActivity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{selectedActivity.dietaryRestrictions}</span></p>)}
+                                                {selectedActivity.comments && (<p><span className="detail-label">Comments:</span> {selectedActivity.comments}</p>)}
+                                                <p><span className="detail-label">Status:</span> {selectedActivity.status}</p>
+                                                <p><span className="detail-label">Provider:</span> {selectedActivity.provider}</p>
+                                                <p><span className="detail-label">Assigned To:</span> {selectedActivity.assignedTo}</p>
+                                                <p><span className="detail-label">Customer Price:</span> {selectedActivity.customerPrice}</p>
 
                                                 {/* List dishes if the activity expanded is a meal */}
-                                                {activity.dishes && (
-                                                    Object.values(activity.dishes).map((dish) => (
-                                                        <React.Fragment key={`${activity.id}-${dish.id}`}>
+                                                {!utils.isEmpty(selectedActivity.dishes) ?  (
+                                                    Object.values(selectedActivity.dishes).map((dish) => (
+                                                        <React.Fragment key={`${selectedActivity.id}-${dish.id}`}>
                                                             <p>{invoiceService.dishReceiptLine(dish)}</p>
                                                         </React.Fragment>
                                                     ))
-                                                )}
+                                                ) : (<p>No dishes ordered yet</p>)}
                                                 
                                                 <button
                                                     className="edit-booking"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleEditActivity(activity);
+                                                        handleEditActivity(selectedActivity);
                                                     }}> Edit Activity
                                                 </button>
                                             
