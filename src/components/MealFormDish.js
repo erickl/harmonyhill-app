@@ -5,13 +5,9 @@ import ErrorNoticeModal from './ErrorNoticeModal.js';
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 import "./MealFormDish.css"
 
-export default function MealFormDish({dish, formData, handleFormDataChange}) {
+export default function MealFormDish({dish, formData, handleFormDataChange, editable}) {
 
     const [errorMessage, setErrorMessage] = useState(null);
-
-    useEffect(() => {
-    
-    });
     
     const getDishData = (fieldName, defaultValue) => {
         return formData.dishes && formData.dishes[dish.name] ? formData.dishes[dish.name][fieldName] : defaultValue;
@@ -51,14 +47,20 @@ export default function MealFormDish({dish, formData, handleFormDataChange}) {
     };
 
     const quantity = getDishData("quantity", 0);
-    if(quantity > 0) {
-        console.log(`${dish.name}: ${quantity}`);
-    }
 
     return (
         <div className="meal-dish" key={`${dish.id}-wrapper`}>
             <div className="meal-dish-row" key={`${dish.id}-wrapper-row`}>
-                <span>{dish.name}</span>
+                {editable === true ? (<input
+                    type="text"
+                    id={`${dish.name}-input`}
+                    name={`${dish.name}-input`}
+                    value={dish.name}
+                    //onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                    className="input"
+                />) : ( 
+                    <span>{dish.name}</span>
+                )}
                 <div className="meal-dish-row-counter">
                     <button
                         key={`${dish.id}-decrement`}

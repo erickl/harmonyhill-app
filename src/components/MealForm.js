@@ -33,6 +33,11 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
         return (<div><p>Loading menu items...</p></div>);
     }
 
+    const customDish = {
+        "id" : "custom-dish-id-1",
+        "name" : "Custom: ",
+    };
+
     // Sort appearance of meals by meal categories, i.e. first starters, then mains, lastly coffee, etc..
     const sortedMealNames = Object.keys(allDishes).sort((a, b) => a.localeCompare(b));
 
@@ -62,6 +67,14 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             ) : (
                 <p>No dishes found</p>
             )}
+
+            {/* Custom Items */}
+            <MealFormDish 
+                dish={customDish}
+                formData={formData}
+                handleFormDataChange={handleFormDataChange}
+                editable={true}
+            />
 
             <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange}/>
 
