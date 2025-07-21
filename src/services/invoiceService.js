@@ -13,9 +13,9 @@ export async function getTotal(bookingId) {
     const itemizedList = await Promise.all(
         activities.map(async function(activity) {
             let activityItem = {
-                name: activity.category + ": " + activity.subCategory,
+                name:          activity.category + ": " + activity.subCategory,
                 customerPrice: activity.customerPrice,
-                date: activity.startingAt
+                date:          activity.startingAt
             }
             if(activity.category === "meal") {
                 const mealItems = await mealService.getDishes(bookingId, activity.id);

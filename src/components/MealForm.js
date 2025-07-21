@@ -90,6 +90,18 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                 custom={true}
             />
 
+            <div className="">
+                <label htmlFor="mealComments">Comments:</label>
+                <textarea
+                    id="mealComments"
+                    name="comments"
+                    value={formData.comments}
+                    onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                    rows="2"
+                    className="input"
+                ></textarea>
+            </div>
+
             <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange}/>
 
             {errorMessage && (
