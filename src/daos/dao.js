@@ -15,7 +15,7 @@ import * as userService from "../services/userService.js";
 
 export { constant }
 
-export async function getOne(path, id) {
+export async function getOne(path, id, onError = null) {
     try {
         const docRef = doc(db, ...path, id);
         const snapshot = await getDoc(docRef);
@@ -27,12 +27,12 @@ export async function getOne(path, id) {
         }
         return null;
     } catch (e) {
-        console.error(`Error getting one document ${path}/${id}: `, e);
+        if(onError) onError(`Error getting one document ${path}/${id}: ${e.message}`);
         return null;
     }
 }
 
-export async function get(path, filters = [], ordering = []) {
+export async function get(path, filters = [], ordering = [], onError = null) {
     try {
         const collectionRef = collection(db, ...path);
         const docQuery = query(collectionRef, ...filters, ...ordering);
@@ -43,8 +43,8 @@ export async function get(path, filters = [], ordering = []) {
         const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
         return docs
     } catch (e) {
-        throw new Error(`Error getting documents from ${path}: `, e);
-        //return false; 
+        if(onError) onError(`Error getting documents from ${path}: ${e.message}`);
+        return []; 
     }
 }
 
@@ -108,9 +108,10 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
             const originalData = await getOne(path, id);
             let diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
         
+            // todo: should the user be notified whether or not the update wasn't necessary?
             if(diffStr.length === 0) {
-                if(onError) onError(`Update error: No changes to update to ${path}/${id}`);
-                return false;
+                //if(onError) onError(`Update error: No changes to update to ${path}/${id}`);
+                return true;
             }
                 
             updatedData.updateLogs = Object.hasOwn(originalData, "updateLogs") ? originalData.updateLogs : [];
@@ -119,7 +120,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 
         // Run the update
         const ref = doc(db, ...path, id);
-        await updateDoc(ref, updatedData);
+        const updateResult = await updateDoc(ref, updatedData);
         return true;
     }
     catch (e) {
@@ -131,7 +132,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 export async function add(path, id, data, onError = null) {
     try {
         const ref = doc(db, ...path, id);
-        await setDoc(ref, data);
+        const addResult = await setDoc(ref, data);
         return true;
     } catch (e) {
         if(onError) onError(`Error adding document ${path}/${id}: ${e.message}`);
@@ -155,7 +156,7 @@ export async function remove(path, id) {
         
         // Proceed with deleting
         const ref = doc(db, ...path, id);
-        await deleteDoc(ref);
+        const deleteResult = await deleteDoc(ref);
         console.log(`Deleted document ${path}/${id}`);
         return true;
     } catch (e) {
@@ -183,7 +184,7 @@ export async function remove(path, id) {
 
 export async function transaction(inTransaction) {
     try {
-        await runTransaction(db, inTransaction);
+        const transactionResult = await runTransaction(db, inTransaction);
         return true;
     } catch (e) {
         console.error(`Error in DB transaction`, e);
