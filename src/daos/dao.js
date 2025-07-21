@@ -95,6 +95,13 @@ export async function getSubCollections(collectionName, filters = [], ordering =
  */
 export async function update(path, id, updatedData, updateLogs, onError = null) { 
     try {
+        const originalData = await getOne(path, id);
+
+        // E.g. could be a meal update contains a new dish, which would be a new document which doesn't yet exist, so no update possible
+        if(!originalData) {
+            return await add(path, id, updatedData, onError);
+        }
+
         // Remove any field which should not be updated
         if(Object.hasOwn(updatedData, "createdAt")) {
             delete updatedData.createdAt;
@@ -105,7 +112,6 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 
         if(updateLogs) {
             // Add change to the update logs
-            const originalData = await getOne(path, id);
             let diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
         
             // todo: should the user be notified whether or not the update wasn't necessary?

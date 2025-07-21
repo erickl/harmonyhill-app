@@ -3,6 +3,13 @@ import * as userService from "./services/userService.js";
 import { DateTime } from 'luxon';
 
 export async function jsonObjectDiffStr(obj1, obj2) {
+    if(isEmpty(obj1)) {
+        throw new Error("Original object was null");
+    }
+    if(isEmpty(obj2)) {
+        throw new Error("New object was null");
+    }
+    
     let diff = "";
 
     for (const key in obj2) {
