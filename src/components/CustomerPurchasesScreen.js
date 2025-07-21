@@ -25,6 +25,21 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         setExpanded(updatedExpandedList);
     };
 
+    const refreshSelectedActivity = async (activity) => {
+        if(!activity) {
+            return;
+        }
+        if(activity.category === "meal") {
+            const dishes = await mealService.getDishes(customer.id, activity?.id);
+            let newActivity = { ...(activity || {}) }; // Make shallow copy
+            newActivity.dishes = dishes;
+            setSelectedActivity(newActivity);
+        }
+        else {
+            setSelectedActivity(activity);
+        }
+    }
+
     const fetchPurchases = async () => {
         if(!customer) {
             return;
@@ -39,6 +54,8 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             // Open today's activities by default
             const today_ddMMM = utils.to_ddMMM(utils.today());
             handleSetExpanded(today_ddMMM);
+
+            await refreshSelectedActivity(selectedActivity);
 
             setLoading(false);
         } catch (err) {
@@ -82,15 +99,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         if(selectedActivity?.id === activity?.id) {
             setSelectedActivity(null);
         } else {   
-            if(activity.category === "meal") {
-                const dishes = await mealService.getDishes(customer.id, activity?.id);
-                let newActivity = { ...(activity || {}) }; // Make shallow copy
-                newActivity.dishes = dishes;
-                setSelectedActivity(newActivity);
-            }
-            else {
-                setSelectedActivity(activity);
-            }
+            refreshSelectedActivity(activity);
         }
     };
 
