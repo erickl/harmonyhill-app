@@ -61,6 +61,9 @@ async function updateDishes(bookingId, mealId, newDishesData, onError) {
     let dishesUpdates = [];
     
     for(const newDishData of newDishesData) {
+        if(newDishData.quantity === 0) {
+            continue;
+        }
         const newDish = await mapDishObject(newDishData);
         const newDishId = makeDishId(newDish.startingAt, meal.house, meal.subCategory, newDish.name);
         
