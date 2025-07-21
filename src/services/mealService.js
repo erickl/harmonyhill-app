@@ -237,6 +237,7 @@ async function mapDishObject(data, isUpdate = false) {
     if(utils.isAmount(data?.customerPrice)) object.customerPrice = data.customerPrice;
     if(utils.isString(data?.comments))      object.comments      = data.comments;
     if(utils.isBoolean(data?.isFree))       object.isFree        = data.isFree;
+    if(utils.isBoolean(data?.custom))       object.custom        = data.custom;
 
     if(!isUpdate) {
         object.createdAt = new Date();
@@ -281,4 +282,14 @@ export async function testMeal() {
     const wingkoMealItem = returnedMealItems.find(mealItem => mealItem.name === "Wingko Waffle");
 
     let x = 1;
+}
+
+export function getNewCustomDish(id, name) {
+    return {
+        "id"            : `custom-dish-id-${id}`,
+        "name"          : `${name}`,
+        "custom"        : true,
+        "quantity"      : 0,
+        "customerPrice" : 100000,
+    };
 }

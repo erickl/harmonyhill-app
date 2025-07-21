@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "./MealForm.css";
 import MyDatePicker from "./MyDatePicker.js";
 import * as menuService from '../services/menuService.js';
+import * as mealService from "../services/mealService.js";
 import * as utils from "../utils.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 import MealFormDish from "./MealFormDish.js";
@@ -32,13 +33,11 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
         return (<div><p>Loading menu items...</p></div>);
     }
 
-    const customDish = {
-        "id" : "custom-dish-id-1",
-        "name" : "Custom: ",
-    };
-
     // Sort appearance of meals by meal categories, i.e. first starters, then mains, lastly coffee, etc..
     const sortedMealNames = Object.keys(allDishes).sort((a, b) => a.localeCompare(b));
+
+    const customDishes = Object.values(formData.dishes).filter(dish => dish.custom === true);
+    const newCustomDish = mealService.getNewCustomDish(customDishes.length + 1, "");
 
     return (
         <div>
@@ -67,12 +66,28 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                 <p>No dishes found</p>
             )}
 
-            {/* Custom Items */}
+            <h2>Custom</h2>
+
+            {/* List existing custom dishes */}
+            {!utils.isEmpty(customDishes) && (
+                <div>
+                    {customDishes.map((dish) => (
+                        <MealFormDish 
+                            dish={dish}
+                            formData={formData}
+                            handleFormDataChange={handleFormDataChange}
+                            custom={true}
+                        />
+                    ))}
+                </div>
+            )}
+
+            {/* A field for a new custom dish */}
             <MealFormDish 
-                dish={customDish}
+                dish={newCustomDish}
                 formData={formData}
                 handleFormDataChange={handleFormDataChange}
-                editable={true}
+                custom={true}
             />
 
             <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange}/>

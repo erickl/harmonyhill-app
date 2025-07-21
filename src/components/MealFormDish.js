@@ -5,12 +5,12 @@ import ErrorNoticeModal from './ErrorNoticeModal.js';
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 import "./MealFormDish.css"
 
-export default function MealFormDish({dish, formData, handleFormDataChange, editable}) {
+export default function MealFormDish({dish, formData, handleFormDataChange, custom}) {
 
     const [errorMessage, setErrorMessage] = useState(null);
     
     const getDishData = (fieldName, defaultValue) => {
-        return formData.dishes && formData.dishes[dish.name] ? formData.dishes[dish.name][fieldName] : defaultValue;
+        return formData.dishes && formData.dishes[dish.name] && !utils.isEmpty(formData.dishes[dish.name][fieldName]) ? formData.dishes[dish.name][fieldName] : defaultValue;
     }
 
     const onError = (errorMessage) => {
@@ -35,11 +35,24 @@ export default function MealFormDish({dish, formData, handleFormDataChange, edit
         handleFormDataChange("dishes", updatedDishes);
     };
 
+    const handleEditCustomOrderName = (newDish, newName) => {
+        const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
+
+        if(updatedDishes[newDish.name]) {
+            delete updatedDishes[newDish.name];
+        } 
+
+        newDish.name = newName;
+        updatedDishes[newDish.name] = newDish;
+
+        handleFormDataChange("dishes", updatedDishes);
+    };
+
     const handleEditOrder = (newDish, field, value) => {
         const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
         
         if (!updatedDishes[newDish.name]) {
-            return;
+            updatedDishes[newDish.name] = newDish;
         }
 
         updatedDishes[newDish.name][field] = value;
@@ -51,14 +64,21 @@ export default function MealFormDish({dish, formData, handleFormDataChange, edit
     return (
         <div className="meal-dish" key={`${dish.id}-wrapper`}>
             <div className="meal-dish-row" key={`${dish.id}-wrapper-row`}>
-                {editable === true ? (<input
-                    type="text"
-                    id={`${dish.name}-input`}
-                    name={`${dish.name}-input`}
-                    value={dish.name}
-                    //onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
-                    className="input"
-                />) : ( 
+                {custom === true ? (
+                    <div>
+                        <label for={`${dish.id}-input`}>
+                            Custom:
+                        </label>
+                        <input
+                            type="text"
+                            id={`${dish.id}-input`}
+                            name={`${dish.id}-input`}
+                            value={dish.name}
+                            onChange={(e) => handleEditCustomOrderName(dish, e.target.value)}
+                            className="input"
+                        />
+                    </div>
+                ) : ( 
                     <span>{dish.name}</span>
                 )}
                 <div className="meal-dish-row-counter">
