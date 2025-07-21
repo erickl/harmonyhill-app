@@ -49,7 +49,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
 
     useEffect(() => {
         fetchPurchases();
-    }, []);
+    }, [customer]);
 
     if (loading) {
         return (
@@ -83,7 +83,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             setSelectedActivity(null);
         } else {   
             if(activity.category === "meal") {
-                const dishes = await mealService.getMealItems(customer.id, activity?.id);
+                const dishes = await mealService.getDishes(customer.id, activity?.id);
                 let newActivity = { ...(activity || {}) }; // Make shallow copy
                 newActivity.dishes = dishes;
                 setSelectedActivity(newActivity);

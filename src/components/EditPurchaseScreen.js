@@ -58,17 +58,19 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     };
 
     const handleEditPurchaseSubmit = async() => {
-        let editActivitySuccess = null;
-        if(activityToEdit.category === "meal") {
-            editActivitySuccess = await mealService.update(customer.id, activityToEdit.id, formData, onError);
-        } else {
-            editActivitySuccess = await activityService.update(customer.id, activityToEdit.id, formData, onError);
-        }
-        
-        if(editActivitySuccess) {
-            onClose();
-        } else {
-            console.log("Something went wrong..."); // todo: display error properly
+        try {
+            let editActivitySuccess = null;
+            if(activityToEdit.category === "meal") {
+                editActivitySuccess = await mealService.update(customer.id, activityToEdit.id, formData, onError);
+            } else {
+                editActivitySuccess = await activityService.update(customer.id, activityToEdit.id, formData, onError);
+            }
+            
+            if(editActivitySuccess) {
+                onClose();
+            }
+        } catch(error) {
+            onError(`Unexpected error while trying to update meal: ${error.message}`);
         }
     };
 

@@ -6,12 +6,20 @@ export async function add(bookingId, activityId, activity, onError) {
     return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activity, onError);
 }
 
-export async function update(bookingId, activityId, activityData, onError) {
-    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activityData, true, onError);
+export async function update(bookingId, activityId, activityData, updateLogs = true, onError = null) {
+    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activityData, updateLogs, onError);
 }
 
-export async function addMealItem(bookingId, mealId, mealItemId, mealItem, onError) { 
-    return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId, mealItem, onError);
+export async function addDish(bookingId, mealId, dishId, dish, onError) { 
+    return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES], dishId, dish, onError);
+}
+
+export async function deleteDish(bookingId, mealId, dishId) { 
+    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES], dishId);
+}
+
+export async function updateDish(bookingId, mealId, dishId, dish, onError) {
+    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES], dishId, dish, true, onError);
 }
 
 export async function transaction(inTransaction) {
@@ -28,17 +36,10 @@ export async function getProviders(category, subCategory) {
     return providers;
 }
 
-// Update meal item not existing. Only delete and add a new one
-//export async function updateMealItem(bookingId, mealId, mealItemId, mealItem) {
-
-export async function deleteMealItem(bookingId, mealId, mealItemId) { 
-    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"], mealItemId);
-}
-
 // Only delete the whole meal if all mealItems are deleted first
 export async function deleteMeal(bookingId, mealId) {
-    const mealItems = await dao.get([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId,  "mealItems"]);
-    if(mealItems.length === 0) {
+    const dishes = await dao.get([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES]);
+    if(dishes.length === 0) {
         return await remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], mealId);  
     }
     return false;
@@ -148,8 +149,8 @@ export async function remove(bookingId, activityId) {
     return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId);
 }
 
-export async function getMealItems(bookingId, mealId, filterOptions = {}) {
-    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "mealItems"];
+export async function getDishes(bookingId, mealId, filterOptions = {}) {
+    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES];
     return await dao.get(path, []);
 }
 

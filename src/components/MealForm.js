@@ -4,7 +4,6 @@ import MyDatePicker from "./MyDatePicker.js";
 import * as menuService from '../services/menuService.js';
 import * as utils from "../utils.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
-import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 import MealFormDish from "./MealFormDish.js";
 
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {

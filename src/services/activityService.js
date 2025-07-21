@@ -60,9 +60,7 @@ export async function getAll(filterOptions = {}) {
  * @returns enhanced/enriched activity data, needed to properly display them to the user
  */
 export function enhanceActivities(activities) {
-    let activitiesArray = Array.isArray(activities) ? activities : [activities];
-
-    activitiesArray.map((activity) => { 
+    const enhance = (activity) => {
         try {
             // Date time stored in timestamp format in database. Convert to Luxon Date time to display correct time zone 
             if(!utils.isEmpty(activity.startingAt)) {
@@ -80,9 +78,13 @@ export function enhanceActivities(activities) {
         } catch(e) {
             throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
         }
-    });
+
+        return activity;
+    }
+
+    activities = Array.isArray(activities) ? activities.map((activity) => enhance(activity)) : enhance(activities);
     
-    return activitiesArray; 
+    return activities; 
 }
 
 export async function getOne(bookingId, activityId) {
@@ -168,7 +170,7 @@ export async function update(bookingId, activityId, activityUpdateData, onError)
         delete activityUpdate.house;
     }
 
-    return await activityDao.update(bookingId, activityId, activityUpdate, onError);
+    return await activityDao.update(bookingId, activityId, activityUpdate, true, onError);
 }
 
 export async function remove(bookingId, activityId) {

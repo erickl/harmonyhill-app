@@ -18,7 +18,7 @@ export async function getTotal(bookingId) {
                 date: activity.startingAt
             }
             if(activity.category === "meal") {
-                const mealItems = await mealService.getMealItems(bookingId, activity.id);
+                const mealItems = await mealService.getDishes(bookingId, activity.id);
                 activityItem.mealItems = mealItems;
             }
             return activityItem;
