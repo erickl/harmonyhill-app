@@ -69,8 +69,12 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsLoggedIn(!!user); 
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if(user) {
+        const isApproved = await userService.isUserApproved(user.displayName);
+        setIsLoggedIn(isApproved);
+      } 
+      else setIsLoggedIn(false);
     });
 
     // cleanup to avoid multiple listeners

@@ -4,14 +4,17 @@ import "./RegistrationScreen";
 import './LoginScreen.css';
 import logo from '../assets/logowhitegreen.png';
 import RegistrationScreen from './RegistrationScreen';
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 function LoginScreen({ onLogin, onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [seeRegistrationForm, setSeeRegistrationForm] = useState(false);
 
-  const onError = (error) => {
-    alert(error);
+  const [errorMessage, setErrorMessage] = useState(null);
+        
+  const onError = (errorMessage) => {
+      setErrorMessage(errorMessage);
   }
 
   const handleSubmit = async (e) => {
@@ -65,6 +68,13 @@ function LoginScreen({ onLogin, onLoginSuccess }) {
           onClick={() => {setSeeRegistrationForm(true)}}>Register
         </button>
       </form>
+
+      {errorMessage && (
+          <ErrorNoticeModal 
+              error={errorMessage}
+              onClose={() => setErrorMessage(null) }
+          />
+      )}
     </div>
   );
 }
