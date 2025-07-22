@@ -32,7 +32,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         customerPrice : '',
         provider      : '',
         assignedTo    : '',
-        dishes        : null, // only not null when ordering meals, null for all other activities
+        dishes        : {}, // only not null when ordering meals, null for all other activities
     };
 
     const [errorMessage, setErrorMessage] = useState(null);
@@ -180,6 +180,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                             selectedActivity={selectedActivity}
                             formData={purchaseFormData} 
                             handleFormDataChange={handleFormDataChange}  
+                            custom={selectedActivity.subCategory === "custom"}
                         />
                     )}
                 </div>

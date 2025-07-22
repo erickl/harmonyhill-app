@@ -6,7 +6,7 @@ import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 
-export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
+export default function ActivityForm({ selectedActivity, formData, handleFormDataChange, custom }) {
     const [teamMembers, setTeamMembers] = useState([]);
     const [errorMessage, setErrorMessage] = useState(null);
             
@@ -45,6 +45,9 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
         fetchTeamMembers();
     }, []);
 
+    const fixedCustomerPrice = selectedActivity && utils.isAmount(selectedActivity.customerPrice) ? selectedActivity.customerPrice : 0;
+    const customPrice = custom && utils.isAmount(formData.customerPrice) ? formData.customerPrice : fixedCustomerPrice;
+
     return (
         <div>
             <h3>Confirm Purchase Details:</h3>
@@ -58,7 +61,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                             id="purchasePrice"
                             name="customerPrice"
                             // Apply formatting here for display inside the input
-                            value={utils.formatDisplayPrice(selectedActivity ? selectedActivity.customerPrice : 0)}
+                            value={utils.formatDisplayPrice(customPrice)}
                             onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
                             className="input"
                         />
@@ -67,9 +70,27 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 <div className="purchase-form-group">
                     <Dropdown label={"Assign to team member"} options={teamMembers} onSelect={onTeamMemberSelect}/>
                 </div>
-                <div className="purchase-form-group">
-                    <Dropdown label={"Select a provider"} options={providers} onSelect={onProviderSelect}/>
-                </div>
+                { custom === true ? (
+                    // For a custom activity, there are no determined set of providers
+                    <div className="purchase-form-group">
+                        <label htmlFor="provider">Provider:</label>
+                        <div className="provider-input-wrapper">
+                            <input
+                                type="text"
+                                id="provider"
+                                name="provider"
+                                // Apply formatting here for display inside the input
+                                value={formData.provider}
+                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                                className="input"
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="purchase-form-group">
+                        <Dropdown label={"Select a provider"} options={providers} onSelect={onProviderSelect}/>
+                    </div>
+                )}
                 <div className="purchase-form-group">
                     <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange} required/>
                 </div>
