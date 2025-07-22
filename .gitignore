@@ -47,3 +47,5 @@ android/capacitor.properties
 .idea/
 *.apk
 *.keystore
+android/app/release/
+android/keystore.properties

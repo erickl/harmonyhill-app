@@ -19,10 +19,15 @@ For the authentication flow
 - On Android, one can tap the 3-dot menu and chose "Add to Home screen", to make it almost like a real app
 
 # Relaunch as APK for android
+- edit the versionCode and versionName variables in android/app/build.gradle
+- you need the key store password to be stored in the android/keystore.properties file. Ask the admin
 - npm run build
 - npx cap copy
 Use this instead of "npx cap copy" when you changed anything related to Capacitor plugins or capacitor.config.ts/json
 - npx cap sync
+- Open in Android: npx cap open android
+- Wait for Gradle to sync (see the progress bar finish at the bottom right)
+- Create a release key (once): keytool -genkeypair -v -keystore android/app/hh-release-key.keystore -alias hh-release-key -keyalg RSA -keysize 2048 -validity 10000
 
 # Getting Started with Create React App
 
