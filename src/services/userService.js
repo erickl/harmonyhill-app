@@ -3,7 +3,7 @@ import { auth } from "../firebase.js";
 import * as userDao from "../daos/userDao.js";
 import * as utils from "../utils.js";
 
-export async function signUp(username, email, role, password) {
+export async function signUp(username, email, role, password, onError) {
     try {
         const existingUsers = await userDao.get({email: email});
         if (existingUsers && existingUsers.length > 0) {
@@ -16,6 +16,9 @@ export async function signUp(username, email, role, password) {
         await updateProfile(user, {
             displayName: username,
         });
+
+        // If we don't log them out here, they will be logged in right after registering. We need to approve them first
+        await signOut(auth);
 
         const addUserDataSuccess = await userDao.add(user.uid, {
             name: username,
@@ -33,7 +36,7 @@ export async function signUp(username, email, role, password) {
 
         return true;
     } catch (error) {
-        console.error("Error signing up: ", error);
+        onError(`Error signing up: ${error.message}`);
         return false;
     }
 }

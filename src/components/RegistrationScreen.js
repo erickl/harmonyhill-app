@@ -3,14 +3,17 @@ import React, { useState } from 'react';
 import './RegistrationScreen.css';
 import logo from '../assets/logowhitegreen.png';
 import * as userService from "../services/userService.js";
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 function RegistrationScreen({ onClose }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const onError = (error) => {
-    alert(error);
+  const [errorMessage, setErrorMessage] = useState(null);
+      
+  const onError = (errorMessage) => {
+      setErrorMessage(errorMessage);
   }
 
   const handleSubmit = async (e) => {
@@ -62,6 +65,13 @@ function RegistrationScreen({ onClose }) {
         <button type="submit">Register</button>
         <button type="Cancel" onClick={() => onClose() }>Cancel</button>
       </form>
+      
+      {errorMessage && (
+          <ErrorNoticeModal 
+              error={errorMessage}
+              onClose={() => setErrorMessage(null) }
+          />
+      )}
     </div>
   );
 }
