@@ -269,12 +269,14 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 {categories.length > 0 ? (
                     <div className="category-buttons-container">
                         {categories.map((category) => (
-                            <div key={category}><button
-                                className="category-button"
-                                onClick={() => handleCategorySelection(category)}
-                            >
-                                {category}
-                            </button></div>
+                            <div key={category}>
+                                <button
+                                    className="category-button"
+                                    onClick={() => handleCategorySelection(category)}
+                                >
+                                    {utils.capitalizeWords(category)}
+                                </button>
+                            </div>
                         ))}
                     </div>
                 ) : (

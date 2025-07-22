@@ -5,6 +5,8 @@ export default class Dish {
     static COLLECTION = "menu";
 
     constructor(name, allergens, image, houseAvailability, meals, course, priority, customerPrice, instructions, description) {
+        console.log(`name: ${name}`);
+        
         this.name              = name; 
         this.allergens         = allergens;
         this.image             = image;
@@ -59,7 +61,7 @@ export default class Dish {
         }
     } 
 
-    async seed() {
+    static async seed() {
         // todo: might need wingko and "i love bali toast" twice. Extra breakfast items are 80k. But wingko as dessert is 60k
     
         const dishes = [
@@ -136,6 +138,5 @@ export default class Dish {
             } 
         }
         console.log(`Dishes upload complete. Errors: ${errorCount}`);
-        process.exit(0);
     }
 }
