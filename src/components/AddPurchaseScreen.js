@@ -43,13 +43,13 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     }
 
     // State for the purchase form data
-    const [purchaseFormData, setPurchaseFormData] = useState(initialForm);
+    const [formData, setFormData] = useState(initialForm);
 
     const handleCategorySelection = async (category) => {
         setSelectedCategory(category);
         if(category == null) {
             setSelectedCategory(null);
-            setPurchaseFormData(initialForm);
+            setFormData(initialForm);
             return;
         }
     }
@@ -58,7 +58,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         setSelectedActivity(activity);
         if(activity == null) {
             setSelectedCategory(null);
-            setPurchaseFormData(initialForm);
+            setFormData(initialForm);
             return;
         }
 
@@ -72,8 +72,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const handleActivityPurchase = async () => {
         let addActivityResult = null;
 
-        purchaseFormData.category = selectedCategory;
-        purchaseFormData.subCategory = selectedActivity.subCategory;
+        formData.category = selectedCategory;
+        formData.subCategory = selectedActivity.subCategory;
 
         if(selectedActivity.category === "meal") {
             // todo: do some checks: check if there is already a dinner on this day. 
@@ -81,13 +81,13 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             addActivityResult = await mealService.addMeal(customer.id, {
                 "category"    : selectedCategory,
                 "subCategory" : selectedActivity.subCategory,
-                "dishes"      : purchaseFormData.dishes,
+                "dishes"      : formData.dishes,
                 "status"      : "requested",
-                "startingAt"  : purchaseFormData.startingAt,
+                "startingAt"  : formData.startingAt,
             }, 
             onError);
         } else {
-            addActivityResult = await activityService.add(customer.id, purchaseFormData, onError);
+            addActivityResult = await activityService.add(customer.id, formData, onError);
         }
         
         if(addActivityResult) {
@@ -115,12 +115,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             const cleanValue = utils.isString(value) ? value.replace(/[^0-9]/g, '') : value;
             // Convert to integer; use empty string if input is empty
             const numericValue = cleanValue === '' ? '' : parseInt(cleanValue, 10);
-            nextFormData = { ...purchaseFormData, [name]: numericValue };
+            nextFormData = { ...formData, [name]: numericValue };
         } else {
-            nextFormData = { ...purchaseFormData, [name]: value };  
+            nextFormData = { ...formData, [name]: value };  
         }
 
-        setPurchaseFormData(nextFormData);
+        setFormData(nextFormData);
       
         if(selectedActivity) {
             let validationResult = false;
@@ -186,14 +186,14 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     {selectedActivity.category === "meal" ? (
                         <MealForm 
                             selectedActivity={selectedActivity}
-                            formData={purchaseFormData}
+                            formData={formData}
                             handleFormDataChange={handleFormDataChange}
                         />
                     // Display form for all other activities
                     ) : ( 
                         <ActivityForm 
                             selectedActivity={selectedActivity}
-                            formData={purchaseFormData} 
+                            formData={formData} 
                             handleFormDataChange={handleFormDataChange}  
                             custom={selectedActivity.subCategory === "custom"}
                         />
@@ -203,7 +203,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 {/* Confirm meal selection before submitting to database */}
                 {showConfirm && (
                     <ConfirmOrderModal 
-                        selected={purchaseFormData.dishes}
+                        selected={formData.dishes}
                         onCancel={handleCancelConfirm}
                         onConfirm={handleActivityPurchase}
                     />

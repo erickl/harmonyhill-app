@@ -3,6 +3,7 @@ import React, { useState, useEffect, use } from 'react';
 import * as mealService from "../services/mealService.js"; 
 import * as activityService from "../services/activityService.js"; 
 import * as menuService from "../services/menuService.js"; 
+import * as utils from "../utils.js";
 import ActivityForm from "./ActivityForm.js";
 import MealForm from "./MealForm.js";
 import ConfirmOrderModal from './ConfirmOrderModal.js';
@@ -16,6 +17,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     // Show purchase summary and confirmation pop up modal
     const [showConfirm, setShowConfirm] = useState(false);
     const [activityMenuItem, setActivityMenuItem] = useState(null);
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
 
     const [errorMessage, setErrorMessage] = useState(null);
 
@@ -35,17 +37,31 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         dishes        : activityToEdit.dishes, // not null only for meal activities 
     });
 
-    const handlePurchaseFormChange = (name, value) => {
+    const handleFormDataChange = (name, value) => {
+        let nextFormData = {};
+
         // Special handling for price to ensure it's a number
         // Special handling for price: Convert to number after removing non-digit characters
         if (name === 'customerPrice') {
             // Remove all non-digit characters (commas, dots, currency symbols, etc.)
-            const cleanValue = value.replace(/[^0-9]/g, '');
+            const cleanValue = utils.isString(value) ? value.replace(/[^0-9]/g, '') : value;
             // Convert to integer; use empty string if input is empty
             const numericValue = cleanValue === '' ? '' : parseInt(cleanValue, 10);
-            setFormData(prevData => ({ ...prevData, [name]: numericValue }));
+            nextFormData = { ...formData, [name]: numericValue };
         } else {
-            setFormData({ ...formData, [name]: value });
+            nextFormData = { ...formData, [name]: value };  
+        }
+
+        setFormData(nextFormData);
+        
+        if(activityToEdit) {
+            let validationResult = false;
+            if(activityToEdit.category === "meal") {
+                validationResult = mealService.validate(nextFormData);
+            } else {
+                validationResult = activityService.validate(nextFormData);
+            }
+            setReadyToSubmit(validationResult);
         }
     };
 
@@ -103,14 +119,14 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
                     <MealForm 
                         selectedActivity={activityMenuItem}
                         formData={formData}
-                        handleFormDataChange={handlePurchaseFormChange}
+                        handleFormDataChange={handleFormDataChange}
                     />
                 // Display form for all other activities
                 ) : ( 
                     <ActivityForm 
                         selectedActivity={activityMenuItem}
                         formData={formData} 
-                        handleFormDataChange={handlePurchaseFormChange}  
+                        handleFormDataChange={handleFormDataChange}  
                     />
                 )}
             </div>
@@ -134,6 +150,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
             <ButtonsFooter 
                 onCancel={onClose} 
                 onSubmit={onSubmit}
+                submitEnabled={readyToSubmit}
             />
         </div>
     )
