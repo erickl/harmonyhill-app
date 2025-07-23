@@ -61,7 +61,7 @@ async function updateDishes(bookingId, mealId, newDishesData, onError) {
     let dishesUpdates = [];
     
     for(const newDishData of newDishesData) {
-        if(newDishData.quantity === 0) {
+        if(utils.isEmpty(newDishData.name) || newDishData.quantity === 0) {
             continue;
         }
         const newDish = await mapDishObject(newDishData);
@@ -207,8 +207,22 @@ export async function deleteDish(bookingId, mealId, dishId) {
 }
 
 export function validate(data) {
+    if(utils.isEmpty(data)) {
+        return false;
+    }
     if(utils.isEmpty(data.startingAt)) {
         return false;
+    }
+    if(!utils.isEmpty(data.dishes)) {
+        const dishes = Object.values(data.dishes);
+        for(const dish of dishes) {
+            if(dish.quantity === 0) {
+                return false;
+            }
+            if(utils.isEmpty(dish.name)) {
+                return false;
+            }
+        }
     }
 
     return true;

@@ -121,8 +121,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         }
 
         setPurchaseFormData(nextFormData);
-
-        
+      
         if(selectedActivity) {
             let validationResult = false;
             if(selectedActivity.category === "meal") {
