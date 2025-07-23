@@ -29,6 +29,12 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 - Wait for Gradle to sync (see the progress bar finish at the bottom right)
 - Create a release key (once): keytool -genkeypair -v -keystore android/app/hh-release-key.keystore -alias hh-release-key -keyalg RSA -keysize 2048 -validity 10000
 
+# Loading the bookings from the sheet
+- Download sheet as a tsv
+- put files in Public folder
+- run the seeder script with path of "./public/<filename>"
+- Note: if running from the node script, instead of the react app, use fs/promises/readFile, instead of fetch
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

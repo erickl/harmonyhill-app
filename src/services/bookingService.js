@@ -175,17 +175,3 @@ export async function testBooking() {
 
     let x = 1;
 }
-
-export async function uploadData(path) {
-    const documents = await dataLoader.loadData(path);
-
-    let uploadedDocuments = [];
-    const onError = (e) => console.log(e);
-    for(const doc of documents) {
-        const id = await add(doc, onError);
-        if(id !== false) {
-            uploadedDocuments.push(id);
-        }
-    }
-    const x = 1;
-}

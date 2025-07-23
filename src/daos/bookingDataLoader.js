@@ -1,4 +1,5 @@
 import * as utils from "../utils.js";
+import { readFile } from 'fs/promises';
 
 export async function loadData(path) {
     let documents = [];
@@ -8,8 +9,15 @@ export async function loadData(path) {
 
     try {
         // Load text file data
-        const response = await fetch(path);
-        const content = await response.text();
+        console.log("Fetching:", path);
+
+        // This works in react only
+        //const response = await fetch(path);
+        //const content = await response.text();
+
+        // ... but this is the equivalent for running from a node script
+        const content = await readFile(path, 'utf-8');
+        
 
         // Find data headers
         const rows = content.split("\n");
