@@ -19,6 +19,14 @@ export default function MyDatePicker({ name, value, onChange }) {
     }
   };
 
+  // Reset time if user chooses to re-check the "time is TDB"
+  useEffect(() => {
+    if (isTimeTBD && value) {
+      const timeCleared = value.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+      onChange(name, timeCleared);
+    }
+  }, [isTimeTBD]);
+
   return (
     <>
       <FormControlLabel
