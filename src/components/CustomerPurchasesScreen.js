@@ -14,10 +14,10 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [selectedActivity, setSelectedActivity] = useState(null); // State to store the selected customer
-    const [activityToEdit, setActivityToEdit] = useState(null); // state to enable editing of activities
+    const [selectedActivity, setSelectedActivity] = useState(null);     // State to store the selected customer
+    const [activityToEdit, setActivityToEdit] = useState(null);         // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
-    const [expanded, setExpanded] = useState({}); // All dates expanded to boot (all activity headers visible)
+    const [expanded, setExpanded] = useState({});                       // All dates expanded to boot (all activity headers visible)
 
     const handleSetExpanded = (date) => {
         const updatedExpandedList = { ...(expanded || {}) }; // Make shallow copy
@@ -164,7 +164,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                                                 <p><span className="detail-label">Status:</span> {selectedActivity.status}</p>
                                                 <p><span className="detail-label">Provider:</span> {selectedActivity.provider}</p>
                                                 <p><span className="detail-label">Assigned To:</span> {selectedActivity.assignedTo}</p>
-                                                <p><span className="detail-label">Customer Price:</span> {selectedActivity.customerPrice}</p>
+                                                <p><span className="detail-label">Customer Price:</span> {selectedActivity.customerPrice ?? 0 }</p>
 
                                                 {/* List dishes if the activity expanded is a meal */}
                                                 {!utils.isEmpty(selectedActivity.dishes) ?  (

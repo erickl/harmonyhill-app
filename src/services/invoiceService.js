@@ -15,17 +15,21 @@ export async function getTotal(bookingId) {
             let activityItem = {
                 name:          activity.category + ": " + activity.subCategory,
                 customerPrice: activity.customerPrice,
-                date:          activity.startingAt
+                date:          activity.startingAt,
+                isFree:        activity.isFree
             }
             if(activity.category === "meal") {
-                const mealItems = await mealService.getDishes(bookingId, activity.id);
-                activityItem.mealItems = mealItems;
+                const dishes = await mealService.getDishes(bookingId, activity.id);
+                activityItem.dishes = dishes;
             }
             return activityItem;
         })
     );
 
-    const totalSum = itemizedList.reduce((sum, item) => sum + (!utils.isEmpty(item.customerPrice) ? item.customerPrice : 0), 0);
+    const totalSum = itemizedList.reduce((sum, item) => {
+        const itemCost = !item.isFree && !utils.isEmpty(item.customerPrice) ? item.customerPrice : 0;
+        return sum + itemCost;
+    }, 0);
 
     return {
         total: totalSum,

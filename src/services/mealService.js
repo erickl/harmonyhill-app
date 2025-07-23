@@ -102,10 +102,12 @@ async function addDishes(bookingId, mealId, dishesData, onError) {
             }
 
             // Update the total meal customerPrice
-            runningTotalMealPrice += dish.isFree ? 0 : dish.customerPrice * dish.quantity;
-            const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: runningTotalMealPrice }, false, onError);
-            if(!updateMealPriceSuccess) {
-                throw new Error(`Cannot update total meal price for meal with dish ${dishId}`);
+            if(!meal.isFree) {
+                runningTotalMealPrice += dish.isFree ? 0 : dish.customerPrice * dish.quantity;
+                const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: runningTotalMealPrice }, false, onError);
+                if(!updateMealPriceSuccess) {
+                    throw new Error(`Cannot update total meal price for meal with dish ${dishId}`);
+                }
             }
         });
 
@@ -139,10 +141,10 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
         }
 
         // Update total meal price
-        if(updateDishesSuccess !== false && !utils.isEmpty(updateDishesSuccess)) {
+        if(updateDishesSuccess !== false) {
             const updatedDishes = await getDishes(bookingId, mealId);
-            
-            const customerMealTotalPrice = Object.values(updatedDishes).reduce((sum, dish) => {
+
+            const customerMealTotalPrice = mealUpdateData["isFree"] ? 0 : Object.values(updatedDishes).reduce((sum, dish) => {
                 return sum + (dish.isFree ? 0 : dish.quantity * parseInt(dish.customerPrice));
             }, 0);
             
@@ -245,6 +247,10 @@ async function mapMealObject(mealData, isUpdate = false) {
     if(utils.isString(mealData?.provider)) meal.provider = mealData.provider;
 
     if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
+
+    if(utils.isBoolean(mealData?.isFree)) meal.isFree = mealData.isFree;
+    
+    if(utils.isBoolean(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
 
     if(!isUpdate) {
         meal.createdAt = new Date();

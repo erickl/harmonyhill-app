@@ -6,6 +6,7 @@ import * as mealService from "../services/mealService.js";
 import * as utils from "../utils.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 import MealFormDish from "./MealFormDish.js";
+import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
     
@@ -121,6 +122,16 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     className="input"
                 ></textarea>
             </div>
+
+            <FormControlLabel
+                control={
+                    <Checkbox
+                        checked={formData["isFree"] ? formData["isFree"] : false}
+                        onChange={(e) => handleFormDataChange("isFree", e.target.checked)}
+                    />
+                }
+                label="Free"
+            />
 
             <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange}/>
 

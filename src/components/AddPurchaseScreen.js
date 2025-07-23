@@ -30,9 +30,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const initialForm = {
         startingAt    : null, // important for Luxon Date time to reset to null, not empty string
         comments      : '',
-        customerPrice : '',
+        customerPrice : 0,
         provider      : '',
         assignedTo    : '',
+        isFree        : false,
         dishes        : {}, // only not null when ordering meals, null for all other activities
     };
 
@@ -74,18 +75,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
         formData.category = selectedCategory;
         formData.subCategory = selectedActivity.subCategory;
+        formData.status = "requested";
 
         if(selectedActivity.category === "meal") {
             // todo: do some checks: check if there is already a dinner on this day. 
             // Check if the dinner is on a day which the customer is not staying there
-            addActivityResult = await mealService.addMeal(customer.id, {
-                "category"    : selectedCategory,
-                "subCategory" : selectedActivity.subCategory,
-                "dishes"      : formData.dishes,
-                "status"      : "requested",
-                "startingAt"  : formData.startingAt,
-            }, 
-            onError);
+            addActivityResult = await mealService.addMeal(customer.id, formData, onError);
         } else {
             addActivityResult = await activityService.add(customer.id, formData, onError);
         }
