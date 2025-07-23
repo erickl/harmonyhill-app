@@ -213,6 +213,10 @@ async function mapObject(data, isUpdate = false) {
     return activity;
 }
 
+export function validate(data) {
+    return true; // todo
+}
+
 export async function testActivities(date) {
     const categories = await getCategories();
     const activityTypes1 = await getActivityMenu();

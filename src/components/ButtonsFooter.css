@@ -6,6 +6,32 @@
     margin-bottom: 8px; /* optional spacing between rows */
 }
 
+.submit-button {
+    background-color: darkcyan;
+    color: white;
+    border-color: grey;
+    border-width: 1px;
+    border-radius: 5px;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px auto;
+}
+
+.mute-submit-button {
+    background-color: grey;
+    color: white;
+    border-color: grey;
+    border-width: 1px;
+    border-radius: 5px;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px auto;
+}
+
 .cancel-button {
     color: white;
     background-color: darkred;

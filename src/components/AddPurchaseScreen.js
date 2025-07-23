@@ -13,6 +13,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
     // Show purchase summary and confirmation pop up modal
     const [showConfirm, setShowConfirm] = useState(false);
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
 
     // State to track the currently selected activity (for the purchase form)
     const [selectedActivity, setSelectedActivity] = useState(null);
@@ -105,6 +106,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     };
 
     const handleFormDataChange = (name, value) => {
+        let nextFormData = {};
+
         // Special handling for price to ensure it's a number
         // Special handling for price: Convert to number after removing non-digit characters
         if (name === 'customerPrice') {
@@ -112,9 +115,22 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             const cleanValue = utils.isString(value) ? value.replace(/[^0-9]/g, '') : value;
             // Convert to integer; use empty string if input is empty
             const numericValue = cleanValue === '' ? '' : parseInt(cleanValue, 10);
-            setPurchaseFormData(prevData => ({ ...prevData, [name]: numericValue }));
+            nextFormData = { ...purchaseFormData, [name]: numericValue };
         } else {
-            setPurchaseFormData({ ...purchaseFormData, [name]: value });
+            nextFormData = { ...purchaseFormData, [name]: value };  
+        }
+
+        setPurchaseFormData(nextFormData);
+
+        
+        if(selectedActivity) {
+            let validationResult = false;
+            if(selectedActivity.category === "meal") {
+                validationResult = mealService.validate(nextFormData);
+            } else {
+                validationResult = activityService.validate(nextFormData);
+            }
+            setReadyToSubmit(validationResult);
         }
     };
 
@@ -204,6 +220,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 <ButtonsFooter 
                     onCancel={handleActivitySelection} 
                     onSubmit={onSubmit}
+                    submitEnabled={readyToSubmit}
                 />
             </div>
         )

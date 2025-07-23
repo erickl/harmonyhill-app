@@ -206,6 +206,14 @@ export async function deleteDish(bookingId, mealId, dishId) {
     return await activityDao.deleteDish(bookingId, mealId, dishId);
 }
 
+export function validate(data) {
+    if(utils.isEmpty(data.startingAt)) {
+        return false;
+    }
+
+    return true;
+}
+
 async function mapMealObject(mealData, isUpdate = false) {
     let meal = {};
 
