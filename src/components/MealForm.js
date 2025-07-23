@@ -87,26 +87,28 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             </div>
 
             {/* List existing custom dishes */}
-            {expandedCourses["custom"] && !utils.isEmpty(customDishes) && (
-                <div key="custom-wrapper">   
-                    {customDishes.map((dish) => (
-                        <MealFormDish 
-                            dish={dish}
-                            formData={formData}
-                            handleFormDataChange={handleFormDataChange}
-                            custom={true}
-                        />
-                    ))}
-                </div>
-            )}
+            {expandedCourses["custom"] && (<>
+                {!utils.isEmpty(customDishes) && (
+                    <div key="custom-wrapper">   
+                        {customDishes.map((dish) => (
+                            <MealFormDish 
+                                dish={dish}
+                                formData={formData}
+                                handleFormDataChange={handleFormDataChange}
+                                custom={true}
+                            />
+                        ))}
+                    </div>
+                )}
 
-            {/* A field for a new custom dish */}
-            <MealFormDish 
-                dish={newCustomDish}
-                formData={formData}
-                handleFormDataChange={handleFormDataChange}
-                custom={true}
-            />
+                {/* A field for a new custom dish */}
+                <MealFormDish 
+                    dish={newCustomDish}
+                    formData={formData}
+                    handleFormDataChange={handleFormDataChange}
+                    custom={true}
+                />
+            </>)}
 
             <div className="">
                 <label htmlFor="mealComments">Comments:</label>
