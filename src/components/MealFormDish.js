@@ -43,6 +43,12 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
         } 
 
         newDish.name = newName;
+        
+        // At least if you give the custom dish a name, also set quantity to at least 1
+        if(!utils.isEmpty(newDish.name) && newDish.quantity === 0) {
+            newDish.quantity = 1;
+        }
+
         updatedDishes[newDish.name] = newDish;
 
         handleFormDataChange("dishes", updatedDishes);

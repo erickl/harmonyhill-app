@@ -10,12 +10,22 @@ import MealFormDish from "./MealFormDish.js";
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
     
     const [allDishes, setAllDishes] = useState([]);
+    const [expandedCourses, setExpandedCourses] = useState({});
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
     
     const [errorMessage, setErrorMessage] = useState(null);
             
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
+    }
+
+    const handleExpandCourseSection = (course) => {
+        const newExpandedCourses = { ...(expandedCourses || {}) };
+        if(!Object.hasOwn(newExpandedCourses, course)) {
+            newExpandedCourses[course] = false;
+        }
+        newExpandedCourses[course] = !newExpandedCourses[course];
+        setExpandedCourses(newExpandedCourses);
     }
 
     useEffect(() => {
@@ -49,16 +59,21 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     {/* Dishes grouped by meals (Starters, main, desserts, etc...) */}
                     {sortedMealNames.map((course) => (
                         <div key={`${course}-wrapper`}>
-                            <h2>{utils.capitalizeWords(course.split(",")[1])}</h2>
-
+                            <div className="course-header" onClick={() => handleExpandCourseSection(course)}>
+                                <h3>{expandedCourses[course] ? ' ▼' : ' ▶'}</h3>
+                                <h2>{utils.capitalizeWords(course.split(",")[1])}</h2>
+                            </div>
+                            
                             {/* Each dish has a counter, incrementor, a comment field, and other options */}
-                            {allDishes[course].map((dish) => (
-                                <MealFormDish 
-                                    dish={dish}
-                                    formData={formData}
-                                    handleFormDataChange={handleFormDataChange}
-                                />
-                            ))}
+                            {expandedCourses[course] && (<>
+                                {allDishes[course].map((dish) => (
+                                    <MealFormDish 
+                                        dish={dish}
+                                        formData={formData}
+                                        handleFormDataChange={handleFormDataChange}
+                                    />
+                                ))}
+                            </>)}
                         </div>
                     ))}
                 </div>
@@ -66,11 +81,14 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                 <p>No dishes found</p>
             )}
 
-            <h2>Custom</h2>
+            <div className="course-header" onClick={() => handleExpandCourseSection("custom")}>
+                <h3>{expandedCourses["custom"] ? ' ▼' : ' ▶'}</h3>
+                <h2>Custom</h2>
+            </div>
 
             {/* List existing custom dishes */}
-            {!utils.isEmpty(customDishes) && (
-                <div>
+            {expandedCourses["custom"] && !utils.isEmpty(customDishes) && (
+                <div key="custom-wrapper">   
                     {customDishes.map((dish) => (
                         <MealFormDish 
                             dish={dish}
