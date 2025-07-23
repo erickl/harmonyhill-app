@@ -140,7 +140,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             setLoadingMenu(true); // Set loading to true before fetching
 
             try {
-                const activityMenuData = await activityService.getActivityMenu();
+                const activityMenuData = await activityService.getActivityMenu({"house": customer.house});
                 let categories = activityMenuData.map(item => item.category);
                 // getActivityMenu() gets all sub categories (e.g. lunch, dinner), so a category (e.g. meal) can occur multiple times
                 categories = Array.from(new Set(categories));

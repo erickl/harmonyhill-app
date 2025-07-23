@@ -170,5 +170,17 @@ export async function getTypes(filterOptions = {}) {
         filters.push(where("subCategory", "==", filterOptions.subCategory));
     }
 
-    return await dao.get([dao.constant.ACTIVITY_TYPES], filters); 
+    let activityTypes = [];
+    try {
+        activityTypes = await dao.get([dao.constant.ACTIVITY_TYPES], filters); 
+    } catch (error) {
+        console.error('Error fetching menu:', error);
+        return [];
+    }
+
+    if(Object.hasOwn(filterOptions, 'house')) {
+        activityTypes = activityTypes.filter(item => item.houseAvailability.includes(filterOptions.house));
+    }
+
+    return activityTypes;
 }

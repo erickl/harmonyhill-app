@@ -92,7 +92,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
 
     useEffect(() => {
         const fetchActivityMenuItemData = async () => {
-            const menuItem = await activityService.getActivityMenuItem(activityToEdit.category, activityToEdit.subCategory);
+            const menuItem = await activityService.getActivityMenuItem(activityToEdit.category, activityToEdit.subCategory, customer.house);
             setActivityMenuItem(menuItem);
         };
 

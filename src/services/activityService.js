@@ -4,15 +4,15 @@ import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 
 /**
- * @param {*} filterOptions = {category=transport|yoga|etc..,}
+ * @param {*} filterOptions = {category=transport|yoga|etc.., house=harmony hill|the jungle nook}
  * @returns list of all kinds of activities available (categories and subcategories)
  */
 export async function getActivityMenu(filterOptions = {}) {
     return await activityDao.getTypes(filterOptions);
 }
 
-export async function getActivityMenuItem(category, subCategory) {
-    const menuItems = await getActivityMenu({"category" : category, "subCategory" : subCategory});
+export async function getActivityMenuItem(category, subCategory, house) {
+    const menuItems = await getActivityMenu({"category" : category, "subCategory" : subCategory, "house" : house});
     return menuItems.length > 0 ? menuItems[0] : null;
 }
 
