@@ -27,6 +27,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
 
     const [formData, setFormData] = useState({
         startingAt    : activityToEdit.startingAt,
+        startingTime  : activityToEdit.startingTime,
         category      : activityToEdit.category,
         subCategory   : activityToEdit.subCategory,
         comments      : activityToEdit.comments,
@@ -40,9 +41,13 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     const handleFormDataChange = (name, value) => {
         let nextFormData = {};
 
+        if (name === "_batch" && typeof value === 'object' && value !== null) {
+            nextFormData = ({ ...formData, ...value });
+        }
+
         // Special handling for price to ensure it's a number
         // Special handling for price: Convert to number after removing non-digit characters
-        if (name === 'customerPrice') {
+        else if (name === 'customerPrice') {
             // Remove all non-digit characters (commas, dots, currency symbols, etc.)
             const cleanValue = utils.isString(value) ? value.replace(/[^0-9]/g, '') : value;
             // Convert to integer; use empty string if input is empty
@@ -52,14 +57,16 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
             nextFormData = { ...formData, [name]: value };  
         }
 
-        setFormData(nextFormData);
+        if(!utils.isEmpty(nextFormData)) {
+            setFormData(nextFormData);
+        }
         
         if(activityToEdit) {
             let validationResult = false;
             if(activityToEdit.category === "meal") {
-                validationResult = mealService.validate(nextFormData);
+                validationResult = mealService.validate(nextFormData, true);
             } else {
-                validationResult = activityService.validate(nextFormData);
+                validationResult = activityService.validate(nextFormData, true);
             }
             setReadyToSubmit(validationResult);
         }

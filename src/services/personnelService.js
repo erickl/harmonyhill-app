@@ -64,11 +64,6 @@ async function mapPriceObject(data, isUpdate = false) {
     if(Object.hasOwn(data, "to"))          object.to = data.to;
     if(Object.hasOwn(data, "from"))        object.from = data.from;
 
-    if(!isUpdate) {
-        object.createdAt = new Date();
-        object.createdBy = await userService.getCurrentUserName();
-    }
-
     return object;
 }
 
@@ -81,11 +76,6 @@ async function mapPersonnelObject(data, isUpdate = false) {
     if(utils.isAmount(data?.price))    object.price    = data.price;
     if(utils.isString(data?.whatsapp)) {
         object.whatsapp = data.whatsapp.replace(/ /g, '');
-    }
-    
-    if(!isUpdate) {
-        object.createdAt = new Date();
-        object.createdBy = await userService.getCurrentUserName();
     }
 
     return object;

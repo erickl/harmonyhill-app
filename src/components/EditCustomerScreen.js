@@ -13,7 +13,9 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
         email:               customer.email,
         house:               customer.house,
         checkInAt:           customer.checkInAt,
+        checkInTime:         customer.checkInTime,
         checkOutAt:          customer.checkOutAt,
+        checkOutTime:        customer.checkOutTime,
         dietaryRestrictions: customer.dietaryRestrictions,
         country:             customer.country,
         guestCount:          customer.guestCount,
@@ -27,7 +29,17 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
     });
 
     const handleInputChange = (name, value) => {
-        setFormData({ ...formData, [name]: value }); 
+        let nextFormData = {};
+                
+        if (name === "_batch" && typeof value === 'object' && value !== null) {
+            nextFormData = ({ ...formData, ...value });
+        } else {
+            nextFormData = { ...formData, [name]: value };
+        }
+        
+        if(!utils.isEmpty(nextFormData)) {
+            setFormData(nextFormData);
+        }
     };
 
     const [errorMessage, setErrorMessage] = useState(null);
@@ -44,9 +56,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
             return;
         }
 
-        const updatedCustomerData = {
-            ...formData,
-        };
+        const updatedCustomerData = { ...formData };
 
         try {
             //  API call to update the customer
@@ -116,7 +126,8 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                         <label htmlFor="checkInAt">Check In Date</label>
                         <MyDatePicker 
                             name={"checkInAt"} 
-                            value={formData.checkInAt} 
+                            date={formData.checkInAt} 
+                            time={formData.checkInTime} 
                             onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                         />
                     </div>
@@ -124,7 +135,8 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                         <label htmlFor="checkOutAt">Check Out Date</label>
                         <MyDatePicker 
                             name={"checkOutAt"} 
-                            value={formData.checkOutAt} 
+                            date={formData.checkOutAt} 
+                            time={formData.checkOutTime}
                             onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                         />
                     </div>
@@ -253,4 +265,5 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
         </div>
     );
 };
+
 export default EditCustomerScreen;

@@ -113,11 +113,6 @@ async function mapBookingObject(data, isUpdate = false) {
     if(utils.isDate(data?.checkInAt))             booking.checkInAt              = utils.toFireStoreTime(data.checkInAt)    ;
     if(utils.isDate(data?.checkOutAt))            booking.checkOutAt             = utils.toFireStoreTime(data.checkOutAt)   ;
 
-    if(!isUpdate) {
-        booking.createdAt = new Date(); 
-        booking.createdBy = await userService.getCurrentUserName();
-    }
-
     return booking;
 }
 
@@ -134,7 +129,6 @@ export async function testBooking() {
         dietaryRestrictions: "sausage",
         checkInAt: "2025-05-10",
         checkOutAt: "2025-05-13",
-        createdAt: new Date(),
         country: "Norway",
         guestCount: 4,
         customerInfo: "none",

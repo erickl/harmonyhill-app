@@ -133,7 +133,12 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                 label="Free"
             />
 
-            <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange}/>
+            <MyDatePicker 
+                name={"startingAt"} 
+                date={formData.startingAt}
+                time={formData.startingTime}
+                onChange={handleFormDataChange}
+            />
 
             {errorMessage && (
                 <ErrorNoticeModal 

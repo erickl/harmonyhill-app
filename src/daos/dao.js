@@ -8,7 +8,7 @@ import {
     deleteDoc,
     runTransaction
 } from 'firebase/firestore';
-import { db } from "../firebase.js";
+import { db, auth } from "../firebase.js";
 import * as constant from "./daoConst.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
@@ -137,6 +137,10 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 
 export async function add(path, id, data, onError = null) {
     try {
+        data.createdAt = utils.toFireStoreTime(utils.now());
+        const user = await getOne(auth.currentUser.uid);
+        data.createdBy = user.name;
+        
         const ref = doc(db, ...path, id);
         const addResult = await setDoc(ref, data);
         return true;

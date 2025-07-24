@@ -92,7 +92,12 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     </div>
                 )}
                 <div className="purchase-form-group">
-                    <MyDatePicker name={"startingAt"} value={formData.startingAt} onChange={handleFormDataChange} required/>
+                    <MyDatePicker 
+                        name={"startingAt"} 
+                        date={formData.startingAt} 
+                        time={formData.startingTime} 
+                        onChange={handleFormDataChange} 
+                    />
                 </div>
                 <div className="purchase-form-group">
                     <label htmlFor="purchaseComments">Comments:</label>

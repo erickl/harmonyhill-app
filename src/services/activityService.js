@@ -65,11 +65,11 @@ export function enhanceActivities(activities) {
             // Date time stored in timestamp format in database. Convert to Luxon Date time to display correct time zone 
             if(!utils.isEmpty(activity.startingAt)) {
                 activity.startingAt = utils.toDateTime(activity.startingAt);
-
                 activity.startingAt_ddMMM = utils.to_ddMMM(activity.startingAt);
-                activity.startingAt_HHmm = utils.to_HHmm(activity.startingAt);
                 activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
             }
+
+            activity.startingAt_HHmm = !utils.isEmpty(activity.startingTime) ? utils.to_HHmm(activity.startingTime) : "TBD";
 
             activity.displayName = activity.subCategory.replace(/-/g, " ");
             activity.displayName = utils.capitalizeWords(activity.displayName);
@@ -191,6 +191,9 @@ async function mapObject(data, isUpdate = false) {
     if(utils.isString(data?.comments))      activity.comments = data.comments;
 
     if(utils.isDate(data?.startingAt))      activity.startingAt = utils.toFireStoreTime(data.startingAt);
+    
+    // Date is obligatory, but time might be set later, so might be null
+    activity.startingTime = utils.isDate(data?.startingAt) ? utils.toFireStoreTime(data.startingTime) : null;
 
     if(utils.isAmount(data?.customerPrice)) activity.customerPrice = data.customerPrice;
 
@@ -205,15 +208,10 @@ async function mapObject(data, isUpdate = false) {
     
     activity.assignedTo = utils.isString(data?.assignedTo) ? data.assignedTo : await userService.getCurrentUserName();
 
-    if(!isUpdate) {
-        activity.createdAt = new Date();
-        activity.createdBy = await userService.getCurrentUserName();
-    }
-
     return activity;
 }
 
-export function validate(data) {
+export function validate(data, isUpdate = false) {
     return true; // todo
 }
 

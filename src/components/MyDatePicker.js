@@ -2,50 +2,77 @@ import React, { useState, useEffect } from 'react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 import { DateTime } from 'luxon';
 import { Utensils } from 'lucide-react';
 import * as utils from "../utils";
 
-export default function MyDatePicker({ name, value, onChange }) {
-  const isMidnight = (dt) => dt !== null && dt.hour === 0 && dt.minute === 0 && dt.second === 0 && dt.millisecond === 0;
+export default function MyDatePicker({ name, date, time, onChange }) {
+  //const isMidnight = (dt) => dt !== null && dt.hour === 0 && dt.minute === 0 && dt.second === 0 && dt.millisecond === 0;
 
-  const [isTimeTBD, setIsTimeTBD] = useState(value ? isMidnight(value) : true);
+  const [startingTime, setStartingTime] = useState(time);
+  const [startingDate, setStartingDate] = useState(date);
 
-  const handleChange = (newValue) => {
-    if (newValue) {
-      const dateTime = newValue.setZone(utils.getHotelTimezone(), { keepLocalTime: true });
-      onChange(name, dateTime);
+  const handleTimeChange = (newTime) => {
+    const newTimeCopy = newTime.setZone(utils.getHotelTimezone(), { keepLocalTime: true });
+    let newStartingDate = startingDate;
+
+    if(newTime && startingDate) {
+      newStartingDate = newStartingDate.set({
+        hour         : newTimeCopy.hour,
+        minute       : newTimeCopy.minute,
+        second       : newTimeCopy.second,
+        millisecond  : newTimeCopy.millisecond,
+      });
+    }
+    
+    setStartingDate(newStartingDate);
+    setStartingTime(newTimeCopy);
+
+    onChange("_batch", {
+      [name]         : newStartingDate,
+      "startingTime" : newTimeCopy
+    });
+  }
+
+  const handleDateChange = (newDate) => {
+    if (newDate) {
+      let newDateCopy = newDate.setZone(utils.getHotelTimezone(), { keepLocalTime: true });
+      if(startingTime) {
+        newDateCopy = newDateCopy.set({
+          hour       : startingTime.hour,
+          minute     : startingTime.minute,
+          second     : startingTime.second,
+          millisecond: startingTime.millisecond,
+        });
+      }
+      
+      setStartingDate(newDateCopy);
+      onChange(name, newDateCopy);
     }
   };
 
-  // Reset time if user chooses to re-check the "time is TDB"
-  useEffect(() => {
-    if (isTimeTBD && value) {
-      const timeCleared = value.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-      onChange(name, timeCleared);
-    }
-  }, [isTimeTBD]);
-
   return (
     <>
-      <FormControlLabel
-          control={
-            <Checkbox
-              checked={isTimeTBD}
-              onChange={(e) => setIsTimeTBD(e.target.checked)}
-            />
-          }
-          label="Time is TBD"
-      />
+      <LocalizationProvider dateAdapter={AdapterLuxon}>
+        <TimePicker
+          label="Select a time"
+          value={startingTime}
+          onChange={handleTimeChange}
+          renderInput={(params) => <TextField {...params} fullWidth />}
+          ampm={false}
+          views={['hours', 'minutes']}
+        />
+      </LocalizationProvider>
       <LocalizationProvider dateAdapter={AdapterLuxon}>
         <DateTimePicker
           label="Select a date"
-          value={value}
-          onChange={handleChange}
+          value={date}
+          onChange={handleDateChange}
           renderInput={(params) => <TextField {...params} fullWidth />}
           ampm={false}
-          views={isTimeTBD ? ['year', 'month', 'day'] : ['year', 'month', 'day', 'hours', 'minutes']}
+          views={['year', 'month', 'day']}
         />
       </LocalizationProvider>
     </>

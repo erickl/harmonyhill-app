@@ -24,7 +24,6 @@ export async function signUp(username, email, role, password, onError) {
             name: username,
             email: email,
             role: role,
-            createdAt: new Date(),
             lastLoginAt: null,
             approved: false,
         });

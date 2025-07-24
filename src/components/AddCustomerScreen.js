@@ -12,7 +12,9 @@ const AddCustomerScreen = ({ onNavigate }) => {
         email:               '',
         // MyDatePicker requires initial value to be null because of AdapterLuxon
         checkInAt:           null, 
+        checkInTime:         null, 
         checkOutAt:          null,
+        checkOutTime:        null,
         guestCount:          1,
         dietaryRestrictions: '',
         customerInfo:        '',
@@ -37,8 +39,18 @@ const AddCustomerScreen = ({ onNavigate }) => {
         }
     }, [formData.checkInAt, formData.checkOutAt]);
 
-    const handleInputChange = (field, value) => {
-        setFormData({ ...formData, [field]: value });
+    const handleInputChange = (name, value) => {
+        let nextFormData = {};
+        
+        if (name === "_batch" && typeof value === 'object' && value !== null) {
+            nextFormData = ({ ...formData, ...value });
+        } else {
+            nextFormData = { ...formData, [name]: value };
+        }
+        
+        if(!utils.isEmpty(nextFormData)) {
+            setFormData(nextFormData);
+        }
     };
 
     const handleSubmit = async () => { 
@@ -151,12 +163,22 @@ const AddCustomerScreen = ({ onNavigate }) => {
 
                 <div className="form-group">
                     <label htmlFor="checkInAt">Check In Date</label>
-                    <MyDatePicker name={"checkInAt"} value={formData.checkInAt} onChange={handleInputChange}/>
+                    <MyDatePicker 
+                        name={"checkInAt"} 
+                        date={formData.checkInAt} 
+                        time={formData.checkInTime} 
+                        onChange={handleInputChange}
+                    />
                 </div>
 
                 <div>
                     <h3>Check-out Date</h3>
-                    <MyDatePicker name={"checkOutAt"} value={formData.checkOutAt} onChange={handleInputChange}/>
+                    <MyDatePicker 
+                        name={"checkOutAt"} 
+                        date={formData.checkOutAt} 
+                        time={formData.checkOutTime} 
+                        onChange={handleInputChange}
+                    />
                 </div>
 
                 {/* Length of Stay */}

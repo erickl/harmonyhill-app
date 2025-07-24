@@ -208,13 +208,17 @@ export async function deleteDish(bookingId, mealId, dishId) {
     return await activityDao.deleteDish(bookingId, mealId, dishId);
 }
 
-export function validate(data) {
+export function validate(data, isUpdate = false) {
     if(utils.isEmpty(data)) {
         return false;
     }
     if(utils.isEmpty(data.startingAt)) {
         return false;
     }
+
+    // get other lunches/dinners on this date. If this is not an update, we should decline
+
+
     if(!utils.isEmpty(data.dishes)) {
         const dishes = Object.values(data.dishes);
         for(const dish of dishes) {
@@ -242,6 +246,9 @@ async function mapMealObject(mealData, isUpdate = false) {
         meal.startingAt = utils.toFireStoreTime(mealData.startingAt);
     }
 
+    // Date is obligatory, but time might be set later, so might be null
+    meal.startingTime = utils.isDate(mealData?.startingAt) ? utils.toFireStoreTime(mealData.startingTime) : null;
+
     if(utils.isString(mealData?.status)) meal.status = mealData.status;
 
     if(utils.isString(mealData?.provider)) meal.provider = mealData.provider;
@@ -251,11 +258,6 @@ async function mapMealObject(mealData, isUpdate = false) {
     if(utils.isBoolean(mealData?.isFree)) meal.isFree = mealData.isFree;
     
     if(utils.isBoolean(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
-
-    if(!isUpdate) {
-        meal.createdAt = new Date();
-        meal.createdBy = await userService.getCurrentUserName();
-    }
 
     return meal;
 }
@@ -269,11 +271,6 @@ async function mapDishObject(data, isUpdate = false) {
     if(utils.isString(data?.comments))      object.comments      = data.comments;
     if(utils.isBoolean(data?.isFree))       object.isFree        = data.isFree;
     if(utils.isBoolean(data?.custom))       object.custom        = data.custom;
-
-    if(!isUpdate) {
-        object.createdAt = new Date();
-        object.createdBy = await userService.getCurrentUserName();
-    }
 
     return object;
 }

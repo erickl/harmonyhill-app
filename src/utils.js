@@ -111,6 +111,10 @@ export function to_YYMMdd(date = null) {
 }
 
 function getData(inputDate) {
+    if(isEmpty(inputDate)) {
+        return {};
+    }
+    
     const luxonDateTime = toLuxonDateTime(inputDate); 
     const month = luxonDateTime.month.toString().padStart(2, '0');
 
@@ -125,15 +129,15 @@ function getData(inputDate) {
     const tz = `GMT${tzOffsetHr >= 0 ? "+" : ""}${tzOffsetHr}`;
 
     return {
-        yy: luxonDateTime.year.toString().slice(-2),
-        ccyy: luxonDateTime.year, // Full year
-        month: month,
-        day: luxonDateTime.day.toString().padStart(2, '0'), // Pad day with leading zero if needed
-        weekday: luxonDateTime.weekdayShort,
-        hours: luxonDateTime.hour.toString().padStart(2, '0'), // Pad hour with leading zero if needed
-        minutes: luxonDateTime.minute.toString().padStart(2, '0'), // Pad minute with leading zero if needed
-        tz: tz,
-        monthName: monthNames[luxonDateTime.month],
+        yy        : luxonDateTime.year.toString().slice(-2),
+        ccyy      : luxonDateTime.year, // Full year
+        month     : month,
+        day       : luxonDateTime.day.toString().padStart(2, '0'), // Pad day with leading zero if needed
+        weekday   : luxonDateTime.weekdayShort,
+        hours     : luxonDateTime.hour.toString().padStart(2, '0'), // Pad hour with leading zero if needed
+        minutes   : luxonDateTime.minute.toString().padStart(2, '0'), // Pad minute with leading zero if needed
+        tz        : tz,
+        monthName : monthNames[luxonDateTime.month],
     };
 }
 
@@ -218,12 +222,14 @@ export function to_ddMMM_HHmm(date = null) {
 }
 
 export function toFireStoreTime(inputDate) {
+    if(isEmpty(inputDate)) return null;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const jsDate = toJsDate(luxonDateTime);
     return Timestamp.fromDate(jsDate);
 }
 
 export function toDateTime(inputDate) {
+    if(isEmpty(toDateTime)) return null;
     return toLuxonDateTime(inputDate);
 }
 
@@ -236,15 +242,15 @@ export function isToday(inputDate) {
 /**
  * get a Luxon date time object with time at midnight
  */
-export function today(addDays) {
-    return now().startOf('day').plus({days: addDays}).setZone(getHotelTimezone());
+export function today(addDays = 0) {
+    return now().startOf('day').plus({days: addDays}).setZone(getHotelTimezone(), { keepLocalTime: true });
 }
 
 /**
  * get a Luxon date time object with time at this moment
  */
-export function now(addDays) {
-    return DateTime.now().plus({days: addDays}).setZone(getHotelTimezone());
+export function now(addDays = 0) {
+    return DateTime.now().plus({days: addDays}).setZone(getHotelTimezone(), { keepLocalTime: true });
 }
 
 export function getHotelTimezone() {
