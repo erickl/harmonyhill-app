@@ -1,5 +1,6 @@
-import * as dao from "../daos/dao.js";
 import * as utils from "../utils.js";
+import { setDoc, doc } from 'firebase/firestore';
+import { db } from "../firebase.js";
 
 export default class Dish {
     static COLLECTION = "menu";
@@ -42,7 +43,9 @@ export default class Dish {
     }
 
     id() {
-        return utils.isString(this.name) ? this.name.toLowerCase().replace(/ /g, "-") : "";
+        const id = utils.isString(this.name) ? this.name.toLowerCase().replace(/ /g, "-") : "";
+        const meals = this.meals.join("-");
+        return `${id}-${meals}`;
     }
 
     async upload(onError) {
@@ -53,8 +56,9 @@ export default class Dish {
 
         const data = this.data();
         try {
-            const uploadSuccess = await dao.add([Dish.COLLECTION], this.id, data, onError);
-            return uploadSuccess;
+            const ref = doc(db, ...[Dish.COLLECTION], this.id);
+            const addResult = await setDoc(ref, data);
+            return addResult;
         } catch(e) {
             onError(`Error on dish upload ${this.id}: ${e.message}`);
             return false;
@@ -66,12 +70,13 @@ export default class Dish {
     
         const dishes = [
             //        name                                   allergens         image   house availability                   meal                              course     priority  customerPrice instructions   descriptions
-            new Dish("Smoothie Bowl Of Seasonal Fruits",     ["nuts"],            "", ["harmony hill"],                    ["breakfast"],                    "mains",    100,             0,      "", "Topped with our homemade granola and fresh sliced fruits - ask us what's in season if you wish to customize"                                                  ),
-            new Dish("Javanese Wingko Waffle",               ["coconut"],         "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    100,             0,      "", "Chewy, coconutty and crispy, baked in an authentic cast waffle iron, served with our homemade jam and fresh fruit"                                            ),
-            new Dish("Plant Power Breakfast",                ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    100,             0,      "", "Scrambled tofu, served with baked potatoes, roasted tomato, garlic, spinach and seasonal sauteed veggies"                                                     ),
-            new Dish("Nasi Goreng 2.0",                      ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    100,             0,      "", "Indonesia's classic fried rice, boosted with brown rice, seasonal veggies, tempeh and tofu"                                                                   ),
-            new Dish("Colorful Chia Seed Pudding, Soy Milk", ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    100,             0,      "", "Indonesia's classic fried rice, boosted with brown rice, seasonal veggies, tempeh and tofu"                                                                   ),
-            new Dish("Colorful Chia Seed Pudding, Oat Milk", [""],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    100,             0,      "", "Indonesia's classic fried rice, boosted with brown rice, seasonal veggies, tempeh and tofu"                                                                   ),
+            new Dish("Smoothie Bowl Of Seasonal Fruits",     ["nuts"],            "", ["harmony hill"],                    ["breakfast"],                    "mains",    200,             80000,  "", "Topped with our homemade granola and fresh sliced fruits - ask us what's in season if you wish to customize"                                                  ),
+            new Dish("Javanese Wingko Waffle",               ["coconut"],         "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    200,             80000,  "", "Chewy, coconutty and crispy, baked in an authentic cast waffle iron, served with our homemade jam and fresh fruit"                                            ),
+            new Dish("Plant Power Breakfast",                ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    200,             80000,  "", "Scrambled tofu, served with baked potatoes, roasted tomato, garlic, spinach and seasonal sauteed veggies"                                                     ),
+            new Dish("Nasi Goreng 2.0",                      ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    200,             80000,  "", "Indonesia's classic fried rice, boosted with brown rice, seasonal veggies, tempeh and tofu"                                                                   ),
+            new Dish("Colorful Chia Seed Pudding, Soy Milk", ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    200,             80000,  "", "Indonesia's classic fried rice, boosted with brown rice, seasonal veggies, tempeh and tofu"                                                                   ),
+            new Dish("Colorful Chia Seed Pudding, Oat Milk", [""],                "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    200,             80000,  "", "Indonesia's classic fried rice, boosted with brown rice, seasonal veggies, tempeh and tofu"                                                                   ),
+            new Dish("I Love Bali Toast",                    ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast"],                    "mains",    200,             80000,  "", "Toasted sourdough, half topped with scrambled tofu and half topped with smashed avocado, garnished with mixed seeds and roasted tomatoes"                     ),
             new Dish("Edamame With Bali Sea Salt",           [""],                "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "starters", 100,             50000,  "", ""                                                                                                                                                             ),
             new Dish("Carrot Ginger Soup",                   [""],                "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "starters", 100,             50000,  "", ""                                                                                                                                                             ),
             new Dish("Pumpkin Soup",                         [""],                "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "starters", 100,             50000,  "", ""                                                                                                                                                             ),
@@ -91,7 +96,7 @@ export default class Dish {
             new Dish("Nasi Campur",                          ["soy"],             "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "mains",    200,             100000, "", "The way we love to eat in Bali: Rice in the middle surrounded by 4-5 seasonal veggies and tempeh/tofu preparations"                                           ),
             new Dish("Poke Bowl",                            ["soy"],             "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "mains",    200,             100000, "", "Homemade watermelon \"toona\", marinated tofu, edamame, avocado, cucumber and pickled ginger, served with sushi rice and homemade ginger soy dressing"        ),
             new Dish("Savoury Tempeh Mushroom Stew",         ["soy"],             "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "mains",    200,             100000, "", "Tempeh in a super creamy mushroom sauce, served with baked apple, mashed potatoes and steamed veggie of the day"                                              ),
-            new Dish("I Love Bali Toast",                    ["soy"],             "", ["harmony hill", "the jungle nook"], ["breakfast", "lunch", "dinner"], "mains",    200,             100000, "", "Toasted sourdough, half topped with scrambled tofu and half topped with smashed avocado, garnished with mixed seeds and roasted tomatoes"                     ),
+            new Dish("I Love Bali Toast",                    ["soy"],             "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "mains",    200,             100000, "", "Toasted sourdough, half topped with scrambled tofu and half topped with smashed avocado, garnished with mixed seeds and roasted tomatoes"                     ),
             new Dish("Javanese Wingko Waffle",               ["coconut"],         "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "desserts", 300,             60000,  "", "Traditional Balinese crepes filled with grated coconut, served with fresh fruits"                                                                                     ),
             new Dish("Dadar Gulung",                         ["coconut, gluten"], "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "desserts", 300,             60000,  "", "Traditional Balinese crepes filled with grated coconut, served with fresh fruits"                                                                                     ),
             new Dish("Cookies And Cream Cake",               ["nuts, gluten"],    "", ["harmony hill", "the jungle nook"], ["lunch", "dinner"],              "desserts", 300,             60000,  "", "Melt in your mouth oreo goodness"                                                                                                                                     ),
