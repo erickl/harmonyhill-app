@@ -103,6 +103,7 @@ const CustomersScreen = ({ onNavigate }) => {
     // Function to render previous / current /  future customer list section
     const renderCustomerListSection = (title, customers, customerTypeClass, isExpanded, setIsExpanded) => {
         const hasCustomers = customers.length > 0;
+
         return (
             <div>
                 <h3
@@ -126,7 +127,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                 >
                                     <div className="customer-name-in-list">
                                         <span>{customer.name}</span>
-                                        {<ShoppingCart
+                                        {customer.checkOutAt >= today && <ShoppingCart
                                             className="cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -136,8 +137,8 @@ const CustomersScreen = ({ onNavigate }) => {
                                     </div>
                                     <div class="customer-sub-header">
                                         <span class="small-text">{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</span>
-                                        {utils.isToday(customer.checkInAt) && (<span class="small-text">Checking In</span>)}
-                                        {utils.isToday(customer.checkOutAt) && (<span class="small-text">Checking Out</span>)}
+                                        {utils.isToday(customer.checkInAt) && (<span class="small-text">Checking In Today</span>)}
+                                        {utils.isToday(customer.checkOutAt) && (<span class="small-text">Checking Out Today</span>)}
                                     </div>
                                 </div>
                                 {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer
