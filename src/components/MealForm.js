@@ -32,8 +32,9 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     useEffect(() => {
         const load = async () => {
             const allDishes = selectedActivity ? await menuService.groupByCourse({
-                "meal" : selectedActivity.subCategory},
-            ) : [];
+                "meal"  : selectedActivity.subCategory,
+                "house" : formData.house,
+            }) : [];
             setAllDishes(allDishes);
             setLoadingMenu(false);
         }

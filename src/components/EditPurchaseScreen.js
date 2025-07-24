@@ -36,6 +36,9 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         assignedTo    : activityToEdit.assignedTo,
         status        : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
         dishes        : activityToEdit.dishes, // not null only for meal activities 
+        
+        // Auxiliary data
+        house         : customer.house
     });
 
     const handleFormDataChange = (name, value) => {
