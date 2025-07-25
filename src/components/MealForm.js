@@ -56,7 +56,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
     return (
         <div>
-            <h3>Items in meal</h3>
+            <h3>{selectedActivity.instructions}</h3>
             {/* Display all dishes, inc/dec buttons, and how many of each dish */}
             {Object.entries(allDishes).length > 0 ? (
                 <div className="activity-button-container">
