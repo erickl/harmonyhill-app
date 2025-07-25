@@ -2,7 +2,6 @@ import { doc } from "firebase/firestore";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
-import * as dataLoader from "../daos/bookingDataLoader.js";
 
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
@@ -88,7 +87,7 @@ export function createBookingId(guestName, house, checkInAt) {
     return yyMMdd + "-" + houseShort + "-" + guestName.replace(/ /g, "-");
 }
 
-async function mapBookingObject(data, isUpdate = false) {
+export async function mapBookingObject(data, isUpdate = false) {
     let booking = {};
 
     if(utils.isString(data?.dietaryRestrictions)) booking.dietaryRestrictions    = data.dietaryRestrictions    ;
@@ -112,6 +111,9 @@ async function mapBookingObject(data, isUpdate = false) {
             
     if(utils.isDate(data?.checkInAt))             booking.checkInAt              = utils.toFireStoreTime(data.checkInAt)    ;
     if(utils.isDate(data?.checkOutAt))            booking.checkOutAt             = utils.toFireStoreTime(data.checkOutAt)   ;
+
+    booking.checkInTime = utils.isDate(data?.checkInTime) ? utils.toFireStoreTime(data.checkInTime) : null;
+    booking.checkOutTime = utils.isDate(data?.checkOutTime) ? utils.toFireStoreTime(data.checkOutTime) : null;
 
     return booking;
 }
