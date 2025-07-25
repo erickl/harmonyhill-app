@@ -44,7 +44,7 @@ export async function getByBookingId(bookingId, options = {}) {
         return false;
     }
     
-    options.house = house.toLowerCase();
+    options.house = house.trim().toLowerCase();
     const menuItems = await get(bookingId, options);
     return menuItems;
 }

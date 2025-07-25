@@ -83,8 +83,9 @@ export async function deleteBooking(bookingId) {
 
 export function createBookingId(guestName, house, checkInAt) {
     const yyMMdd = utils.to_YYMMdd(checkInAt);
-    const houseShort = house.toLowerCase() == "harmony hill" ? "hh" : "jn";
-    return yyMMdd + "-" + houseShort + "-" + guestName.replace(/ /g, "-");
+    const houseShort = house.trim().toLowerCase() == "harmony hill" ? "hh" : "jn";
+    const guestName = guestName.trim().toLower().replace(/ /g, "-")
+    return `${yyMMdd}-${houseShort}-${guestName}-${Date.now()}`;
 }
 
 export async function mapBookingObject(data, isUpdate = false) {

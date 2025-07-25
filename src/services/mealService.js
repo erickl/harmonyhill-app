@@ -41,14 +41,14 @@ export async function addMeal(bookingId, mealData, onError) {
 export function makeMealId(startingAt, house, meal) {
     const houseShort = house.toLowerCase().trim() === "harmony hill" ? "hh" : "jn";
     startingAt = utils.to_YYMMdd(startingAt);
-    return `${startingAt}-${houseShort}-${meal.replace(/ /g, "-")}`;
+    return `${startingAt}-${houseShort}-${meal.replace(/ /g, "-")}-${Date.now()}`;
 }
 
 // Example result: 250530-hh-breakfast-lentil-bolognese
 export function makeDishId(startingAt, house, meal, dishName) {
     dishName = dishName.trim().toLowerCase().replace(/ /g, "-");
     const mealId = makeMealId(startingAt, house, meal);
-    return `${mealId}-${dishName}`;
+    return `${mealId}-${dishName}-${Date.now()}`;
 }
 
 async function updateDishes(bookingId, mealId, newDishesData, onError) {

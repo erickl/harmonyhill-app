@@ -178,9 +178,10 @@ export async function remove(bookingId, activityId) {
 }
 
 export function makeId(startingAt, house, subCategory) {
-    const houseShort = house.toLowerCase().trim() == "harmony hill" ? "hh" : "jn";
+    const houseShort = house.trim().toLowerCase() == "harmony hill" ? "hh" : "jn";
     startingAt = utils.to_YYMMdd(startingAt);
-    return `${startingAt}-${houseShort}-${subCategory.replace(/ /g, '-')}`;
+    subCategory = subCategory.trim().toLower().replace(/ /g, '-');
+    return `${startingAt}-${houseShort}-${subCategory}-${Date.now()}`;
 }
 
 async function mapObject(data, isUpdate = false) {

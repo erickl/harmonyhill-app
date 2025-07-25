@@ -48,9 +48,9 @@ export async function update(personnelId, personnelUpdateData) {
 }
 
 function makePersonnelId(personnel) {
-    let name = personnel.name.replace(/ /g, '-');
-    name = name.toLowerCase();
-    return `${personnel.activity.toLowerCase()}-${name}`;
+    const name = personnel.name.trim().toLowerCase().replace(/ /g, '-');
+    const activity = personnel.activity.trim().toLowerCase();
+    return `${activity}-${name}-${Date.now()}`;
 }
 
 async function mapPriceObject(data, isUpdate = false) {
