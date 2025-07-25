@@ -3,7 +3,7 @@ dotenv.config();
 
 import Dish from '../models/Dish.js';
 import ActivityType from '../models/ActivityType.js';
-//import Booking from '../models/Booking.js';
+import Booking from '../models/Booking.js';
 import * as utils from "../utils.js";
 
 import path from "path";
@@ -26,8 +26,8 @@ export async function seed() {
     //await Dish.seed();
     //await ActivityType.seed();
     
-    //await Booking.uploadData("./public/Bookinglist-BookingsHarmonyHill-2.tsv");
-    //await Booking.uploadData("./public/Bookinglist-BookingsJungleNook.tsv");
+    //await Booking.uploadData("./public/Booking list - Bookings Jungle Nook.tsv");
+    //await Booking.uploadData("./public/Booking list - Bookings Harmony Hill.tsv");
 
     console.log(`All seeds complete!`);
 
