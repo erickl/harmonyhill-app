@@ -39,6 +39,9 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             setLoadingMenu(false);
         }
         load();
+        
+        // todo: inelegant exception, saying that breakfast is included always at Harmony Hill
+        handleFormDataChange("isFree", selectedActivity.subCategory === "breakfast");
     }, [selectedActivity]);
 
     if (loadingMenu) {
