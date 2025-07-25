@@ -38,7 +38,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         dishes        : {}, // only not null when ordering meals, null for all other activities
 
         // Auxiliary data
-        house         : customer.house
+        house         : customer.house,
+        guestCount    : customer.guestCount,
     };
 
     const [errorMessage, setErrorMessage] = useState(null);

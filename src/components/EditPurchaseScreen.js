@@ -38,7 +38,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         dishes        : activityToEdit.dishes, // not null only for meal activities 
         
         // Auxiliary data
-        house         : customer.house
+        house         : customer.house,
+        guestCount    : customer.guestCount,
     });
 
     const handleFormDataChange = (name, value) => {
