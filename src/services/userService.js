@@ -102,10 +102,16 @@ export async function getCurrentUser() {
     return await userDao.getOne(user.uid);
 }
 
-export async function hasEditPermissions() {
+export async function hasEditBookingsPermissions() {
     const user = await getCurrentUser();
     if(!user) return false;
-    return user.role === "admin" || user.role === "manager";
+    return user.role === "admin";// || user.role === "manager";
+}
+
+export async function hasAddBookingsPermissions() {
+    const user = await getCurrentUser();
+    if(!user) return false;
+    return user.role === "admin";// || user.role === "manager";
 }
 
 export async function logout() {

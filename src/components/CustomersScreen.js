@@ -17,7 +17,8 @@ const CustomersScreen = ({ onNavigate }) => {
     const [futureExpanded,     setFutureExpanded]    = useState(false ); // State to expand future customer section
     const [customerToEdit,     setCustomerToEdit]    = useState(null  ); // state to enable editing of customers
     const [customerPurchases,  setCustomerPurchases] = useState(null  ); // state to enable adding purchases
-    const [hasEditPermissions, setEditPermissions]   = useState(false ); // true if current user has persmissions to edit bookings
+    const [hasEditBookingsPermissions, setEditBookingsPermissions]   = useState(false ); // true if current user has permissions to edit bookings
+    const [hasAddBookingsPermissions, setAddBookingsPermissions]   = useState(false ); // true if current user has permissions to add bookings
     const [errorMessage,       setErrorMessage]      = useState(null  );
     
     const onError = (errorMessage) => {
@@ -40,8 +41,11 @@ const CustomersScreen = ({ onNavigate }) => {
         fetchCustomers(false);
 
         const loadPermissions = async () => {
-            const userHasEditPermissions = await userService.hasEditPermissions();
-            setEditPermissions(userHasEditPermissions);
+            const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
+            setEditBookingsPermissions(userHasEditBookingsPermissions);
+
+            const userHasAddBookingsPermissions = await userService.hasEditBookingsPermissions();
+            setAddBookingsPermissions(userHasAddBookingsPermissions)
         }
         loadPermissions();    
     }, []);
@@ -154,7 +158,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                         <p><span className="detail-label">Source:</span> {customer.source}</p>
                                         { customer.phoneNumber && (<p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>)}
                                         { customer.email && ( <p><span className="detail-label">Email:</span> {customer.email}</p> )}
-                                        { hasEditPermissions && (
+                                        { hasEditBookingsPermissions && (
                                             <button
                                                 className="edit-booking"
                                                 onClick={(e) => {
@@ -218,9 +222,11 @@ const CustomersScreen = ({ onNavigate }) => {
                     
                 </div>
                 <div>
-                    <button className="add-button" onClick={() => onNavigate('add-customer')}>
-                        +
-                    </button>
+                    { hasAddBookingsPermissions && (
+                        <button className="add-button" onClick={() => onNavigate('add-customer')}>
+                            +
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="card-content">
