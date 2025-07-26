@@ -137,8 +137,8 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 
 export async function add(path, id, data, onError = null) {
     try {
-        data.createdAt = utils.toFireStoreTime(utils.now());
-        const user = await getOne(auth.currentUser.uid);
+        data.createdAt = utils.toFireStoreTime(Date.now());
+        const user = await getOne(['users'], auth.currentUser.uid);
         data.createdBy = user.name;
         
         const ref = doc(db, ...path, id);
