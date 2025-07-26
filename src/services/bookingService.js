@@ -37,6 +37,7 @@ export async function get(filterOptions = {}) {
         booking.checkOutAt = utils.toDateTime(booking.checkOutAt);
 
         booking.nightsCount = calculateNightsStayed(booking.checkInAt, booking.checkOutAt);
+        booking.guestPaid = booking.guestPaid * booking.nightsCount;
 
         booking.checkInAt = booking.checkInAt.startOf('day');
         booking.checkOutAt = booking.checkOutAt.startOf('day');
@@ -107,7 +108,7 @@ export async function mapBookingObject(data) {
     if(!utils.isEmpty(data?.guestCount))          booking.guestCount             = data.guestCount   ;
     
     if(utils.isAmount(data?.roomRate))            booking.roomRate               = data.roomRate     ;
-    if(utils.isAmount(data?.guestPaid))           booking.guestPaid              = data.guestPaid / data.stayDuration;
+    if(utils.isAmount(data?.guestPaid))           booking.guestPaid              = data.guestPaid / data.nightsCount;
     if(utils.isAmount(data?.hostPayout))          booking.hostPayout             = data.hostPayout   ;
             
     if(utils.isDate(data?.checkInAt))             booking.checkInAt              = utils.toFireStoreTime(data.checkInAt)    ;
@@ -171,7 +172,7 @@ export function validate(data) {
     }
 
     if(source === "airbnb") {
-        const guestPaidPerNight = data.guestPaid / data.stayDuration;
+        const guestPaidPerNight = data.guestPaid / data.nightsCount;
         // Room rate is excluding AirBnB added fee
         if(data.roomRate >= guestPaidPerNight) {
             return false;
@@ -181,7 +182,7 @@ export function validate(data) {
             return false;
         }
     } else if(source === "direct") {
-        const roomRateAllNights = data.roomRate * data.stayDuration;
+        const roomRateAllNights = data.roomRate * data.nightsCount;
         if(roomRateAllNights != data.guestPaid) {
             return false;
         }

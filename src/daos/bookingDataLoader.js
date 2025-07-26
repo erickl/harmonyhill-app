@@ -56,6 +56,9 @@ export async function loadData(path) {
             }
             
             doc["house"] = house;
+            doc["checkInTime"] = null;
+            doc["checkOutTime"] = null;
+            
             documents.push(doc);
         }
     } catch (error) {

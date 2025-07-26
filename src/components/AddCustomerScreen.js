@@ -39,15 +39,15 @@ const AddCustomerScreen = ({ onNavigate }) => {
     }
 
     // for calculating the length of stay based on checkin and checkout date 
-    const [stayDuration, setStayDuration] = useState('');
+    const [nightsCount, setNightsCount] = useState('');
 
     useEffect(() => {
         if (formData.checkInAt && formData.checkOutAt) {
             const diffDays = bookingService.calculateNightsStayed(formData.checkInAt, formData.checkOutAt);
-            setStayDuration(`${diffDays} night${diffDays == 1 ? "" : "s"}`);
-            handleInputChange("stayDuration", diffDays);
+            setNightsCount(`${diffDays} night${diffDays == 1 ? "" : "s"}`);
+            handleInputChange("nightsCount", diffDays);
         } else {
-            setStayDuration('');
+            setNightsCount('');
         }
     }, [formData.checkInAt, formData.checkOutAt]);
 
@@ -82,7 +82,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
             if(createResult !== false) {
                 // Optionally, reset the form or show a success message
                 setFormData(initialFormData);
-                setStayDuration(''); // Clear stay duration
+                setNightsCount(''); // Clear stay duration
 
                 onNavigate('customers'); // Go back to customers list
             } else {
@@ -194,7 +194,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
                 {/* Length of Stay */}
                 <div>
                     <h3>Length of Stay</h3>
-                    <p>{stayDuration}</p>
+                    <p>{nightsCount}</p>
                 </div>
 
                 {/* Guest Count */}
@@ -329,8 +329,8 @@ const AddCustomerScreen = ({ onNavigate }) => {
                                 id="airBnb"
                                 name="source"
                                 value="AirBnB"
-                                checked={formData.source === 'AirBnB'}
-                                onChange={() => handleInputChange('source', 'AirBnB')}
+                                checked={formData.source === 'airbnb'}
+                                onChange={() => handleInputChange('source', 'airbnb')}
 
                             />
                             <label htmlFor="airBnb">
@@ -343,8 +343,8 @@ const AddCustomerScreen = ({ onNavigate }) => {
                                 id="direct"
                                 name="source"
                                 value="Direct"
-                                checked={formData.source === 'Direct'}
-                                onChange={() => handleInputChange('source', 'Direct')}
+                                checked={formData.source === 'direct'}
+                                onChange={() => handleInputChange('source', 'direct')}
 
                             />
                             <label htmlFor="direct">
