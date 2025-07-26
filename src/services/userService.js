@@ -105,7 +105,7 @@ export async function getCurrentUser() {
 export async function hasEditPermissions() {
     const user = await getCurrentUser();
     if(!user) return false;
-    return user.role == "admin" || user.role == "manager";
+    return user.role === "admin" || user.role === "manager";
 }
 
 export async function logout() {

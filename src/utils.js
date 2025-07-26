@@ -269,6 +269,14 @@ export function getHouseColor(house) {
     }
 };
 
+export function cleanNumeric(value) {
+    // Remove all non-digit characters (commas, dots, currency symbols, etc.)
+    const cleanValue = isString(value) ? value.replace(/[^0-9]/g, '') : value;
+    // Convert to integer; use empty string if input is empty
+    const numericValue = cleanValue === '' ? '' : parseInt(cleanValue, 10);
+    return numericValue;
+}
+
 export function capitalizeWords(str) {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
 }

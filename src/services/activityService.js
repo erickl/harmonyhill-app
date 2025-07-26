@@ -180,7 +180,7 @@ export async function remove(bookingId, activityId) {
 export function makeId(startingAt, house, subCategory) {
     const houseShort = house.trim().toLowerCase() == "harmony hill" ? "hh" : "jn";
     startingAt = utils.to_YYMMdd(startingAt);
-    subCategory = subCategory.trim().toLower().replace(/ /g, '-');
+    subCategory = subCategory.trim().toLowerCase().replace(/ /g, '-');
     return `${startingAt}-${houseShort}-${subCategory}-${Date.now()}`;
 }
 

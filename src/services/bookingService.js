@@ -67,7 +67,7 @@ export async function add(bookingData, onError) {
 }
 
 export async function update(bookingId, bookingUpdateData, onError) {
-    const bookingUpdate = await mapBookingObject(bookingUpdateData, true);
+    const bookingUpdate = await mapBookingObject(bookingUpdateData);
     return await bookingDao.update(bookingId, bookingUpdate, onError);
 }
 
@@ -84,11 +84,11 @@ export async function deleteBooking(bookingId) {
 export function createBookingId(guestName, house, checkInAt) {
     const yyMMdd = utils.to_YYMMdd(checkInAt);
     const houseShort = house.trim().toLowerCase() == "harmony hill" ? "hh" : "jn";
-    guestName = guestName.trim().toLower().replace(/ /g, "-")
+    guestName = guestName.trim().toLowerCase().replace(/ /g, "-")
     return `${yyMMdd}-${houseShort}-${guestName}-${Date.now()}`;
 }
 
-export async function mapBookingObject(data, isUpdate = false) {
+export async function mapBookingObject(data) {
     let booking = {};
 
     if(utils.isString(data?.dietaryRestrictions)) booking.dietaryRestrictions    = data.dietaryRestrictions    ;
@@ -107,7 +107,7 @@ export async function mapBookingObject(data, isUpdate = false) {
     if(!utils.isEmpty(data?.guestCount))          booking.guestCount             = data.guestCount   ;
     
     if(utils.isAmount(data?.roomRate))            booking.roomRate               = data.roomRate     ;
-    if(utils.isAmount(data?.guestPaid))           booking.guestPaid              = data.guestPaid    ;
+    if(utils.isAmount(data?.guestPaid))           booking.guestPaid              = data.guestPaid / data.stayDuration;
     if(utils.isAmount(data?.hostPayout))          booking.hostPayout             = data.hostPayout   ;
             
     if(utils.isDate(data?.checkInAt))             booking.checkInAt              = utils.toFireStoreTime(data.checkInAt)    ;
@@ -117,6 +117,82 @@ export async function mapBookingObject(data, isUpdate = false) {
     booking.checkOutTime = utils.isDate(data?.checkOutTime) ? utils.toFireStoreTime(data.checkOutTime) : null;
 
     return booking;
+}
+
+export function validate(data) {
+    if(utils.isEmpty(data)) {
+        return false;
+    }
+
+    if(utils.isEmpty(data.checkInAt)) {
+        return false;
+    }
+
+    if(utils.isEmpty(data.checkOutAt)) {
+        return false;
+    }
+
+    if(data.checkOutAt < data.checkInAt) {
+        return false;
+    }
+
+    if(utils.isEmpty(data.name.trim()) || !utils.isString(data.name)) {
+        return false;
+    }
+
+    if(utils.isEmpty(data.house.trim()) || !utils.isString(data.house)) {
+        return false;
+    }
+
+    if(utils.isEmpty(data.country.trim()) || !utils.isString(data.country)) {
+        return false;
+    }
+
+    if(!utils.isNumber(data.roomRate) || data.roomRate == 0) {
+        return false;
+    }
+
+    if(!utils.isNumber(data.guestPaid) || data.guestPaid == 0) {
+        return false;
+    }
+
+    if(!utils.isNumber(data.hostPayout) || data.hostPayout == 0) {
+        return false;
+    }
+
+    if(!utils.isString(data.source)) {
+        return false;
+    }
+
+    const source = data.source ? data.source.trim().toLowerCase() : "";
+
+    if(utils.isEmpty(source)) {
+        return false;
+    }
+
+    if(source === "airbnb") {
+        const guestPaidPerNight = data.guestPaid / data.stayDuration;
+        // Room rate is excluding AirBnB added fee
+        if(data.roomRate >= guestPaidPerNight) {
+            return false;
+        }
+        // Payout from AirBnB smaller since AirBnB takes a piece
+        if(data.hostPayout >= data.guestPaid) {
+            return false;
+        }
+    } else if(source === "direct") {
+        const roomRateAllNights = data.roomRate * data.stayDuration;
+        if(roomRateAllNights != data.guestPaid) {
+            return false;
+        }
+
+        // If direct, we get all the cash
+        if(data.hostPayout != data.guestPaid) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 export async function testBooking() {

@@ -10,16 +10,15 @@ import EditCustomerScreen from './EditCustomerScreen';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 
 const CustomersScreen = ({ onNavigate }) => {
-    const [customers, setCustomers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedCustomer, setSelectedCustomer] = useState(null); // State to store the selected customer
-    const [pastExpanded, setPastExpanded] = useState(false); // State to expand past customer section
-    const [futureExpanded, setFutureExpanded] = useState(false); // State to expand future customer section
-    const [customerToEdit, setCustomerToEdit] = useState(null); // state to enable editing of customers
-    const [customerPurchases, setCustomerPurchases] = useState(null); // state to enable adding purchases
-    const [hasEditPermissions, setEditPermissions] = useState(false); // true if current user has persmissions to edit bookings
-
-    const [errorMessage, setErrorMessage] = useState(null);
+    const [customers,          setCustomers]         = useState([]    );
+    const [loading,            setLoading]           = useState(true  );
+    const [selectedCustomer,   setSelectedCustomer]  = useState(null  ); // State to store the selected customer
+    const [pastExpanded,       setPastExpanded]      = useState(false ); // State to expand past customer section
+    const [futureExpanded,     setFutureExpanded]    = useState(false ); // State to expand future customer section
+    const [customerToEdit,     setCustomerToEdit]    = useState(null  ); // state to enable editing of customers
+    const [customerPurchases,  setCustomerPurchases] = useState(null  ); // state to enable adding purchases
+    const [hasEditPermissions, setEditPermissions]   = useState(false ); // true if current user has persmissions to edit bookings
+    const [errorMessage,       setErrorMessage]      = useState(null  );
     
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);

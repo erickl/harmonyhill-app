@@ -3,7 +3,8 @@ import * as bookingService from '../services/bookingService.js'; // Import the b
 import './AddCustomerScreen.css';
 import MyDatePicker from "./MyDatePicker.js";
 import * as utils from '../utils.js';
-
+import ErrorNoticeModal from './ErrorNoticeModal.js';
+import ButtonsFooter from './ButtonsFooter.js';
 
 const AddCustomerScreen = ({ onNavigate }) => {
     const initialFormData = {
@@ -23,27 +24,40 @@ const AddCustomerScreen = ({ onNavigate }) => {
         promotions:          '',
         country:             '',
         source:              '',
+        roomRate:            '',
+        guestPaid:           '',
+        hostPayout:          '',
     };
 
     const [formData, setFormData] = useState(initialFormData);
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
+
+    const [errorMessage, setErrorMessage] = useState(null);
+        
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
+    }
 
     // for calculating the length of stay based on checkin and checkout date 
     const [stayDuration, setStayDuration] = useState('');
 
     useEffect(() => {
         if (formData.checkInAt && formData.checkOutAt) {
-            const diffDays = bookingService.calculateNightsStayed(formData.checkOutAt, formData.checkInAt);
+            const diffDays = bookingService.calculateNightsStayed(formData.checkInAt, formData.checkOutAt);
             setStayDuration(`${diffDays} night${diffDays == 1 ? "" : "s"}`);
+            handleInputChange("stayDuration", diffDays);
         } else {
             setStayDuration('');
         }
     }, [formData.checkInAt, formData.checkOutAt]);
 
-    const handleInputChange = (name, value) => {
+    const handleInputChange = (name, value, type) => {
         let nextFormData = {};
         
         if (name === "_batch" && typeof value === 'object' && value !== null) {
             nextFormData = ({ ...formData, ...value });
+        } else if(type === "amount") {
+            nextFormData = { ...formData, [name]: utils.cleanNumeric(value)};
         } else {
             nextFormData = { ...formData, [name]: value };
         }
@@ -51,15 +65,12 @@ const AddCustomerScreen = ({ onNavigate }) => {
         if(!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
+
+        const validationResult = bookingService.validate(nextFormData);
+        setReadyToSubmit(validationResult);
     };
 
     const handleSubmit = async () => { 
-        // Basic validation
-        if (!formData.house || !formData.checkInAt || !formData.checkOutAt || !formData.name) {
-            alert('Please fill in all required fields.'); // todo: Use a better UI alert
-            return;
-        }
-
         // Prepare the data for submission.  Convert data if needed
         const bookingData = {
             ...formData
@@ -67,19 +78,18 @@ const AddCustomerScreen = ({ onNavigate }) => {
 
         // Call the onAddCustomer function (passed from App.js)
         try {
-            const createResult = await bookingService.add(bookingData);
+            const createResult = await bookingService.add(bookingData, onError);
             if(createResult !== false) {
                 // Optionally, reset the form or show a success message
                 setFormData(initialFormData);
                 setStayDuration(''); // Clear stay duration
-                alert('Customer added successfully!'); //  provide user feedback
+
                 onNavigate('customers'); // Go back to customers list
             } else {
-                alert("Failed to add customer.");
+                onError("Failed to add customer.");
             }
         } catch (error) {
-            console.error('Error adding customer:', error);
-            alert('Failed to add customer. Please check the console for details.'); // Inform the user
+            onError('Error adding customer:', error);
         }
     };
 
@@ -162,7 +172,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="checkInAt">Check In Date</label>
+                    <h3>Check-In Date</h3>
                     <MyDatePicker 
                         name={"checkInAt"} 
                         date={formData.checkInAt} 
@@ -185,9 +195,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
                 <div>
                     <h3>Length of Stay</h3>
                     <p>{stayDuration}</p>
-
                 </div>
-
 
                 {/* Guest Count */}
                 <div>
@@ -269,6 +277,48 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     />
                 </div>
 
+                <div className="purchase-form-group">
+                    <h3>Room Rate</h3>
+                    <span className="currency-prefix">{utils.getCurrency()}</span>
+                    <input
+                        type="text" // Changed from "number" to "text"
+                        id="roomRate"
+                        name="roomRate"
+                        // Apply formatting here for display inside the input
+                        value={utils.formatDisplayPrice(formData.roomRate)}
+                        onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+                        className="input"
+                    />
+                </div>
+
+                <div className="purchase-form-group">
+                    <h3>Guest Paid</h3>
+                    <span className="currency-prefix">{utils.getCurrency()}</span>
+                    <input
+                        type="text" // Changed from "number" to "text"
+                        id="guestPaid"
+                        name="guestPaid"
+                        // Apply formatting here for display inside the input
+                        value={utils.formatDisplayPrice(formData.guestPaid)}
+                        onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+                        className="input"
+                    />
+                </div>
+
+                <div className="purchase-form-group">
+                    <h3>Host Payout</h3>
+                    <span className="currency-prefix">{utils.getCurrency()}</span>
+                    <input
+                        type="text" // Changed from "number" to "text"
+                        id="hostPayout"
+                        name="hostPayout"
+                        // Apply formatting here for display inside the input
+                        value={utils.formatDisplayPrice(formData.hostPayout)}
+                        onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+                        className="input"
+                    />
+                </div>
+
                 {/* Source */}
                 <div>
                     <h3>Source</h3>
@@ -304,18 +354,19 @@ const AddCustomerScreen = ({ onNavigate }) => {
                     </div>
                 </div>
 
-                <div className="add-customer-buttons">
-
-                    <button
-                        onClick={() => onNavigate('customers')} className="cancel-button"
-                    >
-                        Back to Customers
-                    </button>
-                    <button onClick={handleSubmit}> {/*Submit button */}
-                        Submit
-                    </button>
-                </div>
+                <ButtonsFooter 
+                    onCancel={() => onNavigate('customers')} 
+                    onSubmit={handleSubmit}
+                    submitEnabled={readyToSubmit}
+                />
             </div>
+
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
+                />
+            )}
         </div>
     );
 };

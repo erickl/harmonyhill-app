@@ -42,7 +42,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         guestCount    : customer.guestCount,
     });
 
-    const handleFormDataChange = (name, value) => {
+    const handleFormDataChange = (name, value, type) => {
         let nextFormData = {};
 
         if (name === "_batch" && typeof value === 'object' && value !== null) {
@@ -51,12 +51,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
 
         // Special handling for price to ensure it's a number
         // Special handling for price: Convert to number after removing non-digit characters
-        else if (name === 'customerPrice') {
-            // Remove all non-digit characters (commas, dots, currency symbols, etc.)
-            const cleanValue = utils.isString(value) ? value.replace(/[^0-9]/g, '') : value;
-            // Convert to integer; use empty string if input is empty
-            const numericValue = cleanValue === '' ? '' : parseInt(cleanValue, 10);
-            nextFormData = { ...formData, [name]: numericValue };
+        else if (type === 'amount') {
+            nextFormData = { ...formData, [name]: utils.cleanNumeric(value) };
         } else {
             nextFormData = { ...formData, [name]: value };  
         }

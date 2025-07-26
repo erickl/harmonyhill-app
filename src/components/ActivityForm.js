@@ -62,7 +62,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                             name="customerPrice"
                             // Apply formatting here for display inside the input
                             value={utils.formatDisplayPrice(customPrice)}
-                            onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                            onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
                             className="input"
                         />
                     </div>

@@ -122,7 +122,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
     const updateMealSuccess = await activityDao.transaction(async () => {
 
         // Update meal data
-        const mealUpdate = await mapMealObject(mealUpdateData, true);
+        const mealUpdate = await mapMealObject(mealUpdateData);
         const updateMealSuccess = await activityDao.update(bookingId, mealId, mealUpdate, true, onError);
         if(!updateMealSuccess) {
             return false;
@@ -234,7 +234,7 @@ export function validate(data, isUpdate = false) {
     return true;
 }
 
-async function mapMealObject(mealData, isUpdate = false) {
+async function mapMealObject(mealData) {
     let meal = {};
 
     meal.category = utils.isString(mealData?.category) ? mealData.category : "meal";
@@ -262,7 +262,7 @@ async function mapMealObject(mealData, isUpdate = false) {
     return meal;
 }
 
-async function mapDishObject(data, isUpdate = false) {
+async function mapDishObject(data) {
     let object = {};
 
     if(utils.isString(data?.name))          object.name          = data.name;
