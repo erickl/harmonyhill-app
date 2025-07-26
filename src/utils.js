@@ -16,7 +16,10 @@ export async function jsonObjectDiffStr(obj1, obj2) {
         const val1 = obj1[key];
         const val2 = obj2[key];
 
-        if (!Object.hasOwn(obj1, key)) {
+        if(isEmpty(val1) && isEmpty(val2)) {
+            continue;
+        }
+        else if (!Object.hasOwn(obj1, key)) {
             diff += `Added ${key}: ${val2}, `;
         } 
         else if(isDate(val2)) {
@@ -35,7 +38,7 @@ export async function jsonObjectDiffStr(obj1, obj2) {
     // add prefix with user info & remove the last comma and space
     if (diff.length > 0) {
         const username = await userService.getCurrentUserName();
-        const nowStr = to_yyMMddHHmmTz(Date.now());
+        const nowStr = to_yyMMddHHmmTz(DateTime.now());
         diff = `Updated by ${username} at ${nowStr}: ${diff}`;
         diff = diff.slice(0, -2);
     }
