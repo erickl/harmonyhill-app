@@ -56,16 +56,6 @@ export default function MyDatePicker({ name, date, time, onChange }) {
   return (
     <>
       <LocalizationProvider dateAdapter={AdapterLuxon}>
-        <TimePicker
-          label="Select a time"
-          value={startingTime}
-          onChange={handleTimeChange}
-          renderInput={(params) => <TextField {...params} fullWidth />}
-          ampm={false}
-          views={['hours', 'minutes']}
-        />
-      </LocalizationProvider>
-      <LocalizationProvider dateAdapter={AdapterLuxon}>
         <DateTimePicker
           label="Select a date"
           value={date}
@@ -73,6 +63,16 @@ export default function MyDatePicker({ name, date, time, onChange }) {
           renderInput={(params) => <TextField {...params} fullWidth />}
           ampm={false}
           views={['year', 'month', 'day']}
+        />
+      </LocalizationProvider>
+      <LocalizationProvider dateAdapter={AdapterLuxon}>
+        <TimePicker
+          label="Select a time"
+          value={startingTime}
+          onChange={handleTimeChange}
+          renderInput={(params) => <TextField {...params} fullWidth />}
+          ampm={false}
+          views={['hours', 'minutes']}
         />
       </LocalizationProvider>
     </>
