@@ -119,12 +119,14 @@ export async function getAllActivities(options = {}) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    const after = Object.hasOwn(options, "after") ? options.after : utils.today();
-    filters.push(where("startingAt", "<=", utils.toFireStoreTime(after)));
+    if (Object.hasOwn(options, "after")) {
+        const after = utils.toFireStoreTime(options.after);
+        filters.push(where("startingAt", ">=", after));
+    }
 
     if (Object.hasOwn(options, "before")) {
         const before = utils.toFireStoreTime(options.before);
-        filters.push(where("startingAt", ">=", before));
+        filters.push(where("startingAt", "<=", before));
     }
     
     const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters);

@@ -99,7 +99,7 @@ function App() {
   } else if (currentScreen === 'customers') {
     screenToDisplay = <CustomersScreen onNavigate={navigate} />; // Pass navigate
   } else if (currentScreen === 'activities') {
-    screenToDisplay = <ActivitiesScreen />;
+    screenToDisplay = <ActivitiesScreen onNavigate={navigate} />;
   } else if (currentScreen === 'expenses') {
     screenToDisplay = <ExpensesScreen />;
   } else if (currentScreen === 'add-customer') {

@@ -12,6 +12,7 @@ import { db, auth } from "../firebase.js";
 import * as constant from "./daoConst.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
+import { DateTime } from 'luxon';
 
 export { constant }
 
@@ -137,7 +138,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 
 export async function add(path, id, data, onError = null) {
     try {
-        data.createdAt = utils.toFireStoreTime(Date.now());
+        data.createdAt = utils.toFireStoreTime(DateTime.now());
         const user = await getOne(['users'], auth.currentUser.uid);
         data.createdBy = user.name;
         
@@ -173,6 +174,23 @@ export async function remove(path, id) {
         console.error(`Error deleting document ${path}/${id}: `, e);
         return false;
     }
+}
+
+export async function getParent(child) {
+    const childDocRef = child.ref;
+    const childCollectionRef = childDocRef.parent;
+    const parentDocRef = childCollectionRef.parent;
+
+    if (parentDocRef) {
+        const parentSnap = await getDoc(parentDocRef);
+        if (parentSnap.exists()) {
+            let parentData = parentSnap.data();
+            parentData.id = parentSnap.id;
+            parentData.ref = parentSnap.ref;
+            return parentData;
+        }
+    }
+    return null;
 }
 
 // export async function transaction(path, id, data) {

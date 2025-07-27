@@ -7,6 +7,7 @@ import * as utils from "../utils.js";
 import AddPurchaseScreen from './AddPurchaseScreen.js';
 import EditPurchaseScreen from './EditPurchaseScreen.js';
 import './CustomerPurchasesScreen.css'; 
+import ActivitiesList from './ActivitiesList.js';
 
 const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     const [customerActivities, setCustomerActivities] = useState([]);
@@ -14,7 +15,6 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [selectedActivity, setSelectedActivity] = useState(null);     // State to store the selected customer
     const [activityToEdit, setActivityToEdit] = useState(null);         // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
     const [expanded, setExpanded] = useState({});                       // All dates expanded to boot (all activity headers visible)
@@ -24,21 +24,6 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         updatedExpandedList[date] = updatedExpandedList[date] === true ? false : true;
         setExpanded(updatedExpandedList);
     };
-
-    const refreshSelectedActivity = async (activity) => {
-        if(!activity) {
-            return;
-        }
-        if(activity.category === "meal") {
-            const dishes = await mealService.getDishes(customer.id, activity?.id);
-            let newActivity = { ...(activity || {}) }; // Make shallow copy
-            newActivity.dishes = dishes;
-            setSelectedActivity(newActivity);
-        }
-        else {
-            setSelectedActivity(activity);
-        }
-    }
 
     const fetchPurchases = async () => {
         if(!customer) {
@@ -50,12 +35,6 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             
             const invoice = await invoiceService.getTotal(customer.id);
             setRunningTotal(invoice.total);
-
-            // Open today's activities by default
-            const today_ddMMM = utils.to_ddMMM(utils.today());
-            handleSetExpanded(today_ddMMM);
-
-            await refreshSelectedActivity(selectedActivity);
 
             setLoading(false);
         } catch (err) {
@@ -94,108 +73,12 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         );
     }
 
-    const handleActivityClick = async (activity) => {
-        // If clicking on the same activity, depress it again
-        if(selectedActivity?.id === activity?.id) {
-            setSelectedActivity(null);
-        } else {   
-            refreshSelectedActivity(activity);
-        }
-    };
-
     const handleEditActivity = (activity) => {
         setActivityToEdit(activity); 
     };
 
     const handleAddPurchase = (customer) => {
         setCustomerPurchasing(customer); // Indicate we need to switch to add purchase screen
-    };
-
-    // Function to render previous / current /  future customer list section
-    const renderActivitiesListSection = (allActivities) => {
-        if(allActivities.length === 0) {
-            return (<div> <h2>No activities yet</h2></div>);
-        }
-        
-        const activitiesByDate = allActivities.reduce((m, activity) => {
-            const date = activity.startingAt_ddMMM ? activity.startingAt_ddMMM : "Date TBD";
-            if(!m[date]) m[date] = [];
-            m[date].push(activity);
-            return m;
-        }, {});
-        
-        return (<div>
-            {Object.entries(activitiesByDate).map(([date, activities]) => (
-                <React.Fragment key={`activities-${date}`}>
-                    <div>
-                        <h3
-                            className={'customer-group-header clickable-header'}
-                            onClick={() => handleSetExpanded(date) }>
-                            
-                            {date}
-                            
-                            <span className="expand-icon">
-                                {expanded[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
-                            </span>
-                            
-                        </h3>
-                        {expanded[date] ? (
-                            <div>
-                                {activities.map((activity) => (
-                                    <React.Fragment key={activity.id}>
-                                        <div
-                                            className={`customer-list-item clickable-item ${utils.getHouseColor(activity.house)}`} 
-                                            onClick={() => handleActivityClick(activity)}
-                                        >
-                                            <div className="customer-name-in-list">
-                                                <span>{`${activity.category}`}</span>
-                                                <span>{activity.startingAt_HHmm}</span>
-                                            </div>
-                                            {activity.subCategory}
-                                        </div>
-                                        {selectedActivity?.id === activity.id && (
-                                        
-                                            <div className="customer-details">
-                                                {selectedActivity.category !== "meal" && (<p><span className="detail-label">Assigned To:</span> {selectedActivity.assignedTo}</p>)}
-                                                <p><span className="detail-label">Created By:</span> {selectedActivity.createdBy}</p>
-                                                <p><span className="detail-label">Created At:</span> {selectedActivity.createdAt_ddMMM_HHmm}</p>
-                                                {selectedActivity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{selectedActivity.dietaryRestrictions}</span></p>)}
-                                                {selectedActivity.comments && (<p><span className="detail-label">Comments:</span> {selectedActivity.comments}</p>)}
-                                                <p><span className="detail-label">Status:</span> {selectedActivity.status}</p>
-                                                <p><span className="detail-label">Provider:</span> {selectedActivity.provider}</p>
-                                                <p><span className="detail-label">Assigned To:</span> {selectedActivity.assignedTo}</p>
-                                                <p><span className="detail-label">Customer Price:</span> {selectedActivity.customerPrice ?? 0 }</p>
-
-                                                {/* List dishes if the activity expanded is a meal */}
-                                                {!utils.isEmpty(selectedActivity.dishes) ?  (
-                                                    Object.values(selectedActivity.dishes).map((dish) => (
-                                                        <React.Fragment key={`${selectedActivity.id}-${dish.id}`}>
-                                                            <p>{invoiceService.dishReceiptLine(dish)}</p>
-                                                        </React.Fragment>
-                                                    ))
-                                                ) : (<p>No dishes ordered yet</p>)}
-                                                
-                                                <button
-                                                    className="edit-booking"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleEditActivity(selectedActivity);
-                                                    }}> Edit Activity
-                                                </button>
-                                            
-                                            </div>
-
-                                        )}
-                                    </React.Fragment>
-                                ))}
-                            </div>
-                        ) : (
-                            null
-                        )}
-                    </div>
-                </React.Fragment>
-            ))}
-        </div>);
     };
 
     if(activityToEdit) {
@@ -248,8 +131,11 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             </div>
             
             <div className="card-content">
-                {/* Activities */}
-                {renderActivitiesListSection(customerActivities)}   
+                <ActivitiesList
+                    customer={customer}
+                    activities={customerActivities}
+                    handleEditActivity={handleEditActivity}
+                />  
             </div>
             <button type="button" onClick={() => onClose() } className="cancel-button">
                 Back to customers

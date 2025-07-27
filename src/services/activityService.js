@@ -69,7 +69,7 @@ export function enhanceActivities(activities) {
                 activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
             }
 
-            activity.startingAt_HHmm = !utils.isEmpty(activity.startingTime) ? utils.to_HHmm(activity.startingTime) : "TBD";
+            activity.startingAt_HHmm = !utils.isEmpty(activity.startingTime) ? utils.to_HHmm(activity.startingTime) : "Time TBD";
 
             activity.displayName = activity.subCategory.replace(/-/g, " ");
             activity.displayName = utils.capitalizeWords(activity.displayName);
