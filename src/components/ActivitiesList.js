@@ -5,9 +5,10 @@ import ActivityComponent from './ActivityComponent';
 import "./ActivityComponent.css";
 import {getParent} from "../daos/dao.js";
 
-const ActivitiesList = ({customer, activities, handleEditActivity}) => {
+const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDates}) => {
     const [expanded, setExpanded] = useState({});
     const [selectedActivity, setSelectedActivity] = useState(null);
+    const [activitiesByDate, setActivitiesByDate] = useState({});
 
     const handleSetExpanded = (date) => {
         const updatedExpandedList = { ...(expanded || {}) }; // Make shallow copy
@@ -30,7 +31,7 @@ const ActivitiesList = ({customer, activities, handleEditActivity}) => {
         }
         if(activity.category === "meal") {
             // If this list is displayed for all customers, get the customer for each activity 
-            const selectedCustomer = customer ? selectedCustomer : await getParent(activity);
+            const selectedCustomer = customer ? customer : await getParent(activity);
             const dishes = await mealService.getDishes(selectedCustomer.id, activity?.id);
             let newActivity = { ...(activity || {}) }; // Make shallow copy
             newActivity.dishes = dishes;
@@ -42,21 +43,33 @@ const ActivitiesList = ({customer, activities, handleEditActivity}) => {
     }
 
     useEffect(() => {
-        // Open today's activities by default
-        const today_ddMMM = utils.to_ddMMM(utils.today());
-        handleSetExpanded(today_ddMMM);
+        const allActivitiesByDate = activities.reduce((m, activity) => {
+            const date = activity.startingAt_ddMMM ? activity.startingAt_ddMMM : "Date TBD";
+            if(!m[date]) m[date] = [];
+            m[date].push(activity);
+            return m;
+        }, {});
+
+        setActivitiesByDate(allActivitiesByDate)
+
+
+        // If not all dates are expanded, expand today's activities by default, 
+        if(expandAllDates === true) {
+            const dates = Object.keys(allActivitiesByDate);
+            let expandedList = {};
+            for(const date of dates) {
+                expandedList[date] = true;
+            } 
+            setExpanded(expandedList);
+        } else {
+            const today_ddMMM = utils.to_ddMMM(utils.today());
+            handleSetExpanded(today_ddMMM);
+        }
     }, []);
 
-    if(activities.length === 0) {
+    if(activitiesByDate.length === 0) {
         return (<div><h2>No activities yet</h2></div>);
     }
-
-    const activitiesByDate = activities.reduce((m, activity) => {
-        const date = activity.startingAt_ddMMM ? activity.startingAt_ddMMM : "Date TBD";
-        if(!m[date]) m[date] = [];
-        m[date].push(activity);
-        return m;
-    }, {});
 
     return (<>
         {Object.entries(activitiesByDate).map(([date, activities]) => (
@@ -86,8 +99,10 @@ const ActivitiesList = ({customer, activities, handleEditActivity}) => {
                                         </div>
                                         {utils.capitalizeWords(activity.subCategory)}
                                     </div>
-                                    {selectedActivity?.id === activity.id && (      
+                                    {selectedActivity?.id === activity.id && (  
+                                        // if global customer unspecified, this is the list for all customers, so each activity should have some customer data
                                         <ActivityComponent 
+                                            displayCustomer={customer === null}
                                             activity={selectedActivity}
                                             handleEditActivity={handleEditActivity}
                                         />

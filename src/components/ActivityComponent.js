@@ -2,10 +2,26 @@ import React, { useState, useEffect } from 'react';
 import * as invoiceService from "../services/invoiceService.js";
 import * as utils from "../utils.js";
 import "./ActivityComponent.css";
+import {getParent} from "../daos/dao.js";
 
-const ActivityComponent = ({ activity, handleEditActivity }) => {
+const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) => {
+    const [customer, setCustomer] = useState(null);
+
+    useEffect(() => {
+        const getCustomer = async() => {
+            const customer = await getParent(activity);
+            setCustomer(customer);
+        }
+
+        if(displayCustomer) {
+            getCustomer();
+        }
+    }, []);
+
     return (
         <div className="customer-details">
+            {customer !== null && (<p><span className="detail-label">Customer Name:</span> {customer.name}</p>)}
+            {customer !== null && (<p><span className="detail-label">Villa:</span> {utils.capitalizeWords(customer.house)}</p>)}
             {activity.category !== "meal" && (<p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>)}
             <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
             <p><span className="detail-label">Created At:</span> {activity.createdAt_ddMMM_HHmm}</p>

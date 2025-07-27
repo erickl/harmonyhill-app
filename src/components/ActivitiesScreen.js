@@ -20,9 +20,11 @@ const ActivitiesScreen = ({onNavigate}) => {
     }
 
     const handleEditActivity = async(activity) => {
-        const customer = await getParent(activityToEdit);
-        setCustomer(customer);
-        setActivityToEdit(activity); 
+        if(activity) {
+            const customer = await getParent(activity);
+            setCustomer(customer);
+            setActivityToEdit(activity); 
+        }
     }
 
     const getAllActivities = async () => {
@@ -81,6 +83,7 @@ const ActivitiesScreen = ({onNavigate}) => {
                 customer={null} 
                 activities={activities}
                 handleEditActivity={handleEditActivity}
+                expandAllDates={true}
             />
 
             {errorMessage && (

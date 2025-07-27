@@ -18,6 +18,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     const [showConfirm, setShowConfirm] = useState(false);
     const [activityMenuItem, setActivityMenuItem] = useState(null);
     const [readyToSubmit, setReadyToSubmit] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const [errorMessage, setErrorMessage] = useState(null);
 
@@ -98,9 +99,12 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     };
 
     useEffect(() => {
+        setLoading(true);
+
         const fetchActivityMenuItemData = async () => {
             const menuItem = await activityService.getActivityMenuItem(activityToEdit.category, activityToEdit.subCategory, customer.house);
             setActivityMenuItem(menuItem);
+            setLoading(false);
         };
 
         fetchActivityMenuItemData();
@@ -113,55 +117,70 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         </div>)
     }
 
-    return (
-        <div className="card">
-            <div className="card-header">
-                <h2 className="card-title">
-                    <span className="ml-2">Edit Purchase: {activityToEdit.displayName}</span>
-                </h2>
+    if (loading) {
+        return (
+            <div className="card">
+                <div className="card-header">
+                    <h2 className="card-title">Loading Customers...</h2>
+                </div>
+                <div className="card-content">
+                    <p>Loading customer data...</p>
+                </div>
             </div>
-            <div className="card-content">
-                {/* Display meal purchase form */}
-                {activityToEdit.category === "meal" ? (
-                    <MealForm 
-                        selectedActivity={activityMenuItem}
-                        formData={formData}
-                        handleFormDataChange={handleFormDataChange}
-                    />
-                // Display form for all other activities
-                ) : ( 
-                    <ActivityForm 
-                        selectedActivity={activityMenuItem}
-                        formData={formData} 
-                        handleFormDataChange={handleFormDataChange}  
+        );
+    }
+
+    if(activityMenuItem) {
+        return (
+            <div className="card">
+                <div className="card-header">
+                    <h2 className="card-title">
+                        <span className="ml-2">Edit {activityToEdit.displayName}</span>
+                    </h2>
+                    <h4>{customer.name}, in {utils.capitalizeWords(customer.house)}</h4>
+                </div>
+                <div className="card-content">
+                    {/* Display meal purchase form */}
+                    {activityToEdit.category === "meal" ? (
+                        <MealForm 
+                            selectedActivity={activityMenuItem}
+                            formData={formData}
+                            handleFormDataChange={handleFormDataChange}
+                        />
+                    // Display form for all other activities
+                    ) : ( 
+                        <ActivityForm 
+                            selectedActivity={activityMenuItem}
+                            formData={formData} 
+                            handleFormDataChange={handleFormDataChange}  
+                        />
+                    )}
+                </div>
+
+                {/* Confirm meal selection before submitting to database */}
+                {showConfirm && (
+                    <ConfirmOrderModal 
+                        selected={formData.dishes}
+                        onCancel={handleCancelConfirm}
+                        onConfirm={handleEditPurchaseSubmit}
                     />
                 )}
+
+                {errorMessage && (
+                    <ErrorNoticeModal 
+                        error={errorMessage}
+                        onClose={() => setErrorMessage(null) }
+                    />
+                )}
+                
+                <ButtonsFooter 
+                    onCancel={onClose} 
+                    onSubmit={onSubmit}
+                    submitEnabled={readyToSubmit}
+                />
             </div>
-
-            {/* Confirm meal selection before submitting to database */}
-            {showConfirm && (
-                <ConfirmOrderModal 
-                    selected={formData.dishes}
-                    onCancel={handleCancelConfirm}
-                    onConfirm={handleEditPurchaseSubmit}
-                />
-            )}
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
-            
-            <ButtonsFooter 
-                onCancel={onClose} 
-                onSubmit={onSubmit}
-                submitEnabled={readyToSubmit}
-            />
-        </div>
-    )
-    
+        )
+    }  
 };
 
 export default EditPurchaseScreen;
