@@ -47,6 +47,8 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         fetchPurchases();
     }, [customer]);
 
+    const today = utils.today();
+
     if (loading) {
         return (
             <div className="card">
@@ -118,14 +120,16 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                     <p>{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</p>
                 </div>
                 <div>   
-                    <button 
-                        className="add-button"  
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddPurchase(customer);
-                        }}>
-                        +
-                    </button> 
+                    {customer.checkOutAt >= today &&  (
+                        <button 
+                            className="add-button"  
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddPurchase(customer);
+                            }}>
+                            +
+                        </button> 
+                    )}
                     <p>Total: {runningTotal} Rp</p>   
                 </div>
             </div>

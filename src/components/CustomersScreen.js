@@ -130,13 +130,13 @@ const CustomersScreen = ({ onNavigate }) => {
                                 >
                                     <div className="customer-name-in-list">
                                         <span>{customer.name}</span>
-                                        {customer.checkOutAt >= today && <ShoppingCart
+                                        <ShoppingCart
                                             className="cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleEnterPurchasesList(customer);
                                             }}
-                                        />}
+                                        />
                                     </div>
                                     <div class="customer-sub-header">
                                         <span class="small-text">{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</span>
@@ -155,7 +155,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                         { customer.specialRequests && (<p><span className="detail-label">Special Requests:</span> {customer.specialRequests}</p> )}
                                         { customer.promotions && (<p><span className="detail-label">Promotions:</span> {customer.promotions}</p>)}
                                         <p><span className="detail-label">Country:</span> {utils.capitalizeWords(customer.country)}</p>
-                                        <p><span className="detail-label">Source:</span> {customer.source}</p>
+                                        <p><span className="detail-label">Source:</span> {utils.capitalizeWords(customer.source)}</p>
                                         { customer.phoneNumber && (<p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>)}
                                         { customer.email && ( <p><span className="detail-label">Email:</span> {customer.email}</p> )}
                                         { hasEditBookingsPermissions && (

@@ -5,6 +5,7 @@ import MyDatePicker from "./MyDatePicker.js";
 import * as utils from '../utils.js';
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
+import BookingForm from './BookingForm.js';
 
 const AddCustomerScreen = ({ onNavigate }) => {
     const initialFormData = {
@@ -246,9 +247,9 @@ const AddCustomerScreen = ({ onNavigate }) => {
 
                 {/* Special Requests */}
                 <div>
-                    <h3>Other Details</h3>
+                    <h3>Special Requests</h3>
                     <textarea
-                        placeholder="Enter other details"
+                        placeholder="Enter special requests"
                         value={formData.specialRequests}
                         onChange={(e) => handleInputChange('specialRequests', e.target.value)}
 
@@ -353,13 +354,17 @@ const AddCustomerScreen = ({ onNavigate }) => {
                         </div>
                     </div>
                 </div>
-
-                <ButtonsFooter 
-                    onCancel={() => onNavigate('customers')} 
-                    onSubmit={handleSubmit}
-                    submitEnabled={readyToSubmit}
-                />
             </div>
+
+            {/* <BookingForm
+                formData={formData}
+            /> */}
+
+            <ButtonsFooter 
+                onCancel={() => onNavigate('customers')} 
+                onSubmit={handleSubmit}
+                submitEnabled={readyToSubmit}
+            />
 
             {errorMessage && (
                 <ErrorNoticeModal 

@@ -5,3 +5,4 @@ exports.ACTIVITY_TYPES = "activityTypes";
 exports.PROMOTIONS = "promotions";
 exports.DISHES = "dishes";
 exports.PERSONNEL = "personnel";
+exports.USER_LOGS = "userLogs";
