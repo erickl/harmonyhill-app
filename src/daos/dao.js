@@ -111,8 +111,9 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
         }
 
         // Add change to the update logs
+        let diffStr = "";
         if(updateLogs) {
-            let diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
+            diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
         
             // todo: should the user be notified whether or not the update wasn't necessary?
             if(diffStr.length === 0) {
@@ -125,8 +126,14 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
         }
 
         // Log user activity
-        const updateLog = {...updatedData, ["id"] : id, ["path"] : path};
-        const updateLogRef = doc(db, ...["userLogs"], `upd-${id}-${Date.now()}`);
+        const updateLog = {
+            "document"  : `${path.join("/")}/${id}`,
+            "edit"      : diffStr,
+            "createdBy" : await getCurrentUsername(),
+            "createdAt" : new Date(),
+            "action"    : "update" 
+        };
+        const updateLogRef = doc(db, ...["userLogs"], `update-${id}-${Date.now()}`);
         const updateLogResult = await setDoc(updateLogRef, updateLog);
 
         // Run the main update
@@ -140,17 +147,27 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
     }
 }
 
+async function getCurrentUsername() {
+    const user = await getOne(['users'], auth.currentUser.uid);
+    return user ? user.name : null;
+}
+
 export async function add(path, id, data, onError = null) {
     try {
         data.createdAt = new Date();
-        const user = await getOne(['users'], auth.currentUser.uid);
-        data.createdBy = user.name;
+        data.createdBy = await getCurrentUsername();
 
         // Log user activity
-        const addLog = {...data, ["id"] : id, ["path"]: path};
-        const addLogRef = doc(db, ...["userLogs"], `add-${id}`);
+        const addLog = {
+            "document"  : `${path.join("/")}/${id}`,
+            "createdBy" : data.createdBy,
+            "createdAt" : data.createdAt,
+            "action"    : "create" 
+        };
+        const addLogRef = doc(db, ...["userLogs"], `create-${id}`);
         const addLogResult = await setDoc(addLogRef, addLog);
         
+        // Create the data record in DB
         const ref = doc(db, ...path, id);
         const addResult = await setDoc(ref, data);
         return true;
@@ -160,22 +177,35 @@ export async function add(path, id, data, onError = null) {
     }
 }
 
-export async function remove(path, id) {
+export async function remove(path, id, onError = null) {
     try {
+        const docIdToDelete = `${path.join("/")}/${id}`;
+
         // Log the deleted data before deleting it
         let dataToDelete = await getOne(path, id);
         if (!dataToDelete) {
-            console.log(`Document ${path}/${id} could not be deleted because it was not found`);
+            if(onError) onError(`Document ${docIdToDelete} could not be deleted because it was not found`);
             return false;
         }
-        
-        const user = await getOne(['users'], auth.currentUser.uid);
-        dataToDelete.deletedBy = user.name;
+
+        dataToDelete.deletedBy = await getCurrentUsername();
         dataToDelete.deletedAt = new Date();
-        dataToDelete.deletedFrom = `${path}/${id}`;
+        dataToDelete.deletedFrom = docIdToDelete;
+
+        // Log user activity
+        const delLog = {
+            "document"  : dataToDelete.deletedFrom,
+            "createdBy" : dataToDelete.deletedBy,
+            "createdAt" : dataToDelete.deletedAt,
+            "action"    : "delete" 
+        };
+        const delLogRef = doc(db, ...["userLogs"], `delete-${id}`);
+        const delLogResult = await setDoc(delLogRef, delLog);
+        
+        // Store deleted document in separate collection as safety measure
         const deletedRef = await add(["deleted"], `del-${id}`, dataToDelete);
         
-        // Proceed with deleting
+        // Delete document
         const ref = doc(db, ...path, id);
         const deleteResult = await deleteDoc(ref);
         console.log(`Deleted document ${path}/${id}`);
@@ -202,23 +232,6 @@ export async function getParent(child) {
     }
     return null;
 }
-
-// export async function transaction(path, id, data) {
-//     try {
-//         const ref = doc(db, ...path, id);
-//         await runTransaction(db, async (transaction) => {
-//             const doc = await transaction.get(ref);
-//             if (!doc.exists()) {
-//                 throw new Error("Document does not exist!");
-//             }
-//             transaction.update(ref, data);
-//         });
-//         return true;
-//     } catch (e) {
-//         console.error(`Error in transaction ${path}/${id}: `, e);
-//         return false;
-//     }
-// }
 
 export async function transaction(inTransaction) {
     try {
