@@ -3,44 +3,52 @@ import * as userService from "./services/userService.js";
 import { DateTime } from 'luxon';
 
 export async function jsonObjectDiffStr(obj1, obj2) {
-    if(isEmpty(obj1)) {
-        throw new Error("Original object was null");
-    }
-    if(isEmpty(obj2)) {
-        throw new Error("New object was null");
-    }
-    
     let diff = "";
-
-    for (const key in obj2) {
-        const val1 = obj1[key];
-        const val2 = obj2[key];
-
-        if(isEmpty(val1) && isEmpty(val2)) {
-            continue;
+    
+    try {
+        if(isEmpty(obj1)) {
+            throw new Error("Original object was null");
         }
-        else if (!Object.hasOwn(obj1, key)) {
-            diff += `Added ${key}: ${val2}, `;
-        } 
-        else if(isDate(val2)) {
-            const val1DateTime = toDateTime(val1);
-            const val2DateTime = toDateTime(val2);
-            if(!val1DateTime.equals(val2DateTime)) {
-                diff += ` ${key}: ${val1} -> ${val2}, `;
+        if(isEmpty(obj2)) {
+            throw new Error("New object was null");
+        }
+
+        for (const key in obj2) {
+            try {
+                const val1 = obj1[key];
+                const val2 = obj2[key];
+
+                if(isEmpty(val1) && isEmpty(val2)) {
+                    continue;
+                }
+                else if (!Object.hasOwn(obj1, key)) {
+                    diff += `Added ${key}: ${val2}, `;
+                } 
+                else if(isDate(val2)) {
+                    const val1DateTime = toDateTime(val1);
+                    const val2DateTime = toDateTime(val2);
+                    if(!val1DateTime.equals(val2DateTime)) {
+                        diff += ` ${key}: ${val1} -> ${val2}, `;
+                    }
+                }
+                else if (val2 !== val1) {
+                    const val2_ = isEmpty(val2) ? "[empty]" : val2;
+                    diff += ` ${key}: ${val1} -> ${val2_}, `;
+                }
+            } catch(e) {
+                diff += `Failed comparing field ${key}: ${e.message}, `;
             }
         }
-        else if (val2 !== val1) {
-            const val2_ = isEmpty(val2) ? "[empty]" : val2;
-            diff += ` ${key}: ${val1} -> ${val2_}, `;
-        }
-    }
 
-    // add prefix with user info & remove the last comma and space
-    if (diff.length > 0) {
-        const username = await userService.getCurrentUserName();
-        const nowStr = to_yyMMddHHmmTz(DateTime.now());
-        diff = `Updated by ${username} at ${nowStr}: ${diff}`;
-        diff = diff.slice(0, -2);
+        // add prefix with user info & remove the last comma and space
+        if (diff.length > 0) {
+            const username = await userService.getCurrentUserName();
+            const nowStr = to_yyMMddHHmmTz(DateTime.now());
+            diff = `Updated by ${username} at ${nowStr}: ${diff}`;
+            diff = diff.slice(0, -2);
+        }
+    } catch(e) {
+        diff += `Unexpected error in update comparison: ${e.message}`;
     }
 
     return diff;
@@ -232,7 +240,7 @@ export function toFireStoreTime(inputDate) {
 }
 
 export function toDateTime(inputDate) {
-    if(isEmpty(toDateTime)) return null;
+    if(isEmpty(inputDate)) return null;
     return toLuxonDateTime(inputDate);
 }
 
