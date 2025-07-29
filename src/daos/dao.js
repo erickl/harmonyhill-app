@@ -98,7 +98,6 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
     try {
         const originalData = await getOne(path, id);
 
-        // E.g. could be a meal update contains a new dish, which would be a new document which doesn't yet exist, so no update possible
         if(!originalData) {
             return await add(path, id, updatedData, onError);
         }
@@ -111,8 +110,8 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
             delete updatedData.createdBy;
         }
 
+        // Add change to the update logs
         if(updateLogs) {
-            // Add change to the update logs
             let diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
         
             // todo: should the user be notified whether or not the update wasn't necessary?
@@ -125,7 +124,12 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
             updatedData.updateLogs.push(diffStr);
         }
 
-        // Run the update
+        // Log user activity
+        const updateLog = {...updatedData, ["id"] : id, ["path"] : path};
+        const updateLogRef = doc(db, ...["userLogs"], `upd-${id}-${Date.now()}`);
+        const updateLogResult = await setDoc(updateLogRef, updateLog);
+
+        // Run the main update
         const ref = doc(db, ...path, id);
         const updateResult = await updateDoc(ref, updatedData);
         return true;
@@ -138,9 +142,14 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 
 export async function add(path, id, data, onError = null) {
     try {
-        data.createdAt = utils.toFireStoreTime(DateTime.now());
+        data.createdAt = new Date();
         const user = await getOne(['users'], auth.currentUser.uid);
         data.createdBy = user.name;
+
+        // Log user activity
+        const addLog = {...data, ["id"] : id, ["path"]: path};
+        const addLogRef = doc(db, ...["userLogs"], `add-${id}`);
+        const addLogResult = await setDoc(addLogRef, addLog);
         
         const ref = doc(db, ...path, id);
         const addResult = await setDoc(ref, data);
@@ -160,7 +169,8 @@ export async function remove(path, id) {
             return false;
         }
         
-        dataToDelete.deletedBy = userService.getCurrentUserName();
+        const user = await getOne(['users'], auth.currentUser.uid);
+        dataToDelete.deletedBy = user.name;
         dataToDelete.deletedAt = new Date();
         dataToDelete.deletedFrom = `${path}/${id}`;
         const deletedRef = await add(["deleted"], `del-${id}`, dataToDelete);
