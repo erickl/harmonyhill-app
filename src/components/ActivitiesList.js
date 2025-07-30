@@ -65,7 +65,7 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
             const today_ddMMM = utils.to_ddMMM(utils.today());
             handleSetExpanded(today_ddMMM);
         }
-    }, []);
+    }, [activities, customer]);
 
     if(activitiesByDate.length === 0) {
         return (<div><h2>No activities yet</h2></div>);

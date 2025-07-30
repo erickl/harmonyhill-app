@@ -30,8 +30,8 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
             return;
         }
         try {
-            const customerActivities = await activityService.get(customer.id);
-            setCustomerActivities(customerActivities);
+            const allCustomerActivities = await activityService.get(customer.id);
+            setCustomerActivities(allCustomerActivities);
             
             const invoice = await invoiceService.getTotal(customer.id);
             setRunningTotal(invoice.total);
@@ -45,7 +45,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
 
     useEffect(() => {
         fetchPurchases();
-    }, [customer]);
+    }, [customer, customerPurchasing, activityToEdit]);
 
     const today = utils.today();
 
@@ -90,7 +90,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                 activityToEdit={activityToEdit}
                 onClose={() => {
                     setActivityToEdit(null);
-                    fetchPurchases();
+                    //fetchPurchases();
                 }}
                 onNavigate={onNavigate}
             ></EditPurchaseScreen>

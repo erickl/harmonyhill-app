@@ -133,7 +133,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
             "createdAt" : new Date(),
             "action"    : "update" 
         };
-        const updateLogRef = doc(db, ...["userLogs"], `update-${id}-${Date.now()}`);
+        const updateLogRef = doc(db, ...["userLogs"], `u-${id}-${Date.now()}`);
         const updateLogResult = await setDoc(updateLogRef, updateLog);
 
         // Run the main update
@@ -164,7 +164,7 @@ export async function add(path, id, data, onError = null) {
             "createdAt" : data.createdAt,
             "action"    : "create" 
         };
-        const addLogRef = doc(db, ...["userLogs"], `create-${id}`);
+        const addLogRef = doc(db, ...["userLogs"], `c-${id}`);
         const addLogResult = await setDoc(addLogRef, addLog);
         
         // Create the data record in DB
@@ -199,11 +199,11 @@ export async function remove(path, id, onError = null) {
             "createdAt" : dataToDelete.deletedAt,
             "action"    : "delete" 
         };
-        const delLogRef = doc(db, ...["userLogs"], `delete-${id}`);
+        const delLogRef = doc(db, ...["userLogs"], `d-${id}`);
         const delLogResult = await setDoc(delLogRef, delLog);
         
         // Store deleted document in separate collection as safety measure
-        const deletedRef = await add(["deleted"], `del-${id}`, dataToDelete);
+        const deletedRef = await add(["deleted"], `d-${id}`, dataToDelete);
         
         // Delete document
         const ref = doc(db, ...path, id);
