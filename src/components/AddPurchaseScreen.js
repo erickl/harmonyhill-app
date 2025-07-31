@@ -93,6 +93,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         if(addActivityResult) {
             handleCategorySelection(null);
             handleActivitySelection(null);
+            setShowConfirm(false)
             onClose();
         }
     }

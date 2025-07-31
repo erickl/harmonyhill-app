@@ -143,7 +143,12 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             </div>
 
             <div className="purchase-form-group">
-                <Dropdown label={"Assign to team member"} options={teamMembers} onSelect={onTeamMemberSelect}/>
+                <Dropdown 
+                    current={formData.assignedTo} 
+                    label={"Assign to team member"} 
+                    options={teamMembers} 
+                    onSelect={onTeamMemberSelect}
+                />
             </div>
 
             <FormControlLabel

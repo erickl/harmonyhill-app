@@ -68,7 +68,12 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     </div>
                 </div>
                 <div className="purchase-form-group">
-                    <Dropdown label={"Assign to team member"} options={teamMembers} onSelect={onTeamMemberSelect}/>
+                    <Dropdown 
+                        current={formData.assignedTo} 
+                        label={"Assign to team member"} 
+                        options={teamMembers} 
+                        onSelect={onTeamMemberSelect}
+                    />
                 </div>
                 { custom === true ? (
                     // For a custom activity, there are no determined set of providers
@@ -88,7 +93,12 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     </div>
                 ) : (
                     <div className="purchase-form-group">
-                        <Dropdown label={"Select a provider"} options={providers} onSelect={onProviderSelect}/>
+                        <Dropdown 
+                            current={formData.provider} 
+                            label={"Select a provider"} 
+                            options={providers} 
+                            onSelect={onProviderSelect}
+                        />
                     </div>
                 )}
                 <div className="purchase-form-group">

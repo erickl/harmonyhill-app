@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import "./Dropdown.css";
 
 /**
@@ -7,19 +7,24 @@ import "./Dropdown.css";
  * @param {*} onSelect: The callback to call with the selected option
  * @returns the dropdown view including the label on the side
  */
-function Dropdown({ label, options, onSelect }) {
+export default function Dropdown({ label, options, current, onSelect }) {
     const keys = Object.keys(options);
 
     const [isOpen, setIsOpen] = useState(false);
     const [selected, setSelected] = useState(null);
   
     const toggleDropdown = () => setIsOpen(!isOpen);
+    
     const handleSelect = (key) => {
         const option = options[key];
         setSelected(key);
         onSelect(option);
         setIsOpen(false);
     };
+
+    useEffect(() => {
+        setSelected(current);
+    }, [current]); 
 
     return (
       <div className="dropdown-menu">
@@ -38,8 +43,8 @@ function Dropdown({ label, options, onSelect }) {
                         </li>
                     ))
                 ) : (
-                    <li className="item" key="no-providers" onClick={() => handleSelect(null)}>
-                        No providers found
+                    <li className="item" key="no-options" onClick={() => handleSelect(null)}>
+                        No options available
                     </li>
                 )}
             </ul>
@@ -47,5 +52,3 @@ function Dropdown({ label, options, onSelect }) {
       </div>
     );
 }
-
-export default Dropdown;
