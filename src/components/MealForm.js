@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import "./MealForm.css";
 import MyDatePicker from "./MyDatePicker.js";
 import * as menuService from '../services/menuService.js';
+import * as userService from '../services/userService.js';
 import * as mealService from "../services/mealService.js";
 import * as utils from "../utils.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 import MealFormDish from "./MealFormDish.js";
+import Dropdown from './Dropdown.js';
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
     
+    const [teamMembers, setTeamMembers] = useState([]);
     const [allDishes, setAllDishes] = useState([]);
     const [expandedCourses, setExpandedCourses] = useState({});
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
@@ -18,6 +21,11 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
+    }
+
+    const onTeamMemberSelect = (teamMember) => {
+        const name = teamMember ? teamMember.name : '';
+        handleFormDataChange("assignedTo", name);
     }
 
     const handleExpandCourseSection = (course) => {
@@ -37,6 +45,13 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             }) : [];
             setAllDishes(allDishes);
             setLoadingMenu(false);
+
+            const teamMembers = await userService.getUsers();
+            const formattedTeamMembers = teamMembers.reduce((m, teamMember) => {
+                m[teamMember.name] = teamMember;
+                return m;
+            }, {})
+            setTeamMembers(formattedTeamMembers);
         }
         load();
         
@@ -125,6 +140,10 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     rows="2"
                     className="input"
                 ></textarea>
+            </div>
+
+            <div className="purchase-form-group">
+                <Dropdown label={"Assign to team member"} options={teamMembers} onSelect={onTeamMemberSelect}/>
             </div>
 
             <FormControlLabel

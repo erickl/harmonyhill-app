@@ -261,11 +261,23 @@ async function mapMealObject(mealData) {
     }
 
     // Date is obligatory, but time might be set later, so might be null
-    meal.startingTime = utils.isDate(mealData?.startingAt) ? utils.toFireStoreTime(mealData.startingTime) : null;
+    meal.startingTime = utils.isDate(mealData?.startingTime) ? utils.toFireStoreTime(mealData.startingTime) : null;
+
+    // Provider might not make sense here. I think we should use assignedTo instead, to assign to a staff member
+    if(utils.isString(mealData?.provider)) meal.provider = mealData.provider;
+
+    if(utils.isString(mealData?.assignedTo)) {
+        meal.assignedTo = mealData.assignedTo;
+    }
 
     if(utils.isString(mealData?.status)) meal.status = mealData.status;
-
-    if(utils.isString(mealData?.provider)) meal.provider = mealData.provider;
+    
+    // If dateTime decided and staff assigned, then it counts as confirmed
+    if(utils.isString(mealData?.assignedTo) && utils.isDate(mealData?.startingAt) && utils.toFireStoreTime(mealData.startingTime)) {
+        meal.status = "confirmed";
+    } else {
+        meal.status = "requested";
+    }
 
     if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
 
