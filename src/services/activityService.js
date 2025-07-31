@@ -69,7 +69,13 @@ export function enhanceActivities(activities) {
                 activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
             }
 
-            activity.startingAt_HHmm = !utils.isEmpty(activity.startingTime) ? utils.to_HHmm(activity.startingTime) : "Time TBD";
+            if(!utils.isEmpty(activity.startingTime)) {
+                activity.startingTime = utils.toDateTime(activity.startingTime);
+                activity.startingAt_HHmm = utils.to_HHmm(activity.startingTime);
+            } else {
+                activity.startingTime = null;
+                activity.startingAt_HHmm = "Time TBD";
+            }
 
             activity.displayName = activity.subCategory.replace(/-/g, " ");
             activity.displayName = utils.capitalizeWords(activity.displayName);
@@ -194,7 +200,7 @@ async function mapObject(data, isUpdate = false) {
     if(utils.isDate(data?.startingAt))      activity.startingAt = utils.toFireStoreTime(data.startingAt);
     
     // Date is obligatory, but time might be set later, so might be null
-    activity.startingTime = utils.isDate(data?.startingAt) ? utils.toFireStoreTime(data.startingTime) : null;
+    activity.startingTime = utils.isDate(data?.startingTime) ? utils.toFireStoreTime(data.startingTime) : null;
 
     if(utils.isAmount(data?.customerPrice)) activity.customerPrice = data.customerPrice;
 
