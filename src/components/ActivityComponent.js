@@ -28,7 +28,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
             {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
             {activity.comments && (<p><span className="detail-label">Comments:</span> {activity.comments}</p>)}
             <p><span className="detail-label">Status:</span> {activity.status}</p>
-            <p><span className="detail-label">Provider:</span> {activity.provider}</p>
+            {activity.category !== "meal" && (<p><span className="detail-label">Provider:</span> {activity.provider}</p>)}
             <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
             <p><span className="detail-label">Customer Price:</span> {activity.customerPrice ?? 0 }</p>
 
