@@ -151,6 +151,13 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                 />
             </div>
 
+            <MyDatePicker 
+                name={"startingAt"} 
+                date={formData.startingAt}
+                time={formData.startingTime}
+                onChange={handleFormDataChange}
+            />
+
             <FormControlLabel
                 control={
                     <Checkbox
@@ -159,13 +166,6 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     />
                 }
                 label="Free"
-            />
-
-            <MyDatePicker 
-                name={"startingAt"} 
-                date={formData.startingAt}
-                time={formData.startingTime}
-                onChange={handleFormDataChange}
             />
 
             {errorMessage && (

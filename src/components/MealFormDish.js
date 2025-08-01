@@ -19,6 +19,11 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
 
     const handleEditOrderQuantity = (newDish, quantity) => {
         const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
+
+        // e.g. for custom dishes, must give name before setting quantity 
+        if(utils.isEmpty(newDish.name)) {
+            return;
+        }
         
         if (!updatedDishes[newDish.name]) {
             updatedDishes[newDish.name] = newDish;
@@ -67,7 +72,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
 
     const quantity = getDishData("quantity", 0);
 
-    return (
+    return (<>
         <div className="meal-dish" key={`${dish.id}-wrapper`}>
             <div className="meal-dish-row" key={`${dish.id}-wrapper-row`}>
                 {custom === true ? (
@@ -109,7 +114,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
             </div>
 
             {quantity > 0 && (
-                <div>
+                <div className="meal-dish-comment">
                     <label htmlFor="purchaseComments">Comments:</label>
                     <textarea
                         id="purchaseComments"
@@ -130,13 +135,13 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                     />
                 </div>
             )}
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
         </div>
-    );
+
+        {errorMessage && (
+            <ErrorNoticeModal 
+                error={errorMessage}
+                onClose={() => setErrorMessage(null) }
+            />
+        )}
+    </>);
 }
