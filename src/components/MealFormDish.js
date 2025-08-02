@@ -43,6 +43,8 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
     const handleEditCustomOrderName = (newDish, newName) => {
         const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
 
+        //let dishToUpdate = Object.values(updatedDishes).find((dish) => dish.id === newDish.id)
+
         if(updatedDishes[newDish.name]) {
             delete updatedDishes[newDish.name];
         } 
@@ -66,6 +68,10 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
             updatedDishes[newDish.name] = newDish;
         }
 
+        if(field === "customerPrice") {
+            value = utils.cleanNumeric(value); 
+        }
+
         updatedDishes[newDish.name][field] = value;
         handleFormDataChange("dishes", updatedDishes);
     };
@@ -77,18 +83,34 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
             <div className="meal-dish-row" key={`${dish.id}-wrapper-row`}>
                 {custom === true ? (
                     <div>
-                        <label for={`${dish.id}-input`}>
-                            Custom:
+                        <label for={`${dish.id}-name`}>
+                            Custom Name:
                         </label>
                         <input
                             type="text"
-                            id={`${dish.id}-input`}
-                            name={`${dish.id}-input`}
+                            id={`${dish.id}-name`}
+                            name={`${dish.id}-name`}
                             value={dish.name}
                             onChange={(e) => handleEditCustomOrderName(dish, e.target.value)}
                             className="input"
                         />
+                        <span 
+                            style={{marginLeft: '10px'}}
+                            className="currency-prefix">
+                            {utils.getCurrency()}
+                        </span>
+                        <input
+                            style={{marginLeft: '3px'}}
+                            type="text" // Changed from "number" to "text"
+                            id={`${dish.id}-customerPrice`}
+                            name="customerPrice"
+                            // Apply formatting here for display inside the input
+                            value={utils.formatDisplayPrice(dish.customerPrice)}
+                            onChange={(e) => handleEditOrder(dish, e.target.name, e.target.value)}
+                            className="input"
+                        />
                     </div>
+                    
                 ) : ( 
                     <span>{dish.name}</span>
                 )}
@@ -124,6 +146,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                         rows="1"
                         className="input"
                     ></textarea>
+
                     <FormControlLabel
                         control={
                             <Checkbox
