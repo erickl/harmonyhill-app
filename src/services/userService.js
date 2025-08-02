@@ -89,13 +89,17 @@ export function isLoggedIn() {
 }
 
 export async function logLastActive() {
-    const fbUser = getFirebaseUser();
-    if (!fbUser) {
-        return null;
-    }
+    try {
+        const fbUser = getFirebaseUser();
+        if (!fbUser) {
+            return null;
+        }
 
-    const result = await userDao.update(fbUser.uid, {"lastActiveAt": utils.toFireStoreTime(utils.now())});
-    return result;
+        const result = await userDao.update(fbUser.uid, {"lastActiveAt": utils.toFireStoreTime(utils.now())});
+        return result;
+    } catch(e) {
+        return false;
+    }  
 }
 
 function getFirebaseUser() {

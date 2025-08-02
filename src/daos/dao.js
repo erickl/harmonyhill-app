@@ -123,18 +123,18 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
                 
             updatedData.updateLogs = Object.hasOwn(originalData, "updateLogs") ? originalData.updateLogs : [];
             updatedData.updateLogs.push(diffStr);
-        }
 
-        // Log user activity
-        const updateLog = {
-            "document"  : `${path.join("/")}/${id}`,
-            "edit"      : diffStr,
-            "createdBy" : await getCurrentUsername(),
-            "createdAt" : new Date(),
-            "action"    : "update" 
-        };
-        const updateLogRef = doc(db, ...["userLogs"], `u-${id}-${Date.now()}`);
-        const updateLogResult = await setDoc(updateLogRef, updateLog);
+            // Log user activity
+            const updateLog = {
+                "document"  : `${path.join("/")}/${id}`,
+                "edit"      : diffStr,
+                "createdBy" : await getCurrentUsername(),
+                "createdAt" : new Date(),
+                "action"    : "update" 
+            };
+            const updateLogRef = doc(db, ...["userLogs"], `u-${id}-${Date.now()}`);
+            const updateLogResult = await setDoc(updateLogRef, updateLog);
+        }
 
         // Run the main update
         const ref = doc(db, ...path, id);
