@@ -15,6 +15,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [readyToSubmit, setReadyToSubmit] = useState(false);
 
+    const [validationError, setValidationError] = useState(null);
+
     // State to track the currently selected activity (for the purchase form)
     const [selectedActivity, setSelectedActivity] = useState(null);
 
@@ -46,6 +48,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
+    }
+
+    const onValidationError = (error) => {
+        setValidationError(error);
     }
 
     // State for the purchase form data
@@ -127,11 +133,15 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         if(selectedActivity) {
             let validationResult = false;
             if(selectedActivity.category === "meal") {
-                validationResult = mealService.validate(nextFormData);
+                validationResult = mealService.validate(customer, nextFormData, false, onValidationError);
             } else {
-                validationResult = activityService.validate(nextFormData);
+                validationResult = activityService.validate(customer, nextFormData, false, onValidationError);
             }
             setReadyToSubmit(validationResult);
+
+            if(validationResult === true) {
+                setValidationError(null);
+            }
         }
     };
 
@@ -217,6 +227,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                         onClose={() => setErrorMessage(null) }
                     />
                 )}
+
+                {(validationError && <p className="validation-error">{validationError}</p>)}
                 
                 <ButtonsFooter 
                     onCancel={handleActivitySelection} 

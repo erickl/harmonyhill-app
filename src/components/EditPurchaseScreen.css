@@ -19,3 +19,8 @@
   gap: 8px; /* optional spacing */
   margin-bottom: 8px; /* optional spacing between rows */
 }
+
+.validation-error {
+  margin-left: 10px;
+  color: red;
+}

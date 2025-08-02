@@ -21,3 +21,8 @@
   width: 90%;
   text-align: center;
 }
+
+.validation-error {
+  margin-left: 10px;
+  color: red;
+}

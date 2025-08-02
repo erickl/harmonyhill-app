@@ -222,27 +222,45 @@ export async function deleteDish(bookingId, mealId, dishId) {
     return await activityDao.deleteDish(bookingId, mealId, dishId);
 }
 
-export function validate(data, isUpdate = false) {
-    if(utils.isEmpty(data)) {
-        return false;
-    }
-    if(utils.isEmpty(data.startingAt)) {
-        return false;
-    }
+export function validate(customer, data, isUpdate, onError) {
+    try {
+        if(utils.isEmpty(data)) {
+            onError("Fill in all required fields to submit");
+            return false;
+        }
+        if(utils.isEmpty(data.startingAt)) {
+            onError("Meal date required");
+            return false;
+        }
 
-    // get other lunches/dinners on this date. If this is not an update, we should decline
+        if(data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
+            onError(`Meal date too early, must be ${customer.checkInAt.startOf('day')} - ${customer.checkOutAt.startOf('day')}`);
+            return false;
+        }
 
+        if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
+            onError(`Meal date too late, must be ${customer.checkInAt.startOf('day')} - ${customer.checkOutAt.startOf('day')}`);
+            return false;
+        }
 
-    if(!utils.isEmpty(data.dishes)) {
-        const dishes = Object.values(data.dishes);
-        for(const dish of dishes) {
-            if(dish.quantity === 0) {
-                return false;
-            }
-            if(utils.isEmpty(dish.name)) {
-                return false;
+        // todo: get other lunches/dinners on this date. If this is not an update, we should decline?
+
+        if(!utils.isEmpty(data.dishes)) {
+            const dishes = Object.values(data.dishes);
+            for(const dish of dishes) {
+                if(dish.quantity === 0) {
+                    onError(`All ordered dishes must have at least quantity of 1`);
+                    return false;
+                }
+                if(utils.isEmpty(dish.name)) {
+                    onError(`All dishes must be named`);
+                    return false;
+                }
             }
         }
+    } catch(e) {
+        onError(`Unexpected error in meal form: ${e.message}`);
+        return false; 
     }
 
     return true;

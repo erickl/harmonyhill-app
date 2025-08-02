@@ -19,8 +19,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     const [activityMenuItem, setActivityMenuItem] = useState(null);
     const [readyToSubmit, setReadyToSubmit] = useState(false);
     const [loading, setLoading] = useState(true);
-
     const [errorMessage, setErrorMessage] = useState(null);
+    const [validationError, setValidationError] = useState(null);
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -42,6 +42,10 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         house         : customer.house,
         guestCount    : customer.guestCount,
     });
+
+    const onValidationError = (error) => {
+        setValidationError(error);
+    }
 
     const handleFormDataChange = (name, value, type) => {
         let nextFormData = {};
@@ -65,11 +69,16 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         if(activityToEdit) {
             let validationResult = false;
             if(activityToEdit.category === "meal") {
-                validationResult = mealService.validate(nextFormData, true);
+                validationResult = mealService.validate(customer, nextFormData, true, onValidationError);
             } else {
-                validationResult = activityService.validate(nextFormData, true);
+                validationResult = activityService.validate(customer, nextFormData, true, onValidationError);
             }
+
             setReadyToSubmit(validationResult);
+
+            if(validationResult === true) {
+                setValidationError(null);
+            }
         }
     };
 
@@ -172,6 +181,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
                         onClose={() => setErrorMessage(null) }
                     />
                 )}
+
+                {(validationError && <p className="validation-error">{validationError}</p>)}
                 
                 <ButtonsFooter 
                     onCancel={onClose} 

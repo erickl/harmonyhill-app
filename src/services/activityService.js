@@ -218,8 +218,32 @@ async function mapObject(data, isUpdate = false) {
     return activity;
 }
 
-export function validate(data, isUpdate = false) {
-    return true; // todo
+export function validate(customer, data, isUpdate, onError) {
+    try {
+        if(utils.isEmpty(data)) {
+            onError("Fill in all required fields to submit");
+            return false;
+        }
+        if(utils.isEmpty(data.startingAt)) {
+            onError("Activity date required");
+            return false;
+        }
+
+        if(data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
+            onError(`Activity date too early, must be ${customer.checkInAt.startOf('day')} - ${customer.checkOutAt.startOf('day')}`);
+            return false;
+        }
+
+        if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
+            onError(`Activity date too late, must be ${customer.checkInAt.startOf('day')} - ${customer.checkOutAt.startOf('day')}`);
+            return false;
+        }
+    } catch(e) {
+        onError(`Unexpected error in activity form: ${e.message}`);
+        return false;
+    }
+
+    return true; 
 }
 
 export async function testActivities(date) {
