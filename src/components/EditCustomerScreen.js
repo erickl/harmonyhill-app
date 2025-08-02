@@ -349,7 +349,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                 </div>
 
                 <ButtonsFooter 
-                    onCancel={() => onNavigate('customers')} 
+                    onCancel={onClose} 
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />
