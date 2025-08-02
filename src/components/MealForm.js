@@ -151,22 +151,26 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                 />
             </div>
 
-            <MyDatePicker 
-                name={"startingAt"} 
-                date={formData.startingAt}
-                time={formData.startingTime}
-                onChange={handleFormDataChange}
-            />
+            <div className="purchase-form-group">
+                <MyDatePicker 
+                    name={"startingAt"} 
+                    date={formData.startingAt}
+                    time={formData.startingTime}
+                    onChange={handleFormDataChange}
+                />
+            </div>
 
-            <FormControlLabel
-                control={
-                    <Checkbox
-                        checked={formData["isFree"] ? formData["isFree"] : false}
-                        onChange={(e) => handleFormDataChange("isFree", e.target.checked)}
-                    />
-                }
-                label="Free"
-            />
+            <div className="purchase-form-group">
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={formData["isFree"] ? formData["isFree"] : false}
+                            onChange={(e) => handleFormDataChange("isFree", e.target.checked)}
+                        />
+                    }
+                    label="Check box if the entire meals is free"
+                />
+            </div>
 
             {errorMessage && (
                 <ErrorNoticeModal 
