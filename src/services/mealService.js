@@ -234,12 +234,12 @@ export function validate(customer, data, isUpdate, onError) {
         }
 
         if(data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
-            onError(`Meal date too early, must be ${customer.checkInAt.startOf('day')} - ${customer.checkOutAt.startOf('day')}`);
+            onError(`Meal date too early. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
             return false;
         }
 
         if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
-            onError(`Meal date too late, must be ${customer.checkInAt.startOf('day')} - ${customer.checkOutAt.startOf('day')}`);
+            onError(`Meal date too late. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
             return false;
         }
 
