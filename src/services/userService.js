@@ -17,9 +17,6 @@ export async function signUp(username, email, role, password, onError) {
             displayName: username,
         });
 
-        // If we don't log them out here, they will be logged in right after registering. We need to approve them first
-        await signOut(auth);
-
         const addUserDataSuccess = await userDao.add(user.uid, {
             name: username,
             email: email,
@@ -27,6 +24,9 @@ export async function signUp(username, email, role, password, onError) {
             lastLoginAt: null,
             approved: false,
         });
+
+        // If we don't log them out here, they will be logged in right after registering. We need to approve them first
+        await signOut(auth);
 
         if (!addUserDataSuccess) {
             console.error("Error adding user to database");
