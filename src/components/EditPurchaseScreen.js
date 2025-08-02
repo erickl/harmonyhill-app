@@ -47,6 +47,22 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         setValidationError(error);
     }
 
+    const validateFormData = (newFormData) => {
+        if(!activityToEdit) return;
+        let validationResult = false;
+        if(activityToEdit.category === "meal") {
+            validationResult = mealService.validate(customer, newFormData, true, onValidationError);
+        } else {
+            validationResult = activityService.validate(customer, newFormData, true, onValidationError);
+        }
+
+        setReadyToSubmit(validationResult);
+
+        if(validationResult === true) {
+            setValidationError(null);
+        }
+    }
+
     const handleFormDataChange = (name, value, type) => {
         let nextFormData = {};
 
@@ -66,20 +82,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
             setFormData(nextFormData);
         }
         
-        if(activityToEdit) {
-            let validationResult = false;
-            if(activityToEdit.category === "meal") {
-                validationResult = mealService.validate(customer, nextFormData, true, onValidationError);
-            } else {
-                validationResult = activityService.validate(customer, nextFormData, true, onValidationError);
-            }
-
-            setReadyToSubmit(validationResult);
-
-            if(validationResult === true) {
-                setValidationError(null);
-            }
-        }
+        validateFormData(nextFormData); 
     };
 
     const onSubmit = async () => {
@@ -117,6 +120,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         };
 
         fetchActivityMenuItemData();
+
+        validateFormData(formData); 
     }, []);
 
     // --- Render activityToEdit form or meal selection

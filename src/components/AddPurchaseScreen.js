@@ -112,6 +112,23 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         setShowConfirm(false);
     };
 
+    const validateFormData = (newFormData) => {
+        if(!selectedActivity) return;
+
+        let validationResult = false;
+        if(selectedActivity.category === "meal") {
+            validationResult = mealService.validate(customer, newFormData, false, onValidationError);
+        } else {
+            validationResult = activityService.validate(customer, newFormData, false, onValidationError);
+        }
+
+        setReadyToSubmit(validationResult);
+
+        if(validationResult === true) {
+            setValidationError(null);
+        }
+    }
+
     const handleFormDataChange = (name, value, type) => {
         let nextFormData = {};
 
@@ -130,20 +147,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             setFormData(nextFormData);
         }
       
-        if(selectedActivity) {
-            let validationResult = false;
-            if(selectedActivity.category === "meal") {
-                validationResult = mealService.validate(customer, nextFormData, false, onValidationError);
-            } else {
-                validationResult = activityService.validate(customer, nextFormData, false, onValidationError);
-            }
-            setReadyToSubmit(validationResult);
-
-            if(validationResult === true) {
-                setValidationError(null);
-            }
-        }
+        validateFormData(nextFormData);
     };
+
+    useEffect(() => {
+        validateFormData(initialForm);
+    }, [selectedActivity]);
 
     // fetch the menu items when the component mounts or customerID changes (ensuring updates come through without restarting the app)
     // fetching sub categories to choose from
