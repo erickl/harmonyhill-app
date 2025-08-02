@@ -28,6 +28,9 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 - Open in Android: npx cap open android
 - Wait for Gradle to sync (see the progress bar finish at the bottom right)
 - Create a release key (once): keytool -genkeypair -v -keystore android/app/hh-release-key.keystore -alias hh-release-key -keyalg RSA -keysize 2048 -validity 10000
+- Build > Generate Signed App Bundle or APK > Select APK and Continue
+- Make sure Key Store Path and password are filled in (only need to do this the first time)
+- Select the Release option and then Create
 
 # Loading the bookings from the sheet
 - Download sheet as a tsv
