@@ -51,6 +51,21 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     return (
         <div>
             <h3>Confirm Purchase Details:</h3>
+            
+            {selectedActivity.description && (
+                <div>
+                    <h4 style={{ marginBottom: '0.25rem' }}>Description</h4>
+                    <p style={{ marginTop: '0' }}>{selectedActivity.description}</p>
+                </div>
+            )}
+
+            {selectedActivity.instructions && (
+                <div>
+                    <h4 style={{ marginBottom: '0.25rem' }}>Instructions</h4>
+                    <p style={{ marginTop: '0' }}>{selectedActivity.instructions}</p>
+                </div>
+            )}
+            
             <form>
                 <div className="purchase-form-group">
                     <label htmlFor="purchasePrice">Price:</label>

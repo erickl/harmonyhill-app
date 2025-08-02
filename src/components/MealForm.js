@@ -71,7 +71,20 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
     return (
         <div>
-            <h3>{selectedActivity.instructions}</h3>
+            {selectedActivity.description && (
+                <div>
+                    <h4 style={{ marginBottom: '0.25rem' }}>Description</h4>
+                    <p style={{ marginTop: '0' }}>{selectedActivity.description}</p>
+                </div>
+            )}
+
+            {selectedActivity.instructions && (
+                <div>
+                    <h4 style={{ marginBottom: '0.25rem' }}>Instructions</h4>
+                    <p style={{ marginTop: '0' }}>{selectedActivity.instructions}</p>
+                </div>
+            )}
+            
             {/* Display all dishes, inc/dec buttons, and how many of each dish */}
             {Object.entries(allDishes).length > 0 ? (
                 <div className="activity-button-container">
