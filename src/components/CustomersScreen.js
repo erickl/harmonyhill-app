@@ -40,6 +40,8 @@ const CustomersScreen = ({ onNavigate }) => {
     useEffect(() => {
         fetchCustomers(false);
 
+        userService.logLastActive();
+
         const loadPermissions = async () => {
             const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
             setEditBookingsPermissions(userHasEditBookingsPermissions);
