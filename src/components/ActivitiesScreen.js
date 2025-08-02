@@ -29,8 +29,8 @@ const ActivitiesScreen = ({onNavigate}) => {
 
     const getAllActivities = async () => {
         try {
-            const after = utils.now(-1);
-            const before = utils.now(14);
+            const after = utils.now(-7);
+            const before = utils.now(30);
             const filter = {"after" : after, "before" : before};
             const allActivities = await activityService.getAll(filter);
             setActivities(allActivities);
