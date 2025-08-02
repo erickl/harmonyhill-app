@@ -33,14 +33,16 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
             <p><span className="detail-label">Customer Price:</span> {activity.customerPrice ?? 0 }</p>
 
             {/* List dishes if the activity expanded is a meal */}
-            {!utils.isEmpty(activity.dishes) ?  (
-                Object.values(activity.dishes).map((dish) => (
-                    <React.Fragment key={`${activity.id}-${dish.id}`}>
-                        <p>{invoiceService.dishReceiptLine(dish)}</p>
-                    </React.Fragment>
-                ))
-            ) : (<p>No dishes ordered yet</p>)}
-            
+            {activity.category === "meal" && (<>
+                {!utils.isEmpty(activity.dishes) ? (
+                    Object.values(activity.dishes).map((dish) => (
+                        <React.Fragment key={`${activity.id}-${dish.id}`}>
+                            <p>{invoiceService.dishReceiptLine(dish)}</p>
+                        </React.Fragment>
+                    ))
+                ) : (<p>No dishes ordered yet</p>)}
+            </>)}
+
             <button
                 className="edit-booking"
                 onClick={(e) => {
