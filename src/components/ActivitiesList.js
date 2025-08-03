@@ -4,6 +4,8 @@ import * as mealService from "../services/mealService.js";
 import ActivityComponent from './ActivityComponent';
 import "./ActivityComponent.css";
 import {getParent} from "../daos/dao.js";
+import WarningSymbol from './WarningSymbol.js';
+
 
 const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDates}) => {
     const [expanded, setExpanded] = useState({});
@@ -95,8 +97,9 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
                                     >
                                         <div className="customer-name-in-list">
                                             <span>{`${utils.capitalizeWords(activity.category)}`}</span>
+                                            {(activity.status === "requested" && <WarningSymbol />)}
                                             <span>{activity.startingAt_HHmm}</span>
-                                        </div>
+                                        </div>  
                                         {utils.capitalizeWords(activity.subCategory)}
                                     </div>
                                     {selectedActivity?.id === activity.id && (  
