@@ -5,15 +5,17 @@ import * as activityService from "../services/activityService.js";
 import "./ActivitiesScreen.css";
 import ActivitiesList from './ActivitiesList.js';
 import EditPurchaseScreen from './EditPurchaseScreen.js';
+import * as userService from "../services/userService.js";
 import {getParent} from "../daos/dao.js";
 
 const ActivitiesScreen = ({onNavigate}) => {
     
-    const [activities, setActivities] = useState([]);
-    const [errorMessage, setErrorMessage] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [activityToEdit, setActivityToEdit] = useState(null);
-    const [customer, setCustomer] = useState(null);
+    const [activities,        setActivities]        = useState([]   );
+    const [errorMessage,      setErrorMessage]      = useState(null );
+    const [loading,           setLoading]           = useState(true );
+    const [activityToEdit,    setActivityToEdit]    = useState(null );
+    const [customer,          setCustomer]          = useState(null );
+    const [canSeeAllBookings, setCanSeeAllBookings] = useState(false); // true if current user can see all future/past bookings or just the closest ones
             
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -27,10 +29,18 @@ const ActivitiesScreen = ({onNavigate}) => {
         }
     }
 
+    const loadPermissions = async () => {
+        const canSeeAllBookings = await userService.canSeeAllBookings();
+        setCanSeeAllBookings(canSeeAllBookings);
+        return canSeeAllBookings;
+    };
+
     const getAllActivities = async () => {
         try {
-            const after = utils.now(-7);
-            const before = utils.now(30);
+            const userCanSeeAllBookings = await loadPermissions();
+            
+            const after = userCanSeeAllBookings  ? utils.now(-7) : utils.now(-2);
+            const before = userCanSeeAllBookings ? utils.now(30) : utils.now(2);
             const filter = {"after" : after, "before" : before};
             const allActivities = await activityService.getAll(filter);
             setActivities(allActivities);
