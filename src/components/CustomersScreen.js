@@ -41,7 +41,9 @@ const CustomersScreen = ({ onNavigate }) => {
         try {
             let customerFilter = { after: utils.today(-2), before: utils.today(2) };
             
-            if(canSeeAllBookings) {
+            // cant rely on async state here. Fetch again
+            const userCanSeeAllBookings = await userService.canSeeAllBookings(); 
+            if(userCanSeeAllBookings) {
                 if(getAllCustomers) {
                     customerFilter = {}
                 } else {
