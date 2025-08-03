@@ -21,14 +21,16 @@ export async function jsonObjectDiffStr(obj1, obj2) {
                 if(isEmpty(val1) && isEmpty(val2)) {
                     continue;
                 }
-                else if (!Object.hasOwn(obj1, key)) {
-                    diff += `Added ${key}: ${val2}, `;
+                else if (isEmpty(val1)) {
+                    // Display human readable data
+                    const val2Legible = isDate(val2) ? toDateTime(val2) : val2; 
+                    diff += `Added ${key}: ${val2Legible}, `;
                 } 
                 else if(isDate(val2)) {
                     const val1DateTime = toDateTime(val1);
                     const val2DateTime = toDateTime(val2);
                     if(!val1DateTime.equals(val2DateTime)) {
-                        diff += ` ${key}: ${val1} -> ${val2}, `;
+                        diff += ` ${key}: ${val1DateTime} -> ${val2DateTime}, `;
                     }
                 }
                 else if (val2 !== val1) {
