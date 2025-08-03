@@ -291,7 +291,7 @@ async function mapMealObject(mealData) {
     if(utils.isString(mealData?.status)) meal.status = mealData.status;
     
     // If dateTime decided and staff assigned, then it counts as confirmed
-    if(utils.isString(mealData?.assignedTo) && utils.isDate(mealData?.startingAt) && utils.toFireStoreTime(mealData.startingTime)) {
+    if(!utils.isEmpty(mealData?.assignedTo) && utils.isDate(mealData?.startingAt) && utils.isDate(mealData.startingTime)) {
         meal.status = "confirmed";
     } else {
         meal.status = "requested";
