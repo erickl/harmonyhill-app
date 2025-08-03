@@ -116,6 +116,12 @@ export async function getCurrentUser() {
     return await userDao.getOne(user.uid);
 }
 
+export async function canSeeAllBookings() {
+    const user = await getCurrentUser();
+    if(!user) return false;
+    return user.role === "admin" || user.role === "manager";
+}
+
 export async function hasEditBookingsPermissions() {
     const user = await getCurrentUser();
     if(!user) return false;

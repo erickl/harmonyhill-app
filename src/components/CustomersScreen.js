@@ -10,24 +10,45 @@ import EditCustomerScreen from './EditCustomerScreen';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 
 const CustomersScreen = ({ onNavigate }) => {
-    const [customers,          setCustomers]         = useState([]    );
-    const [loading,            setLoading]           = useState(true  );
-    const [selectedCustomer,   setSelectedCustomer]  = useState(null  ); // State to store the selected customer
-    const [pastExpanded,       setPastExpanded]      = useState(false ); // State to expand past customer section
-    const [futureExpanded,     setFutureExpanded]    = useState(false ); // State to expand future customer section
-    const [customerToEdit,     setCustomerToEdit]    = useState(null  ); // state to enable editing of customers
-    const [customerPurchases,  setCustomerPurchases] = useState(null  ); // state to enable adding purchases
-    const [hasEditBookingsPermissions, setEditBookingsPermissions]   = useState(false ); // true if current user has permissions to edit bookings
-    const [hasAddBookingsPermissions, setAddBookingsPermissions]   = useState(false ); // true if current user has permissions to add bookings
-    const [errorMessage,       setErrorMessage]      = useState(null  );
+    const [customers,                  setCustomers]               = useState([]    );
+    const [loading,                    setLoading]                 = useState(true  );
+    const [selectedCustomer,           setSelectedCustomer]        = useState(null  ); // State to store the selected customer
+    const [pastExpanded,               setPastExpanded]            = useState(false ); // State to expand past customer section
+    const [futureExpanded,             setFutureExpanded]          = useState(false ); // State to expand future customer section
+    const [customerToEdit,             setCustomerToEdit]          = useState(null  ); // state to enable editing of customers
+    const [customerPurchases,          setCustomerPurchases]       = useState(null  ); // state to enable adding purchases
+    const [hasEditBookingsPermissions, setEditBookingsPermissions] = useState(false ); // true if current user has permissions to edit bookings
+    const [hasAddBookingsPermissions,  setAddBookingsPermissions]  = useState(false ); // true if current user has permissions to add bookings
+    const [canSeeAllBookings,          setCanSeeAllBookings]       = useState(false ); // true if current user can see all future/past bookings or just the closest ones
+    const [errorMessage,               setErrorMessage]            = useState(null  );
     
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
-    }
+    };
+
+    const loadPermissions = async () => {
+        const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
+        setEditBookingsPermissions(userHasEditBookingsPermissions);
+
+        const userHasAddBookingsPermissions = await userService.hasEditBookingsPermissions();
+        setAddBookingsPermissions(userHasAddBookingsPermissions)
+
+        const canSeeAllBookings = await userService.canSeeAllBookings();
+        setCanSeeAllBookings(canSeeAllBookings);
+    };
 
     const fetchCustomers = async (getAllCustomers = false) => {
         try {
-            const customerFilter = getAllCustomers ? {} : {after: utils.today(-7), before: utils.today(14)};
+            let customerFilter = { after: utils.today(-2), before: utils.today(2) };
+            
+            if(canSeeAllBookings) {
+                if(getAllCustomers) {
+                    customerFilter = {}
+                } else {
+                    customerFilter = { after: utils.today(-7), before: utils.today(14) };
+                }
+            }
+            
             const fetchedCustomers = await bookingService.get(customerFilter);
             setCustomers(fetchedCustomers);
             setLoading(false);
@@ -38,18 +59,13 @@ const CustomersScreen = ({ onNavigate }) => {
     };
 
     useEffect(() => {
-        fetchCustomers(false);
+        const load = async () => {
+            await userService.logLastActive();
+            await loadPermissions();    
+            await fetchCustomers(false);
+        };
 
-        userService.logLastActive();
-
-        const loadPermissions = async () => {
-            const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
-            setEditBookingsPermissions(userHasEditBookingsPermissions);
-
-            const userHasAddBookingsPermissions = await userService.hasEditBookingsPermissions();
-            setAddBookingsPermissions(userHasAddBookingsPermissions)
-        }
-        loadPermissions();    
+        load();
     }, []);
 
     if (loading) {
@@ -174,7 +190,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                 )}
                             </React.Fragment>
                         ))}
-                        {((customerTypeClass == "past-customer" || customerTypeClass == "future-customer") &&
+                        {(canSeeAllBookings && (customerTypeClass == "past-customer" || customerTypeClass == "future-customer") &&
                             <button
                                 className="edit-booking"
                                 onClick={(e) => {
