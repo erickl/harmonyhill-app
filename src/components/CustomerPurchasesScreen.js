@@ -139,6 +139,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                     customer={customer}
                     activities={customerActivities}
                     handleEditActivity={handleEditActivity}
+                    expandAllDates={true}
                 />  
             </div>
             <button type="button" onClick={() => onClose() } className="cancel-button">

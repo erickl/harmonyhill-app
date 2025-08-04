@@ -54,13 +54,17 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
 
         setActivitiesByDate(allActivitiesByDate)
 
+        const today = utils.today();
 
         // If not all dates are expanded, expand today's activities by default, 
         if(expandAllDates === true) {
             const dates = Object.keys(allActivitiesByDate);
             let expandedList = {};
             for(const date of dates) {
-                expandedList[date] = true;
+                const activitiesForDate = allActivitiesByDate[date];
+                const activity = !utils.isEmpty(activitiesForDate) ? activitiesForDate[0] : null;
+                const startingAt = activity ? activity.startingAt : null;
+                expandedList[date] = startingAt && startingAt >= today;
             } 
             setExpanded(expandedList);
         } else {
