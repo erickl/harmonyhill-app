@@ -45,9 +45,6 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
         fetchTeamMembers();
     }, []);
 
-    const fixedCustomerPrice = selectedActivity && utils.isAmount(selectedActivity.customerPrice) ? selectedActivity.customerPrice : 0;
-    const customPrice = custom && utils.isAmount(formData.customerPrice) ? formData.customerPrice : fixedCustomerPrice;
-
     return (
         <div>
             <h3>Confirm Purchase Details:</h3>
@@ -76,7 +73,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                             id="purchasePrice"
                             name="customerPrice"
                             // Apply formatting here for display inside the input
-                            value={utils.formatDisplayPrice(customPrice)}
+                            value={utils.formatDisplayPrice(formData.customerPrice)}
                             onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
                             className="input"
                         />
