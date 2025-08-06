@@ -39,7 +39,7 @@ const CustomersScreen = ({ onNavigate }) => {
 
     const fetchCustomers = async (getAllCustomers = false) => {
         try {
-            let customerFilter = { after: utils.today(-2), before: utils.today(2) };
+            let customerFilter = { after: utils.today(-2), before: utils.today(7) };
             
             // cant rely on async state here. Fetch again
             const userCanSeeAllBookings = await userService.canSeeAllBookings(); 

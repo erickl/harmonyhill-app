@@ -40,7 +40,7 @@ const ActivitiesScreen = ({onNavigate}) => {
             const userCanSeeAllBookings = await loadPermissions();
             
             const after = userCanSeeAllBookings  ? utils.now(-7) : utils.now(-2);
-            const before = userCanSeeAllBookings ? utils.now(30) : utils.now(2);
+            const before = userCanSeeAllBookings ? utils.now(30) : utils.now(7);
             const filter = {"after" : after, "before" : before};
             const allActivities = await activityService.getAll(filter);
             setActivities(allActivities);
