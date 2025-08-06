@@ -2,3 +2,8 @@
     display: flex;
     flex-direction: row;
 }
+
+.validation-error {
+  margin-left: 10px;
+  color: red;
+}

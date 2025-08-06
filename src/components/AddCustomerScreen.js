@@ -33,14 +33,35 @@ const AddCustomerScreen = ({ onNavigate }) => {
     const [formData, setFormData] = useState(initialFormData);
     const [readyToSubmit, setReadyToSubmit] = useState(false);
 
+    const [validationError, setValidationError] = useState(null);
+
+    const onValidationError = (error) => {
+        setValidationError(error);
+    }
+
     const [errorMessage, setErrorMessage] = useState(null);
         
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
     }
 
+    const validateFormData = (newFormData) => {
+        const validationResult = bookingService.validate(newFormData, onValidationError);
+
+        setReadyToSubmit(validationResult);
+
+        if(validationResult === true) {
+            setValidationError(null);
+        }
+    }
+
     // for calculating the length of stay based on checkin and checkout date 
     const [nightsCount, setNightsCount] = useState('');
+
+    // Initial validation
+    useEffect(() => {
+        validateFormData(initialFormData);
+    }, []);
 
     useEffect(() => {
         if (formData.checkInAt && formData.checkOutAt) {
@@ -67,8 +88,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
             setFormData(nextFormData);
         }
 
-        const validationResult = bookingService.validate(nextFormData);
-        setReadyToSubmit(validationResult);
+        validateFormData(nextFormData);
     };
 
     const handleSubmit = async () => { 
@@ -359,6 +379,8 @@ const AddCustomerScreen = ({ onNavigate }) => {
             {/* <BookingForm
                 formData={formData}
             /> */}
+
+            {(validationError && <p className="validation-error">{validationError}</p>)}
 
             <ButtonsFooter 
                 onCancel={() => onNavigate('customers')} 

@@ -120,77 +120,98 @@ export async function mapBookingObject(data) {
     return booking;
 }
 
-export function validate(data) {
-    if(utils.isEmpty(data)) {
-        return false;
-    }
-
-    if(utils.isEmpty(data.checkInAt)) {
-        return false;
-    }
-
-    if(utils.isEmpty(data.checkOutAt)) {
-        return false;
-    }
-
-    if(data.checkOutAt < data.checkInAt) {
-        return false;
-    }
-
-    if(utils.isEmpty(data.name.trim()) || !utils.isString(data.name)) {
-        return false;
-    }
-
-    if(utils.isEmpty(data.house.trim()) || !utils.isString(data.house)) {
-        return false;
-    }
-
-    if(utils.isEmpty(data.country.trim()) || !utils.isString(data.country)) {
-        return false;
-    }
-
-    if(!utils.isNumber(data.roomRate) || data.roomRate == 0) {
-        return false;
-    }
-
-    if(!utils.isNumber(data.guestPaid) || data.guestPaid == 0) {
-        return false;
-    }
-
-    if(!utils.isNumber(data.hostPayout) || data.hostPayout == 0) {
-        return false;
-    }
-
-    if(!utils.isString(data.source)) {
-        return false;
-    }
-
-    const source = data.source ? data.source.trim().toLowerCase() : "";
-
-    if(utils.isEmpty(source)) {
-        return false;
-    }
-
-    if(source === "airbnb") {
-        const guestPaidPerNight = data.guestPaid / data.nightsCount;
-        // Room rate is excluding AirBnB added fee
-        if(data.roomRate >= guestPaidPerNight) {
-            return false;
-        }
-        // Payout from AirBnB smaller since AirBnB takes a piece
-        if(data.hostPayout >= data.guestPaid) {
-            return false;
-        }
-    } else if(source === "direct") {
-        const roomRateAllNights = data.roomRate * data.nightsCount;
-        if(roomRateAllNights != data.guestPaid) {
+export function validate(data, onError) {
+    try {
+        if(utils.isEmpty(data)) {
+            onError("Fill in all required fields to submit");
             return false;
         }
 
-        // If direct, we get all the cash
-        if(data.hostPayout != data.guestPaid) {
+        if(utils.isEmpty(data.checkInAt)) {
+            onError("Check-in date is empty");
             return false;
         }
+
+        if(utils.isEmpty(data.checkOutAt)) {
+            onError("Check-out date is empty");
+            return false;
+        }
+
+        if(data.checkOutAt < data.checkInAt) {
+            onError("Check-out date must be after check-in date");
+            return false;
+        }
+
+        if(utils.isEmpty(data.name.trim()) || !utils.isString(data.name)) {
+            onError("Booking name missing");
+            return false;
+        }
+
+        if(utils.isEmpty(data.house.trim()) || !utils.isString(data.house)) {
+            onError("Choose a house for the booking");
+            return false;
+        }
+
+        if(utils.isEmpty(data.country.trim()) || !utils.isString(data.country)) {
+            onError("Country is missing");
+            return false;
+        }
+
+        if(!utils.isNumber(data.roomRate) || data.roomRate == 0) {
+            onError("Room rate is missing");
+            return false;
+        }
+
+        if(!utils.isNumber(data.guestPaid) || data.guestPaid == 0) {
+            onError("Guest paid amount is missing");
+            return false;
+        }
+
+        if(!utils.isNumber(data.hostPayout) || data.hostPayout == 0) {
+            onError("Host payout amount is missing");
+            return false;
+        }
+
+        if(!utils.isString(data.source)) {
+            onError("Booking source data type wrong");
+            return false;
+        }
+
+        const source = data.source ? data.source.trim().toLowerCase() : "";
+
+        if(utils.isEmpty(source)) {
+            onError("Booking source missing");
+            return false;
+        }
+
+        if(source === "airbnb") {
+            const guestPaidPerNight = data.guestPaid / data.nightsCount;
+            // Room rate is excluding AirBnB added fee
+            if(data.roomRate >= guestPaidPerNight) {
+                onError("Room rate should be less than what guest paid per night, for an AirBnB booking");
+                return false;
+            }
+            // Payout from AirBnB smaller since AirBnB takes a piece
+            if(data.hostPayout >= data.guestPaid) {
+                onError("Host payout should be less than what guest paid total, for an AirBnB booking");
+                return false;
+            }
+        } else if(source === "direct") {
+            const roomRateAllNights = data.roomRate * data.nightsCount;
+            if(roomRateAllNights != data.guestPaid) {
+                onError("Total room cost should be equal to what guest paid total, for a direct booking");
+                return false;
+            }
+
+            // If direct, we keep the entire payment
+            if(data.hostPayout != data.guestPaid) {
+                onError("Host payout should be equal to what guest paid total, for a direct booking");
+                return false;
+            }
+        }
+    } catch(e) {
+        onError(`Unexpected booking validation error: ${e.message}`);
+        return true; // A bug shouldn't prevent you from submitting?
     }
 
     return true;
