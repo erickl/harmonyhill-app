@@ -30,7 +30,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
             <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
             {activity.category !== "meal" && (<p><span className="detail-label">Provider:</span> {activity.provider}</p>)}
             <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
-            <p><span className="detail-label">Customer Price:</span> {activity.customerPrice ?? 0 }</p>
+            <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice) ?? 0 }</p>
 
             {/* List dishes if the activity expanded is a meal */}
             {activity.category === "meal" && (<>
