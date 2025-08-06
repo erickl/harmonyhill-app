@@ -44,6 +44,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         // Auxiliary data
         house         : customer.house,
         guestCount    : customer.guestCount,
+        internal      : false,
     };
 
     const [errorMessage, setErrorMessage] = useState(null);
@@ -84,6 +85,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             "displayName"   : activity.displayName,
             "customerPrice" : activity.customerPrice,
             "custom"        : activity.custom,
+            "internal"      : activity.internal,
         });
     }
 

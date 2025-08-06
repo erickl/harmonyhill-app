@@ -43,6 +43,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         // Auxiliary data
         house         : customer.house,
         guestCount    : customer.guestCount,
+        internal      : activityToEdit.internal,
     });
 
     const onValidationError = (error) => {
