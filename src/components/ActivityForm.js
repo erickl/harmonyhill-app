@@ -6,9 +6,11 @@ import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 
-export default function ActivityForm({ selectedActivity, formData, handleFormDataChange, custom }) {
+export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers, setTeamMembers] = useState([]);
     const [errorMessage, setErrorMessage] = useState(null);
+
+    const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
             
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -64,6 +66,22 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
             )}
             
             <form>
+                { custom === true && (
+                     <div className="purchase-form-group">
+                        <label htmlFor="displayName">Name:</label>
+                        <div className="display-name-input-wrapper">
+                            <input
+                                type="text"
+                                id="displayName"
+                                name="displayName"
+                                // Apply formatting here for display inside the input
+                                value={formData.displayName}
+                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                                className="input"
+                            />
+                        </div>
+                    </div>
+                )}
                 <div className="purchase-form-group">
                     <label htmlFor="purchasePrice">Price:</label>
                     <div className="price-input-wrapper"> {/* Wrapper for "Rp" and input */}

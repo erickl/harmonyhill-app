@@ -34,6 +34,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         startingTime  : null,
         comments      : '',
         customerPrice : 0,
+        displayName   : "",
+        custom        : false,
         provider      : '',
         assignedTo    : '',
         isFree        : false,
@@ -78,7 +80,11 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             console.log(`Error: subCategory ${activity.subCategory} selected without a category`);
         }
 
-        handleFormDataChange("customerPrice", activity.customerPrice);
+        handleFormDataChange("_batch", {
+            "displayName"   : activity.displayName,
+            "customerPrice" : activity.customerPrice,
+            "custom"        : activity.custom,
+        });
     }
 
     const handleActivityPurchase = async () => {
@@ -142,7 +148,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         } else {
             nextFormData = { ...formData, [name]: value };  
         }
-
         if(!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }

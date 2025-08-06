@@ -100,8 +100,8 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
                                         onClick={() => handleActivityClick(activity)}
                                     >
                                         <div className="customer-name-in-list">
-                                            <span>{`${utils.capitalizeWords(activity.category)}`}</span>
-                                            {(activity.status === "requested" && <WarningSymbol />)}
+                                            <span>{`Custom: ${utils.capitalizeWords(activity.displayName)}`}</span>
+                                            {(!utils.isString(activity.status) && activity.status.toLowerCase() !== "confirmed" && <WarningSymbol />)}
                                             <span>{activity.startingAt_HHmm}</span>
                                         </div>  
                                         {utils.capitalizeWords(activity.subCategory)}
