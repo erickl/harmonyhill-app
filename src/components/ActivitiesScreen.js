@@ -52,7 +52,7 @@ const ActivitiesScreen = ({onNavigate}) => {
 
     useEffect(() => {
         getAllActivities();
-    }, [activities]);
+    }, []);
 
     if (loading) {
         return (
