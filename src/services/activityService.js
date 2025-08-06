@@ -77,9 +77,15 @@ export function enhanceActivities(activities) {
                 activity.startingAt_HHmm = "Time TBD";
             }
 
-            // Custom activities might already have a display name given
-            activity.displayName = utils.isEmpty(activity.displayName) ? activity.subCategory.replace(/-/g, " ") : activity.displayName;
+            // Custom activities might already have a display name given. If not, create one here
+            if(utils.isEmpty(activity.displayName)) {
+                activity.displayName = `${activity.category.replace(/-/g, " ")}: ${activity.subCategory.replace(/-/g, " ")}`;
+            } 
             activity.displayName = utils.capitalizeWords(activity.displayName);
+
+            if(activity.custom === true) {
+                activity.subCategory = `Custom: ${activity.displayName}`;
+            }
             
             activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
         } catch(e) {
