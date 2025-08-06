@@ -92,8 +92,12 @@ export function getCurrency() {
     return "Rp";
 }
 
+export function isDateTime(value) {
+    return DateTime.isDateTime(value);
+}
+
 export function isDate(value) {
-    if(value instanceof Date || value instanceof Timestamp || DateTime.isDateTime(value)) {
+    if(value instanceof Date || value instanceof Timestamp || isDateTime(value)) {
         return true;
     } else if(isString(value)) {
         const hasDateFormat = /^\d{4}-\d{2}-\d{2}/.test(value); // starts with YYYY-MM-dd
@@ -291,7 +295,7 @@ export function cleanNumeric(value) {
 }
 
 export function capitalizeWords(str) {
-    return str.replace(/\b\w/g, (char) => char.toUpperCase());
+    return isString(str) ? str.replace(/\b\w/g, (char) => char.toUpperCase()) : str;
 }
 
 export function formatDisplayPrice(price, useCurrencyPrefix = false) {

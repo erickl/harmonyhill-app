@@ -233,12 +233,12 @@ export function validate(customer, data, isUpdate, onError) {
             return false;
         }
 
-        if(data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
+        if(utils.isDateTime(customer.checkInAt) && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
             onError(`Meal date too early. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
             return false;
         }
 
-        if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
+        if(utils.isDateTime(customer.checkOutAt) && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
             onError(`Meal date too late. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
             return false;
         }
@@ -260,7 +260,7 @@ export function validate(customer, data, isUpdate, onError) {
         }
     } catch(e) {
         onError(`Unexpected error in meal form: ${e.message}`);
-        return false; 
+        return true; // A bug shouldn't prevent you from submitting a meal?
     }
 
     return true;
@@ -272,6 +272,8 @@ async function mapMealObject(mealData) {
     meal.category = utils.isString(mealData?.category) ? mealData.category : "meal";
 
     if(utils.isString(mealData?.subCategory)) meal.subCategory = mealData.subCategory;
+
+    if(utils.isString(mealData?.displayName)) meal.displayName = mealData.displayName;
 
     // The startingAt date might be entered later. It's usually how the guests want it
     if(utils.isDate(mealData?.startingAt)) {

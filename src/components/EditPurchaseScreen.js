@@ -31,6 +31,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         startingTime  : activityToEdit.startingTime,
         category      : activityToEdit.category,
         subCategory   : activityToEdit.subCategory,
+        displayName   : activityToEdit.displayName,
+        custom        : activityToEdit.custom,
         comments      : activityToEdit.comments,
         customerPrice : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
         provider      : activityToEdit.provider,

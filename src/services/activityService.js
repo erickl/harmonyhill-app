@@ -77,7 +77,8 @@ export function enhanceActivities(activities) {
                 activity.startingAt_HHmm = "Time TBD";
             }
 
-            activity.displayName = activity.subCategory.replace(/-/g, " ");
+            // Custom activities might already have a display name given
+            activity.displayName = utils.isEmpty(activity.displayName) ? activity.subCategory.replace(/-/g, " ") : activity.displayName;
             activity.displayName = utils.capitalizeWords(activity.displayName);
             
             activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
@@ -196,6 +197,7 @@ async function mapObject(data, isUpdate = false) {
     if(utils.isString(data?.category))      activity.category = data.category;
     if(utils.isString(data?.subCategory))   activity.subCategory = data.subCategory ;
     if(utils.isString(data?.comments))      activity.comments = data.comments;
+    if(utils.isString(data?.displayName))   activity.displayName = data.displayName;
 
     if(utils.isDate(data?.startingAt))      activity.startingAt = utils.toFireStoreTime(data.startingAt);
     
@@ -240,7 +242,7 @@ export function validate(customer, data, isUpdate, onError) {
         }
     } catch(e) {
         onError(`Unexpected error in activity form: ${e.message}`);
-        return false;
+        return true;  // A bug shouldn't prevent you from submitting an activity
     }
 
     return true; 
