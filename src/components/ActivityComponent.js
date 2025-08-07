@@ -3,9 +3,11 @@ import * as invoiceService from "../services/invoiceService.js";
 import * as utils from "../utils.js";
 import "./ActivityComponent.css";
 import {getParent} from "../daos/dao.js";
+import * as userService from "../services/userService.js";
 
 const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) => {
-    const [customer, setCustomer] = useState(null);
+    const [customer,         setCustomer        ] = useState(null );
+    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
 
     useEffect(() => {
         const getCustomer = async() => {
@@ -16,6 +18,13 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
         if(displayCustomer) {
             getCustomer();
         }
+
+        const setUserRole = async() => {
+            const userRole = await userService.isManagerOrAdmin();
+            setUserRole(userRole);
+        }
+
+        setUserRole();
     }, []);
 
     const showProvider = activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
@@ -32,7 +41,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
             <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
             { showProvider && (<>
                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
-                <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p>
+                { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
             </>)}
             <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
             <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }</p>

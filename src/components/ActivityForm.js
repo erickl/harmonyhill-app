@@ -35,7 +35,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     const providers = selectedActivity ? Object.entries(selectedActivity.providerPrices).reduce((m, activity) => {
         const name = utils.capitalizeWords(activity[0]);
         const price = utils.formatDisplayPrice(activity[1], true);
-        m[`${name} - ${price}`] = { "name" : name, "price" : activity[1] };
+        m[`${name}`] = { "name" : name, "price" : activity[1] };
         return m;
     }, {}) : [];
 

@@ -116,6 +116,19 @@ export async function getCurrentUser() {
     return await userDao.getOne(user.uid);
 }
 
+export async function getUserRole() {
+    const user = await getCurrentUser();
+    if(!user) {
+        return null;
+    }
+    return user.role;
+}
+
+export async function isManagerOrAdmin() {
+    const role = await getUserRole();
+    return !utils.isEmpty(role) && (role === "manager" || role === "admin");
+}
+
 export async function canSeeAllBookings() {
     const user = await getCurrentUser();
     if(!user) return false;
