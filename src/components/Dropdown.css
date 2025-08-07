@@ -33,3 +33,15 @@
 .open-button {
     min-width: 150px;
 }
+
+.provider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Optional spacing between form groups */
+}
+
+.other-provider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Optional spacing between form groups */
+}

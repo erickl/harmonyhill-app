@@ -42,7 +42,7 @@ export default function ProviderDropdown({ label, options, currentName, currentP
     }, []); 
 
     return (
-        <div>
+        <div className="provider-container">
             <div className="dropdown-menu">
                 <div className="dropdown-row">
                     <p>{label}</p>
@@ -67,9 +67,9 @@ export default function ProviderDropdown({ label, options, currentName, currentP
                 )}
             </div>
             {selected === "Other" && (
-                <div>
-                    <div className="purchase-form-group">
-                        <label htmlFor="provider">Provider:</label>
+                <>
+                    <div>
+                        <label htmlFor="provider">Other Provider:</label>
                         <div className="provider-input-wrapper">
                             <input
                                 type="text"
@@ -86,7 +86,7 @@ export default function ProviderDropdown({ label, options, currentName, currentP
                         </div>
                     </div>
                     <div className="purchase-form-group">
-                        <label htmlFor="purchasePrice">Price:</label>
+                        <label htmlFor="purchasePrice">Provider Price:</label>
                         <div className="price-input-wrapper"> {/* Wrapper for "Rp" and input */}
                             <span className="currency-prefix">{utils.getCurrency()}</span>
                             <input
@@ -103,7 +103,7 @@ export default function ProviderDropdown({ label, options, currentName, currentP
                             />
                         </div>
                     </div>
-                </div>
+                </>
             )}
         </div>
     );
