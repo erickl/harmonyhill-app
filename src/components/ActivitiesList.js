@@ -44,6 +44,8 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
         }
     }
 
+    const today_ddMMM = utils.to_ddMMM(utils.today());
+
     useEffect(() => {
         const allActivitiesByDate = activities.reduce((m, activity) => {
             const date = activity.startingAt_ddMMM ? activity.startingAt_ddMMM : "Date TBD";
@@ -68,7 +70,6 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
             } 
             setExpanded(expandedList);
         } else {
-            const today_ddMMM = utils.to_ddMMM(utils.today());
             handleSetExpanded(today_ddMMM);
         }
     }, [activities, customer]);
@@ -85,7 +86,7 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
                         className={'customer-group-header clickable-header'}
                         onClick={() => handleSetExpanded(date) }>
                         
-                        {date}
+                        {`${date}${(date === today_ddMMM ? " (Today)" : "")}`}
                         
                         <span className="expand-icon">
                             {expanded[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
