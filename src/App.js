@@ -59,21 +59,21 @@ function App() {
   //userService.logout();
   //bookingService.uploadData('/Booking list - Bookings Harmony Hill.tsv');
   //bookingService.uploadData('/Booking list - Bookings Jungle Nook.tsv');
-  
+
   //personnelService.testPersonnel();
   //userService.testLogin();
   //activityService.testActivities(dt);
-  
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('customers');
   const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if(user) {
+      if (user) {
         const isApproved = await userService.isUserApproved(user.displayName);
         setIsLoggedIn(isApproved);
-      } 
+      }
       else setIsLoggedIn(false);
     });
 
@@ -101,14 +101,14 @@ function App() {
   } else if (currentScreen === 'activities') {
     screenToDisplay = <ActivitiesScreen onNavigate={navigate} />;
   } else if (currentScreen === 'expenses') {
-    screenToDisplay = <ExpensesScreen />;
+    screenToDisplay = <ExpensesScreen onNavigate={navigate} />;
   } else if (currentScreen === 'add-customer') {
     screenToDisplay = <AddCustomerScreen onNavigate={navigate} />; // Pass navigate
   }
 
   return (
     <>
-     
+
       <div className="app-container">
         {isLoggedIn ? (
           <>
@@ -116,7 +116,7 @@ function App() {
             <SideMenu />
             <div className="content">
               {screenToDisplay}
-              </div> { /* Use screenToDisplay */}
+            </div> { /* Use screenToDisplay */}
             <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
           </>
         ) : (
