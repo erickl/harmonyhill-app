@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "./ActivityForm.css";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
+import ProviderDropdown from "./ProviderDropdown.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
@@ -18,7 +19,11 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
     const onProviderSelect = (provider) => {
         const name = provider ? provider.name : '';
-        handleFormDataChange("provider", name);
+        const price = provider ? provider.price : 0;
+        handleFormDataChange("_batch", {
+            "provider"      : name,
+            "providerPrice" : price,
+        });
     }
 
     const onTeamMemberSelect = (teamMember) => {
@@ -123,8 +128,9 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     </div>
                 ) : (
                     <div className="purchase-form-group">
-                        <Dropdown 
-                            current={formData.provider} 
+                        <ProviderDropdown 
+                            currentName={formData.provider} 
+                            currentPrice={formData.providerPrice} 
                             label={"Select a provider"} 
                             options={providers} 
                             onSelect={onProviderSelect}

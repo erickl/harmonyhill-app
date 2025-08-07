@@ -215,6 +215,7 @@ async function mapObject(data, isUpdate = false) {
     activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     
     if(utils.isString(data?.provider))      activity.provider = data.provider;
+    if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
     // First "requested", then "confirmed" (then "completed"?)
     activity.status = utils.isString(data?.status) ? data.status : "requested";
 

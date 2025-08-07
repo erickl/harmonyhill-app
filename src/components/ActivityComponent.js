@@ -18,7 +18,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
         }
     }, []);
 
-    const showProvider = activity.category !== "meal" && activity.internal === false && utils.isEmpty(activity.provider);
+    const showProvider = activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
 
     return (
         <div className="customer-details">
@@ -30,9 +30,12 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
             {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
             {activity.comments && (<p><span className="detail-label">Comments:</span> {activity.comments}</p>)}
             <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
-            { showProvider && (<p><span className="detail-label">Provider:</span> {activity.provider}</p>)}
+            { showProvider && (<>
+                <p><span className="detail-label">Provider:</span> {activity.provider}</p>
+                <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p>
+            </>)}
             <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
-            <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice) ?? 0 }</p>
+            <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }</p>
 
             {/* List dishes if the activity expanded is a meal */}
             {activity.category === "meal" && (<>
