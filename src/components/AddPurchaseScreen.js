@@ -271,20 +271,23 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     <h3>Items in {selectedCategory}:</h3>
                     {filteredItems.length > 0 ? (
                         <div className="activity-button-container">
-                            {filteredItems.map((item) => (
-                                <div key={`${item.category}-${item.subCategory}-wrapper`}>
-                                    <button
-                                        key={`${item.category}-${item.subCategory}`}
-                                        className="button activity-button"
-                                        onClick={() => {
-                                            handleActivitySelection(item)
-                                        }}
-                                    >
-                                        {item.displayName} <br></br> 
-                                        { item.customerPrice !== 0 && (<>{utils.formatDisplayPrice(item.customerPrice, true)}</>)}
-                                    </button>
-                                </div>
-                            ))}
+                            {filteredItems.map((item) => {
+                                const itemLabel = utils.capitalizeWords(item.subCategory.replace(/-/g, " "));
+                                return (
+                                    <div key={`${item.category}-${item.subCategory}-wrapper`}>
+                                        <button
+                                            key={`${item.category}-${item.subCategory}`}
+                                            className="button activity-button"
+                                            onClick={() => {
+                                                handleActivitySelection(item)
+                                            }}
+                                        >
+                                            {itemLabel} <br></br> 
+                                            { item.customerPrice !== 0 && (<>{utils.formatDisplayPrice(item.customerPrice, true)}</>)}
+                                        </button>
+                                    </div>
+                                )
+                            })}
                         </div>
                     ) : (
                         <p>No items found in this category.</p>
