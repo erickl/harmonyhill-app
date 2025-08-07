@@ -15,12 +15,12 @@ import ErrorNoticeModal from './ErrorNoticeModal.js';
 const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) => {
 
     // Show purchase summary and confirmation pop up modal
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [activityMenuItem, setActivityMenuItem] = useState(null);
-    const [readyToSubmit, setReadyToSubmit] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [errorMessage, setErrorMessage] = useState(null);
-    const [validationError, setValidationError] = useState(null);
+    const [showConfirm,      setShowConfirm]      = useState(false);
+    const [activityMenuItem, setActivityMenuItem] = useState(null );
+    const [readyToSubmit,    setReadyToSubmit]    = useState(false);
+    const [loading,          setLoading]          = useState(true );
+    const [errorMessage,     setErrorMessage]     = useState(null );
+    const [validationError,  setValidationError]  = useState(null );
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -36,6 +36,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         comments      : activityToEdit.comments,
         customerPrice : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
         provider      : activityToEdit.provider,
+        providerPrice : activityToEdit.providerPrice,
         assignedTo    : activityToEdit.assignedTo,
         status        : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
         dishes        : activityToEdit.dishes, // not null only for meal activities 
