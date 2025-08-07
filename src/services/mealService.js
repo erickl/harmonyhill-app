@@ -364,6 +364,6 @@ export function getNewCustomDish(id, name) {
         "name"          : `${name}`,
         "custom"        : true,
         "quantity"      : 0,
-        "customerPrice" : 100000,
+        "customerPrice" : 0,
     };
 }

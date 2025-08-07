@@ -130,7 +130,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                             +
                         </button> 
                     )}
-                    <p>Total: {runningTotal} Rp</p>   
+                    <p>Total: {utils.formatDisplayPrice(runningTotal, true)}</p>   
                 </div>
             </div>
             

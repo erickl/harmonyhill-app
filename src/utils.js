@@ -300,7 +300,7 @@ export function capitalizeWords(str) {
 
 export function formatDisplayPrice(price, useCurrencyPrefix = false) {
     const amount = isAmount(price) ? price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '';
-    return `${(useCurrencyPrefix ? getCurrency() : "")} ${amount}`;
+    return `${(useCurrencyPrefix ? getCurrency() + " " : "")}${amount}`;
 }
 
 function generateDateFormats() {

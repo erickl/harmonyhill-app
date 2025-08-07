@@ -112,7 +112,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                     </div>
                     
                 ) : ( 
-                    <span>{`${dish.name} (${dish.customerPrice})`}</span>
+                    <span>{`${dish.name} (${utils.formatDisplayPrice(dish.customerPrice, false)})`}</span>
                 )}
                 <div className="meal-dish-row-counter">
                     <button
