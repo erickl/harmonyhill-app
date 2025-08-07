@@ -1,6 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { storage } from '../firebase'; // Adjust path if your firebase.js is elsewhere
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { uploadPurchaseInvoice } from "../services/invoiceService";
 
 // Helper function to access camera
@@ -42,7 +40,7 @@ const uploadImageToFirebase = async (imageDataURL, onProgress, onSuccess, onErro
 };
 
 
-function UploadReceiptScreen({ onClose }) {
+export default function UploadReceiptScreen({ onClose }) {
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
 
@@ -226,5 +224,3 @@ function UploadReceiptScreen({ onClose }) {
     </div>
   );
 }
-
-export default UploadReceiptScreen;
