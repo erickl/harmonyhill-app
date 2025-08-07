@@ -32,6 +32,11 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 - Make sure Key Store Path and password are filled in (only need to do this the first time)
 - Select the Release option and then Create
 
+# Launch on iOS as a Progressive Web App (PWA)
+- Adjust version numbering in package.json (align with gradle.properties for the android app)
+- npm run build
+- firebase deploy
+
 # Loading the bookings from the sheet
 - Download sheet as a tsv
 - put files in Public folder
