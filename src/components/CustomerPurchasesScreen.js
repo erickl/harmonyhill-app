@@ -9,21 +9,13 @@ import EditPurchaseScreen from './EditPurchaseScreen.js';
 import './CustomerPurchasesScreen.css'; 
 import ActivitiesList from './ActivitiesList.js';
 
-const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
-    const [customerActivities, setCustomerActivities] = useState([]);
-    const [runningTotal, setRunningTotal] = useState(0);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    const [activityToEdit, setActivityToEdit] = useState(null);         // state to enable editing of activities
+export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
+    const [customerActivities, setCustomerActivities] = useState([]  );
+    const [runningTotal,       setRunningTotal      ] = useState(0   );
+    const [loading,            setLoading           ] = useState(true);
+    const [error,              setError             ] = useState(null);
+    const [activityToEdit,     setActivityToEdit    ] = useState(null); // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
-    const [expanded, setExpanded] = useState({});                       // All dates expanded to boot (all activity headers visible)
-
-    const handleSetExpanded = (date) => {
-        const updatedExpandedList = { ...(expanded || {}) }; // Make shallow copy
-        updatedExpandedList[date] = updatedExpandedList[date] === true ? false : true;
-        setExpanded(updatedExpandedList);
-    };
 
     const fetchPurchases = async () => {
         if(!customer) {
@@ -93,7 +85,7 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
                     //fetchPurchases();
                 }}
                 onNavigate={onNavigate}
-            ></EditPurchaseScreen>
+            />
         );
     }
 
@@ -148,5 +140,3 @@ const CustomerPurchasesScreen = ({ customer, onClose, onNavigate }) => {
         </div>
     );
 };
-
-export default CustomerPurchasesScreen;

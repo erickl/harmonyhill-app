@@ -9,40 +9,36 @@ import WarningSymbol from './WarningSymbol.js';
 
 const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDates}) => {
     const [expanded, setExpanded] = useState({});
-    const [selectedActivity, setSelectedActivity] = useState(null);
+    const [selectedActivities, setSelectedActivities] = useState({});
     const [activitiesByDate, setActivitiesByDate] = useState({});
 
     const handleSetExpanded = (date) => {
-        const updatedExpandedList = { ...(expanded || {}) }; // Make shallow copy
+        let updatedExpandedList = { ...(expanded || {}) }; // Make shallow copy
         updatedExpandedList[date] = updatedExpandedList[date] === true ? false : true;
         setExpanded(updatedExpandedList);
     };
 
     const handleActivityClick = async (activity) => {
-        // If clicking on the same activity, depress it again
-        if(selectedActivity?.id === activity?.id) {
-            setSelectedActivity(null);
-        } else {   
-            refreshSelectedActivity(activity);
-        }
-    };
+        if(!activity) return;
 
-    const refreshSelectedActivity = async (activity) => {
-        if(!activity) {
-            return;
+        const id = activity.id;
+
+        let updatedList = { ...(selectedActivities || {}) };
+        
+        const expandActivityInfo = updatedList[id] === null || updatedList[id] === undefined;
+
+        if(expandActivityInfo) {
+             if(activity.category === "meal") {
+                // If this list is displayed for all customers, get the customer for each activity 
+                const selectedCustomer = customer ? customer : await getParent(activity);      
+                activity.dishes = await mealService.getDishes(selectedCustomer.id, activity.id);  ;
+            }
         }
-        if(activity.category === "meal") {
-            // If this list is displayed for all customers, get the customer for each activity 
-            const selectedCustomer = customer ? customer : await getParent(activity);
-            const dishes = await mealService.getDishes(selectedCustomer.id, activity?.id);
-            let newActivity = { ...(activity || {}) }; // Make shallow copy
-            newActivity.dishes = dishes;
-            setSelectedActivity(newActivity);
-        }
-        else {
-            setSelectedActivity(activity);
-        }
-    }
+
+        updatedList[id] = expandActivityInfo ? activity : null;
+
+        setSelectedActivities(updatedList);
+    };
 
     const today_ddMMM = utils.to_ddMMM(utils.today());
 
@@ -111,11 +107,11 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
                                         {utils.capitalizeWords(activity.subCategory)}
                                         
                                     </div>
-                                    {selectedActivity?.id === activity.id && (  
+                                    {selectedActivities[activity.id] && (  
                                         // if global customer unspecified, this is the list for all customers, so each activity should have some customer data
                                         <ActivityComponent 
                                             displayCustomer={customer === null}
-                                            activity={selectedActivity}
+                                            activity={selectedActivities[activity.id]}
                                             handleEditActivity={handleEditActivity}
                                         />
                                     )}

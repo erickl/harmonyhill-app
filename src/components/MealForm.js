@@ -66,6 +66,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     // Sort appearance of meals by meal categories, i.e. first starters, then mains, lastly coffee, etc..
     const sortedMealNames = Object.keys(allDishes).sort((a, b) => a.localeCompare(b));
 
+    formData.dishes = utils.isEmpty(formData.dishes) ? {} : formData.dishes;
     const customDishes = Object.values(formData.dishes).filter(dish => dish.custom === true);
     const newCustomDish = mealService.getNewCustomDish(customDishes.length + 1, "");
 
