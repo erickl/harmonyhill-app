@@ -163,7 +163,7 @@ export async function getCurrentUserName() {
 }
 
 export async function isAdmin() {
-    const user = getCurrentUser();
+    const user = await getCurrentUser();
     if (!user) {
         return false;
     }
