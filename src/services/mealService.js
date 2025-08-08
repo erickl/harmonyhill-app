@@ -20,6 +20,8 @@ export async function addMeal(bookingId, mealData, onError) {
 
         const meal = await mapMealObject(mealData);
         meal.house = booking.house;
+        meal.name = booking.name
+        meal.bookingId = bookingId;
 
         mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
         const success = await activityDao.add(bookingId, mealId, meal, onError);
@@ -185,7 +187,7 @@ export async function getMeals(options) {
     for(const booking of bookings) {
         const bookingId = booking.id;
         const meal = await activityDao.getMeals(bookingId, options);
-        const enhancedMeal = activityService.enhanceActivities(meal);
+        const enhancedMeal = await activityService.enhanceActivities(meal);
         meals.push(enhancedMeal);
     }
     return meals;
@@ -193,13 +195,13 @@ export async function getMeals(options) {
 
 export async function getMeal(bookingId, mealId) {
     const meal = await activityDao.getOne(bookingId, mealId);
-    const enhancedMeal = activityService.enhanceActivities(meal); 
+    const enhancedMeal = await activityService.enhanceActivities(meal); 
     return enhancedMeal;
 }
 
 export async function getMealsByBooking(bookingId, options = {}) {
     const meals = await activityDao.getMeals(bookingId, options);
-    const enhancedMeals = activityService.enhanceActivities(meals);
+    const enhancedMeals = await activityService.enhanceActivities(meals);
     return enhancedMeals;
 }
 

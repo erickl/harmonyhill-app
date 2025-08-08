@@ -1,4 +1,4 @@
-import { where, orderBy, getDoc } from 'firebase/firestore';
+import { where, orderBy, getDoc, collectionGroup } from 'firebase/firestore';
 import * as dao from "./dao.js"
 import * as utils from "../utils.js";
 
@@ -160,6 +160,11 @@ export async function getOne(bookingId, id) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
     return await dao.getOne(path, id);
 }
+
+// doesn't work yet. see dao.getOneFromSubCollections
+// export async function getOneFromAnyBooking(id) {
+//     return await dao.getOneFromSubCollections(dao.constant.ACTIVITIES, id);
+// }
 
 export async function getTypes(filterOptions = {}) {
     let filters = [];

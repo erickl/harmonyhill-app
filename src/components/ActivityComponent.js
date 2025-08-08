@@ -31,7 +31,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
 
     return (
         <div className="customer-details">
-            {customer !== null && (<p><span className="detail-label">Customer Name:</span> {customer.name}</p>)}
+            {/* {customer !== null && (<p><span className="detail-label">Customer Name:</span> {customer.name}</p>)} */}
             {customer !== null && (<p><span className="detail-label">Villa:</span> {utils.capitalizeWords(customer.house)}</p>)}
             {activity.category !== "meal" && (<p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>)}
             <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>

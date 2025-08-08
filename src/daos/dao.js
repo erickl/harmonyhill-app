@@ -90,6 +90,21 @@ export async function getSubCollections(collectionName, filters = [], ordering =
     }
 }
 
+// export async function getOneFromSubCollections(collectionName, id, onError) {
+//     try {
+//         const collectionGroupQuery = collectionGroup(db, collectionName);
+//         const queryFilter =  where('__name__', '==', id); // __name__ needs full path. YOu may be able to search on a field name though
+//         const q = query(collectionGroupQuery, queryFilter);
+//         const querySnapshot = await getDocs(q);
+//         const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+//         //querySnapshot.forEach((doc) => {console.log(doc.id, doc.data());});
+//         return docs;
+//     } catch(e) {
+//         if(onError) onError(`Error fetching ${id} from ${collectionName}: ${e.message}`);
+//         return false;
+//     }
+// }
+
 /**
  * Creates and includes a change logs string in the new booking object.
  * Cannot update createdAt or createdBy

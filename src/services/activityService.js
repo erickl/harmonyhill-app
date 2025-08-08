@@ -2,6 +2,7 @@ import * as activityDao from '../daos/activityDao.js';
 import * as bookingService from './bookingService.js';
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
+import {getParent} from "../daos/dao.js";
 
 /**
  * @param {*} filterOptions = {category=transport|yoga|etc.., house=harmony hill|the jungle nook}
@@ -41,7 +42,7 @@ export async function getCategories() {
  */
 export async function get(bookingId, filterOptions = {}) {
     const activities = await activityDao.getBookingActivities(bookingId, filterOptions);
-    const enhancedActivities = enhanceActivities(activities);
+    const enhancedActivities = await enhanceActivities(activities);
     return enhancedActivities; 
 }
 
@@ -51,7 +52,7 @@ export async function get(bookingId, filterOptions = {}) {
  */
 export async function getAll(filterOptions = {}) {
     const activities = await activityDao.getAllActivities(filterOptions);
-    const enhancedActivities = enhanceActivities(activities);
+    const enhancedActivities = await enhanceActivities(activities);
     return enhancedActivities; 
 }
 
@@ -59,8 +60,8 @@ export async function getAll(filterOptions = {}) {
  * @param {*} activities one object or an array of activity objects
  * @returns enhanced/enriched activity data, needed to properly display them to the user
  */
-export function enhanceActivities(activities) {
-    const enhance = (activity) => {
+export async function enhanceActivities(activities) {
+    const enhance = async (activity) => {
         try {
             // Date time stored in timestamp format in database. Convert to Luxon Date time to display correct time zone 
             if(!utils.isEmpty(activity.startingAt)) {
@@ -86,6 +87,11 @@ export function enhanceActivities(activities) {
             if(activity.custom === true) {
                 activity.subCategory = `Custom: ${activity.displayName}`;
             }
+
+            if(utils.isEmpty(activity.name)) {
+                const booking = await getParent(activity);
+                activity.name = booking ? booking.name : null;
+            }
             
             activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
         } catch(e) {
@@ -95,14 +101,16 @@ export function enhanceActivities(activities) {
         return activity;
     }
 
-    activities = Array.isArray(activities) ? activities.map((activity) => enhance(activity)) : enhance(activities);
-    
+    activities = Array.isArray(activities)
+        ? await Promise.all(activities.map(enhance))
+        : await enhance(activities);
+        
     return activities; 
 }
 
 export async function getOne(bookingId, activityId) {
     const activity = await activityDao.getOne(bookingId, activityId);
-    const enhancedActivity = enhanceActivities(activity);
+    const enhancedActivity = await enhanceActivities(activity);
     return enhancedActivity;
 }
 

@@ -12,6 +12,8 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
     const [selectedActivities, setSelectedActivities] = useState({});
     const [activitiesByDate, setActivitiesByDate] = useState({});
 
+    const forAllCustomers = customer === null;
+
     const handleSetExpanded = (date) => {
         let updatedExpandedList = { ...(expanded || {}) }; // Make shallow copy
         updatedExpandedList[date] = updatedExpandedList[date] === true ? false : true;
@@ -30,7 +32,7 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
         if(expandActivityInfo) {
              if(activity.category === "meal") {
                 // If this list is displayed for all customers, get the customer for each activity 
-                const selectedCustomer = customer ? customer : await getParent(activity);      
+                const selectedCustomer = forAllCustomers ? await getParent(activity) : customer;      
                 activity.dishes = await mealService.getDishes(selectedCustomer.id, activity.id);  ;
             }
         }
@@ -90,33 +92,34 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
                     </h3>
                     {expanded[date] ? (
                         <div>
-                            {activities.map((activity) => (
-                                <React.Fragment key={activity.id}>
-                                    <div
-                                        className={`customer-list-item clickable-item ${utils.getHouseColor(activity.house)}`} 
-                                        onClick={() => handleActivityClick(activity)}
-                                    >
-                                        <div className="customer-name-in-list">
-                                            <span>{`${utils.capitalizeWords(activity.category)}`}</span>
-                                            
+                            {activities.map((activity) => {
+                                return (
+                                    <React.Fragment key={activity.id}>
+                                        <div
+                                            className={`customer-list-item clickable-item ${utils.getHouseColor(activity.house)}`} 
+                                            onClick={() => handleActivityClick(activity)}
+                                        >
+                                            <div className="customer-name-in-list">
+                                                <span>{activity.displayName}</span>
 
-                                            {(!utils.isString(activity.status) && activity.status.toLowerCase() !== "confirmed" && <WarningSymbol />)}
-                                            <span>{activity.startingAt_HHmm}</span>
-                                        </div>  
-                                        
-                                        {utils.capitalizeWords(activity.subCategory)}
-                                        
-                                    </div>
-                                    {selectedActivities[activity.id] && (  
-                                        // if global customer unspecified, this is the list for all customers, so each activity should have some customer data
-                                        <ActivityComponent 
-                                            displayCustomer={customer === null}
-                                            activity={selectedActivities[activity.id]}
-                                            handleEditActivity={handleEditActivity}
-                                        />
-                                    )}
-                                </React.Fragment>
-                            ))}
+                                                {(utils.isString(activity.status) && activity.status.toLowerCase() !== "confirmed" && <WarningSymbol />)}
+                                                <span>{activity.startingAt_HHmm}</span>
+                                            </div>  
+                                            
+                                            {forAllCustomers ? utils.capitalizeWords(activity.name) : " "}
+                                            
+                                        </div>
+                                        {selectedActivities[activity.id] && (  
+                                            // if global customer unspecified, this is the list for all customers, so each activity should have some customer data
+                                            <ActivityComponent 
+                                                displayCustomer={forAllCustomers}
+                                                activity={selectedActivities[activity.id]}
+                                                handleEditActivity={handleEditActivity}
+                                            />
+                                        )}
+                                    </React.Fragment>
+                                )
+                            })}
                         </div>
                     ) : (
                         null
