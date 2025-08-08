@@ -206,9 +206,10 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         return (
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title">
+                    <h3 className="card-title">
                         <span className="ml-2">Add Purchase: {selectedActivity.displayName}</span>
-                    </h2>
+                    </h3>
+                    <h4>{customer.name}, in {utils.capitalizeWords(customer.house)}</h4>
                 </div>
                 <div className="card-content">
                     {/* Display meal purchase form */}

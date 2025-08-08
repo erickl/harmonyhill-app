@@ -51,7 +51,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
                 {!utils.isEmpty(activity.dishes) ? (
                     Object.values(activity.dishes).map((dish) => (
                         <React.Fragment key={`${activity.id}-${dish.id}`}>
-                            <p>{invoiceService.dishReceiptLine(dish)}</p>
+                            <p style={{marginLeft:"5px"}}>- {invoiceService.dishReceiptLine(dish)}</p>
                         </React.Fragment>
                     ))
                 ) : (<p>No dishes ordered yet</p>)}
