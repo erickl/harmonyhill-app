@@ -25,8 +25,8 @@ export async function getPromotions() {
  * house=Harmony Hill|Jungle Nook
  * date=Date object (new Date(...)) the date can be any date which is between checkInAt and checkOutAt (inclusive range)
  */
-export async function get(filterOptions = {}) {
-    const bookings = await bookingDao.get(filterOptions);
+export async function get(filterOptions = {}, onError = null) {
+    const bookings = await bookingDao.get(filterOptions, onError);
     
     // return dates of a few different formats
     bookings.map((booking) => {

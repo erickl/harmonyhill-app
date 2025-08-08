@@ -51,7 +51,7 @@ const CustomersScreen = ({ onNavigate }) => {
                 }
             }
             
-            const fetchedCustomers = await bookingService.get(customerFilter);
+            const fetchedCustomers = await bookingService.get(customerFilter, onError);
             setCustomers(fetchedCustomers);
             setLoading(false);
         } catch (err) {

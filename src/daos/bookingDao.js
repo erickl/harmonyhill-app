@@ -14,7 +14,7 @@ export async function getOne(id) {
     return await dao.getOne([dao.constant.BOOKINGS], id);
 }
 
-export async function get(filterOptions = {}) {
+export async function get(filterOptions = {}, onError = null) {
     let path = [dao.constant.BOOKINGS];
     let queryFilter = [];
 
@@ -22,20 +22,23 @@ export async function get(filterOptions = {}) {
         queryFilter.push(where("house", "==", filterOptions.house));
     }
     if (Object.hasOwn(filterOptions, "date")) {
-        queryFilter.push(where("checkInAt", "<=", utils.toFireStoreTime(filterOptions.date)));
-        queryFilter.push(where("checkOutAt", ">=", utils.toFireStoreTime(filterOptions.date)));
+        const fireStoreDate = utils.toFireStoreTime(filterOptions.date);
+        queryFilter.push(where("checkInAt", "<=", fireStoreDate));
+        queryFilter.push(where("checkOutAt", ">=", fireStoreDate));
     }
 
     if (Object.hasOwn(filterOptions, "after")) {
-        queryFilter.push(where("checkInAt", ">=", utils.toFireStoreTime(filterOptions.after)));
+        const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
+        queryFilter.push(where("checkOutAt", ">=", afterDateFireStore));
     }
 
     if (Object.hasOwn(filterOptions, "before")) {
-        queryFilter.push(where("checkInAt", "<=", utils.toFireStoreTime(filterOptions.before)));
+        const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
+        queryFilter.push(where("checkInAt", "<=", beforeDateFireStore));
     }
 
     let ordering = [ orderBy("checkInAt", "asc") ];
-    return await dao.get(path, queryFilter, ordering);
+    return await dao.get(path, queryFilter, ordering, onError);
 }
 
 export async function deleteBooking(bookingId) {
