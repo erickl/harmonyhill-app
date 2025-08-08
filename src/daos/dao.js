@@ -117,6 +117,9 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
             return await add(path, id, updatedData, onError);
         }
 
+        const currentUsername = await getCurrentUsername();
+        const now = new Date();
+
         // Remove any field which should not be updated
         if(Object.hasOwn(updatedData, "createdAt")) {
             delete updatedData.createdAt;
@@ -143,13 +146,16 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
             const updateLog = {
                 "document"  : `${path.join("/")}/${id}`,
                 "edit"      : diffStr,
-                "createdBy" : await getCurrentUsername(),
-                "createdAt" : new Date(),
+                "createdBy" : currentUsername,
+                "createdAt" : now,
                 "action"    : "update" 
             };
             const updateLogRef = doc(db, ...["userLogs"], `u-${id}-${Date.now()}`);
             const updateLogResult = await setDoc(updateLogRef, updateLog);
         }
+
+        updatedData.updatedAt = now;
+        updatedData.updatedBy = currentUsername;
 
         // Run the main update
         const ref = doc(db, ...path, id);
