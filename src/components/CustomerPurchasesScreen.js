@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Pencil, ShoppingCart } from 'lucide-react';
 import * as activityService from '../services/activityService.js'; 
 import * as mealService from '../services/mealService.js'; 
+import * as userService from "../services/userService.js";
 import * as invoiceService from '../services/invoiceService.js'; 
 import * as utils from "../utils.js";
 import AddPurchaseScreen from './AddPurchaseScreen.js';
@@ -10,12 +11,13 @@ import './CustomerPurchasesScreen.css';
 import ActivitiesList from './ActivitiesList.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
-    const [customerActivities, setCustomerActivities] = useState([]  );
-    const [runningTotal,       setRunningTotal      ] = useState(0   );
-    const [loading,            setLoading           ] = useState(true);
-    const [error,              setError             ] = useState(null);
-    const [activityToEdit,     setActivityToEdit    ] = useState(null); // state to enable editing of activities
-    const [customerPurchasing, setCustomerPurchasing] = useState(null); // state to enable adding purchases
+    const [customerActivities, setCustomerActivities] = useState([]   );
+    const [runningTotal,       setRunningTotal      ] = useState(0    );
+    const [loading,            setLoading           ] = useState(true );
+    const [error,              setError             ] = useState(null );
+    const [activityToEdit,     setActivityToEdit    ] = useState(null ); // state to enable editing of activities
+    const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
+    const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
 
     const fetchPurchases = async () => {
         if(!customer) {
@@ -34,6 +36,15 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const setUserRole = async() => {
+            const thisUserIsAdmin = await userService.isAdmin();
+            setUserIsAdmin(thisUserIsAdmin);
+        };
+
+        setUserRole();
+    }, []);
 
     useEffect(() => {
         fetchPurchases();
@@ -112,7 +123,8 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                     <p>{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</p>
                 </div>
                 <div>   
-                    {customer.checkOutAt >= today &&  (
+                    {/* Only admins can add purchases to checked out customers */}
+                    {customer.checkOutAt >= today || userIsAdmin &&  (
                         <button 
                             className="add-button"  
                             onClick={(e) => {
