@@ -15,6 +15,11 @@ export async function jsonObjectDiffStr(obj1, obj2) {
 
         for (const key in obj2) {
             try {
+                if(key === "updatedBy") continue;
+                if(key === "updatedAt") continue;
+                if(key === "createdBy") continue;
+                if(key === "createdAt") continue;
+
                 const val1 = obj1[key];
                 const val2 = obj2[key];
 
