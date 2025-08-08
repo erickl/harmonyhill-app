@@ -110,33 +110,37 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                         onSelect={onTeamMemberSelect}
                     />
                 </div>
-                { custom === true ? (
-                    // For a custom activity, there are no determined set of providers
-                    <div className="purchase-form-group">
-                        <label htmlFor="provider">Provider:</label>
-                        <div className="provider-input-wrapper">
-                            <input
-                                type="text"
-                                id="provider"
-                                name="provider"
-                                // Apply formatting here for display inside the input
-                                value={formData.provider}
-                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
-                                className="input"
+
+                {/* (External) providers are not needed for activities organized by internal staff */}
+                { selectedActivity.internal !== true && (<>
+                    { custom === true ? (
+                        // For a custom activity, there are no determined set of providers
+                        <div className="purchase-form-group">
+                            <label htmlFor="provider">Provider:</label>
+                            <div className="provider-input-wrapper">
+                                <input
+                                    type="text"
+                                    id="provider"
+                                    name="provider"
+                                    // Apply formatting here for display inside the input
+                                    value={formData.provider}
+                                    onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                                    className="input"
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="purchase-form-group">
+                            <ProviderDropdown 
+                                currentName={formData.provider} 
+                                currentPrice={formData.providerPrice} 
+                                label={"Select a provider"} 
+                                options={providers} 
+                                onSelect={onProviderSelect}
                             />
                         </div>
-                    </div>
-                ) : (
-                    <div className="purchase-form-group">
-                        <ProviderDropdown 
-                            currentName={formData.provider} 
-                            currentPrice={formData.providerPrice} 
-                            label={"Select a provider"} 
-                            options={providers} 
-                            onSelect={onProviderSelect}
-                        />
-                    </div>
-                )}
+                    )}
+                </>)}
                 <div className="purchase-form-group">
                     <MyDatePicker 
                         name={"startingAt"} 
