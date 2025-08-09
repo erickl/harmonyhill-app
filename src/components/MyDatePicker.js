@@ -55,10 +55,11 @@ export default function MyDatePicker({ name, date, time, onChange }) {
 
   return (
     <>
-      <LocalizationProvider dateAdapter={AdapterLuxon}>
+      <LocalizationProvider dateAdapter={AdapterLuxon} adapterLocale="en-gb">
         <DateTimePicker
           label="Select a date"
           value={date}
+          format="dd/MM/yyyy"
           onChange={handleDateChange}
           renderInput={(params) => <TextField {...params} fullWidth />}
           ampm={false}
