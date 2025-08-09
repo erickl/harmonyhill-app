@@ -247,6 +247,25 @@ export function validate(customer, data, isUpdate, onError) {
 
         // todo: get other lunches/dinners on this date. If this is not an update, we should decline?
 
+        // If dateTime decided and staff assigned, then it counts as confirmed
+        if(data.status === "confirmed") {
+            if(utils.isEmpty(data.assignedTo)) {
+                onError(`Status can only be "confirmed" if it's assigned to a staff member`);
+                return false;
+            } 
+            if(!utils.isDate(data.startingAt)) {
+                onError(`Status can only be "confirmed" if a date is set`);
+                return false;
+            }
+            if(!utils.isDate(data.startingTime)) {
+                onError(`Status can only be "confirmed" if a time is set`);
+                return false;
+            }
+
+            // All meals are internal activities
+            //if(data.internal !== true && utils.isEmpty(data.provider)) {}
+        }
+
         if(!utils.isEmpty(data.dishes)) {
             const dishes = Object.values(data.dishes);
             for(const dish of dishes) {
@@ -292,14 +311,7 @@ async function mapMealObject(mealData) {
         meal.assignedTo = mealData.assignedTo;
     }
 
-    if(utils.isString(mealData?.status)) meal.status = mealData.status;
-    
-    // If dateTime decided and staff assigned, then it counts as confirmed
-    if(!utils.isEmpty(mealData?.assignedTo) && utils.isDate(mealData?.startingAt) && utils.isDate(mealData.startingTime)) {
-        meal.status = "confirmed";
-    } else {
-        meal.status = "requested";
-    }
+    meal.status = utils.isString(mealData?.status) ? mealData.status : "requested";
 
     if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
 

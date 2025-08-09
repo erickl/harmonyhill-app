@@ -225,11 +225,9 @@ async function mapObject(data, isUpdate = false) {
     if(utils.isString(data?.provider))      activity.provider = data.provider;
     if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
     // First "requested", then "confirmed" (then "completed"?)
+
     activity.status = utils.isString(data?.status) ? data.status : "requested";
 
-    // If a provider is assigned, e.g. a driver to a tour, this must mean the activity is indeed confirmed to happen
-    activity.status = utils.isEmpty(activity.provider) ? activity.status : "confirmed";
-    
     activity.assignedTo = utils.isString(data?.assignedTo) ? data.assignedTo : await userService.getCurrentUserName();
 
     return activity;
@@ -254,6 +252,27 @@ export function validate(customer, data, isUpdate, onError) {
         if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
             onError(`Activity date too late. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
             return false;
+        }
+        
+        // If dateTime decided and staff assigned, then it counts as confirmed
+        if(data.status === "confirmed") {
+            if(utils.isEmpty(data.assignedTo)) {
+                onError(`Status can only be "confirmed" if a staff member is assigned`);
+                return false;
+            } 
+            if(!utils.isDate(data.startingAt)) {
+                onError(`Status can only be "confirmed" if a date is set`);
+                return false;
+            }
+            if(!utils.isDate(data.startingTime)) {
+                onError(`Status can only be "confirmed" if a time is set`);
+                return false;
+            }
+
+            if(data.internal !== true && utils.isEmpty(data.provider)) {
+                onError(`Status can only be "confirmed" if a provider is assigned`);
+                return false;
+            }
         }
     } catch(e) {
         onError(`Unexpected error in activity form: ${e.message}`);

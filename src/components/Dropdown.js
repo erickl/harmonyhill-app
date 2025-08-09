@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import "./Dropdown.css";
+import * as utils from "../utils.js";
 
 /**
  * @param {*} options: A JSON object. The keys are displayed in the drop down list, and the value
@@ -16,6 +17,7 @@ export default function Dropdown({ label, options, current, onSelect }) {
     const toggleDropdown = () => setIsOpen(!isOpen);
     
     const handleSelect = (key) => {
+        //key = utils.isString(key) ? key.toLowerCase() : "";
         const option = options[key];
         setSelected(key);
         onSelect(option);
@@ -31,7 +33,7 @@ export default function Dropdown({ label, options, current, onSelect }) {
         <div className="dropdown-row">
             <p>{label}</p>
             <button type="button" className="open-button" onClick={toggleDropdown}>
-                {selected || 'Select an option'}
+                {utils.capitalizeWords(selected) || 'Select an option'}
             </button>
         </div>
         {isOpen && (
@@ -39,7 +41,7 @@ export default function Dropdown({ label, options, current, onSelect }) {
                 {keys.length > 0 ? (
                     keys.map((key) => (
                         <li className="item" key={key} onClick={() => handleSelect(key)}>
-                            {key}
+                            {utils.capitalizeWords(key)}
                         </li>
                     ))
                 ) : (

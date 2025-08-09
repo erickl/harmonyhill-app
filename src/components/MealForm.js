@@ -28,6 +28,12 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
         handleFormDataChange("assignedTo", name);
     }
 
+    const onStatusSelect = (status) => {
+        let name = status ? status.name : null;
+        name = utils.isString(name) ? name.toLowerCase() : null;
+        handleFormDataChange("status", name);
+    }
+
     const handleExpandCourseSection = (course) => {
         const newExpandedCourses = { ...(expandedCourses || {}) };
         if(!Object.hasOwn(newExpandedCourses, course)) {
@@ -69,6 +75,11 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     formData.dishes = utils.isEmpty(formData.dishes) ? {} : formData.dishes;
     const customDishes = Object.values(formData.dishes).filter(dish => dish.custom === true);
     const newCustomDish = mealService.getNewCustomDish(customDishes.length + 1, "");
+
+    const statuses = {
+        "requested" : {"name" : "requested"},
+        "confirmed" : {"name" : "confirmed"},
+    };
 
     return (
         <div>
@@ -162,6 +173,15 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     label={"Assign to team member"} 
                     options={teamMembers} 
                     onSelect={onTeamMemberSelect}
+                />
+            </div>
+
+            <div className="purchase-form-group">
+                <Dropdown 
+                    current={formData.status} 
+                    label={"Status"} 
+                    options={statuses} 
+                    onSelect={onStatusSelect}
                 />
             </div>
 

@@ -136,15 +136,11 @@ export async function canSeeAllBookings() {
 }
 
 export async function hasEditBookingsPermissions() {
-    const user = await getCurrentUser();
-    if(!user) return false;
-    return user.role === "admin";// || user.role === "manager";
+    return isAdmin();
 }
 
 export async function hasAddBookingsPermissions() {
-    const user = await getCurrentUser();
-    if(!user) return false;
-    return user.role === "admin";// || user.role === "manager";
+    return isAdmin();
 }
 
 export async function logout() {

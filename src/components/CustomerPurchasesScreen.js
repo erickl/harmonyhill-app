@@ -124,7 +124,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                 </div>
                 <div>   
                     {/* Only admins can add purchases to checked out customers */}
-                    {customer.checkOutAt >= today || userIsAdmin &&  (
+                    {(customer.checkOutAt >= today || userIsAdmin) &&  (
                         <button 
                             className="add-button"  
                             onClick={(e) => {

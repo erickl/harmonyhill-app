@@ -31,10 +31,16 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
         handleFormDataChange("assignedTo", name);
     }
 
+    const onStatusSelect = (status) => {
+        let name = status ? status.name : null;
+        name = utils.isString(name) ? name.toLowerCase() : null;
+        handleFormDataChange("status", name);
+    }
+
     // Transform object from {"Rena": 500000}  to  {"Rena - Rp 500000": {"name": Rena, "price": 500000}}
     const providers = selectedActivity ? Object.entries(selectedActivity.providerPrices).reduce((m, activity) => {
         const name = utils.capitalizeWords(activity[0]);
-        const price = utils.formatDisplayPrice(activity[1], true);
+        //const price = utils.formatDisplayPrice(activity[1], true);
         m[`${name}`] = { "name" : name, "price" : activity[1] };
         return m;
     }, {}) : [];
@@ -51,6 +57,11 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
         fetchTeamMembers();
     }, []);
+
+    const statuses = {
+        "requested" : {"name" : "requested"},
+        "confirmed" : {"name" : "confirmed"},
+    };
 
     return (
         <div>
@@ -108,6 +119,15 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                         label={"Assign to team member"} 
                         options={teamMembers} 
                         onSelect={onTeamMemberSelect}
+                    />
+                </div>
+
+                <div className="purchase-form-group">
+                    <Dropdown 
+                        current={formData.status} 
+                        label={"Status"} 
+                        options={statuses} 
+                        onSelect={onStatusSelect}
                     />
                 </div>
 
