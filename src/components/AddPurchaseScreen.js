@@ -41,6 +41,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         assignedTo    : '',
         isFree        : false,
         dishes        : {}, // only not null when ordering meals, null for all other activities
+        status        : "requested",
 
         // Auxiliary data
         house         : customer.house,
@@ -95,7 +96,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
         formData.category = selectedCategory;
         formData.subCategory = selectedActivity.subCategory;
-        formData.status = "requested";
 
         if(selectedActivity.category === "meal") {
             // todo: do some checks: check if there is already a dinner on this day. 
