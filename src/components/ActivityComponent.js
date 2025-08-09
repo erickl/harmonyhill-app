@@ -58,18 +58,17 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, hand
                 ) : (<p>No dishes ordered yet</p>)}
             </>)}
 
-            {isManagerOrAdmin && (
-                <div className="activity-component-footer">
-                    <div className="activity-component-footer-icon">
-                        <Pencil   
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditActivity(activity);
-                            }}
-                        />
-                        <p>Edit</p>
-                    </div>
-
+            <div className="activity-component-footer">
+                <div className="activity-component-footer-icon">
+                    <Pencil   
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditActivity(activity);
+                        }}
+                    />
+                    <p>Edit</p>
+                </div>
+                {isManagerOrAdmin && (
                     <div className="activity-component-footer-icon">
                         <Trash2  
                             onClick={(e) => {
@@ -79,8 +78,9 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, hand
                         />
                         <p>Delete</p>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
+            
         </div>
     );
 };
