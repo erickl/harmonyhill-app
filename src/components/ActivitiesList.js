@@ -6,8 +6,7 @@ import "./ActivityComponent.css";
 import {getParent} from "../daos/dao.js";
 import WarningSymbol from './WarningSymbol.js';
 
-
-const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDates}) => {
+const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteActivity, expandAllDates}) => {
     const [expanded, setExpanded] = useState({});
     const [selectedActivities, setSelectedActivities] = useState({});
     const [activitiesByDate, setActivitiesByDate] = useState({});
@@ -115,6 +114,7 @@ const ActivitiesList = ({customer, activities, handleEditActivity, expandAllDate
                                                 displayCustomer={forAllCustomers}
                                                 activity={selectedActivities[activity.id]}
                                                 handleEditActivity={handleEditActivity}
+                                                handleDeleteActivity={handleDeleteActivity}
                                             />
                                         )}
                                     </React.Fragment>

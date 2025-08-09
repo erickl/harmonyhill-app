@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, ShoppingCart } from 'lucide-react';
 import * as activityService from '../services/activityService.js'; 
 import * as mealService from '../services/mealService.js'; 
 import * as userService from "../services/userService.js";
@@ -9,6 +8,7 @@ import AddPurchaseScreen from './AddPurchaseScreen.js';
 import EditPurchaseScreen from './EditPurchaseScreen.js';
 import './CustomerPurchasesScreen.css'; 
 import ActivitiesList from './ActivitiesList.js';
+import ConfirmModal from './ConfirmModal.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
     const [customerActivities, setCustomerActivities] = useState([]   );
@@ -18,6 +18,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
     const [activityToEdit,     setActivityToEdit    ] = useState(null ); // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
+    const [activityToDelete,   setActivityToDelete  ] = useState(null);
 
     const fetchPurchases = async () => {
         if(!customer) {
@@ -48,7 +49,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
 
     useEffect(() => {
         fetchPurchases();
-    }, [customer, customerPurchasing, activityToEdit]);
+    }, [customer, customerPurchasing, activityToEdit, activityToDelete]);
 
     const today = utils.today();
 
@@ -80,6 +81,12 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
 
     const handleEditActivity = (activity) => {
         setActivityToEdit(activity); 
+    };
+
+    const handleDeleteActivity = async () => {
+        if(!activityToDelete) return;
+        const deleteActivityResult = await activityService.remove(customer.id, activityToDelete.id);
+        setActivityToDelete(null);
     };
 
     const handleAddPurchase = (customer) => {
@@ -143,12 +150,20 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                     customer={customer}
                     activities={customerActivities}
                     handleEditActivity={handleEditActivity}
+                    handleDeleteActivity={setActivityToDelete}
                     expandAllDates={true}
                 />  
             </div>
             <button type="button" onClick={() => onClose() } className="cancel-button">
                 Back to customers
             </button>
+
+            {activityToDelete && (
+                <ConfirmModal 
+                    onCancel={() => setActivityToDelete(null)}
+                    onConfirm={handleDeleteActivity}
+                />
+            )}
         </div>
     );
 };

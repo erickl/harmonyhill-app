@@ -11,3 +11,16 @@
     color: black;
     font-weight: 600;
 }
+
+.activity-component-footer {
+    margin-top: 2rem;
+    display: flex;
+    gap: 30px;
+}
+
+.activity-component-footer-icon p {
+    font-size: 10px; 
+    margin-top: 0rem;
+    cursor: pointer;
+    align-items: center;
+}

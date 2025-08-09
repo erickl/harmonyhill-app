@@ -22,7 +22,9 @@ export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
                             </div>
                         ))}
                     </>) : null}
+
                 <p>Are you sure you want to submit this order?</p>
+                
                 <div className="buttons-footer">
                     <button type="button" onClick={onCancel}>Cancel</button>
                     <button type="button" onClick={() => {

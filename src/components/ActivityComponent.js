@@ -4,8 +4,9 @@ import * as utils from "../utils.js";
 import "./ActivityComponent.css";
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
+import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 
-const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) => {
+const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, handleDeleteActivity }) => {
     const [customer,         setCustomer        ] = useState(null );
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
 
@@ -21,7 +22,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
 
         const setUserRole = async() => {
             const userRole = await userService.isManagerOrAdmin();
-            setUserRole(userRole);
+            setIsManagerOrAdmin(userRole);
         }
 
         setUserRole();
@@ -57,13 +58,29 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity }) =>
                 ) : (<p>No dishes ordered yet</p>)}
             </>)}
 
-            <button
-                className="edit-booking"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditActivity(activity);
-                }}> Edit Activity
-            </button>
+            {isManagerOrAdmin && (
+                <div className="activity-component-footer">
+                    <div className="activity-component-footer-icon">
+                        <Pencil   
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditActivity(activity);
+                            }}
+                        />
+                        <p>Edit</p>
+                    </div>
+
+                    <div className="activity-component-footer-icon">
+                        <Trash2  
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteActivity(activity);
+                            }}
+                        />
+                        <p>Delete</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

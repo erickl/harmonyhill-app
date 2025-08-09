@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, ShoppingCart } from 'lucide-react';
+import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 import * as bookingService from '../services/bookingService.js';
 import * as userService from '../services/userService.js';
 import * as utils from '../utils.js';
