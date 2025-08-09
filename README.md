@@ -50,7 +50,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 # Versions
 - 1.0: browse booking data
 - 2.0: add & edit bookings and activities
-- 2.1: delete activities, more custom activities and meal options, clearer activity info and forms
+- 2.1: delete activities, more custom activities and meal options, clearer activity info and forms, launch as web app
 
 ## Available Scripts
 

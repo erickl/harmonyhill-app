@@ -9,16 +9,21 @@ import EditPurchaseScreen from './EditPurchaseScreen.js';
 import './CustomerPurchasesScreen.css'; 
 import ActivitiesList from './ActivitiesList.js';
 import ConfirmModal from './ConfirmModal.js';
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
     const [customerActivities, setCustomerActivities] = useState([]   );
     const [runningTotal,       setRunningTotal      ] = useState(0    );
     const [loading,            setLoading           ] = useState(true );
-    const [error,              setError             ] = useState(null );
+    const [errorMessage,       setErrorMessage      ] = useState(null );
     const [activityToEdit,     setActivityToEdit    ] = useState(null ); // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
-    const [activityToDelete,   setActivityToDelete  ] = useState(null);
+    const [activityToDelete,   setActivityToDelete  ] = useState(null );
+
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
+    }
 
     const fetchPurchases = async () => {
         if(!customer) {
@@ -33,7 +38,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
 
             setLoading(false);
         } catch (err) {
-            setError(err);
+            onError(err.message);
             setLoading(false);
         }
     };
@@ -66,27 +71,17 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
         );
     }
 
-    if (error) {
-        return (
-            <div className="card">
-                <div className="card-header">
-                    <h2 className="card-title">Error</h2>
-                </div>
-                <div className="card-content">
-                    <p>Error: {error.message}</p>
-                </div>
-            </div>
-        );
-    }
-
     const handleEditActivity = (activity) => {
         setActivityToEdit(activity); 
     };
 
     const handleDeleteActivity = async () => {
         if(!activityToDelete) return;
-        const deleteActivityResult = await activityService.remove(customer.id, activityToDelete.id);
-        setActivityToDelete(null);
+        const deleteActivityResult = await activityService.remove(customer.id, activityToDelete.id, onError);
+        if(deleteActivityResult) {
+            setActivityToDelete(null);
+        }
+        
     };
 
     const handleAddPurchase = (customer) => {
@@ -162,6 +157,13 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                 <ConfirmModal 
                     onCancel={() => setActivityToDelete(null)}
                     onConfirm={handleDeleteActivity}
+                />
+            )}
+
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
                 />
             )}
         </div>

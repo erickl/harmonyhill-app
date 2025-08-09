@@ -8,6 +8,7 @@ import './CustomersScreen.css';
 import '../App.css';
 import EditCustomerScreen from './EditCustomerScreen';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
+import ConfirmModal from './ConfirmModal.js';
 
 const CustomersScreen = ({ onNavigate }) => {
     const [customers,                  setCustomers]               = useState([]    );
@@ -21,6 +22,7 @@ const CustomersScreen = ({ onNavigate }) => {
     const [hasAddBookingsPermissions,  setAddBookingsPermissions]  = useState(false ); // true if current user has permissions to add bookings
     const [canSeeAllBookings,          setCanSeeAllBookings]       = useState(false ); // true if current user can see all future/past bookings or just the closest ones
     const [errorMessage,               setErrorMessage]            = useState(null  );
+    const [bookingToDelete,            setBookingToDelete]         = useState(null  );
     
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -68,7 +70,7 @@ const CustomersScreen = ({ onNavigate }) => {
         };
 
         load();
-    }, []);
+    }, [bookingToDelete, customerToEdit]);
 
     if (loading) {
         return (
@@ -108,6 +110,14 @@ const CustomersScreen = ({ onNavigate }) => {
             setSelectedCustomer(null);
         } else {
             setSelectedCustomer(customer);
+        }
+    };
+
+    const handleDeleteBooking = async () => {
+        if(!bookingToDelete) return;
+        const deleteBookingResult = await bookingService.remove(bookingToDelete.id, onError);
+        if(deleteBookingResult) {
+            setBookingToDelete(null);
         }
     };
 
@@ -179,13 +189,27 @@ const CustomersScreen = ({ onNavigate }) => {
                                         { customer.phoneNumber && (<p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>)}
                                         { customer.email && ( <p><span className="detail-label">Email:</span> {customer.email}</p> )}
                                         { hasEditBookingsPermissions && (
-                                            <button
-                                                className="edit-booking"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleEditCustomer(customer);
-                                                }}> Edit Booking
-                                            </button>
+                                            <div className="booking-component-footer">
+                                                <div className="booking-component-footer-icon">
+                                                    <Pencil   
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEditCustomer(customer);
+                                                        }}
+                                                    />
+                                                    <p>Edit</p>
+                                                </div>
+                            
+                                                <div className="booking-component-footer-icon">
+                                                    <Trash2  
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setBookingToDelete(customer);
+                                                        }}
+                                                    />
+                                                    <p>Delete</p>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
 
@@ -260,6 +284,13 @@ const CustomersScreen = ({ onNavigate }) => {
                 {renderCustomerListSection("Future Customers", futureCustomers, "future-customer", futureExpanded, setFutureExpanded)}
 
             </div>
+
+            {bookingToDelete && (
+                <ConfirmModal 
+                    onCancel={() => setBookingToDelete(null)}
+                    onConfirm={handleDeleteBooking}
+                />
+            )}
 
             {errorMessage && (
                 <ErrorNoticeModal 

@@ -147,8 +147,8 @@ export async function getAllActivities(options = {}) {
     return sortedActivities;
 }
 
-export async function remove(bookingId, activityId) {
-    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId);
+export async function remove(bookingId, activityId, onError) {
+    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, onError);
 }
 
 export async function getDishes(bookingId, mealId, filterOptions = {}) {

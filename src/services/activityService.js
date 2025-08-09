@@ -194,8 +194,8 @@ export async function update(bookingId, activityId, activityUpdateData, onError)
     return await activityDao.update(bookingId, activityId, activityUpdate, true, onError);
 }
 
-export async function remove(bookingId, activityId) {
-    return await activityDao.remove(bookingId, activityId);
+export async function remove(bookingId, activityId, onError) {
+    return await activityDao.remove(bookingId, activityId, onError);
 }
 
 export function makeId(startingAt, house, subCategory) {

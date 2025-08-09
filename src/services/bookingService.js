@@ -75,9 +75,9 @@ export async function update(bookingId, bookingUpdateData, onError) {
 /**
  * Only admin can delete bookings. It will be logged in the deleted collection
  */
-export async function deleteBooking(bookingId) {   
+export async function remove(bookingId) {   
     if(userService.isAdmin()) {
-        return await bookingDao.deleteBooking(bookingId);
+        return await bookingDao.remove(bookingId);
     }
     return false;
 }
@@ -266,7 +266,7 @@ export async function testBooking() {
     
     const updateSuccess = await update(ref, bookingUpdate);
 
-    //const deleteSuccess = await deleteBooking(ref);
+    //const deleteSuccess = await remove(ref);
 
     let x = 1;
 }
