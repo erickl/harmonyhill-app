@@ -9,9 +9,10 @@ import * as utils from "../utils.js";
  */
 export async function getTotal(bookingId) {
     const activities = await activityService.get(bookingId);
+    const nonFreeActivities = activities.filter(activity => activity.customerPrice > 0);
     
     const itemizedList = await Promise.all(
-        activities.map(async function(activity) {
+        nonFreeActivities.map(async function(activity) {
             let activityItem = {
                 name:          activity.category + ": " + activity.subCategory,
                 customerPrice: activity.customerPrice,
@@ -22,12 +23,12 @@ export async function getTotal(bookingId) {
                 const dishes = await mealService.getDishes(bookingId, activity.id);
                 activityItem.dishes = dishes;
             }
-            return activityItem;
+            return activityItem;  
         })
     );
 
     const totalSum = itemizedList.reduce((sum, item) => {
-        const itemCost = !item.isFree && !utils.isEmpty(item.customerPrice) ? item.customerPrice : 0;
+        const itemCost = item && !item.isFree && !utils.isEmpty(item.customerPrice) ? item.customerPrice : 0;
         return sum + itemCost;
     }, 0);
 
@@ -51,8 +52,8 @@ export async function uploadPurchaseInvoice(filename, image) {
 }
 
 export async function testInvoice() {
-    const bookingId = "YLtShKoNq3jQup9sh5Ws";
-    const itemizedInvoice = await getTotal(bookingId);
+    //const bookingId = "YLtShKoNq3jQup9sh5Ws";
+    //const itemizedInvoice = await getTotal(bookingId);
 
     let x = 1;
 }

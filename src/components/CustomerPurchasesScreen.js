@@ -10,6 +10,7 @@ import './CustomerPurchasesScreen.css';
 import ActivitiesList from './ActivitiesList.js';
 import ConfirmModal from './ConfirmModal.js';
 import ErrorNoticeModal from './ErrorNoticeModal.js';
+import InvoicePdfLink from './InvoicePdf.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
     const [customerActivities, setCustomerActivities] = useState([]   );
@@ -20,6 +21,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
     const [activityToDelete,   setActivityToDelete  ] = useState(null );
+    const [displayInvoicePdf,  setDisplayInvoicePdf ] = useState(false);
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -69,6 +71,13 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                 </div>
             </div>
         );
+    }
+
+    const handleDisplayInvoice =  async() => {
+        setDisplayInvoicePdf(true);
+        // const invoice = await invoiceService.getTotal(customer.id);
+        // const list = invoice.itemizedList;
+        //alert("hello");
     }
 
     const handleEditActivity = (activity) => {
@@ -136,7 +145,8 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                             +
                         </button> 
                     )}
-                    <p>Total: {utils.formatDisplayPrice(runningTotal, true)}</p>   
+                    {/* <p onClick={() => handleDisplayInvoice()}>Total: {utils.formatDisplayPrice(runningTotal, true)}</p>    */}
+                    <InvoicePdfLink customer={customer}/>
                 </div>
             </div>
             
