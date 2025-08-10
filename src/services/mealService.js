@@ -138,6 +138,8 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
 }
 
 async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
+    let dishesUpdated = [];
+
     const meal = await getMeal(bookingId, mealId);
     if(!meal) {
         onError(`Cannot find meal ${bookingId}/${mealId} in database`);
@@ -146,12 +148,24 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
 
     const existingDishes = await getDishes(bookingId, mealId);
 
-    let dishesUpdated = [];
+    // If any existingDishes are no longer part of the meal, delete dish
+    for(const existingDish of Object.values(existingDishes)) {
+        const dishUpdate = dishesUpdateData.find((dish) => dish.name === existingDish.name);
+        if(!dishUpdate) {
+            const deleteDishResult = await deleteDish(bookingId, mealId, existingDish.id);
+            if(deleteDishResult === false) {
+                onError(`Unexpected error when deleting dish ${existingDish.id}. Contact admin, please`);
+                return false;
+            }
+            dishesUpdated.push(`Deleted: ${existingDish.id}`);
+        }
+    }
     
     for(const dishUpdateData of dishesUpdateData) {
         if(utils.isEmpty(dishUpdateData.name)) {// || dishUpdateData.quantity === 0) {
             continue;
         }
+
         const dishUpdate = await mapDishObject(dishUpdateData);
         const existingDish = existingDishes[dishUpdate.name];
         
