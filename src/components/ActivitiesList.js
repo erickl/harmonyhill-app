@@ -101,7 +101,7 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
                                             <div className="customer-name-in-list">
                                                 <span>{activity.displayName}</span>
 
-                                                {(utils.isString(activity.status) && activity.status.toLowerCase() !== "confirmed" && <WarningSymbol />)}
+                                                {/* {(utils.isString(activity.status) && activity.status.toLowerCase() !== "confirmed" && <WarningSymbol />)} */}
                                                 <span>{activity.startingAt_HHmm}</span>
                                             </div>  
                                             
