@@ -345,6 +345,10 @@ async function mapDishObject(data) {
     if(utils.isString(data?.comments))      object.comments      = data.comments;
     if(utils.isBoolean(data?.isFree))       object.isFree        = data.isFree;
     if(utils.isBoolean(data?.custom))       object.custom        = data.custom;
+    
+    // Needed to sort the meals by course when displaying receipt
+    if(utils.isString(data?.priority))      object.priority      = data.priority;
+    if(utils.isString(data?.course))        object.course        = data.course;
 
     return object;
 }
