@@ -1,0 +1,17 @@
+
+.dish-receipt-line {
+    margin-left: 8px;
+}
+
+.course-summary-header {
+    margin-bottom: 0rem;
+}
+
+.dishes-summary {
+   text-align: left; 
+}
+
+.courses-summary {
+    margin-top: 0rem;
+    padding-left: 1rem;
+}

@@ -5,6 +5,7 @@ import "./ActivityComponent.css";
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
+import DishesSummaryComponent from './DishesSummaryComponent.js';
 
 const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, handleDeleteActivity }) => {
     const [customer,         setCustomer        ] = useState(null );
@@ -47,15 +48,9 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, hand
             <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }</p>
 
             {/* List dishes if the activity expanded is a meal */}
-            {activity.category === "meal" && (<>
-                {!utils.isEmpty(activity.dishes) ? (
-                    Object.values(activity.dishes).map((dish) => (
-                        <React.Fragment key={`${activity.id}-${dish.id}`}>
-                            <p style={{marginLeft:"5px"}}>- {invoiceService.dishReceiptLine(dish)}</p>
-                        </React.Fragment>
-                    ))
-                ) : (<p>No dishes ordered yet</p>)}
-            </>)}
+            {activity.category === "meal" && (
+                <DishesSummaryComponent dishes={activity.dishes} />
+            )}
 
             <div className="activity-component-footer">
                 <div className="activity-component-footer-icon">
