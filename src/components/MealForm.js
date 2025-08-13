@@ -11,13 +11,15 @@ import Dropdown from './Dropdown.js';
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
+
+    const meal = selectedActivity.subCategory;
     
-    const [teamMembers, setTeamMembers] = useState([]);
-    const [allDishes, setAllDishes] = useState([]);
-    const [expandedCourses, setExpandedCourses] = useState({});
-    const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
-    
-    const [errorMessage, setErrorMessage] = useState(null);
+    const [teamMembers,     setTeamMembers    ] = useState([]  );
+    const [allDishes,       setAllDishes      ] = useState([]  );
+    const [extraDishes,     setExtraDishes    ] = useState([]  ); // For breakfast, present extra options for extra charge
+    const [expandedCourses, setExpandedCourses] = useState({}  );
+    const [loadingMenu,     setLoadingMenu    ] = useState(true); // to indicate when data is being fetched
+    const [errorMessage,    setErrorMessage   ] = useState(null);
             
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -45,11 +47,22 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
     useEffect(() => {
         const load = async () => {
-            const allDishes = selectedActivity ? await menuService.groupByCourse({
-                "meal"  : selectedActivity.subCategory,
-                "house" : formData.house,
-            }) : [];
-            setAllDishes(allDishes);
+            if(selectedActivity) {
+                const allDishes = await menuService.groupByCourse({
+                    "meal"  : meal,
+                    "house" : formData.house,
+                });
+                setAllDishes(allDishes);
+
+                // if(meal === "breakfast") {
+                //     const extraDishes = await menuService.get({
+                //         "meal"  : "extra",
+                //         "house" : formData.house,
+                //     });
+                //     setExtraDishes(extraDishes);
+                // }      
+            }
+
             setLoadingMenu(false);
 
             const teamMembers = await userService.getUsers();
@@ -61,8 +74,6 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
         }
         load();
         
-        // todo: inelegant exception, saying that breakfast is included always at Harmony Hill
-        handleFormDataChange("isFree", selectedActivity.subCategory === "breakfast");
     }, [selectedActivity]);
 
     if (loadingMenu) {
@@ -116,11 +127,32 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                                         dish={dish}
                                         formData={formData}
                                         handleFormDataChange={handleFormDataChange}
+                                        isFree={meal === "breakfast"}
                                     />
                                 ))}
                             </>)}
                         </div>
                     ))}
+                    {extraDishes.length > 0 && (
+                        <div key={`extra-dishes-wrapper`}>
+                            <div className="course-header" onClick={() => handleExpandCourseSection("extra")}>
+                                <h3>{expandedCourses["extra"] ? ' ▼' : ' ▶'}</h3>
+                                <h2>Extra</h2>
+                            </div>
+                            
+                            {/* Each dish has a counter, incrementor, a comment field, and other options */}
+                            {expandedCourses["extra"] && (<>
+                                {extraDishes.map((dish) => (
+                                    <MealFormDish 
+                                        dish={dish}
+                                        formData={formData}
+                                        handleFormDataChange={handleFormDataChange}
+                                        isFree={false}
+                                    />
+                                ))}
+                            </>)}
+                        </div>
+                    )}
                 </div>
             ) : (
                 <p>No dishes found</p>

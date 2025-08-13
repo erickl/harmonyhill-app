@@ -5,7 +5,7 @@ import ErrorNoticeModal from './ErrorNoticeModal.js';
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 import "./MealFormDish.css"
 
-export default function MealFormDish({dish, formData, handleFormDataChange, custom}) {
+export default function MealFormDish({dish, formData, handleFormDataChange, custom, isFree}) {
 
     const [errorMessage, setErrorMessage] = useState(null);
     
@@ -30,12 +30,13 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
             updatedDishes[newDish.name].quantity = 0;
         }
 
+        updatedDishes[newDish.name].isFree = isFree;
         updatedDishes[newDish.name].quantity += quantity;
         updatedDishes[newDish.name].quantity = Math.max(updatedDishes[newDish.name].quantity, 0);
 
         if(updatedDishes[newDish.name].quantity == 0) {
             delete updatedDishes[newDish.name];
-        }
+        } 
         
         handleFormDataChange("dishes", updatedDishes);
     };
