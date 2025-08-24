@@ -73,24 +73,18 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
         );
     }
 
-    const handleDisplayInvoice =  async() => {
-        setDisplayInvoicePdf(true);
-        // const invoice = await invoiceService.getTotal(customer.id);
-        // const list = invoice.itemizedList;
-        //alert("hello");
-    }
-
     const handleEditActivity = (activity) => {
         setActivityToEdit(activity); 
     };
 
     const handleDeleteActivity = async () => {
-        if(!activityToDelete) return;
+        if(!activityToDelete || utils.isEmpty(customer.id)) {
+            return;
+        }
         const deleteActivityResult = await activityService.remove(customer.id, activityToDelete.id, onError);
         if(deleteActivityResult) {
             setActivityToDelete(null);
-        }
-        
+        } 
     };
 
     const handleAddPurchase = (customer) => {

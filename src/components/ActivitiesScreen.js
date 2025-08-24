@@ -6,6 +6,7 @@ import "./ActivitiesScreen.css";
 import ActivitiesList from './ActivitiesList.js';
 import EditPurchaseScreen from './EditPurchaseScreen.js';
 import * as userService from "../services/userService.js";
+import ConfirmModal from './ConfirmModal.js';
 import {getParent} from "../daos/dao.js";
 
 const ActivitiesScreen = ({onNavigate}) => {
@@ -15,6 +16,7 @@ const ActivitiesScreen = ({onNavigate}) => {
     const [loading,           setLoading]           = useState(true );
     const [activityToEdit,    setActivityToEdit]    = useState(null );
     const [customer,          setCustomer]          = useState(null );
+    const [activityToDelete,  setActivityToDelete]  = useState(null );
     const [canSeeAllBookings, setCanSeeAllBookings] = useState(false); // true if current user can see all future/past bookings or just the closest ones
             
     const onError = (errorMessage) => {
@@ -23,11 +25,25 @@ const ActivitiesScreen = ({onNavigate}) => {
 
     const handleEditActivity = async(activity) => {
         if(activity) {
-            const customer = await getParent(activity);
-            setCustomer(customer);
+            const activityCustomer = await getParent(activity);
+            setCustomer(activityCustomer);
             setActivityToEdit(activity); 
         }
     }
+
+    const handleDeleteActivity = async () => {
+        if(!activityToDelete || utils.isEmpty(activityToDelete.id)) {
+            return;
+        }
+        const activityCustomer = await getParent(activityToDelete);
+        if(!activityCustomer || utils.isEmpty(activityCustomer.id)) {
+            onError(`Can't find customer for activity ${activityToDelete.id}`);
+        }
+        const deleteActivityResult = await activityService.remove(activityCustomer.id, activityToDelete.id, onError);
+        if(deleteActivityResult) {
+            setActivityToDelete(null);
+        } 
+    };
 
     const loadPermissions = async () => {
         const canSeeAllBookings = await userService.canSeeAllBookings();
@@ -51,8 +67,11 @@ const ActivitiesScreen = ({onNavigate}) => {
     }
 
     useEffect(() => {
-        getAllActivities();
-    }, []);
+        // Only refresh activity list, after editing/deleting activity. Afterwards the variable is set to null
+        if (activityToDelete === null && activityToEdit === null) {
+            getAllActivities();
+        }
+    }, [activityToDelete, activityToEdit]);
 
     if (loading) {
         return (
@@ -75,7 +94,7 @@ const ActivitiesScreen = ({onNavigate}) => {
                 onClose={() => {
                     setActivityToEdit(null);
                     setCustomer(null);
-                    getAllActivities();
+                    //getAllActivities();
                 }}
                 onNavigate={onNavigate}
             />
@@ -93,8 +112,16 @@ const ActivitiesScreen = ({onNavigate}) => {
                 customer={null} 
                 activities={activities}
                 handleEditActivity={handleEditActivity}
+                handleDeleteActivity={setActivityToDelete}
                 expandAllDates={true}
             />
+
+            {activityToDelete && (
+                <ConfirmModal 
+                    onCancel={() => setActivityToDelete(null)}
+                    onConfirm={handleDeleteActivity}
+                />
+            )}
 
             {errorMessage && (
                 <ErrorNoticeModal 
