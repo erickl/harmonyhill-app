@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, useRef} from "react";
 import * as utils from "../utils.js";
 import * as invoiceService from "../services/invoiceService.js";
 import Spinner from "./Spinner.js";
@@ -8,6 +8,8 @@ import DishesSummaryComponent from "./DishesSummaryComponent.js";
 export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
 
     const [loading, setLoading] = useState(false);
+    
+    let btnRef = useRef();
     
     return (
         <div className="modal-overlay">
@@ -21,13 +23,27 @@ export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
                 <p>Are you sure you want to submit this order?</p>
                 
                 <div className="buttons-footer">
-                    <button type="button" onClick={onCancel}>Cancel</button>
-                    <button type="button" onClick={() => {
-                        setLoading(true);
-                        onConfirm();
-                    }}>
-                        Confirm
+                    
+                    <button type="button" 
+                        onClick={onCancel}
+                    >
+                        Cancel
                     </button>
+
+                    <button 
+                        type="button" 
+                        disabled={loading} 
+                        ref={btnRef}
+                        onClick={() => {             
+                            // disables instantly to prevent double submits
+                            btnRef.current.disabled = true; 
+                            setLoading(true);
+                            onConfirm();
+                        }}
+                    >
+                        {loading ? "Processing..." : "Confirm" }
+                    </button>
+
                     { loading && <Spinner />} 
                 </div>
             </div>
