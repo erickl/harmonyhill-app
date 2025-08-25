@@ -86,7 +86,12 @@ export function isNumber(value) {
 
 export function isEmpty(value) {
     value = isString(value) ? value.trim() : value;
-    return value == "" || value == undefined || value == null || value == [] || value == {};
+    if(value == "" || value == undefined || value == null) {
+        return true;
+    }
+
+    const valueStr = JSON.stringify(value);
+    return valueStr === "[]" || valueStr == "{}";
 }
 
 export function isString(value) {
