@@ -91,7 +91,7 @@ export function isEmpty(value) {
     }
 
     const valueStr = JSON.stringify(value);
-    return valueStr === "[]" || valueStr == "{}";
+    return valueStr === "[]" || valueStr === "{}";
 }
 
 export function isString(value) {

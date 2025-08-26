@@ -10,6 +10,17 @@ export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
     const [loading, setLoading] = useState(false);
     
     let btnRef = useRef();
+
+    const handleConfirm = async() => {           
+        try {  
+            // disables instantly to prevent double submits
+            btnRef.current.disabled = true; 
+            setLoading(true);
+            await onConfirm();
+        } finally {
+            btnRef.current.disabled = false; 
+        }
+    }
     
     return (
         <div className="modal-overlay">
@@ -34,12 +45,7 @@ export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
                         type="button" 
                         disabled={loading} 
                         ref={btnRef}
-                        onClick={() => {             
-                            // disables instantly to prevent double submits
-                            btnRef.current.disabled = true; 
-                            setLoading(true);
-                            onConfirm();
-                        }}
+                        onClick={ handleConfirm }
                     >
                         {loading ? "Processing..." : "Confirm" }
                     </button>

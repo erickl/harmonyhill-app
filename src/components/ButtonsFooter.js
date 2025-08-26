@@ -1,7 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import "./ButtonsFooter.css";
 
 export default function ButtonsFooter({onCancel, onSubmit, submitEnabled}) {
+
+    let btnRef = useRef();
+
+    const handleSubmit = async () => {
+        // disables instantly to prevent double submits
+        btnRef.current.disabled = true; 
+        try {
+            await onSubmit();
+        } finally {
+            btnRef.current.disabled = false; 
+        }
+    }
 
     return (
         <div className="buttons-footer">
@@ -16,7 +28,8 @@ export default function ButtonsFooter({onCancel, onSubmit, submitEnabled}) {
             <button 
                 type="button" 
                 className={ submitEnabled ? "submit-button" : "mute-submit-button" }
-                onClick={ () => onSubmit() }
+                ref={btnRef}
+                onClick={ handleSubmit }
                 disabled={ !submitEnabled }
             >
                 Submit
