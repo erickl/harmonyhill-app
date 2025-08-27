@@ -12,6 +12,28 @@ export default function InvoicePdfLink({customer}) {
     const [pdfDoc, setPdfDoc] = useState(null);
     const [total,  setTotal ] = useState(0   );
 
+    const getPrice = function(item) {
+        const price = item.isFree ? 0 : item.customerPrice;
+        return `${utils.formatDisplayPrice(price)}`
+    }
+
+    const getName = function(item) {
+        const name = `${item.name}`;
+        return `${utils.capitalizeWords(name)}`;
+    }
+
+    const getDishPrice = function(dish) {
+        const price = dish.isFree ? 0 : `${utils.formatDisplayPrice(dish.quantity * dish.customerPrice)}`
+        return `${utils.formatDisplayPrice(price)}`
+    }
+
+    const getDishName = function(dish) {
+        const course = utils.isString(dish.course) ? dish.course.trim().toLowerCase() : "";
+        const displayedCourse = course === "extra" || course === "custom" ? ` (${course})` : "";
+        const name = `${dish.quantity}x ${dish.name}${displayedCourse}`;
+        return `${utils.capitalizeWords(name)}`;
+    }
+
     const styles = StyleSheet.create({
         header: {
             flexDirection: 'row',   // horizontal layout
@@ -96,21 +118,22 @@ export default function InvoicePdfLink({customer}) {
                             currentDate = date;
                         }
                         const dishes = !utils.isEmpty(item.dishes) ? Object.values(item.dishes) : [];
+                        const paidDishes = dishes.filter((dish) => !dish.isFree && dish.customerPrice !== 0);
                         return (
                             <View>
                                 {dateView}
                                 <View style={styles.itemView}>
                                     <View style={styles.itemRow}>
-                                        <Text style={styles.item}>{`${utils.capitalizeWords(item.name)}`}</Text>
+                                        <Text style={styles.item}>{getName(item)}</Text>
                                         <View style={styles.dottedLine} />
-                                        <Text style={styles.itemPrice}>{`${utils.formatDisplayPrice(item.customerPrice)}`}</Text>
+                                        <Text style={styles.itemPrice}>{getPrice(item)}</Text>
                                     </View>
-                                    {dishes.map((dish) => {
+                                    {paidDishes.map((dish) => {
                                         return (
                                             <View style={styles.itemRow}>
-                                                <Text style={styles.subItem}>• {`${dish.quantity}x ${dish.name}`}</Text>
+                                                <Text style={styles.subItem}>• {getDishName(dish)}</Text>
                                                 <View style={styles.dottedLine} />
-                                                <Text style={styles.subItemPrice}>{`${utils.formatDisplayPrice(dish.quantity * dish.customerPrice)}`}</Text>
+                                                <Text style={styles.subItemPrice}>{getDishPrice(dish)}</Text>
                                             </View>
                                         );
                                     })}
