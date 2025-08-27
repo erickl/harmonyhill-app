@@ -10,7 +10,13 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
     const [errorMessage, setErrorMessage] = useState(null);
     
     const getDishData = (fieldName, defaultValue) => {
-        return formData.dishes && formData.dishes[dish.name] && !utils.isEmpty(formData.dishes[dish.name][fieldName]) ? formData.dishes[dish.name][fieldName] : defaultValue;
+        let existingDishIndex = formData.dishes.findIndex((d) => {
+            return d.name === dish.name && d.course === dish.course;
+        })
+        if(existingDishIndex === -1) {
+            return defaultValue;
+        }
+        return utils.isEmpty(formData.dishes[existingDishIndex][fieldName]) ? defaultValue : formData.dishes[existingDishIndex][fieldName];
     }
 
     const onError = (errorMessage) => {
@@ -18,62 +24,72 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
     }
 
     const handleEditOrderQuantity = (newDish, quantity) => {
-        const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
+        let updatedDishes = [ ...(formData.dishes || []) ];
 
         // e.g. for custom dishes, must give name before setting quantity 
         if(utils.isEmpty(newDish.name)) {
+            onError(`Missing dish name data...`);
             return;
         }
-        
-        if (!updatedDishes[newDish.name]) {
-            updatedDishes[newDish.name] = newDish;
-            updatedDishes[newDish.name].quantity = 0;
-        }
 
-        updatedDishes[newDish.name].isFree = isFree;
-        updatedDishes[newDish.name].quantity += quantity;
-        updatedDishes[newDish.name].quantity = Math.max(updatedDishes[newDish.name].quantity, 0);
+        let existingDishIndex = updatedDishes.findIndex((dish) => {
+            return dish.name === newDish.name && dish.course === newDish.course;
+        })
 
-        if(updatedDishes[newDish.name].quantity == 0) {
-            delete updatedDishes[newDish.name];
+        if(existingDishIndex === -1) {
+            newDish.quantity = 0;
+            existingDishIndex = updatedDishes.push(newDish) - 1;
+        } 
+
+        updatedDishes[existingDishIndex].isFree = isFree;
+        updatedDishes[existingDishIndex].quantity += quantity;
+        updatedDishes[existingDishIndex].quantity = Math.max(updatedDishes[existingDishIndex].quantity, 0);
+
+        if(updatedDishes[existingDishIndex].quantity == 0) {
+            updatedDishes = updatedDishes.filter((_, i) => i !== existingDishIndex);
         } 
         
         handleFormDataChange("dishes", updatedDishes);
     };
 
     const handleEditCustomOrderName = (newDish, newName) => {
-        const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
+        let updatedDishes = [ ...(formData.dishes || []) ]; // Make shallow copy
 
-        //let dishToUpdate = Object.values(updatedDishes).find((dish) => dish.id === newDish.id)
+        let existingDishIndex = utils.isEmpty(newDish.name) ? -1 : updatedDishes.findIndex((dish) => {
+            return dish.name === newDish.name;
+        })
 
-        if(updatedDishes[newDish.name]) {
-            delete updatedDishes[newDish.name];
-        } 
-
-        newDish.name = newName;
-        
-        // At least if you give the custom dish a name, also set quantity to at least 1
-        if(!utils.isEmpty(newDish.name) && newDish.quantity === 0) {
+        if(existingDishIndex === -1) {
             newDish.quantity = 1;
+            existingDishIndex = updatedDishes.push(newDish) - 1;
         }
 
-        updatedDishes[newDish.name] = newDish;
+        updatedDishes[existingDishIndex].name = newName;
+
+        // If the name is removed, remove the dish
+        if(utils.isEmpty(newName)) {
+            updatedDishes = updatedDishes.filter((_, i) => i !== existingDishIndex);
+        }
 
         handleFormDataChange("dishes", updatedDishes);
     };
 
     const handleEditOrder = (newDish, field, value) => {
-        const updatedDishes = { ...(formData.dishes || {}) }; // Make shallow copy
-        
-        if (!updatedDishes[newDish.name]) {
-            updatedDishes[newDish.name] = newDish;
-        }
+        let updatedDishes = [ ...(formData.dishes || []) ];
+
+        let existingDishIndex = updatedDishes.findIndex((dish) => {
+            return dish.name === newDish.name && dish.course === newDish.course;
+        })
 
         if(field === "customerPrice") {
             value = utils.cleanNumeric(value); 
         }
 
-        updatedDishes[newDish.name][field] = value;
+        if(existingDishIndex === -1) {
+            existingDishIndex = updatedDishes.push(newDish) - 1;;
+        }
+
+        updatedDishes[existingDishIndex][field] = value;
         handleFormDataChange("dishes", updatedDishes);
     };
 

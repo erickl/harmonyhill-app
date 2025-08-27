@@ -14,7 +14,7 @@ export default function InvoicePdfLink({customer}) {
 
     const getPrice = function(item) {
         const price = item.isFree ? 0 : item.customerPrice;
-        return `${utils.formatDisplayPrice(price)}`
+        return `${utils.formatDisplayPrice(price)}`;
     }
 
     const getName = function(item) {
@@ -23,8 +23,8 @@ export default function InvoicePdfLink({customer}) {
     }
 
     const getDishPrice = function(dish) {
-        const price = dish.isFree ? 0 : `${utils.formatDisplayPrice(dish.quantity * dish.customerPrice)}`
-        return `${utils.formatDisplayPrice(price)}`
+        const price = dish.isFree ? 0 : `${utils.formatDisplayPrice(dish.quantity * dish.customerPrice)}`;
+        return `${utils.formatDisplayPrice(price)}`;
     }
 
     const getDishName = function(dish) {

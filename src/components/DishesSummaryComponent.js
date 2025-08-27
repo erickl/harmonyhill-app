@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
+import { groupByCourse } from '../services/mealService.js';
 import * as invoiceService from "../services/invoiceService.js";
 import "./DishesSummaryComponent.css";
 
@@ -12,12 +13,7 @@ export default function DishesSummaryComponent({dishes}) {
     }
     
     // Group by e.g. mains, starters, drinks, etc...
-    const groupedByCourse = Object.values(dishes).reduce((m, dish) => {
-        const group = utils.isString(dish.course) && utils.isNumber(dish.priority) ? `${dish.priority},${dish.course}` : "9999,misc";
-        if(!m[group]) m[group] = [];
-        m[group].push(dish);
-        return m;
-    }, {});
+    const groupedByCourse = groupByCourse(dishes);
 
     // Sort appearance of meals by meal categories, i.e. first starters, then mains, lastly coffee, etc..
     const groupedByCourseSorted = Object.keys(groupedByCourse).sort((a, b) => a.localeCompare(b));

@@ -40,7 +40,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         providerPrice : 0,
         assignedTo    : '',
         isFree        : false,
-        dishes        : {}, // only not null when ordering meals, null for all other activities
+        dishes        : [], // only not null when ordering meals, null for all other activities
         status        : "requested",
 
         // Auxiliary data

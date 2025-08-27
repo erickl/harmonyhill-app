@@ -7,6 +7,19 @@ export async function getMealCategories() {
     return await activityDao.getTypes({"category" : "meal"});
 }
 
+// Group by e.g. mains, starters, drinks, etc...
+export function groupByCourse(dishes) {
+    // Group by e.g. mains, starters, drinks, etc...
+    const groupedByCourse = Object.values(dishes).reduce((m, dish) => {
+        const group = utils.isString(dish.course) && utils.isNumber(dish.priority) ? `${dish.priority},${dish.course}` : "9999,misc";
+        if(!m[group]) m[group] = [];
+        m[group].push(dish);
+        return m;
+    }, {});
+
+    return groupedByCourse;
+}
+
 export async function addMeal(bookingId, mealData, onError) {
     let mealId = false;
 
@@ -80,7 +93,7 @@ async function addDishes(bookingId, mealId, dishesData, onError) {
         }
 
         // Update the total meal customerPrice
-        if(!meal.isFree) {
+        if(!meal.isFree && !dish.isFree) {
             runningTotalMealPrice += dish.isFree ? 0 : dish.customerPrice * dish.quantity;
             const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: runningTotalMealPrice }, false, onError);
             if(!updateMealPriceSuccess) {
@@ -226,12 +239,7 @@ export async function getMealsByBooking(bookingId, options = {}) {
  * where the dish name is the key, and the dish is the value
  */
 export async function getDishes(bookingId, mealId) {
-    const dishes = await activityDao.getDishes(bookingId, mealId);
-    const dishesByKey = dishes.reduce((res, dish) => {
-        res[dish.name] = dish;
-        return res;
-    }, {});
-    return dishesByKey;
+    return await activityDao.getDishes(bookingId, mealId);
 }
 
 export async function deleteDish(bookingId, mealId, dishId) {
@@ -397,5 +405,7 @@ export function getNewCustomDish(id, name) {
         "custom"        : true,
         "quantity"      : 0,
         "customerPrice" : 0,
+        "course"        : "custom",
+        "priority"      : 900
     };
 }

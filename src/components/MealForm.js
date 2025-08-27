@@ -54,13 +54,17 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                 });
                 setAllDishes(allDishes);
 
-                // if(meal === "breakfast") {
-                //     const extraDishes = await menuService.get({
-                //         "meal"  : "extra",
-                //         "house" : formData.house,
-                //     });
-                //     setExtraDishes(extraDishes);
-                // }      
+                if(meal === "breakfast") {
+                    const extraDishes = await menuService.get({
+                        "meal"  : "extra",
+                        "house" : formData.house,
+                    });
+                    extraDishes.map((extraDish) => {
+                        extraDish.course = `extra`;
+                        extraDish.priority = 700;
+                    })
+                    setExtraDishes(extraDishes);
+                }      
             }
 
             setLoadingMenu(false);
@@ -83,8 +87,8 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     // Sort appearance of meals by meal categories, i.e. first starters, then mains, lastly coffee, etc..
     const sortedMealNames = Object.keys(allDishes).sort((a, b) => a.localeCompare(b));
 
-    formData.dishes = utils.isEmpty(formData.dishes) ? {} : formData.dishes;
-    const customDishes = Object.values(formData.dishes).filter(dish => dish.custom === true);
+    formData.dishes = utils.isEmpty(formData.dishes) ? [] : formData.dishes;
+    const customDishes = formData.dishes.filter(dish => dish.custom === true);
     const newCustomDish = mealService.getNewCustomDish(customDishes.length + 1, "");
 
     const statuses = {
@@ -142,14 +146,16 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                             
                             {/* Each dish has a counter, incrementor, a comment field, and other options */}
                             {expandedCourses["extra"] && (<>
-                                {extraDishes.map((dish) => (
-                                    <MealFormDish 
-                                        dish={dish}
-                                        formData={formData}
-                                        handleFormDataChange={handleFormDataChange}
-                                        isFree={false}
-                                    />
-                                ))}
+                                {extraDishes.map((dish) => {
+                                    return (
+                                        <MealFormDish 
+                                            dish={dish}
+                                            formData={formData}
+                                            handleFormDataChange={handleFormDataChange}
+                                            isFree={false}
+                                        />
+                                    )
+                                })}
                             </>)}
                         </div>
                     )}
