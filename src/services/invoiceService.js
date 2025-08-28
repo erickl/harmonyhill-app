@@ -1,6 +1,6 @@
 import * as mealService from './mealService.js';
 import * as activityService from './activityService.js';
-import * as storage from "../daos/storage.js";
+import * as invoiceDao from "../daos/invoiceDao.js";
 import * as utils from "../utils.js";
 
 /**
@@ -47,15 +47,68 @@ export async function createCsvInvoice(bookingId) {
  * @param {*} filename 
  * @param {*} image 
  */
-export async function uploadPurchaseInvoice(filename, image) {
-    return await storage.uploadImage(filename, image);
+export async function uploadPurchaseInvoice(filename, image, onError) {
+    return await invoiceDao.uploadImage(filename, image, onError);
 }
 
-export async function testInvoice() {
-    //const bookingId = "YLtShKoNq3jQup9sh5Ws";
-    //const itemizedInvoice = await getTotal(bookingId);
+export async function addPurchaseInvoice(data, onError) {
+    const object = mapReceiptObject(data);
+    const result = await invoiceDao.addPurchaseInvoice(object, onError);
+    return result;
+}
 
-    let x = 1;
+export async function validate(data, onError) {
+    try {
+        if(utils.isEmpty(data.photo)) {
+            onError(`Upload photo`);
+            return false;
+        }
+        if (!utils.isAmount(data.amount) || data.amount <= 0) {
+            onError(`Input amount above zero`);
+            return false;
+        } 
+        if(utils.isEmpty(data.category)) {
+            onError(`Choose category`);
+            return false;
+        } 
+        if(!utils.isDateTime(data.purchasedAt)) {
+            onError(`Pick a date`);
+            return false;
+        }
+        if(utils.isEmpty(data.purchasedBy)) {
+            onError(`Who was the purchaser?`);
+            return false;
+        }
+        if(utils.isEmpty(data.description)) {
+            onError(`Give description`);
+            return false;
+        }
+    } catch(e) {
+        // In case of unexpected error, better not stop user from uploading. Return true
+        onError(`Unexpected error. Screenshot and send to admin. You may also upload this anyway: ${e.message}`);
+    }
+    return true;
+}
+
+function mapReceiptObject(data) {
+    let object = {};
+    if(utils.isAmount(data.amount)) object.amount = data.amount;
+
+    if(!utils.isEmpty(data.category)) object.category = data.category.trim().toLowerCase();
+
+    if(utils.isDateTime(data.purchasedAt)) object.purchasedAt = utils.toFireStoreTime(data.purchasedAt);
+
+    if(utils.isAmount(data.purchasedBy)) object.purchasedBy = data.purchasedBy.trim().toLowerCase();
+
+    if(!utils.isEmpty(data.description)) object.description = data.description.trim();
+
+    if(!utils.isEmpty(data.comments)) object.comments = data.comments.trim();
+    
+    if(!utils.isEmpty(data.fileName)) object.fileName = data.fileName.trim();
+
+    if(!utils.isEmpty(data.photoUrl)) object.photoUrl = data.photoUrl.trim();
+
+    return object;
 }
 
 // Create a description like this "1x Bolognese (free, no spicy)" 
