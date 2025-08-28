@@ -7,7 +7,10 @@ export async function uploadImage(filename, imageDataURL, onError) {
         const storageRef = ref(storage, filename);
 
         const snapshot = await uploadString(storageRef, imageDataURL, 'data_url');
-        //onProgress('Processing...');
+        if(!snapshot) {
+            onError(`Unknown file upload error! Result: ${snapshot}`);
+            return false;
+        }
 
         const downloadURL = await getDownloadURL(snapshot.ref);
         return downloadURL;

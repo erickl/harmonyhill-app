@@ -3,6 +3,7 @@ import { uploadPurchaseInvoice } from "../services/invoiceService";
 
 export default function UploadReceiptScreen({ onUploadSuccess }) {
     const [previewImage, setPreviewImage] = useState(null);
+    const [previewImageFullScreen, setPreviewImageFullScreen] = useState(false);
 
     const [videoStream, setVideoStream] = useState(null);
     const videoRef = useRef(null);
@@ -12,6 +13,10 @@ export default function UploadReceiptScreen({ onUploadSuccess }) {
     const [uploadedImageUrl, setUploadedImageUrl] = useState('');
 
     const fileInputRef = useRef(null);
+
+    const toggleFullScreen = () => {
+        setPreviewImageFullScreen(prev => !prev);
+    };
 
     const onSetPreviewImage = (previewImage) => {
         setPreviewImage(previewImage);
@@ -115,7 +120,17 @@ export default function UploadReceiptScreen({ onUploadSuccess }) {
             {previewImage && !videoStream && (
                 <div style={{ marginTop: '20px' }}>
                     <h3>Preview:</h3>
-                    <img src={previewImage} alt="Preview" style={{ maxWidth: '100%', maxHeight: '300px', border: '1px solid grey' }} />
+                    <img 
+                        src={previewImage} 
+                        alt="Preview" 
+                        style={{ 
+                            cursor: "pointer",
+                            maxWidth: previewImageFullScreen ? "100vw" : "100%",
+                            maxHeight: previewImageFullScreen ? "100vh" : "300px", 
+                            border: '1px solid grey' 
+                        }} 
+                        onClick={toggleFullScreen}
+                    />
                 </div>
             )}
 

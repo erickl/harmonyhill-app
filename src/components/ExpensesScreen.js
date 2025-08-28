@@ -130,16 +130,24 @@ export default function ExpensesScreen({ onNavigate }) {
             
             const fileName = `receipts/${fileDescription}-${fileDate}-${Date.now()}.jpg`;
             const photoUrl = await invoiceService.uploadPurchaseInvoice(fileName, formData.photo, onError);
+            if(!photoUrl) {
+                throw new Error("Photo upload error");
+            }
+            
             formData.photoUrl = photoUrl;
             formData.fileName = fileName;
             delete formData['photo'];
-            const addResult = await invoiceService.addPurchaseInvoice(formData, onError);
             
+            const addResult = await invoiceService.addPurchaseInvoice(formData, onError);
+
+            if(addResult) {
+                resetForm();
+            } else {
+                throw new Error("Receipt form data upload error");
+            }
         } catch(e) {
             onError(`Submit error: ${e.message}`);
-        }
-
-        resetForm();
+        }        
     };
 
     return (
