@@ -262,8 +262,7 @@ const CustomersScreen = ({ onNavigate }) => {
         <div className="card">
             <div className="card-header">
                 <div>
-                    <h2 className="card-title">Customers</h2>
-                    
+                    <h2 className="card-title">Customers</h2>    
                 </div>
                 <div>
                     { hasAddBookingsPermissions && (

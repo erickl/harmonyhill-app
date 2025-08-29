@@ -4,7 +4,7 @@ import { Users, List, Upload } from 'lucide-react';
 
 import CustomersScreen from './components/CustomersScreen';
 import ActivitiesScreen from './components/ActivitiesScreen';
-import ExpensesScreen from './components/ExpensesScreen';
+import AddExpensesScreen from './components/AddExpensesScreen';
 import LoginScreen from './components/LoginScreen';
 import AddCustomerScreen from './components/AddCustomerScreen';
 
@@ -97,13 +97,13 @@ function App() {
   if (!isLoggedIn) {
     screenToDisplay = <LoginScreen onLogin={userService.login} onLoginSuccess={navigate} />;
   } else if (currentScreen === 'customers') {
-    screenToDisplay = <CustomersScreen onNavigate={navigate} />; // Pass navigate
+    screenToDisplay = <CustomersScreen onNavigate={navigate} />; 
   } else if (currentScreen === 'activities') {
     screenToDisplay = <ActivitiesScreen onNavigate={navigate} />;
   } else if (currentScreen === 'expenses') {
-    screenToDisplay = <ExpensesScreen onNavigate={navigate} />;
+    screenToDisplay = <AddExpensesScreen onNavigate={navigate} />;
   } else if (currentScreen === 'add-customer') {
-    screenToDisplay = <AddCustomerScreen onNavigate={navigate} />; // Pass navigate
+    screenToDisplay = <AddCustomerScreen onNavigate={navigate} />;
   }
 
   return (

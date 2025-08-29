@@ -42,13 +42,31 @@ export async function createCsvInvoice(bookingId) {
     // todo
 }
 
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result); 
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
 /**
  * Upload invoice for purchases for your business (e.g. of market groceries, construction materials, etc...)
  * @param {*} filename 
  * @param {*} image 
  */
-export async function uploadPurchaseInvoice(filename, image, onError) {
-    return await invoiceDao.uploadImage(filename, image, onError);
+export async function uploadPurchaseInvoice(filename, file, compressionOptions, onError) {
+    if(!utils.isEmpty(compressionOptions)) {
+        file = await invoiceDao.compressImage(file, compressionOptions, onError);
+    }
+    const imageDataUrl = await blobToBase64(file);
+    return await invoiceDao.uploadImage(filename, imageDataUrl, onError);
+}
+
+export async function getPurchaseInvoices(filterOptions = {}, onError) {
+    const receipts = await invoiceDao.getPurchaseInvoices(filterOptions, onError);
+    return receipts;
 }
 
 export async function addPurchaseInvoice(data, onError) {
@@ -92,6 +110,7 @@ export async function validate(data, onError) {
 
 function mapReceiptObject(data) {
     let object = {};
+
     if(utils.isAmount(data.amount)) object.amount = data.amount;
 
     if(!utils.isEmpty(data.category)) object.category = data.category.trim().toLowerCase();

@@ -20,7 +20,10 @@ export default function UploadReceiptScreen({ onUploadSuccess }) {
 
     const onSetPreviewImage = (previewImage) => {
         setPreviewImage(previewImage);
-        onUploadSuccess(previewImage);
+    }
+
+    const onSetFile = (file) => {
+        onUploadSuccess(file);
     }
 
     const onError = (errorMessage) => {
@@ -64,9 +67,10 @@ export default function UploadReceiptScreen({ onUploadSuccess }) {
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
+            onSetFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                onSetPreviewImage(reader.result);
+                onSetPreviewImage(reader.result);   
             };
             reader.readAsDataURL(file);
             setVideoStream(null);

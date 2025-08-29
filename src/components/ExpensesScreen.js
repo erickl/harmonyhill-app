@@ -1,248 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import * as invoiceService from "../services/invoiceService";
-import * as userService from "../services/userService";
-import UploadReceiptScreen from './UploadReceiptScreen';
-import MyDatePicker from "./MyDatePicker";
-import Dropdown from "./Dropdown";
-import ButtonsFooter from './ButtonsFooter';
-import * as utils from "../utils";
-import "./ExpenseScreen.css";
+import * as invoiceService from "../services/invoiceService.js";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import * as utils from "../utils.js";
+import "./ExpensesScreen.css";
 
-export default function ExpensesScreen({ onNavigate }) {
+export default function ExpensesScreen({ onNavigate, onClose }) {
 
-    const emptyForm = {
-        photo       : null,
-        amount      : '',
-        purchasedBy : '',
-        purchasedAt : utils.today(),
-        category    : '',
-        description : '',
-        comments    : '',
-    };
-
-    const [teamMembers,     setTeamMembers    ] = useState([]   );
-    const [readyToSubmit,   setReadyToSubmit  ] = useState(false);
-    const [validationError, setValidationError] = useState(null );
-    const [errorMessage,    setErrorMessage   ] = useState(null );
-
-    const onValidationError = (error) => {
-        setValidationError(error);
-    }
-
-    // State to manage form data
-    const [formData, setFormData] = useState(emptyForm);
-
-    // Sample categories for the dropdown
-    const categories = {
-        'Food - Daily market'  : {"name" : "Food - Daily market"  },
-        'Food - Non-market'    : {"name" : "Food - Non-market"    },
-        'Laundry'              : {"name" : "Laundry"              },
-        'Pool'                 : {"name" : "Pool"                 },
-        'Other villa supplies' : {"name" : "Other villa supplies" },
-        'Guest expenses'       : {"name" : "Guest expenses"       },
-        'Utilities'            : {"name" : "Utilities"            },
-        'Maintenance'          : {"name" : "Maintenance"          },
-        'Donations'            : {"name" : "Donations"            },
-        'Assets'               : {"name" : "Assets"               },
-        'Tax & accounting'     : {"name" : "Tax & accounting"     },
-        'Guest refunds'        : {"name" : "Guest refunds"        },
-        'Other'                : {"name" : "Other"                },
-    };
-
-    // Initial validation
-    useEffect(() => {
-        validateFormData(emptyForm);
-    }, []);
-
-    useEffect(() => {
-        const fetchTeamMembers = async () => {
-            const teamMembers = await userService.getUsers();
-            const formattedTeamMembers = teamMembers.reduce((m, teamMember) => {
-                m[teamMember.name] = teamMember;
-                return m;
-            }, {})
-            setTeamMembers(formattedTeamMembers);
-        };
-
-        fetchTeamMembers();
-    });
-
-    const onTeamMemberSelect = (teamMember) => {
-        const name = teamMember ? teamMember.name : '';
-        handleChange("purchasedBy", name);
-    }
-
-    const onCategorySelect = (category) => {
-        const name = category ? category.name : '';
-        handleChange("category", name);
-    }
-
-    // Function to reset the form to its initial state
-    const resetForm = () => {
-        setFormData(emptyForm);
-    };
-
-    // Handle input changes
-    const handleChange = (field, value) => {
-        let nextFormData = {};
-
-        if (field === "_batch" && typeof value === 'object' && value !== null) {
-            nextFormData = { ...formData, ...value };
-        }
-        else if (field === 'amount') {
-            const numericValue = utils.cleanNumeric(value);
-            nextFormData = { ...formData, [field]: numericValue };
-        } else {
-            nextFormData = { ...formData, [field]: value };
-        }
-
-        if(!utils.isEmpty(nextFormData)) {
-            setFormData(nextFormData);
-        }
-
-        validateFormData(nextFormData);
-    };
-
-    const validateFormData = async (newFormData) => {
-        const validationResult = await invoiceService.validate(newFormData, onValidationError);
-
-        setReadyToSubmit(validationResult);
-
-        if(validationResult === true) {
-            setValidationError(null);
-        }
-    }
+    const [receipts, setReceipts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState(null);
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
-    }
-
-    // Handle form submission
-    const handleSubmit = async (e) => {
-        try {
-            if(!readyToSubmit) {
-                return;
-            }
-
-            const fileDate = utils.to_YYMMdd(formData.purchasedAt);
-            const fileDescription = formData.description.trim().toLowerCase().replace(/ /g, "-");
-            
-            const fileName = `receipts/${fileDescription}-${fileDate}-${Date.now()}.jpg`;
-            const photoUrl = await invoiceService.uploadPurchaseInvoice(fileName, formData.photo, onError);
-            if(!photoUrl) {
-                throw new Error("Photo upload error");
-            }
-            
-            formData.photoUrl = photoUrl;
-            formData.fileName = fileName;
-            delete formData['photo'];
-            
-            const addResult = await invoiceService.addPurchaseInvoice(formData, onError);
-
-            if(addResult) {
-                resetForm();
-            } else {
-                throw new Error("Receipt form data upload error");
-            }
-        } catch(e) {
-            onError(`Submit error: ${e.message}`);
-        }        
     };
 
+    useEffect(() => {
+        const fetchReceipts = async() => {
+            const filter = {};
+            const uploadedReceipts = await invoiceService.getPurchaseInvoices(filter, onError);
+            setReceipts(uploadedReceipts);
+            setLoading(false);
+        }
+
+        fetchReceipts();
+    });
+
+    if(loading) {
+        return (
+            <p>Loading...</p>
+        )
+    }
+     
     return (
         <div className="card">
             <div className="card-header">
-                <h2 className="card-title">Record New Expense</h2>
+                <div>
+                    <h2 className="card-title">Expenses</h2>
+                </div>
+            
+                <div>
+                    <button className="add-button" onClick={() => onClose()}>
+                        +
+                    </button>
+                </div>
             </div>
-            <div className="card-content">
-                <UploadReceiptScreen onUploadSuccess={(photo) => handleChange("photo", photo)}/> 
-                    
-                <div className="form-group">
-                    <label htmlFor="amount">Amount (IDR):</label>
-                    <div className="currency-input-wrapper">
-                        <span className="currency-prefix">Rp</span>
-                        <input
-                            type="text" // Use text to allow manual formatting display, number for numeric input
-                            id="amount"
-                            name="amount"
-                            value={utils.formatDisplayPrice(formData.amount)}
-                            onChange={(e) => handleChange(e.target.name, e.target.value)}
-                            required
-                            className="input"
-                            inputMode="numeric" // Optional: for mobile keyboards
-                        />
-                    </div>
-                </div>
+            <div>
+                {receipts.map((receipt) => {
+                    return (
+                        <React.Fragment key={receipt.id}>
+                            <div className="receipt-box">
+                                <div className="title">
+                                    {receipt.description}
+                                </div>
+                                <div>
+                                    {utils.formatDisplayPrice(receipt.amount, true)}
+                                </div>
+                            </div>
+                        </React.Fragment>
+                    )
+                })}
+            </div>
 
-                <div className="purchase-form-group">
-                    <Dropdown 
-                        current={formData.purchasedBy} 
-                        label={"Purchased By"} 
-                        options={teamMembers} 
-                        onSelect={onTeamMemberSelect}
-                    />
-                </div>
-
-                <div className="purchase-form-group">
-                    <Dropdown 
-                        label={"Category"} 
-                        options={categories}
-                        current={formData.category}
-                        onSelect={onCategorySelect}
-                    />
-                </div>
-
-                <div className="purchase-form-group">
-                    <MyDatePicker 
-                        name={"purchasedAt"} 
-                        date={formData.purchasedAt} 
-                        onChange={handleChange}
-                    />
-                </div>
-
-                {/* Description Field */}
-                <div className="form-group">
-                    <label htmlFor="description">Description:</label>
-                    <input
-                        type="text"
-                        id="description"
-                        name="description"
-                        value={formData.description}
-                        onChange={(e) => handleChange(e.target.name, e.target.value)}
-                        required
-                        className="input"
-                    />
-                </div>
-
-                {/* Comments Field (Optional) */}
-                <div className="form-group">
-                    <label htmlFor="comments">Comments (Optional):</label>
-                    <textarea
-                        id="comments"
-                        name="comments"
-                        value={formData.comments}
-                        onChange={(e) => handleChange(e.target.name, e.target.value)}
-                        rows="4"
-                        className="input"
-                    ></textarea>
-                </div>
-
-                {(validationError && <p className="validation-error">{validationError}</p>)}
-
-                <ButtonsFooter
-                    onCancel={resetForm}
-                    onSubmit={handleSubmit}
-                    submitEnabled={readyToSubmit}
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
                 />
-
-                {errorMessage && (
-                    <ErrorNoticeModal 
-                        error={errorMessage}
-                        onClose={() => setErrorMessage(null) }
-                    />
-                )}
-            </div>
+            )}
         </div>
-    );
-};
+    )
+}
