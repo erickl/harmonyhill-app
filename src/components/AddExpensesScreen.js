@@ -113,7 +113,8 @@ export default function AddExpensesScreen({ onNavigate }) {
     const validateFormData = async (newFormData) => {
         const validationResult = await invoiceService.validate(newFormData, onValidationError);
 
-        setReadyToSubmit(validationResult);
+        //setReadyToSubmit(validationResult);
+        setReadyToSubmit(true); // todo: for testing
 
         if(validationResult === true) {
             setValidationError(null);

@@ -3,12 +3,21 @@ import * as invoiceService from "../services/invoiceService.js";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import * as utils from "../utils.js";
 import "./ExpensesScreen.css";
+import invoiceLogo from "../assets/invoice-icon.png";
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
-    const [receipts, setReceipts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [errorMessage, setErrorMessage] = useState(null);
+    const [expandedReceipts, setExpandedReceipts] = useState({});
+    const [receipts,         setReceipts        ] = useState([]);
+    const [displayedReceipt, setDisplayedReceipt] = useState(null);
+    const [loading,          setLoading         ] = useState(true);
+    const [errorMessage,     setErrorMessage    ] = useState(null);
+
+    const handleSetExpandedReceipt = (id) => {
+        let updatedExpandedList = { ...(expandedReceipts || {}) };
+        updatedExpandedList[id] = updatedExpandedList[id] === true ? false : true;
+        setExpandedReceipts(updatedExpandedList);
+    };
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -23,7 +32,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         }
 
         fetchReceipts();
-    });
+    }, []);
 
     if(loading) {
         return (
@@ -48,13 +57,39 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 {receipts.map((receipt) => {
                     return (
                         <React.Fragment key={receipt.id}>
-                            <div className="receipt-box">
-                                <div className="title">
-                                    {receipt.description}
-                                </div>
+                            <div className="receipt-box" onClick={()=> handleSetExpandedReceipt(receipt.id)}>
+                                <div className="receipt-header">
+                                    <div className="receipt-header-left">
+                                        <img 
+                                            className="receipt-thumbnail" 
+                                            //src={receipt.thumbNailUrl} 
+                                            src={invoiceLogo} 
+                                            alt={`preview-${receipt.id}`} 
+                                            onClick={() => setDisplayedReceipt(receipt)}
+                                        />
+                                        
+                                        <div className="receipt-title">
+                                            {utils.capitalizeWords(receipt.description)}
+                                        </div>
+                                    </div>
+                                    <div className="expand-icon">
+                                        {expandedReceipts[receipt.id] ? '▼' : '▶'}
+                                    </div>
+                                </div>  
+                                
                                 <div>
                                     {utils.formatDisplayPrice(receipt.amount, true)}
                                 </div>
+                                {expandedReceipts[receipt.id] && (
+                                    <div className="receipt-body">
+                                        <div>
+                                            Comments: {receipt.comments}
+                                        </div>
+                                        <div>
+                                            Purchased By: {utils.capitalizeWords(receipt.purchasedBy)}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </React.Fragment>
                     )
@@ -65,6 +100,15 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 <ErrorNoticeModal 
                     error={errorMessage}
                     onClose={() => setErrorMessage(null) }
+                />
+            )}
+
+            {displayedReceipt && (
+                <img 
+                    className="receipt-photo" 
+                    src={displayedReceipt.photoUrl} 
+                    alt={`receipt-${displayedReceipt.id}`} 
+                    onClick={() => setDisplayedReceipt(null)}
                 />
             )}
         </div>

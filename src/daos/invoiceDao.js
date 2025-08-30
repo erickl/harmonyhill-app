@@ -40,6 +40,15 @@ export async function compressImage(file, compressionOptions, onError) {
     }
 }
 
+export function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result); 
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
 export async function getPurchaseInvoices(filterOptions = {}, onError) {
     const path = [dao.constant.RECEIPTS];
     let queryFilter = [];
@@ -71,7 +80,8 @@ export async function getPurchaseInvoices(filterOptions = {}, onError) {
 }
 
 export async function addPurchaseInvoice(data, onError) {
-    const id = `${data.category}-${data.purchasedBy}-${data.purchasedAt}-${Date.now()}`;
+    const purchasedAt = utils.to_YYMMdd(data.purchasedAt);
+    const id = `${data.category}-${data.purchasedBy}-${purchasedAt}-${Date.now()}`;
     const path = [dao.constant.RECEIPTS];
     return await dao.add(path, id, data, onError);
 }

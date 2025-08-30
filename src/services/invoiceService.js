@@ -42,14 +42,7 @@ export async function createCsvInvoice(bookingId) {
     // todo
 }
 
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result); 
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
+
 
 /**
  * Upload invoice for purchases for your business (e.g. of market groceries, construction materials, etc...)
@@ -60,7 +53,7 @@ export async function uploadPurchaseInvoice(filename, file, compressionOptions, 
     if(!utils.isEmpty(compressionOptions)) {
         file = await invoiceDao.compressImage(file, compressionOptions, onError);
     }
-    const imageDataUrl = await blobToBase64(file);
+    const imageDataUrl = await invoiceDao.blobToBase64(file);
     return await invoiceDao.uploadImage(filename, imageDataUrl, onError);
 }
 
@@ -126,6 +119,8 @@ function mapReceiptObject(data) {
     if(!utils.isEmpty(data.fileName)) object.fileName = data.fileName.trim();
 
     if(!utils.isEmpty(data.photoUrl)) object.photoUrl = data.photoUrl.trim();
+
+    if(!utils.isEmpty(data.thumbNailUrl)) object.thumbNailUrl = data.thumbNailUrl.trim();
 
     return object;
 }
