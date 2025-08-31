@@ -1,4 +1,3 @@
-import { doc } from "firebase/firestore";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
