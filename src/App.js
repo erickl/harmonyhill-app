@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { Users, List, Upload } from 'lucide-react';
+import { Users, List, Upload, Download } from 'lucide-react';
 
 import CustomersScreen from './components/CustomersScreen';
 import ActivitiesScreen from './components/ActivitiesScreen';
 import AddExpensesScreen from './components/AddExpensesScreen';
+import AddIncomeScreen from './components/AddIncomeScreen';
 import LoginScreen from './components/LoginScreen';
 import AddCustomerScreen from './components/AddCustomerScreen';
 
@@ -47,6 +48,13 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
       >
         <Upload className="h-5 w-5 mb-1" />
         Expenses
+      </button>
+      <button
+        className={`nav-button ${activeTab === 'income' ? 'active' : ''}`}
+        onClick={() => onTabChange('income')}
+      >
+        <Download className="h-5 w-5 mb-1" />
+        Income
       </button>
     </nav>
   );
@@ -102,13 +110,14 @@ function App() {
     screenToDisplay = <ActivitiesScreen onNavigate={navigate} />;
   } else if (currentScreen === 'expenses') {
     screenToDisplay = <AddExpensesScreen onNavigate={navigate} />;
-  } else if (currentScreen === 'add-customer') {
+  } else if (currentScreen === 'income') {
+    screenToDisplay = <AddIncomeScreen onNavigate={navigate} />;
+  }else if (currentScreen === 'add-customer') {
     screenToDisplay = <AddCustomerScreen onNavigate={navigate} />;
   }
 
   return (
     <>
-
       <div className="app-container">
         {isLoggedIn ? (
           <>

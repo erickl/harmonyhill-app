@@ -49,7 +49,7 @@ export function blobToBase64(blob) {
     });
 }
 
-export async function getPurchaseInvoices(filterOptions = {}, onError) {
+export async function getPurchaseReceipts(filterOptions = {}, onError) {
     const path = [dao.constant.RECEIPTS];
     let queryFilter = [];
 
@@ -79,9 +79,11 @@ export async function getPurchaseInvoices(filterOptions = {}, onError) {
     return receipts;
 }
 
-export async function addPurchaseInvoice(data, onError) {
+export async function addPurchaseReceipt(data, onError) {
     const purchasedAt = utils.to_YYMMdd(data.purchasedAt);
-    const id = `${data.category}-${data.purchasedBy}-${purchasedAt}-${Date.now()}`;
+    const purchasedBy = data.purchasedBy.replace(/ /g, "-");
+    const category = data.category.replace(/ /g, "-");
+    const id = `${category}-${purchasedBy}-${purchasedAt}-${Date.now()}`;
     const path = [dao.constant.RECEIPTS];
     return await dao.add(path, id, data, onError);
 }

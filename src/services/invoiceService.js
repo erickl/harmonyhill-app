@@ -57,14 +57,14 @@ export async function uploadPurchaseInvoice(filename, file, compressionOptions, 
     return await invoiceDao.uploadImage(filename, imageDataUrl, onError);
 }
 
-export async function getPurchaseInvoices(filterOptions = {}, onError) {
-    const receipts = await invoiceDao.getPurchaseInvoices(filterOptions, onError);
+export async function getPurchaseReceipts(filterOptions, onError) {
+    const receipts = await invoiceDao.getPurchaseReceipts(filterOptions, onError);
     return receipts;
 }
 
-export async function addPurchaseInvoice(data, onError) {
+export async function addPurchaseReceipt(data, onError) {
     const object = mapReceiptObject(data);
-    const result = await invoiceDao.addPurchaseInvoice(object, onError);
+    const result = await invoiceDao.addPurchaseReceipt(object, onError);
     return result;
 }
 
@@ -75,7 +75,7 @@ export async function validate(data, onError) {
             return false;
         }
         if (!utils.isAmount(data.amount) || data.amount <= 0) {
-            onError(`Input amount above zero`);
+            onError(`Input an amount above zero`);
             return false;
         } 
         if(utils.isEmpty(data.category)) {

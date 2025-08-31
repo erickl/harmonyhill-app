@@ -269,15 +269,29 @@ export function isToday(inputDate) {
 /**
  * get a Luxon date time object with time at midnight
  */
+export function monthStart(addDays = 0) {
+    return now(addDays).startOf('month');
+}
+
+/**
+ * get a Luxon date time object with time at midnight
+ */
+export function monthEnd(addDays = 0) {
+    return now(addDays).endOf('month');
+}
+
+/**
+ * get a Luxon date time object with time at midnight
+ */
 export function today(addDays = 0) {
-    return now().startOf('day').plus({days: addDays}).setZone(getHotelTimezone(), { keepLocalTime: true });
+    return now(addDays).startOf('day');
 }
 
 /**
  * get a Luxon date time object with time at this moment
  */
 export function now(addDays = 0) {
-    return DateTime.now().plus({days: addDays}).setZone(getHotelTimezone(), { keepLocalTime: true });
+    return DateTime.now().setZone(getHotelTimezone(), { keepLocalTime: true }).plus({days: addDays});
 }
 
 export function getHotelTimezone() {
@@ -327,4 +341,13 @@ function generateDateFormats() {
     formats.push("yyyy/MM/dd", "yyyy-MM-dd");
 
     return formats;
+}
+
+export function groupBy(elements, createKey) {
+    return Object.values(elements).reduce((map, element) => {
+        const group = createKey(element);
+        if(!map[group]) map[group] = [];
+        map[group].push(element);
+        return map;
+    }, {});
 }

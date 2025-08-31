@@ -21,7 +21,6 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
     const [activityToDelete,   setActivityToDelete  ] = useState(null );
-    const [displayInvoicePdf,  setDisplayInvoicePdf ] = useState(false);
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);

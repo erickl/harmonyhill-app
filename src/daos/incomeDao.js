@@ -1,0 +1,36 @@
+import { where, orderBy } from 'firebase/firestore';
+import * as dao from "./dao.js";
+import * as utils from "../utils.js";
+
+export async function get(filterOptions = {}, onError) {
+    const path = [dao.constant.INCOME];
+    let queryFilter = [];
+
+    if (Object.hasOwn(filterOptions, "category")) {
+        const category = filterOptions.category.trim().toLowerCase();
+        queryFilter.push(where("category", "=", category));
+    }
+
+    if (Object.hasOwn(filterOptions, "after")) {
+        const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
+        queryFilter.push(where("receivedAt", ">=", afterDateFireStore));
+    }
+
+    if (Object.hasOwn(filterOptions, "before")) {
+        const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
+        queryFilter.push(where("receivedAt", "<=", beforeDateFireStore));
+    }
+
+    let ordering = [orderBy("receivedAt", "desc")];
+
+    const incomes = await dao.get(path, queryFilter, ordering, onError);
+    return incomes;
+}
+
+export async function add(data, onError) {
+    const receivedAt = utils.to_YYMMdd(data.receivedAt);
+    const category = data.category.replace(/ /g, "-");
+    const id = `${category}-${receivedAt}-${Date.now()}`;
+    const path = [dao.constant.INCOME];
+    return await dao.add(path, id, data, onError);
+}

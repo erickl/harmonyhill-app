@@ -7,8 +7,8 @@ import invoiceLogo from "../assets/invoice-icon.png";
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
-    const [expandedReceipts, setExpandedReceipts] = useState({});
-    const [receipts,         setReceipts        ] = useState([]);
+    const [expandedReceipts, setExpandedReceipts] = useState({}  );
+    const [receipts,         setReceipts        ] = useState([]  );
     const [displayedReceipt, setDisplayedReceipt] = useState(null);
     const [loading,          setLoading         ] = useState(true);
     const [errorMessage,     setErrorMessage    ] = useState(null);
@@ -26,7 +26,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     useEffect(() => {
         const fetchReceipts = async() => {
             const filter = {};
-            const uploadedReceipts = await invoiceService.getPurchaseInvoices(filter, onError);
+            const uploadedReceipts = await invoiceService.getPurchaseReceipts(filter, onError);
             setReceipts(uploadedReceipts);
             setLoading(false);
         }

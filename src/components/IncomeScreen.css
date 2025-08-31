@@ -1,0 +1,26 @@
+.income-box {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.income-title {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.income-header {
+  display: flex;
+  align-items: center; 
+  justify-content: space-between;
+}
+
+.income-header-left {
+  display: flex;
+}
+
+.income-body {
+  padding: 1rem;
+}

@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import * as invoiceService from "../services/invoiceService.js";
-import * as userService from "../services/userService.js";
-import UploadReceiptScreen from './UploadReceiptScreen.js';
+import * as utils from "../utils.js";
+import * as incomeService from "../services/incomeService.js";
+import * as bookingService from "../services/bookingService.js";
+import "./AddIncomeScreen.css";
+import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import IncomeScreen from "./IncomeScreen.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
-import * as utils from "../utils.js";
-import "./AddExpenseScreen.css";
-import ErrorNoticeModal from "./ErrorNoticeModal.js";
-import ExpensesScreen from './ExpensesScreen.js';
 
-export default function AddExpensesScreen({ onNavigate }) {
+export default function AddIncomeScreen({ onNavigate }) {
 
     const emptyForm = {
-        photo       : null,
-        amount      : '',
-        purchasedBy : '',
-        purchasedAt : utils.today(),
-        category    : '',
-        description : '',
-        comments    : '',
+        amount        : '',
+        receivedAt    : utils.today(),
+        paymentMethod : '', 
+        category      : '',
+        description   : '',
+        bookingId     : '',
+        comments      : '',
     };
 
-    const [teamMembers,     setTeamMembers    ] = useState([]       );
-    const [readyToSubmit,   setReadyToSubmit  ] = useState(false    );
     const [showList,        setShowList       ] = useState(false    );
+    const [readyToSubmit,   setReadyToSubmit  ] = useState(false    );
     const [validationError, setValidationError] = useState(null     );
     const [errorMessage,    setErrorMessage   ] = useState(null     );
+    const [bookings,        setBookings       ] = useState([]       );
     const [formData,        setFormData       ] = useState(emptyForm);
 
     const onValidationError = (error) => {
@@ -37,65 +36,34 @@ export default function AddExpensesScreen({ onNavigate }) {
         setErrorMessage(errorMessage);
     };
 
-    // todo: put in database
-    const categories = {
-        'Food - Daily market'  : {"name" : "Food - Daily market"  },
-        'Food - Non-market'    : {"name" : "Food - Non-market"    },
-        'Laundry'              : {"name" : "Laundry"              },
-        'Pool'                 : {"name" : "Pool"                 },
-        'Other villa supplies' : {"name" : "Other villa supplies" },
-        'Guest expenses'       : {"name" : "Guest expenses"       },
-        'Utilities'            : {"name" : "Utilities"            },
-        'Maintenance'          : {"name" : "Maintenance"          },
-        'Donations'            : {"name" : "Donations"            },
-        'Assets'               : {"name" : "Assets"               },
-        'Tax & accounting'     : {"name" : "Tax & accounting"     },
-        'Guest refunds'        : {"name" : "Guest refunds"        },
-        'Other'                : {"name" : "Other"                },
-    };
-
-    // Initial validation
-    useEffect(() => {
-        validateFormData(emptyForm);
-    }, []);
-
-    useEffect(() => {
-        const fetchTeamMembers = async () => {
-            const teamMembers = await userService.getUsers();
-            const formattedTeamMembers = teamMembers.reduce((m, teamMember) => {
-                m[teamMember.name] = teamMember;
-                return m;
-            }, {})
-            setTeamMembers(formattedTeamMembers);
-        };
-
-        fetchTeamMembers();
-    }, []);
-
-    const onTeamMemberSelect = (teamMember) => {
-        const name = teamMember ? teamMember.name : '';
-        handleChange("purchasedBy", name);
-    }
-
     const onCategorySelect = (category) => {
         const name = category ? category.name : '';
         handleChange("category", name);
     }
 
-    const resetForm = () => {
-        setFormData(emptyForm);
-    };
+    const onPaymentMethodSelect = (paymentMethod) => {
+        const name = paymentMethod ? paymentMethod.name : '';
+        handleChange("paymentMethod", name);
+    }
+
+    const onBookingSelect = (booking) => {
+        const id = booking ? booking[0].id : '';
+        handleChange("bookingId", id);
+    }
 
     const validateFormData = async (newFormData) => {
-        const validationResult = await invoiceService.validate(newFormData, onValidationError);
+        const validationResult = await incomeService.validate(newFormData, onValidationError);
 
         setReadyToSubmit(validationResult);
-        //setReadyToSubmit(true); // todo: for testing picture upload
 
         if(validationResult === true) {
             setValidationError(null);
         }
     }
+
+    const resetForm = () => {
+        setFormData(emptyForm);
+    };
 
     const handleChange = (field, value) => {
         let nextFormData = {};
@@ -117,30 +85,12 @@ export default function AddExpensesScreen({ onNavigate }) {
         validateFormData(nextFormData);
     };
 
+        // Handle form submission
     const handleSubmit = async () => {
         try {
             if(!readyToSubmit) return;
 
-            const fileDate = utils.to_YYMMdd(formData.purchasedAt);
-            const fileDescription = formData.description.trim().toLowerCase().replace(/ /g, "-");
-            
-            const fileName = `${fileDescription}-${fileDate}-${Date.now()}`;
-            const thumbNailName = `thumbnails/${fileName}.jpg`;
-            const originalName = `receipts/${fileName}.jpg`;
-
-            // const thumbNailUrl = await invoiceService.uploadPurchaseInvoice(thumbNailName, formData.photo, {maxSize : 0.02}, onError);
-            // if(!thumbNailUrl) return;
-            
-            const photoUrl = await invoiceService.uploadPurchaseInvoice(originalName, formData.photo, {maxSize : 0.1}, onError);
-            if(!photoUrl) return;
-            
-            formData.photoUrl     = photoUrl;
-            // formData.thumbNailUrl = thumbNailUrl;
-            formData.fileName     = fileName;
-            
-            delete formData['photo'];
-            
-            const addResult = await invoiceService.addPurchaseReceipt(formData, onError);
+            const addResult = await incomeService.add(formData, onError);
 
             if(addResult) {
                 resetForm();
@@ -152,15 +102,51 @@ export default function AddExpensesScreen({ onNavigate }) {
         }        
     };
 
+    const isGuestPayment = formData.category.trim().toLowerCase() === "guest payment";
+
+    // Initial validation
+    useEffect(() => {
+        validateFormData(emptyForm);
+    }, []);
+
+    useEffect(() => {
+        const getBookings = async() => {
+            const filter = {"after": utils.monthStart(), "before" : utils.monthEnd()};
+            const bookings = await bookingService.get(filter, onError);
+            const bookingsByName = utils.groupBy(bookings, (booking) => {
+                const house = booking.house === "harmony hill" ? "HH" : "JN";
+                return `${utils.to_YYMMdd(booking.checkInAt)} ${house} ${booking.name}`
+            });
+            setBookings(bookingsByName);
+        }
+        if(isGuestPayment && utils.isEmpty(bookings)) {
+            getBookings();
+        }
+    }, [formData]);
+
     if(showList) {
-        return (<ExpensesScreen onClose={() => setShowList(false)}/>);
+        return (<IncomeScreen onClose={() => setShowList(false)}/>);
     }
 
+    // todo: put in database
+    const categories = {
+        'Guest Payment'        : {"name" : "Guest Payment"    },
+        'Petty Cash Top Up'    : {"name" : "Petty Cash Top Up"},
+        'Commission'           : {"name" : "Commission"       },
+    };
+
+    // todo: put in database
+    const paymentMethods = {
+        'Cash'        : {"name" : "Cash"    },
+        'Transfer'    : {"name" : "Transfer"},
+        'AirBnB'      : {"name" : "AirBnB"  },
+    };
+
     return (
-        <div className="card">
+         <div className="card">
             <div className="card-header">
                 <div>
-                    <h2 className="card-title">Record New Expense</h2>
+                    <h2 className="card-title">Record New Income</h2>
                 </div>
             
                 <div>
@@ -170,7 +156,6 @@ export default function AddExpensesScreen({ onNavigate }) {
                 </div>
             </div>
             <div className="card-content">
-                <UploadReceiptScreen onUploadSuccess={(photo) => handleChange("photo", photo)}/> 
                     
                 <div className="form-group">
                     <label htmlFor="amount">Amount (IDR):</label>
@@ -191,15 +176,6 @@ export default function AddExpensesScreen({ onNavigate }) {
 
                 <div className="purchase-form-group">
                     <Dropdown 
-                        current={formData.purchasedBy} 
-                        label={"Purchased By"} 
-                        options={teamMembers} 
-                        onSelect={onTeamMemberSelect}
-                    />
-                </div>
-
-                <div className="purchase-form-group">
-                    <Dropdown 
                         label={"Category"} 
                         options={categories}
                         current={formData.category}
@@ -207,10 +183,30 @@ export default function AddExpensesScreen({ onNavigate }) {
                     />
                 </div>
 
+                {!utils.isEmpty(bookings) && (
+                    <div className="purchase-form-group">
+                        <Dropdown 
+                            label={"Booking"} 
+                            options={bookings}
+                            current={formData.bookingId}
+                            onSelect={onBookingSelect}
+                        />
+                    </div>
+                )}
+
+                <div className="purchase-form-group">
+                    <Dropdown 
+                        label={"Payment Method"} 
+                        options={paymentMethods}
+                        current={formData.paymentMethod}
+                        onSelect={onPaymentMethodSelect}
+                    />
+                </div>
+
                 <div className="purchase-form-group">
                     <MyDatePicker 
-                        name={"purchasedAt"} 
-                        date={formData.purchasedAt} 
+                        name={"receivedAt"} 
+                        date={formData.receivedAt} 
                         onChange={handleChange}
                     />
                 </div>
@@ -259,4 +255,4 @@ export default function AddExpensesScreen({ onNavigate }) {
             </div>
         </div>
     );
-};
+}
