@@ -27,8 +27,7 @@ export async function addMeal(bookingId, mealData, onError) {
     const addMealSuccess = await activityDao.transaction(async () => {
         const booking = await bookingDao.getOne(bookingId);
         if(!booking) {
-            console.error(`Booking ${bookingId} not found`);
-            return false;
+            throw new Error(`Booking ${bookingId} not found`)
         }
 
         const meal = await mapMealObject(mealData);
@@ -39,16 +38,13 @@ export async function addMeal(bookingId, mealData, onError) {
         mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
         const success = await activityDao.add(bookingId, mealId, meal, onError);
         if(!success) {
-            // todo: pass onError to the add function
-            return false; 
+            throw new Error(`Could not add meal ${mealId}`)
         }
 
         if(!utils.isEmpty(mealData.dishes)) {
             const returnedDishIds = await addDishes(bookingId, mealId, Object.values(mealData.dishes), onError);
             if(returnedDishIds.length !== Object.keys(mealData.dishes).length) {
-                //onError("Not all dishes were successfully uploaded");
-                // todo: pass onError to the add function: not all dishes were successfully uploaded
-                return false;
+                throw new Error(`Not all dishes were successfully uploaded for meal ${mealId}`)
             }
         }
     });
