@@ -212,6 +212,7 @@ export default function AddExpensesScreen({ onNavigate }) {
                         name={"purchasedAt"} 
                         date={formData.purchasedAt} 
                         onChange={handleChange}
+                        useTime={false}
                     />
                 </div>
 

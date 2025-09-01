@@ -208,6 +208,7 @@ export default function AddIncomeScreen({ onNavigate }) {
                         name={"receivedAt"} 
                         date={formData.receivedAt} 
                         onChange={handleChange}
+                        useTime={false}
                     />
                 </div>
 
