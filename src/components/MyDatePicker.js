@@ -8,7 +8,7 @@ import { DateTime } from 'luxon';
 import { Utensils } from 'lucide-react';
 import * as utils from "../utils";
 
-export default function MyDatePicker({ name, date, time, onChange }) {
+export default function MyDatePicker({ name, date, time, onChange, useTime }) {
     //const isMidnight = (dt) => dt !== null && dt.hour === 0 && dt.minute === 0 && dt.second === 0 && dt.millisecond === 0;
 
     const [startingTime, setStartingTime] = useState(time);
@@ -66,7 +66,7 @@ export default function MyDatePicker({ name, date, time, onChange }) {
             />
         </LocalizationProvider>
         
-        {time && (
+        {useTime !== false && (
             <LocalizationProvider dateAdapter={AdapterLuxon}>
                 <TimePicker
                     label="Select a time"
