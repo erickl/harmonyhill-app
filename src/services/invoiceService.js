@@ -1,5 +1,6 @@
 import * as mealService from './mealService.js';
 import * as activityService from './activityService.js';
+import * as ledgerService from './ledgerService.js';
 import * as invoiceDao from "../daos/invoiceDao.js";
 import * as utils from "../utils.js";
 
@@ -42,8 +43,6 @@ export async function createCsvInvoice(bookingId) {
     // todo
 }
 
-
-
 /**
  * Upload invoice for purchases for your business (e.g. of market groceries, construction materials, etc...)
  * @param {*} filename 
@@ -64,8 +63,20 @@ export async function getPurchaseReceipts(filterOptions, onError) {
 
 export async function addPurchaseReceipt(data, onError) {
     const object = mapReceiptObject(data);
-    const result = await invoiceDao.addPurchaseReceipt(object, onError);
-    return result;
+
+    const addResult = await invoiceDao.transaction(async () => {
+        object.balance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
+        if(object.balance === false) {
+            throw new Error(`Could not update cash balance`);
+        }
+        const addResult = await invoiceDao.addPurchaseReceipt(object, onError);
+        if(addResult === false) {
+            throw new Error(`Could not add the receipt`);
+        }
+        return true;
+    })
+    
+    return addResult;
 }
 
 export async function validate(data, onError) {

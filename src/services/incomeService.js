@@ -1,5 +1,6 @@
 import * as utils from "../utils.js";
 import * as incomeDao from "../daos/incomeDao.js";
+import * as ledgerService from "./ledgerService.js";
 
 export async function get(filterOptions, onError) {
     const incomes = await incomeDao.get(filterOptions, onError);
@@ -8,8 +9,20 @@ export async function get(filterOptions, onError) {
 
 export async function add(data, onError) {
     const object = mapIncomeObject(data);
-    const receipts = await incomeDao.add(object, onError);
-    return receipts;
+
+    const addResult = await incomeDao.transaction(async () => {
+        object.balance = await ledgerService.updatePettyCashBalance(object.amount, onError);
+        if(object.balance === false) {
+            throw new Error(`Could not update cash balance`);
+        }
+        const addResult = await incomeDao.add(object, onError);
+        if(addResult === false) {
+            throw new Error(`Could not add income`);
+        }
+        return true;
+    })
+    
+    return addResult;
 }
 
 function mapIncomeObject(data) {

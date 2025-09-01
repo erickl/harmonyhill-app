@@ -8,3 +8,4 @@ exports.PERSONNEL      = "personnel";
 exports.USER_LOGS      = "userLogs";
 exports.RECEIPTS       = "receipts";
 exports.INCOME         = "income";
+exports.COMPANY        = "company";

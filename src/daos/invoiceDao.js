@@ -5,6 +5,10 @@ import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 
+export async function transaction(inTransaction) {
+    return dao.transaction(inTransaction);
+}
+
 export async function uploadImage(filename, imageDataURL, onError) {
     try {
         const storageRef = ref(storage, filename);
