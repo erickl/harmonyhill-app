@@ -128,6 +128,13 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
             delete updatedData.createdBy;
         }
 
+        if(Object.hasOwn(updatedData, "id")) {
+            delete updatedData.id;
+        }
+        if(Object.hasOwn(updatedData, "ref")) {
+            delete updatedData.ref;
+        }
+
         // Add change to the update logs
         let diffStr = "";
         if(updateLogs) {
