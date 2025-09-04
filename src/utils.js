@@ -90,8 +90,26 @@ export function isEmpty(value) {
         return true;
     }
 
-    const valueStr = JSON.stringify(value);
-    return valueStr === "[]" || valueStr === "{}";
+    if(Array.isArray(value)) {
+        const valueStr = JSON.stringify(value);
+        return valueStr === "[]";
+    }
+
+    if(isJsonObject(value)) {
+        const valueStr = JSON.stringify(value);
+        return valueStr === "{}";
+    }
+
+    return false;
+}
+
+export function isJsonObject(value) {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value) &&
+        Object.prototype.toString.call(value) === "[object Object]"
+    );
 }
 
 export function isString(value) {
