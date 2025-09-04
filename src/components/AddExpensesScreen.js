@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import * as invoiceService from "../services/invoiceService.js";
+import * as expenseService from "../services/expenseService.js";
 import * as userService from "../services/userService.js";
 import UploadReceiptScreen from './UploadReceiptScreen.js';
 import MyDatePicker from "./MyDatePicker.js";
@@ -10,16 +10,16 @@ import "./AddExpenseScreen.css";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import ExpensesScreen from './ExpensesScreen.js';
 
-export default function AddExpensesScreen({ onNavigate }) {
+export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
 
     const emptyForm = {
-        photo       : null,
-        amount      : '',
-        purchasedBy : '',
-        purchasedAt : utils.today(),
-        category    : '',
-        description : '',
-        comments    : '',
+        photoUrl    : expenseToEdit ? expenseToEdit.photoUrl    : null,
+        amount      : expenseToEdit ? expenseToEdit.amount      : '',
+        purchasedBy : expenseToEdit ? expenseToEdit.purchasedBy : '',
+        purchasedAt : expenseToEdit ? expenseToEdit.purchasedAt : utils.today(),
+        category    : expenseToEdit ? expenseToEdit.category    : '',
+        description : expenseToEdit ? expenseToEdit.description : '',
+        comments    : expenseToEdit ? expenseToEdit.comments    : '',
     };
 
     const [teamMembers,     setTeamMembers    ] = useState([]       );
@@ -87,10 +87,9 @@ export default function AddExpensesScreen({ onNavigate }) {
     };
 
     const validateFormData = async (newFormData) => {
-        const validationResult = await invoiceService.validate(newFormData, onValidationError);
+        const validationResult = await expenseService.validate(newFormData, onValidationError);
 
         setReadyToSubmit(validationResult);
-        //setReadyToSubmit(true); // todo: for testing picture upload
 
         if(validationResult === true) {
             setValidationError(null);
@@ -119,31 +118,37 @@ export default function AddExpensesScreen({ onNavigate }) {
 
     const handleSubmit = async () => {
         try {
-            if(!readyToSubmit) return;
+            if(!readyToSubmit) {
+                onError(`Not yet ready to submit. Missing obligatory data`);
+                return;
+            }
 
-            const fileDate = utils.to_YYMMdd(formData.purchasedAt);
-            const fileDescription = formData.description.trim().toLowerCase().replace(/ /g, "-");
+            // If just editing the expense, the user might not have taken a new photo
+            if(formData.photo) {
+                const fileDate = utils.to_YYMMdd(formData.purchasedAt);
+                const fileDescription = formData.description.trim().toLowerCase().replace(/ /g, "-");
+                formData.fileName = `${fileDescription}-${fileDate}-${Date.now()}`;
+                formData.fileName = `expenses/${formData.fileName}.jpg`;
+                formData.photoUrl = await expenseService.uploadReceipt(formData.fileName, formData.photo, {maxSize : 0.1}, onError);
+                delete formData['photo'];
+            }
             
-            const fileName = `${fileDescription}-${fileDate}-${Date.now()}`;
-            const thumbNailName = `thumbnails/${fileName}.jpg`;
-            const originalName = `receipts/${fileName}.jpg`;
+            if(!formData.photoUrl) {
+                onError(`Unexpected error. Cannot find the photo URL`);
+                return;
+            }
+            
+            let result = null;
+            
+            if(expenseToEdit) {
+                result = await expenseService.update(expenseToEdit.id, formData, onError);
+            } else {
+                result = await expenseService.add(formData, onError);
+            }         
 
-            // const thumbNailUrl = await invoiceService.uploadPurchaseInvoice(thumbNailName, formData.photo, {maxSize : 0.02}, onError);
-            // if(!thumbNailUrl) return;
-            
-            const photoUrl = await invoiceService.uploadPurchaseInvoice(originalName, formData.photo, {maxSize : 0.1}, onError);
-            if(!photoUrl) return;
-            
-            formData.photoUrl     = photoUrl;
-            // formData.thumbNailUrl = thumbNailUrl;
-            formData.fileName     = fileName;
-            
-            delete formData['photo'];
-            
-            const addResult = await invoiceService.addPurchaseReceipt(formData, onError);
-
-            if(addResult) {
-                resetForm();
+            if(result) {
+                if(expenseToEdit) onClose();
+                else resetForm();
             } else {
                 throw new Error("Receipt form data upload error");
             }
@@ -170,7 +175,7 @@ export default function AddExpensesScreen({ onNavigate }) {
                 </div>
             </div>
             <div className="card-content">
-                <UploadReceiptScreen onUploadSuccess={(photo) => handleChange("photo", photo)}/> 
+                <UploadReceiptScreen current={formData.photoUrl} onUploadSuccess={(photo) => handleChange("photo", photo)}/> 
                     
                 <div className="form-group">
                     <label htmlFor="amount">Amount (IDR):</label>
@@ -212,6 +217,7 @@ export default function AddExpensesScreen({ onNavigate }) {
                         name={"purchasedAt"} 
                         date={formData.purchasedAt} 
                         onChange={handleChange}
+                        time={null}
                         useTime={false}
                     />
                 </div>

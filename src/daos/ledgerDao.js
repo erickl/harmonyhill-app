@@ -7,18 +7,23 @@ export async function updatePettyCashBalance(amount, onError) {
     const oldBalanceDoc = await getPettyCashBalance(onError);
     
     let result = false;
+    let newBalance = 0;
 
     if(oldBalanceDoc === false) {
         const data = { "balance" : amount };
+        newBalance = amount;
         result = await dao.add(path, id, data, onError);
     } else {
-        oldBalanceDoc.balance = amount;
-        result = await dao.update(path, id, oldBalanceDoc, false, onError);
+        newBalance = oldBalanceDoc.balance = amount;
+        const newDoc = { 
+            ...(expandedExpenses || {}),
+            "balance" : newBalance
+        };
+        result = await dao.update(path, id, newDoc, false, onError);
     }
 
     if(result) {
-        const newBalanceDoc = await getPettyCashBalance(onError);
-        return newBalanceDoc.balance;
+        return newBalance;
     } else {
         return false;
     }

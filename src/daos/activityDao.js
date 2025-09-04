@@ -23,7 +23,7 @@ export async function updateDish(bookingId, mealId, dishId, dish, onError) {
 }
 
 export async function transaction(inTransaction) {
-    return dao.transaction(inTransaction);
+return dao.transaction(inTransaction);
 }
 
 export async function getProviders(category, subCategory) {

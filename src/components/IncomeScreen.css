@@ -24,3 +24,16 @@
 .income-body {
   padding: 1rem;
 }
+
+.income-body-footer {
+    margin-top: 2rem;
+    display: flex;
+    gap: 30px;
+}
+
+.income-body-footer-icon p {
+    font-size: 10px; 
+    margin-top: 0rem;
+    cursor: pointer;
+    align-items: center;
+}

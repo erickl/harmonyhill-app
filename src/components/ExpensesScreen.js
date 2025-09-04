@@ -1,43 +1,77 @@
 import React, { useState, useEffect } from 'react';
-import * as invoiceService from "../services/invoiceService.js";
+import * as expenseService from "../services/expenseService.js";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import * as utils from "../utils.js";
+import * as userService from "../services/userService.js";
 import "./ExpensesScreen.css";
 import invoiceLogo from "../assets/invoice-icon.png";
+import AddExpensesScreen from "./AddExpensesScreen.js";
+import ConfirmModal from "./ConfirmModal.js";
+import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
-    const [expandedReceipts, setExpandedReceipts] = useState({}  );
-    const [receipts,         setReceipts        ] = useState([]  );
-    const [displayedReceipt, setDisplayedReceipt] = useState(null);
-    const [loading,          setLoading         ] = useState(true);
-    const [errorMessage,     setErrorMessage    ] = useState(null);
+    const [expandedExpenses, setExpandedExpenses] = useState({}   );
+    const [receipts,         setExpenses        ] = useState([]   );
+    const [displayedReceipt, setDisplayedReceipt] = useState(null );
+    const [loading,          setLoading         ] = useState(true );
+    const [errorMessage,     setErrorMessage    ] = useState(null );
+    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
+    const [expenseToEdit,    setExpenseToEdit   ] = useState(null );
+    const [expenseToDelete,  setExpenseToDelete ] = useState(null );
 
     const handleSetExpandedReceipt = (id) => {
-        let updatedExpandedList = { ...(expandedReceipts || {}) };
+        let updatedExpandedList = { ...(expandedExpenses || {}) };
         updatedExpandedList[id] = updatedExpandedList[id] === true ? false : true;
-        setExpandedReceipts(updatedExpandedList);
+        setExpandedExpenses(updatedExpandedList);
     };
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
     };
 
+    const handleEditExpense = async(expense) => {
+        setExpenseToEdit(expense);
+    }
+
+    const handleDeleteExpense = async() => {
+        if(!expenseToDelete || utils.isEmpty(expenseToDelete.id)) {
+            return;
+        }
+        const result = await expenseService.remove(expenseToDelete.id, onError);
+        if(result) {
+            setExpenseToDelete(null);
+        }
+    }
+
     useEffect(() => {
-        const fetchReceipts = async() => {
+        const fetchExpenses = async() => {
             const filter = {};
-            const uploadedReceipts = await invoiceService.getPurchaseReceipts(filter, onError);
-            setReceipts(uploadedReceipts);
+            const uploadedExpenses = await expenseService.get(filter, onError);
+            setExpenses(uploadedExpenses);
             setLoading(false);
         }
 
-        fetchReceipts();
+        fetchExpenses();
+    }, [expenseToEdit, expenseToDelete]);
+
+    useEffect(() => {
+        const getUserPermissions = async() => {
+            const userIsAdminOrManager = await userService.isManagerOrAdmin();
+            setIsManagerOrAdmin(userIsAdminOrManager);
+        } 
+
+        getUserPermissions();
     }, []);
 
     if(loading) {
         return (
             <p>Loading...</p>
         )
+    }
+
+    if(expenseToEdit) {
+        return (<AddExpensesScreen expenseToEdit={expenseToEdit} onNavigate={onNavigate} onClose={() => setExpenseToEdit(null)}/>)
     }
      
     return (
@@ -54,39 +88,61 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 </div>
             </div>
             <div>
-                {receipts.map((receipt) => {
+                {receipts.map((expense) => {
                     return (
-                        <React.Fragment key={receipt.id}>
-                            <div className="receipt-box" onClick={()=> handleSetExpandedReceipt(receipt.id)}>
-                                <div className="receipt-header">
-                                    <div className="receipt-header-left">
+                        <React.Fragment key={expense.id}>
+                            <div className="expense-box" onClick={()=> handleSetExpandedReceipt(expense.id)}>
+                                <div className="expense-header">
+                                    <div className="expense-header-left">
                                         <img 
-                                            className="receipt-thumbnail" 
-                                            //src={receipt.thumbNailUrl} 
+                                            className="expense-thumbnail" 
+                                            //src={expense.thumbNailUrl} 
                                             src={invoiceLogo} 
-                                            alt={`preview-${receipt.id}`} 
-                                            onClick={() => setDisplayedReceipt(receipt)}
+                                            alt={`preview-${expense.id}`} 
+                                            onClick={() => setDisplayedReceipt(expense)}
                                         />
                                         
-                                        <div className="receipt-title">
-                                            {utils.capitalizeWords(receipt.description)}
+                                        <div className="expense-title">
+                                            {utils.capitalizeWords(expense.description)}
                                         </div>
                                     </div>
                                     <div className="expand-icon">
-                                        {expandedReceipts[receipt.id] ? '▼' : '▶'}
+                                        {expandedExpenses[expense.id] ? '▼' : '▶'}
                                     </div>
                                 </div>  
                                 
                                 <div>
-                                    {utils.formatDisplayPrice(receipt.amount, true)}
+                                    {utils.formatDisplayPrice(expense.amount, true)}
                                 </div>
-                                {expandedReceipts[receipt.id] && (
-                                    <div className="receipt-body">
+                                {expandedExpenses[expense.id] && (
+                                    <div className="expense-body">
                                         <div>
-                                            Comments: {receipt.comments}
+                                            Comments: {expense.comments}
                                         </div>
                                         <div>
-                                            Purchased By: {utils.capitalizeWords(receipt.purchasedBy)}
+                                            Purchased By: {utils.capitalizeWords(expense.purchasedBy)}
+                                        </div>
+                                        <div className="expense-body-footer">
+                                            <div className="expense-body-footer-icon">
+                                                <Pencil   
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditExpense(expense);
+                                                    }}
+                                                />
+                                                <p>Edit</p>
+                                            </div>
+                                            {isManagerOrAdmin && (
+                                                <div className="expense-body-footer-icon">
+                                                    <Trash2  
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setExpenseToDelete(expense);
+                                                        }}
+                                                    />
+                                                    <p>Delete</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -95,6 +151,13 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                     )
                 })}
             </div>
+
+            {expenseToDelete && (
+                <ConfirmModal 
+                    onCancel={() => setExpenseToDelete(null)}
+                    onConfirm={handleDeleteExpense}
+                />
+            )}
 
             {errorMessage && (
                 <ErrorNoticeModal 
@@ -105,9 +168,9 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
 
             {displayedReceipt && (
                 <img 
-                    className="receipt-photo" 
+                    className="expense-photo" 
                     src={displayedReceipt.photoUrl} 
-                    alt={`receipt-${displayedReceipt.id}`} 
+                    alt={`expense-${displayedReceipt.id}`} 
                     onClick={() => setDisplayedReceipt(null)}
                 />
             )}

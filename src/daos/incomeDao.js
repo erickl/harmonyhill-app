@@ -6,6 +6,11 @@ export async function transaction(inTransaction) {
     return dao.transaction(inTransaction);
 }
 
+export async function getOne(id, onError) {
+    const path = [dao.constant.INCOME];
+    return await dao.getOne(path, id, onError);
+}
+
 export async function get(filterOptions = {}, onError) {
     const path = [dao.constant.INCOME];
     let queryFilter = [];
@@ -37,4 +42,14 @@ export async function add(data, onError) {
     const id = `${category}-${receivedAt}-${Date.now()}`;
     const path = [dao.constant.INCOME];
     return await dao.add(path, id, data, onError);
+}
+
+export async function update(id, data, onError) {
+    const path = [dao.constant.INCOME];
+    return await dao.update(path, id, data, true, onError);
+}
+
+export async function remove(id, onError) {
+    const path = [dao.constant.INCOME];
+    return await dao.remove(path, id, onError);
 }

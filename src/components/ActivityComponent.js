@@ -73,8 +73,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, hand
                         <p>Delete</p>
                     </div>
                 )}
-            </div>
-            
+            </div>   
         </div>
     );
 };

@@ -9,16 +9,16 @@ import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
 
-export default function AddIncomeScreen({ onNavigate }) {
+export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
     const emptyForm = {
-        amount        : '',
-        receivedAt    : utils.today(),
-        paymentMethod : '', 
-        category      : '',
-        description   : '',
-        bookingId     : '',
-        comments      : '',
+        amount        : incomeToEdit ? incomeToEdit.amount        : '',
+        receivedAt    : incomeToEdit ? incomeToEdit.receivedAt    : utils.today(),
+        paymentMethod : incomeToEdit ? incomeToEdit.paymentMethod : '', 
+        category      : incomeToEdit ? incomeToEdit.category      : '',
+        description   : incomeToEdit ? incomeToEdit.description   : '',
+        bookingId     : incomeToEdit ? incomeToEdit.bookingId     : '',
+        comments      : incomeToEdit ? incomeToEdit.comments      : '',
     };
 
     const [showList,        setShowList       ] = useState(false    );
@@ -85,15 +85,20 @@ export default function AddIncomeScreen({ onNavigate }) {
         validateFormData(nextFormData);
     };
 
-        // Handle form submission
     const handleSubmit = async () => {
         try {
             if(!readyToSubmit) return;
 
-            const addResult = await incomeService.add(formData, onError);
-
-            if(addResult) {
-                resetForm();
+            let result = null;
+            if(incomeToEdit) {
+                result = await incomeService.update(incomeToEdit.id, formData, onError);
+            } else {
+                result = await incomeService.add(formData, onError);
+            }
+           
+            if(result) {
+                if(incomeToEdit) onClose();
+                else resetForm();
             } else {
                 throw new Error("Receipt form data upload error");
             }
@@ -208,6 +213,7 @@ export default function AddIncomeScreen({ onNavigate }) {
                         name={"receivedAt"} 
                         date={formData.receivedAt} 
                         onChange={handleChange}
+                        time={null}
                         useTime={false}
                     />
                 </div>

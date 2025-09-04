@@ -1,7 +1,5 @@
 import * as mealService from './mealService.js';
 import * as activityService from './activityService.js';
-import * as ledgerService from './ledgerService.js';
-import * as invoiceDao from "../daos/invoiceDao.js";
 import * as utils from "../utils.js";
 
 /**
@@ -41,99 +39,6 @@ export async function getTotal(bookingId) {
 
 export async function createCsvInvoice(bookingId) {
     // todo
-}
-
-/**
- * Upload invoice for purchases for your business (e.g. of market groceries, construction materials, etc...)
- * @param {*} filename 
- * @param {*} image 
- */
-export async function uploadPurchaseInvoice(filename, file, compressionOptions, onError) {
-    if(!utils.isEmpty(compressionOptions)) {
-        file = await invoiceDao.compressImage(file, compressionOptions, onError);
-    }
-    const imageDataUrl = await invoiceDao.blobToBase64(file);
-    return await invoiceDao.uploadImage(filename, imageDataUrl, onError);
-}
-
-export async function getPurchaseReceipts(filterOptions, onError) {
-    const receipts = await invoiceDao.getPurchaseReceipts(filterOptions, onError);
-    return receipts;
-}
-
-export async function addPurchaseReceipt(data, onError) {
-    const object = mapReceiptObject(data);
-
-    const addResult = await invoiceDao.transaction(async () => {
-        object.balance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
-        if(object.balance === false) {
-            throw new Error(`Could not update cash balance`);
-        }
-        const addResult = await invoiceDao.addPurchaseReceipt(object, onError);
-        if(addResult === false) {
-            throw new Error(`Could not add the receipt`);
-        }
-        return true;
-    })
-    
-    return addResult;
-}
-
-export async function validate(data, onError) {
-    try {
-        if(utils.isEmpty(data.photo)) {
-            onError(`Upload photo`);
-            return false;
-        }
-        if (!utils.isAmount(data.amount) || data.amount <= 0) {
-            onError(`Input an amount above zero`);
-            return false;
-        } 
-        if(utils.isEmpty(data.category)) {
-            onError(`Choose category`);
-            return false;
-        } 
-        if(!utils.isDateTime(data.purchasedAt)) {
-            onError(`Pick a date`);
-            return false;
-        }
-        if(utils.isEmpty(data.purchasedBy)) {
-            onError(`Who was the purchaser?`);
-            return false;
-        }
-        if(utils.isEmpty(data.description)) {
-            onError(`Give description`);
-            return false;
-        }
-    } catch(e) {
-        // In case of unexpected error, better not stop user from uploading. Return true
-        onError(`Unexpected error. Screenshot and send to admin. You may also upload this anyway: ${e.message}`);
-    }
-    return true;
-}
-
-function mapReceiptObject(data) {
-    let object = {};
-
-    if(utils.isAmount(data.amount)) object.amount = data.amount;
-
-    if(!utils.isEmpty(data.category)) object.category = data.category.trim().toLowerCase();
-
-    if(utils.isDateTime(data.purchasedAt)) object.purchasedAt = utils.toFireStoreTime(data.purchasedAt);
-
-    if(utils.isAmount(data.purchasedBy)) object.purchasedBy = data.purchasedBy.trim().toLowerCase();
-
-    if(!utils.isEmpty(data.description)) object.description = data.description.trim();
-
-    if(!utils.isEmpty(data.comments)) object.comments = data.comments.trim();
-    
-    if(!utils.isEmpty(data.fileName)) object.fileName = data.fileName.trim();
-
-    if(!utils.isEmpty(data.photoUrl)) object.photoUrl = data.photoUrl.trim();
-
-    if(!utils.isEmpty(data.thumbNailUrl)) object.thumbNailUrl = data.thumbNailUrl.trim();
-
-    return object;
 }
 
 // Create a description like this "1x Bolognese (free, no spicy)" 

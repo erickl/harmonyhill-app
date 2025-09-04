@@ -4,7 +4,11 @@ import * as ledgerService from "./ledgerService.js";
 
 export async function get(filterOptions, onError) {
     const incomes = await incomeDao.get(filterOptions, onError);
-    return incomes;
+    const formattedIncomes = incomes.map((income) => {
+            income = utils.toDateTime(income.receivedAt);
+            return income;
+        });
+    return formattedIncomes;
 }
 
 export async function add(data, onError) {
@@ -20,9 +24,57 @@ export async function add(data, onError) {
             throw new Error(`Could not add income`);
         }
         return true;
-    })
+    });
     
     return addResult;
+}
+
+export async function remove(id, onError) {
+    const deleteResult = await incomeDao.transaction(async () => {
+        const existing = await incomeDao.getOne(id, onError);
+        if(!existing) {
+            throw new Error(`Could not find income record ${id}`);
+        }
+
+        const deleteRecordResult = incomeDao.remove(id, onError);
+        if(!deleteRecordResult) {
+            throw new Error(`Could not delete income record ${id}`);
+        }
+
+        const updatePettyCashResult = ledgerService.updatePettyCashBalance(-1 * existing.amount, onError);
+        if(!updatePettyCashResult) {
+            throw new Error(`Could not update petty cash for record ${id}`);
+        }
+
+        return true; 
+    });
+
+    return deleteResult;
+}
+
+export async function update(id, data, onError) {
+    const object = mapIncomeObject(data);
+
+    const updateResult = await incomeDao.transaction(async () => {
+        const existingIncome = await incomeDao.getOne(id);
+        if(!existingIncome) {
+            throw new Error(`Could not find existing income ${id}`);
+        }
+        const amountAdjustment = object.amount - existingIncome.amount;
+
+        object.balance = await ledgerService.updatePettyCashBalance(amountAdjustment, onError);
+        if(object.balance === false) {
+            throw new Error(`Could not update cash balance`);
+        }
+        
+        const updateResult = await incomeDao.update(object, onError);
+        if(updateResult === false) {
+            throw new Error(`Could not update income`);
+        }
+        return true;
+    });
+
+    return updateResult;
 }
 
 function mapIncomeObject(data) {

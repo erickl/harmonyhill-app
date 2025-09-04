@@ -6,6 +6,6 @@ exports.PROMOTIONS     = "promotions";
 exports.DISHES         = "dishes";
 exports.PERSONNEL      = "personnel";
 exports.USER_LOGS      = "userLogs";
-exports.RECEIPTS       = "receipts";
+exports.EXPENSES       = "expenses";
 exports.INCOME         = "income";
 exports.COMPANY        = "company";

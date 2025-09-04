@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import * as incomeService from "../services/incomeService.js";
+import * as userService from "../services/userService.js";
 import * as bookingService from "../services/bookingService.js";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import * as utils from "../utils.js";
 import "./IncomeScreen.css";
+import AddIncomeScreen from './AddIncomeScreen.js';
+import ConfirmModal from "./ConfirmModal.js";
+import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 
 export default function IncomeScreen({ onNavigate, onClose }) {
 
-    const [expandedIncomes,  setExpandedIncomes] = useState({}  );
-    const [incomes,          setIncomes        ] = useState([]  );
-    const [loading,          setLoading        ] = useState(true);
-    const [errorMessage,     setErrorMessage   ] = useState(null);
+    const [expandedIncomes,  setExpandedIncomes ] = useState({}   );
+    const [incomeToEdit,     setIncomeToEdit    ] = useState(null );
+    const [incomeToDelete,   setIncomeToDelete  ] = useState(null );
+    const [incomes,          setIncomes         ] = useState([]   );
+    const [loading,          setLoading         ] = useState(true );
+    const [errorMessage,     setErrorMessage    ] = useState(null );
+    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
 
     const handleSetExpandedIncome = async (income) => {
         if(!income) return;
@@ -30,6 +37,20 @@ export default function IncomeScreen({ onNavigate, onClose }) {
         setExpandedIncomes(updatedExpandedList);
     };
 
+    const handleEditIncome = async(income) => {
+        setIncomeToEdit(income);
+    }
+
+    const handleDeleteIncome = async() => {
+        if(!incomeToDelete || utils.isEmpty(incomeToDelete.id)) {
+            return;
+        }
+        const result = await incomeService.remove(incomeToDelete.id, onError);
+        if(result) {
+            setIncomeToDelete(null);
+        }
+    }
+
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
     };
@@ -41,14 +62,27 @@ export default function IncomeScreen({ onNavigate, onClose }) {
             setIncomes(uploadedIncomes);
             setLoading(false);
         }
-
+    
         fetchIncomes();
+    }, [incomeToEdit, incomeToDelete]);
+
+    useEffect(() => {
+        const getUserPermissions = async() => {
+            const userIsAdminOrManager = await userService.isManagerOrAdmin();
+            setIsManagerOrAdmin(userIsAdminOrManager);
+        }
+
+        getUserPermissions();
     }, []);
 
     if(loading) {
         return (
             <p>Loading...</p>
         )
+    }
+
+    if(incomeToEdit) {
+        return (<AddIncomeScreen incomeToEdit={incomeToEdit} onNavigate={onNavigate} onClose={() => setIncomeToEdit(null)}/>)
     }
      
     return (
@@ -91,6 +125,28 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                         <div>
                                             Comments: {income.comments}
                                         </div>
+                                        <div className="income-body-footer">
+                                            <div className="income-body-footer-icon">
+                                                <Pencil   
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditIncome(income);
+                                                    }}
+                                                />
+                                                <p>Edit</p>
+                                            </div>
+                                            {isManagerOrAdmin && (
+                                                <div className="income-body-footer-icon">
+                                                    <Trash2  
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteIncome(income);
+                                                        }}
+                                                    />
+                                                    <p>Delete</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -98,6 +154,13 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                     )
                 })}
             </div>
+
+            {incomeToDelete && (
+                <ConfirmModal 
+                    onCancel={() => setIncomeToDelete(null)}
+                    onConfirm={handleDeleteIncome}
+                />
+            )}
 
             {errorMessage && (
                 <ErrorNoticeModal 

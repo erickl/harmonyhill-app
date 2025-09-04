@@ -1,4 +1,4 @@
-.receipt-box {
+.expense-box {
   padding: 1rem;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -6,31 +6,31 @@
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.receipt-title {
+.expense-title {
   font-size: 1rem;
   font-weight: bold;
 }
 
-.receipt-thumbnail {
+.expense-thumbnail {
   width: 50px;
   height: auto;
 }
 
-.receipt-header {
+.expense-header {
   display: flex;
   align-items: center; 
   justify-content: space-between;
 }
 
-.receipt-header-left {
+.expense-header-left {
   display: flex;
 }
 
-.receipt-body {
+.expense-body {
   padding: 1rem;
 }
 
-.receipt-photo {
+.expense-photo {
   position: fixed;        /* stays in place, even on scroll */
   top: 0;
   left: 0;
@@ -40,4 +40,17 @@
   background: rgba(0,0,0,0.8); /* dimmed background */
   z-index: 9999;          /* above everything */
   cursor: pointer;        /* show it's clickable */
+}
+
+.expense-body-footer {
+    margin-top: 2rem;
+    display: flex;
+    gap: 30px;
+}
+
+.expense-body-footer-icon p {
+    font-size: 10px; 
+    margin-top: 0rem;
+    cursor: pointer;
+    align-items: center;
 }
