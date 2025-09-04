@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { uploadPurchaseInvoice } from "../services/invoiceService";
 
-export default function UploadReceiptScreen({ onUploadSuccess }) {
-    const [previewImage, setPreviewImage] = useState(null);
+export default function UploadReceiptScreen({ current, onUploadSuccess }) {
+    const [previewImage, setPreviewImage] = useState(current);
     const [previewImageFullScreen, setPreviewImageFullScreen] = useState(false);
 
     const [videoStream, setVideoStream] = useState(null);
