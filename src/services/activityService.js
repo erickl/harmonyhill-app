@@ -62,43 +62,44 @@ export async function getAll(filterOptions = {}) {
  */
 export async function enhanceActivities(activities) {
     const enhance = async (activity) => {
+        const newActivity = activity;
         try {
             // Date time stored in timestamp format in database. Convert to Luxon Date time to display correct time zone 
             if(!utils.isEmpty(activity.startingAt)) {
-                activity.startingAt = utils.toDateTime(activity.startingAt);
-                activity.startingAt_ddMMM = utils.to_ddMMM(activity.startingAt);
-                activity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
+                newActivity.startingAt = utils.toDateTime(activity.startingAt);
+                newActivity.startingAt_ddMMM = utils.to_ddMMM(activity.startingAt);
+                newActivity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
             }
 
             if(!utils.isEmpty(activity.startingTime)) {
-                activity.startingTime = utils.toDateTime(activity.startingTime);
-                activity.startingAt_HHmm = utils.to_HHmm(activity.startingTime);
+                newActivity.startingTime = utils.toDateTime(activity.startingTime);
+                newActivity.startingAt_HHmm = utils.to_HHmm(activity.startingTime);
             } else {
-                activity.startingTime = null;
-                activity.startingAt_HHmm = "Time TBD";
+                newActivity.startingTime = null;
+                newActivity.startingAt_HHmm = "Time TBD";
             }
 
             // Custom activities might already have a display name given. If not, create one here
             if(utils.isEmpty(activity.displayName)) {
-                activity.displayName = `${activity.category.replace(/-/g, " ")}: ${activity.subCategory.replace(/-/g, " ")}`;
+                newActivity.displayName = `${activity.category.replace(/-/g, " ")}: ${activity.subCategory.replace(/-/g, " ")}`;
             } 
-            activity.displayName = utils.capitalizeWords(activity.displayName);
+            newActivity.displayName = utils.capitalizeWords(activity.displayName);
 
             if(activity.custom === true) {
-                activity.subCategory = `Custom: ${activity.displayName}`;
+                newActivity.subCategory = `Custom: ${activity.displayName}`;
             }
 
             if(utils.isEmpty(activity.name)) {
                 const booking = await getParent(activity);
-                activity.name = booking ? booking.name : null;
+                newActivity.name = booking ? booking.name : null;
             }
             
-            activity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
+            newActivity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
         } catch(e) {
             throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
         }
 
-        return activity;
+        return newActivity;
     }
 
     activities = Array.isArray(activities)

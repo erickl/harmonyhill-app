@@ -28,21 +28,24 @@ export async function get(filterOptions = {}, onError = null) {
     const bookings = await bookingDao.get(filterOptions, onError);
     
     // return dates of a few different formats
-    bookings.map((booking) => {
-        booking.checkInAt_wwwddMMM = utils.to_www_ddMMM(booking.checkInAt);
-        booking.checkOutAt_wwwddMMM = utils.to_www_ddMMM(booking.checkOutAt);
+    const formattedBookings = bookings.map((booking) => {
+        const newBooking = booking;
+        newBooking.checkInAt_wwwddMMM = utils.to_www_ddMMM(booking.checkInAt);
+        newBooking.checkOutAt_wwwddMMM = utils.to_www_ddMMM(booking.checkOutAt);
 
-        booking.checkInAt = utils.toDateTime(booking.checkInAt);
-        booking.checkOutAt = utils.toDateTime(booking.checkOutAt);
+        newBooking.checkInAt = utils.toDateTime(booking.checkInAt);
+        newBooking.checkOutAt = utils.toDateTime(booking.checkOutAt);
 
-        booking.nightsCount = calculateNightsStayed(booking.checkInAt, booking.checkOutAt);
-        booking.guestPaid = booking.guestPaid * booking.nightsCount;
+        newBooking.nightsCount = calculateNightsStayed(booking.checkInAt, booking.checkOutAt);
+        newBooking.guestPaid = booking.guestPaid * booking.nightsCount;
 
-        booking.checkInAt = booking.checkInAt.startOf('day');
-        booking.checkOutAt = booking.checkOutAt.startOf('day');
+        newBooking.checkInAt = booking.checkInAt.startOf('day');
+        newBooking.checkOutAt = booking.checkOutAt.startOf('day');
+
+        return newBooking;
     });
     
-    return bookings;
+    return formattedBookings;
 }
 
 export function calculateNightsStayed(checkInAtInput, checkOutAtInput) {
