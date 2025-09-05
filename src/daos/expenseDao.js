@@ -124,7 +124,8 @@ async function getNextSerialNumber(date, onError) {
         "after"  : utils.monthStart(date),
         "before" : utils.monthEnd(date),
     };
-    const last = get(filter, 1, onError);
+    const elements = await get(filter, 1, onError);
+    const last = elements && elements.length > 0 ? elements[0] : null;
     const nextIndex = last && last.index ? last.index + 1 : 1;
     return nextIndex;
 }
