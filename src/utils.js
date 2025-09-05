@@ -287,15 +287,17 @@ export function isToday(inputDate) {
 /**
  * get a Luxon date time object with time at midnight
  */
-export function monthStart(addDays = 0) {
-    return now(addDays).startOf('month');
+export function monthStart(date = null, addDays = 0) {
+    date = date ? toDateTime(date) : now();
+    return date.startOf('month').addDays(addDays);
 }
 
 /**
  * get a Luxon date time object with time at midnight
  */
-export function monthEnd(addDays = 0) {
-    return now(addDays).endOf('month');
+export function monthEnd(date = null, addDays = 0) {
+    date = date ? toDateTime(date) : now();
+    return date.endOf('month').addDays(addDays);
 }
 
 /**
@@ -309,7 +311,14 @@ export function today(addDays = 0) {
  * get a Luxon date time object with time at this moment
  */
 export function now(addDays = 0) {
-    return DateTime.now().setZone(getHotelTimezone(), { keepLocalTime: true }).plus({days: addDays});
+    return setZone(DateTime.now()).plus({days: addDays});
+}
+
+export function setZone(date) {
+    if(!date) return null;
+    date = toDateTime(date);
+    date = date.setZone(getHotelTimezone(), { keepLocalTime: true });
+    return date;
 }
 
 export function getHotelTimezone() {
