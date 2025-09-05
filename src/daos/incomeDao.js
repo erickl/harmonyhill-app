@@ -11,7 +11,7 @@ export async function getOne(id, onError) {
     return await dao.getOne(path, id, onError);
 }
 
-export async function get(filterOptions = {}, onError) {
+export async function get(filterOptions = {}, limit = -1, onError = null) {
     const path = [dao.constant.INCOME];
     let queryFilter = [];
 
@@ -32,7 +32,7 @@ export async function get(filterOptions = {}, onError) {
 
     let ordering = [orderBy("receivedAt", "desc")];
 
-    const incomes = await dao.get(path, queryFilter, ordering, -1, onError);
+    const incomes = await dao.get(path, queryFilter, ordering, limit, onError);
     return incomes;
 }
 

@@ -84,7 +84,7 @@ export async function get(filterOptions = {}, limit = -1, onError = null) {
 
     let ordering = [orderBy("purchasedAt", "desc")];
 
-    const receipts = await dao.get(path, queryFilter, ordering, -1, onError);
+    const receipts = await dao.get(path, queryFilter, ordering, limit, onError);
     return receipts;
 }
 
