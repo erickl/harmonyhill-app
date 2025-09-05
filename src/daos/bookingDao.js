@@ -38,7 +38,7 @@ export async function get(filterOptions = {}, onError = null) {
     }
 
     let ordering = [ orderBy("checkInAt", "asc") ];
-    return await dao.get(path, queryFilter, ordering, onError);
+    return await dao.get(path, queryFilter, ordering, -1, onError);
 }
 
 export async function remove(bookingId) {
@@ -46,5 +46,5 @@ export async function remove(bookingId) {
 }
 
 export async function getPromotions() {
-    return await dao.get([dao.constant.PROMOTIONS]);
+    return await dao.get([dao.constant.PROMOTIONS], [], [], -1);
 }

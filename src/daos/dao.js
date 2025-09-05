@@ -1,6 +1,7 @@
 import { 
     where, 
     query, 
+    limit,
     collection, collectionGroup,  
     getDocs, getDoc, 
     setDoc, updateDoc, 
@@ -33,10 +34,17 @@ export async function getOne(path, id, onError = null) {
     }
 }
 
-export async function get(path, filters = [], ordering = [], onError = null) {
+export async function get(path, filters = [], ordering = [], limit = -1, onError = null) {
     try {
         const collectionRef = collection(db, ...path);
-        const docQuery = query(collectionRef, ...filters, ...ordering);
+        
+        const constraints = [collectionRef];
+        
+        if(filters.length > 0)  constraints.push(filters);   
+        if(ordering.length > 0) constraints.push(ordering);
+        if(limit !== -1)        constraints.push(limit(limit))
+        
+        const docQuery = query(constraints);
         const snapshot = await getDocs(docQuery);
         if (snapshot.empty) {
             return [];

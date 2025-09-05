@@ -32,7 +32,7 @@ export async function get(filterOptions = {}, onError) {
 
     let ordering = [orderBy("receivedAt", "desc")];
 
-    const incomes = await dao.get(path, queryFilter, ordering, onError);
+    const incomes = await dao.get(path, queryFilter, ordering, -1, onError);
     return incomes;
 }
 

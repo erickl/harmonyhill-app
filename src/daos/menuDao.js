@@ -17,7 +17,7 @@ export async function get(options = {}) {
     let menu = [];
 
     try {
-        menu = await dao.get(['menu'], filters, ordering);
+        menu = await dao.get(['menu'], filters, ordering, -1);
     } catch (error) {
         console.error('Error fetching menu:', error);
         return [];

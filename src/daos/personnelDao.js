@@ -21,7 +21,7 @@ export async function get(options = {}) {
     //
     //      cheapest?
 
-    const personnel = dao.get([dao.constant.PERSONNEL], filters);
+    const personnel = dao.get([dao.constant.PERSONNEL], filters, [], -1);
     return personnel;
 }
 

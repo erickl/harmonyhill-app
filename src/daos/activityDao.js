@@ -102,7 +102,7 @@ export async function getBookingActivities(bookingId, options = {}) {
         filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
     }
 
-    const activities = await dao.get(path, filters);
+    const activities = await dao.get(path, filters, [], -1);
     const sortedActivities = dao.sort(activities, "startingAt");
 
     return sortedActivities;
@@ -153,7 +153,7 @@ export async function remove(bookingId, activityId, onError) {
 
 export async function getDishes(bookingId, mealId, filterOptions = {}) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES];
-    return await dao.get(path, []);
+    return await dao.get(path, [], [], -1);
 }
 
 export async function getOne(bookingId, id) {
@@ -179,7 +179,7 @@ export async function getTypes(filterOptions = {}) {
 
     let activityTypes = [];
     try {
-        activityTypes = await dao.get([dao.constant.ACTIVITY_TYPES], filters); 
+        activityTypes = await dao.get([dao.constant.ACTIVITY_TYPES], filters, [], -1); 
     } catch (error) {
         console.error('Error fetching menu:', error);
         return [];

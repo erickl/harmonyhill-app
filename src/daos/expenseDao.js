@@ -58,7 +58,7 @@ export async function getOne(id, onError) {
     return await dao.getOne(path, id, onError);
 }
 
-export async function get(filterOptions = {}, onError) {
+export async function get(filterOptions = {}, limit = -1, onError = null) {
     const path = [dao.constant.EXPENSES];
     let queryFilter = [];
 
@@ -84,7 +84,7 @@ export async function get(filterOptions = {}, onError) {
 
     let ordering = [orderBy("purchasedAt", "desc")];
 
-    const receipts = await dao.get(path, queryFilter, ordering, onError);
+    const receipts = await dao.get(path, queryFilter, ordering, -1, onError);
     return receipts;
 }
 
@@ -94,6 +94,7 @@ export async function add(data, onError) {
     const category = data.category.replace(/ /g, "-");
     const id = `${category}-${purchasedBy}-${purchasedAt}-${Date.now()}`;
     const path = [dao.constant.EXPENSES];
+    data.index = await getNextSerialNumber(data.purchasedAt, onError);
     return await dao.add(path, id, data, onError);
 }
 
@@ -116,4 +117,14 @@ export async function remove(id, onError) {
     }
     const result = await dao.remove(path, id, onError);
     return result;
+}
+
+async function getNextSerialNumber(date, onError) {
+    const filter = {
+        "after"  : utils.monthStart(date),
+        "before" : utils.monthEnd(date),
+    };
+    const last = get(filter, 1, onError);
+    const nextIndex = last && last.index ? last.index + 1 : 1;
+    return nextIndex;
 }
