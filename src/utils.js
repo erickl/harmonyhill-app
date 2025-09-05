@@ -289,7 +289,8 @@ export function isToday(inputDate) {
  */
 export function monthStart(date = null, addDays = 0) {
     date = date ? toDateTime(date) : now();
-    return date.startOf('month').addDays(addDays);
+    date = date.startOf('month').plus({days: addDays});
+    return date
 }
 
 /**
@@ -297,7 +298,7 @@ export function monthStart(date = null, addDays = 0) {
  */
 export function monthEnd(date = null, addDays = 0) {
     date = date ? toDateTime(date) : now();
-    return date.endOf('month').addDays(addDays);
+    return date.endOf('month').plus({days: addDays});
 }
 
 /**
