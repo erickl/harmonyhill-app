@@ -7,8 +7,8 @@ export async function add(data, onError) {
 
     const addResult = await expenseDao.transaction(async () => {
         if(object.paymentMethod === "cash") {
-            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
-            if(object.pettyCashBalance === false) {
+            const pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
+            if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
             }
         }
@@ -34,24 +34,24 @@ export async function update(id, data, onError) {
         if(existing.paymentMethod === "cash" && object.paymentMethod === "cash" ) {
             const amountAdjustment = object.amount - existing.amount;
 
-            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * amountAdjustment, onError);
-            if(object.pettyCashBalance === false) {
+            const pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * amountAdjustment, onError);
+            if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
             }
         }
 
         // If new expense isn't cash anymore, add back existing amount to update petty cash, since petty cash wasn't used
         if(existing.paymentMethod === "cash" && object.paymentMethod !== "cash" ) {
-            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(existing.amount, onError);
-            if(object.pettyCashBalance === false) {
+            const pettyCashBalance = await ledgerService.updatePettyCashBalance(existing.amount, onError);
+            if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
             }
         }
 
         // If both existing expenses weren't cash before, subtract entire amount from petty cash
         if(existing.paymentMethod !== "cash" && object.paymentMethod === "cash" ) {
-            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
-            if(object.pettyCashBalance === false) {
+            const pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
+            if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
             }
         }
@@ -62,8 +62,8 @@ export async function update(id, data, onError) {
         }
 
         // If photo is updated, remove the old photo
-        if(existingExpense.photoUrl !== object.photoUrl) {
-            await expenseDao.removeImage(existingExpense.fileName);
+        if(existing.photoUrl !== object.photoUrl) {
+            await expenseDao.removeImage(existing.fileName);
         }
 
         return true;
@@ -128,6 +128,10 @@ export async function validate(data, onError) {
         }
         if (!utils.isAmount(data.amount) || data.amount <= 0) {
             onError(`Input an amount above zero`);
+            return false;
+        } 
+        if(utils.isEmpty(data.paymentMethod)) {
+            onError(`Choose payment method`);
             return false;
         } 
         if(utils.isEmpty(data.category)) {

@@ -16,8 +16,8 @@ export async function add(data, onError) {
 
     const addResult = await incomeDao.transaction(async () => {
         if(object.paymentMethod === "cash") {
-            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(object.amount, onError);
-            if(object.pettyCashBalance === false) {
+            const pettyCashBalance = await ledgerService.updatePettyCashBalance(object.amount, onError);
+            if(pettyCashBalance === false) {
                 throw new Error(`Could not add petty cash balance for income`);
             }
         }
@@ -71,24 +71,24 @@ export async function update(id, data, onError) {
         if(existing.paymentMethod === "cash" && object.paymentMethod === "cash" ) {
             const amountAdjustment = object.amount - existing.amount;
 
-            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(amountAdjustment, onError);
-            if(object.pettyCashBalance === false) {
+            const pettyCashBalance = await ledgerService.updatePettyCashBalance(amountAdjustment, onError);
+            if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
             }
         }
 
         // If new income isn't cash anymore, remove existing amount from update petty cash, since petty cash wasn't used
         if(existing.paymentMethod === "cash" && object.paymentMethod !== "cash" ) {
-            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * existing.amount, onError);
-            if(object.pettyCashBalance === false) {
+            const pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * existing.amount, onError);
+            if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
             }
         }
 
         // If both existing incomes weren't cash before, add entire amount to petty cash
         if(existing.paymentMethod !== "cash" && object.paymentMethod === "cash" ) {
-            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(object.amount, onError);
-            if(object.pettyCashBalance === false) {
+            const pettyCashBalance = await ledgerService.updatePettyCashBalance(object.amount, onError);
+            if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
             }
         }
