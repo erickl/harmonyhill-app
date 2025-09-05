@@ -82,6 +82,11 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         handleChange("category", name);
     }
 
+    const onPaymentMethodSelect = (paymentMethod) => {
+        const name = paymentMethod ? paymentMethod.name : '';
+        handleChange("paymentMethod", name);
+    }
+
     const resetForm = () => {
         setFormData(emptyForm);
     };
@@ -157,6 +162,13 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         }        
     };
 
+    // todo: put in database
+    const paymentMethods = {
+        'Cash'        : {"name" : "Cash"    },
+        'Transfer'    : {"name" : "Transfer"},
+        'AirBnB'      : {"name" : "AirBnB"  },
+    };
+
     if(showList) {
         return (<ExpensesScreen onClose={() => setShowList(false)}/>);
     }
@@ -192,6 +204,15 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                             inputMode="numeric" // Optional: for mobile keyboards
                         />
                     </div>
+                </div>
+
+                <div className="purchase-form-group">
+                    <Dropdown 
+                        label={"Payment Method"} 
+                        options={paymentMethods}
+                        current={formData.paymentMethod}
+                        onSelect={onPaymentMethodSelect}
+                    />
                 </div>
 
                 <div className="purchase-form-group">

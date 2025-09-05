@@ -3,6 +3,7 @@ import * as expenseService from "../services/expenseService.js";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
+import * as ledgerService from "../services/ledgerService.js";
 import "./ExpensesScreen.css";
 import invoiceLogo from "../assets/invoice-icon.png";
 import AddExpensesScreen from "./AddExpensesScreen.js";
@@ -19,6 +20,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
     const [expenseToEdit,    setExpenseToEdit   ] = useState(null );
     const [expenseToDelete,  setExpenseToDelete ] = useState(null );
+    const [pettyCash,        setPettyCash       ] = useState(null );
 
     const handleSetExpandedReceipt = (id) => {
         let updatedExpandedList = { ...(expandedExpenses || {}) };
@@ -52,7 +54,13 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
             setLoading(false);
         }
 
+        const getPettyCash = async() => {
+            const pettyCash = ledgerService.getPettyCashBalance(onError);
+            setPettyCash(pettyCash);
+        }
+
         fetchExpenses();
+        getPettyCash();
     }, [expenseToEdit, expenseToDelete]);
 
     useEffect(() => {
@@ -79,6 +87,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Expenses</h2>
+                    {pettyCash && (<h4>Petty Cash: ${pettyCash}</h4>)}
                 </div>
             
                 <div>

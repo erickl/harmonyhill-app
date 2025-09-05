@@ -3,6 +3,7 @@ import * as incomeService from "../services/incomeService.js";
 import * as userService from "../services/userService.js";
 import * as bookingService from "../services/bookingService.js";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import * as ledgerService from "../services/ledgerService.js";
 import * as utils from "../utils.js";
 import "./IncomeScreen.css";
 import AddIncomeScreen from './AddIncomeScreen.js';
@@ -18,6 +19,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
     const [loading,          setLoading         ] = useState(true );
     const [errorMessage,     setErrorMessage    ] = useState(null );
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
+    const [pettyCash,        setPettyCash       ] = useState(null );
 
     const handleSetExpandedIncome = async (income) => {
         if(!income) return;
@@ -62,8 +64,14 @@ export default function IncomeScreen({ onNavigate, onClose }) {
             setIncomes(uploadedIncomes);
             setLoading(false);
         }
+
+         const getPettyCash = async() => {
+            const pettyCash = ledgerService.getPettyCashBalance(onError);
+            setPettyCash(pettyCash);
+        }
     
         fetchIncomes();
+        getPettyCash();
     }, [incomeToEdit, incomeToDelete]);
 
     useEffect(() => {
@@ -90,6 +98,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Income</h2>
+                    {pettyCash && (<h4>Petty Cash: ${pettyCash}</h4>)}
                 </div>
             
                 <div>

@@ -6,9 +6,11 @@ export async function add(data, onError) {
     const object = mapReceiptObject(data);
 
     const addResult = await expenseDao.transaction(async () => {
-        object.balance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
-        if(object.balance === false) {
-            throw new Error(`Could not update cash balance`);
+        if(object.paymentMethod === "cash") {
+            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
+            if(object.pettyCashBalance === false) {
+                throw new Error(`Could not update petty cash balance`);
+            }
         }
         const addResult = await expenseDao.add(object, onError);
         if(addResult === false) {
@@ -23,19 +25,40 @@ export async function add(data, onError) {
 export async function update(id, data, onError) {
     const object = mapReceiptObject(data);
     const updateResult = await expenseDao.transaction(async () => {
-        const existingExpense = await expenseDao.getOne(id);
-        if(!existingExpense) {
+        const existing = await expenseDao.getOne(id);
+        if(!existing) {
             throw new Error(`Could not find existing income ${id}`);
         }
-        const amountAdjustment = object.amount - existingExpense.amount;
 
-        object.balance = await ledgerService.updatePettyCashBalance(-1 * amountAdjustment, onError);
-        if(object.balance === false) {
-            throw new Error(`Could not update cash balance`);
+        // If both existing and new expense are cash, just update petty cash with the difference
+        if(existing.paymentMethod === "cash" && object.paymentMethod === "cash" ) {
+            const amountAdjustment = object.amount - existing.amount;
+
+            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * amountAdjustment, onError);
+            if(object.pettyCashBalance === false) {
+                throw new Error(`Could not update petty cash balance`);
+            }
         }
+
+        // If new expense isn't cash anymore, add back existing amount to update petty cash, since petty cash wasn't used
+        if(existing.paymentMethod === "cash" && object.paymentMethod !== "cash" ) {
+            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(existing.amount, onError);
+            if(object.pettyCashBalance === false) {
+                throw new Error(`Could not update petty cash balance`);
+            }
+        }
+
+        // If both existing expenses weren't cash before, subtract entire amount from petty cash
+        if(existing.paymentMethod !== "cash" && object.paymentMethod === "cash" ) {
+            object.pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
+            if(object.pettyCashBalance === false) {
+                throw new Error(`Could not update petty cash balance`);
+            }
+        }
+        
         const updateResult = await expenseDao.update(id, object, onError);
         if(updateResult === false) {
-            throw new Error(`Could not update the receipt`);
+            throw new Error(`Could not update the receipt data record`);
         }
 
         // If photo is updated, remove the old photo
@@ -84,9 +107,11 @@ export async function remove(id, onError) {
             throw new Error(`Could not delete expense record ${id}`);
         }
 
-        const updatePettyCashResult = ledgerService.updatePettyCashBalance(existing.amount, onError);
-        if(!updatePettyCashResult) {
-            throw new Error(`Could not update petty cash for record ${id}`);
+        if(existing.paymentMethod === "cash") {
+            const updatePettyCashResult = ledgerService.updatePettyCashBalance(existing.amount, onError);
+            if(!updatePettyCashResult) {
+                throw new Error(`Could not update petty cash balance when deleting expense ${id}`);
+            }
         }
 
         return true; 
@@ -140,6 +165,8 @@ function mapReceiptObject(data) {
     if(utils.isAmount(data.purchasedBy)) object.purchasedBy = data.purchasedBy.trim().toLowerCase();
 
     if(!utils.isEmpty(data.description)) object.description = data.description.trim();
+
+    if(!utils.isEmpty(data.paymentMethod)) object.paymentMethod = data.paymentMethod.trim().toLowerCase();
 
     if(!utils.isEmpty(data.comments)) object.comments = data.comments.trim();
     

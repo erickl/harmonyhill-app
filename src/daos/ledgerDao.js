@@ -2,21 +2,21 @@ import * as dao from "./dao.js";
 
 export async function updatePettyCashBalance(amount, onError) {
     const path = [dao.constant.COMPANY];
-    const id = "balance";
+    const id = "petty-cash";
     
-    const oldBalanceDoc = await getPettyCashBalance(onError);
+    const existing = await getPettyCashBalance(onError);
     
     let result = false;
     let newBalance = 0;
 
-    if(oldBalanceDoc === false) {
+    if(existing === false) {
         const data = { "balance" : amount };
         newBalance = amount;
         result = await dao.add(path, id, data, onError);
     } else {
-        newBalance = oldBalanceDoc.balance = amount;
+        newBalance = existing.balance + amount;
         const newDoc = { 
-            ...(expandedExpenses || {}),
+            ...(existing || {}),
             "balance" : newBalance
         };
         result = await dao.update(path, id, newDoc, false, onError);
@@ -31,7 +31,7 @@ export async function updatePettyCashBalance(amount, onError) {
 
 export async function getPettyCashBalance(onError) {
     const path = [dao.constant.COMPANY];
-    const id = "balance";
+    const id = "petty-cash";
     
     const balanceDocument = await dao.getOne(path, id, onError);
     if(!balanceDocument) {
