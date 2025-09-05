@@ -13,21 +13,23 @@ import ExpensesScreen from './ExpensesScreen.js';
 export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
 
     const emptyForm = {
-        photoUrl    : expenseToEdit ? expenseToEdit.photoUrl    : null,
-        amount      : expenseToEdit ? expenseToEdit.amount      : '',
-        purchasedBy : expenseToEdit ? expenseToEdit.purchasedBy : '',
-        purchasedAt : expenseToEdit ? expenseToEdit.purchasedAt : utils.today(),
-        category    : expenseToEdit ? expenseToEdit.category    : '',
-        description : expenseToEdit ? expenseToEdit.description : '',
-        comments    : expenseToEdit ? expenseToEdit.comments    : '',
+        photoUrl      : expenseToEdit ? expenseToEdit.photoUrl      : null,
+        amount        : expenseToEdit ? expenseToEdit.amount        : '',
+        purchasedBy   : expenseToEdit ? expenseToEdit.purchasedBy   : '',
+        purchasedAt   : expenseToEdit ? expenseToEdit.purchasedAt   : utils.today(),
+        category      : expenseToEdit ? expenseToEdit.category      : '',
+        oaymentMethod : expenseToEdit ? expenseToEdit.oaymentMethod : '',
+        description   : expenseToEdit ? expenseToEdit.description   : '',
+        comments      : expenseToEdit ? expenseToEdit.comments      : '',
     };
 
-    const [teamMembers,     setTeamMembers    ] = useState([]       );
-    const [readyToSubmit,   setReadyToSubmit  ] = useState(false    );
-    const [showList,        setShowList       ] = useState(false    );
-    const [validationError, setValidationError] = useState(null     );
-    const [errorMessage,    setErrorMessage   ] = useState(null     );
-    const [formData,        setFormData       ] = useState(emptyForm);
+    const [teamMembers,       setTeamMembers      ] = useState([]       );
+    const [readyToSubmit,     setReadyToSubmit    ] = useState(false    );
+    const [showList,          setShowList         ] = useState(false    );
+    const [validationError,   setValidationError  ] = useState(null     );
+    const [errorMessage,      setErrorMessage     ] = useState(null     );
+    const [formData,          setFormData         ] = useState(emptyForm);
+    const [imageResetTrigger, setImageResetTrigger] = useState(0        );
 
     const onValidationError = (error) => {
         setValidationError(error);
@@ -89,6 +91,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
 
     const resetForm = () => {
         setFormData(emptyForm);
+        setImageResetTrigger(imageResetTrigger + 1);
     };
 
     const validateFormData = async (newFormData) => {
@@ -187,7 +190,11 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 </div>
             </div>
             <div className="card-content">
-                <UploadReceiptScreen current={formData.photoUrl} onUploadSuccess={(photo) => handleChange("photo", photo)}/> 
+                <UploadReceiptScreen 
+                    current={formData.photoUrl} 
+                    onUploadSuccess={(photo) => handleChange("photo", photo)}
+                    resetTrigger={imageResetTrigger}
+                /> 
                     
                 <div className="form-group">
                     <label htmlFor="amount">Amount (IDR):</label>

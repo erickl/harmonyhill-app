@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { uploadPurchaseInvoice } from "../services/invoiceService";
 
-export default function UploadReceiptScreen({ current, onUploadSuccess }) {
+export default function UploadReceiptScreen({ current, onUploadSuccess, resetTrigger }) {
     const [previewImage, setPreviewImage] = useState(current);
     const [previewImageFullScreen, setPreviewImageFullScreen] = useState(false);
 
@@ -39,6 +39,10 @@ export default function UploadReceiptScreen({ current, onUploadSuccess }) {
     const onProgress = (progressMessage) => {
         setUploadStatus(progressMessage);
     }
+
+    useEffect(() => {
+        setPreviewImage(current);
+    }, [current, resetTrigger]);
 
     useEffect(() => {
         if (videoStream && videoRef.current) {
