@@ -34,17 +34,17 @@ export async function getOne(path, id, onError = null) {
     }
 }
 
-export async function get(path, filters = [], ordering = [], limit = -1, onError = null) {
+export async function get(path, filters = [], ordering = [], max = -1, onError = null) {
     try {
         const collectionRef = collection(db, ...path);
         
-        const constraints = [collectionRef];
+        const constraints = [];
         
-        if(filters.length > 0)  constraints.push(filters);   
-        if(ordering.length > 0) constraints.push(ordering);
-        if(limit !== -1)        constraints.push(limit(limit))
+        if(filters?.length > 0)  constraints.push(...filters);   
+        if(ordering?.length > 0) constraints.push(...ordering);
+        if(max !== -1)           constraints.push(limit(max))
         
-        const docQuery = query(constraints);
+        const docQuery = query(collectionRef, ...constraints);
         const snapshot = await getDocs(docQuery);
         if (snapshot.empty) {
             return [];
