@@ -5,7 +5,7 @@ import * as ledgerService from "./ledgerService.js";
 export async function get(filterOptions, onError) {
     const incomes = await incomeDao.get(filterOptions, onError);
     const formattedIncomes = incomes.map((income) => {
-            income = utils.toDateTime(income.receivedAt);
+            income.receivedAt = utils.toDateTime(income.receivedAt);
             return income;
         });
     return formattedIncomes;
@@ -78,7 +78,7 @@ export async function update(id, data, onError) {
         }
 
         // If new income isn't cash anymore, remove existing amount from update petty cash, since petty cash wasn't used
-        if(existing.paymentMethod === "cash" && object.paymentMethod !== "cash" ) {
+        else if(existing.paymentMethod === "cash" && object.paymentMethod !== "cash" ) {
             const pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * existing.amount, onError);
             if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
@@ -86,14 +86,14 @@ export async function update(id, data, onError) {
         }
 
         // If both existing incomes weren't cash before, add entire amount to petty cash
-        if(existing.paymentMethod !== "cash" && object.paymentMethod === "cash" ) {
+        else if(existing.paymentMethod !== "cash" && object.paymentMethod === "cash" ) {
             const pettyCashBalance = await ledgerService.updatePettyCashBalance(object.amount, onError);
             if(pettyCashBalance === false) {
                 throw new Error(`Could not update petty cash balance`);
             }
         }
         
-        const updateResult = await incomeDao.update(object, onError);
+        const updateResult = await incomeDao.update(id, object, onError);
         if(updateResult === false) {
             throw new Error(`Could not update income`);
         }
