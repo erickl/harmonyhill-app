@@ -5,6 +5,15 @@ import Spinner from "./Spinner.js";
 export default function ConfirmModal({onCancel, onConfirm}) {
 
     const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+        try {
+            setLoading(true);
+            await onConfirm();
+        } finally {
+            setLoading(false);
+        }
+    }
     
     return (
         <div className="modal-overlay">
@@ -13,11 +22,11 @@ export default function ConfirmModal({onCancel, onConfirm}) {
                 
                 <div className="buttons-footer">
                     <button type="button" onClick={onCancel}>Cancel</button>
-                    <button type="button" onClick={() => {
-                        setLoading(true);
-                        onConfirm();
-                    }}>
-                        Confirm
+                    <button 
+                        type="button" 
+                        onClick={handleSubmit}
+                    >
+                        { loading ? "Processing..." : "Confirm" }
                     </button>
                     { loading && <Spinner />} 
                 </div>

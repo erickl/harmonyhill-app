@@ -1,19 +1,21 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import "./ButtonsFooter.css";
+import Spinner from "./Spinner.js";
 
-export default function ButtonsFooter({onCancel, onSubmit, submitEnabled}) {
+export default function ButtonsFooter({onCancel, onSubmit, submitEnabled }) {
 
-    let btnRef = useRef();
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async () => {
-        // disables instantly to prevent double submits
-        btnRef.current.disabled = true; 
         try {
+            setLoading(true);
             await onSubmit();
         } finally {
-            btnRef.current.disabled = false; 
+            setLoading(false);
         }
     }
+
+    const disabled = !submitEnabled || loading;
 
     return (
         <div className="buttons-footer">
@@ -27,13 +29,13 @@ export default function ButtonsFooter({onCancel, onSubmit, submitEnabled}) {
             
             <button 
                 type="button" 
-                className={ submitEnabled ? "submit-button" : "mute-submit-button" }
-                ref={btnRef}
+                className={ disabled ? "mute-submit-button" : "submit-button" }
                 onClick={ handleSubmit }
-                disabled={ !submitEnabled }
+                disabled={ disabled }
             >
-                Submit
+                { loading ? "Processing..." : "Submit" }
             </button>
+            { loading && <Spinner />} 
         </div>
     );
 }

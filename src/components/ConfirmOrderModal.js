@@ -1,6 +1,5 @@
-import {useState, useRef} from "react";
+import {useState} from "react";
 import * as utils from "../utils.js";
-import * as invoiceService from "../services/invoiceService.js";
 import Spinner from "./Spinner.js";
 import "./ConfirmOrderModal.css";
 import DishesSummaryComponent from "./DishesSummaryComponent.js";
@@ -8,17 +7,13 @@ import DishesSummaryComponent from "./DishesSummaryComponent.js";
 export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
 
     const [loading, setLoading] = useState(false);
-    
-    let btnRef = useRef();
 
     const handleConfirm = async() => {           
         try {  
-            // disables instantly to prevent double submits
-            btnRef.current.disabled = true; 
             setLoading(true);
             await onConfirm();
         } finally {
-            btnRef.current.disabled = false; 
+            setLoading(false);
         }
     }
     
@@ -44,7 +39,6 @@ export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
                     <button 
                         type="button" 
                         disabled={loading} 
-                        ref={btnRef}
                         onClick={ handleConfirm }
                     >
                         {loading ? "Processing..." : "Confirm" }
