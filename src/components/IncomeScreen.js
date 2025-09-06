@@ -117,7 +117,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                 <div className="income-header">
                                     <div className="income-header-left">
                                         <div className="income-title">
-                                            {utils.capitalizeWords(income.description)}
+                                            {`${income.index}. ${utils.capitalizeWords(income.description)}`}
                                         </div>
                                     </div>
                                     <div className="income-header-right">

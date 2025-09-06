@@ -112,7 +112,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                         />
                                         
                                         <div className="expense-title">
-                                            {utils.capitalizeWords(expense.description)}
+                                            {`${expense.index}. ${utils.capitalizeWords(expense.description)}`}
                                         </div>
                                     </div>
                                     <div className="expense-header-right">
