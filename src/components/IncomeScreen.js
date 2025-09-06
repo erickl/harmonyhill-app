@@ -29,8 +29,10 @@ export default function IncomeScreen({ onNavigate, onClose }) {
         const expand = utils.isEmpty(updatedExpandedList[income.id]);
 
         if(expand) {
-            const booking = await bookingService.getOne(income.bookingId);
-            income.bookingName = booking.name;
+            if(!utils.isEmpty(income.bookingId)) {
+                const booking = await bookingService.getOne(income.bookingId);
+                income.bookingName = booking.name;
+            }
             updatedExpandedList[income.id] = income;
         } else {
             updatedExpandedList[income.id] = null;
@@ -133,9 +135,9 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                 </div>
                                 {expandedIncomes[income.id] && (
                                     <div className="income-body">
-                                        <div>
+                                        {income.bookingName && (<div>
                                             Booking: {income.bookingName}
-                                        </div>
+                                        </div>)}
                                         <div>
                                             Category: {utils.capitalizeWords(income.category)}
                                         </div>
