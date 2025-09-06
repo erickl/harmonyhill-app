@@ -9,6 +9,7 @@ import * as utils from "../utils.js";
 import "./AddExpenseScreen.css";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import ExpensesScreen from './ExpensesScreen.js';
+import SuccessModal from './SuccessModel.js';
 
 export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
 
@@ -18,7 +19,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         purchasedBy   : expenseToEdit ? expenseToEdit.purchasedBy   : '',
         purchasedAt   : expenseToEdit ? expenseToEdit.purchasedAt   : utils.today(),
         category      : expenseToEdit ? expenseToEdit.category      : '',
-        oaymentMethod : expenseToEdit ? expenseToEdit.oaymentMethod : '',
+        paymentMethod : expenseToEdit ? expenseToEdit.paymentMethod : '',
         description   : expenseToEdit ? expenseToEdit.description   : '',
         comments      : expenseToEdit ? expenseToEdit.comments      : '',
     };
@@ -30,6 +31,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const [errorMessage,      setErrorMessage     ] = useState(null     );
     const [formData,          setFormData         ] = useState(emptyForm);
     const [imageResetTrigger, setImageResetTrigger] = useState(0        );
+    const [showSuccess,       setShowSuccess      ] = useState(false    );
 
     const onValidationError = (error) => {
         setValidationError(error);
@@ -157,6 +159,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
             if(result) {
                 if(expenseToEdit) onClose();
                 else resetForm();
+                setShowSuccess(true);
             } else {
                 throw new Error("Receipt form data upload error");
             }
@@ -284,6 +287,10 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />
+
+                {showSuccess && (
+                    <SuccessModal onClose={() => setShowSuccess(false)} />
+                )} 
 
                 {errorMessage && (
                     <ErrorNoticeModal 
