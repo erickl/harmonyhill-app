@@ -8,6 +8,7 @@ import IncomeScreen from "./IncomeScreen.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
+import SuccessModal from './SuccessModel.js';
 
 export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
@@ -27,6 +28,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     const [errorMessage,    setErrorMessage   ] = useState(null     );
     const [bookings,        setBookings       ] = useState([]       );
     const [formData,        setFormData       ] = useState(emptyForm);
+    const [showSuccess,     setShowSuccess    ] = useState(false    );
 
     const onValidationError = (error) => {
         setValidationError(error);
@@ -252,6 +254,10 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />
+
+                {showSuccess && (
+                    <SuccessModal onClose={() => setShowSuccess(false)} />
+                )} 
 
                 {errorMessage && (
                     <ErrorNoticeModal 
