@@ -31,7 +31,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const [errorMessage,      setErrorMessage     ] = useState(null     );
     const [formData,          setFormData         ] = useState(emptyForm);
     const [imageResetTrigger, setImageResetTrigger] = useState(0        );
-    const [showSuccess,       setShowSuccess      ] = useState(true    );
+    const [showSuccess,       setShowSuccess      ] = useState(false    );
 
     const onValidationError = (error) => {
         setValidationError(error);

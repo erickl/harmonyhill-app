@@ -118,8 +118,13 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                             {utils.capitalizeWords(income.description)}
                                         </div>
                                     </div>
-                                    <div className="expand-icon">
-                                        {expandedIncomes[income.id] ? '▼' : '▶'}
+                                    <div className="income-header-right">
+                                        <div>
+                                            {utils.to_YYMMdd(income.purchasedAt)}
+                                        </div>
+                                        <div className="expand-icon">
+                                            {expandedIncomes[income.id] ? '▼' : '▶'}
+                                        </div>
                                     </div>
                                 </div>  
                                 
@@ -132,8 +137,14 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                             Booking: {income.bookingName}
                                         </div>
                                         <div>
-                                            Comments: {income.comments}
+                                            Category: {utils.capitalizeWords(income.category)}
                                         </div>
+                                        <div>
+                                            Payment Method: {utils.capitalizeWords(income.paymentMethod)}
+                                        </div>
+                                        {income.comments && (<div>
+                                            Comments: {income.comments}
+                                        </div>)}
                                         <div className="income-body-footer">
                                             <div className="income-body-footer-icon">
                                                 <Pencil   

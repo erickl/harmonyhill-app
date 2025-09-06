@@ -26,6 +26,10 @@
   display: flex;
 }
 
+.expense-header-right {
+  display: flex;
+}
+
 .expense-body {
   padding: 1rem;
 }

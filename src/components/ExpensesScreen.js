@@ -115,8 +115,13 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                             {utils.capitalizeWords(expense.description)}
                                         </div>
                                     </div>
-                                    <div className="expand-icon">
-                                        {expandedExpenses[expense.id] ? '▼' : '▶'}
+                                    <div className="expense-header-right">
+                                        <div>
+                                            {utils.to_YYMMdd(expense.purchasedAt)}
+                                        </div>
+                                        <div className="expand-icon">
+                                            {expandedExpenses[expense.id] ? '▼' : '▶'}
+                                        </div>
                                     </div>
                                 </div>  
                                 
@@ -126,8 +131,14 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                 {expandedExpenses[expense.id] && (
                                     <div className="expense-body">
                                         <div>
-                                            Comments: {expense.comments}
+                                            Payment Method: {utils.capitalizeWords(expense.paymentMethod)}
                                         </div>
+                                        <div>
+                                            Category: {utils.capitalizeWords(expense.category)}
+                                        </div>
+                                        {expense.comments && (<div>
+                                            Comments: {expense.comments}
+                                        </div>)}
                                         <div>
                                             Purchased By: {utils.capitalizeWords(expense.purchasedBy)}
                                         </div>
