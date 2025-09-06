@@ -1,4 +1,5 @@
 import {useState, useEffect} from "react";
+import "./SuccessModal.css";
 
 export default function SuccessModal({onClose}) {
     
@@ -13,7 +14,12 @@ export default function SuccessModal({onClose}) {
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-box">
-                Success!
+                <div className="success-indicator">
+                    <div className="circle">
+                        ✓
+                    </div>
+                </div>
+                <p>Success!</p>
             </div>
         </div>
     );
