@@ -149,10 +149,16 @@ export function to_yyMMddHHmmTz(date = null) {
 /**
  * @returns date string formatted as YYMMDD, without hyphens
  */
-export function to_YYMMdd(date = null) {
+export function to_YYMMdd(date = null, separator = '') {
     date = date ? date : now();
     const data = getData(date);
-    return `${data.yy}${data.month}${data.day}`;
+    return `${data.yy}${separator}${data.month}${separator}${data.day}`;
+}
+
+export function to_ddMMYY(date = null, separator = '') {
+    date = date ? date : now();
+    const data = getData(date);
+    return `${data.day}${separator}${data.month}${separator}${data.yy}`;
 }
 
 function getData(inputDate) {
