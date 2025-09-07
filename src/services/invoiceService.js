@@ -8,7 +8,7 @@ import * as utils from "../utils.js";
  */
 export async function getTotal(bookingId) {
     const activities = await activityService.get(bookingId);
-    const nonFreeActivities = activities.filter(activity => activity.customerPrice > 0);
+    const nonFreeActivities = activities.filter(activity => !activity.isFree && activity.customerPrice > 0);
     
     const itemizedList = await Promise.all(
         nonFreeActivities.map(async function(activity) {
@@ -19,7 +19,9 @@ export async function getTotal(bookingId) {
                 isFree:        activity.isFree
             }
             if(activity.category === "meal") {
-                const dishes = await mealService.getDishes(bookingId, activity.id);
+                // E.g. even though a whole breakfast can be free, it can still include non-free, extra items
+                const filters = {"isFree" : false};
+                const dishes = await mealService.getDishes(bookingId, activity.id, filters);
                 activityItem.dishes = dishes;
             }
             return activityItem;  

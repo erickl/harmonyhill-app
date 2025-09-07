@@ -234,8 +234,8 @@ export async function getMealsByBooking(bookingId, options = {}) {
  * @returns all dishes for the given booking and meal, as key-value pairs, 
  * where the dish name is the key, and the dish is the value
  */
-export async function getDishes(bookingId, mealId) {
-    return await activityDao.getDishes(bookingId, mealId);
+export async function getDishes(bookingId, mealId, filterOptions) {
+    return await activityDao.getDishes(bookingId, mealId, filterOptions);
 }
 
 export async function deleteDish(bookingId, mealId, dishId) {

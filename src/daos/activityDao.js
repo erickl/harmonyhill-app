@@ -153,7 +153,13 @@ export async function remove(bookingId, activityId, onError) {
 
 export async function getDishes(bookingId, mealId, filterOptions = {}) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES];
-    return await dao.get(path, [], [], -1);
+    let filters = [];
+
+    if (Object.hasOwn(filterOptions, "isFree")) {
+        filters.push(where("isFree", "==", filterOptions.isFree));
+    }
+    
+    return await dao.get(path, filters, [], -1);
 }
 
 export async function getOne(bookingId, id) {
