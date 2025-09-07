@@ -103,21 +103,14 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                             <div className="expense-box" onClick={()=> handleSetExpandedReceipt(expense.id)}>
                                 <div className="expense-header">
                                     <div className="expense-header-left">
-                                        <img 
-                                            className="expense-thumbnail" 
-                                            //src={expense.thumbNailUrl} 
-                                            src={invoiceLogo} 
-                                            alt={`preview-${expense.id}`} 
-                                            onClick={() => setDisplayedReceipt(expense)}
-                                        />
-                                        
                                         <div className="expense-title">
                                             {`${expense.index}. ${utils.capitalizeWords(expense.description)}`}
                                         </div>
                                     </div>
                                     <div className="expense-header-right">
                                         <div>
-                                            {utils.to_YYMMdd(expense.purchasedAt)}
+                                            {utils.formatDisplayPrice(expense.amount, true)}
+                                            
                                         </div>
                                         <div className="expand-icon">
                                             {expandedExpenses[expense.id] ? '▼' : '▶'}
@@ -126,8 +119,9 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                 </div>  
                                 
                                 <div>
-                                    {utils.formatDisplayPrice(expense.amount, true)}
+                                    {utils.to_ddMMYY(expense.purchasedAt, "/")}
                                 </div>
+
                                 {expandedExpenses[expense.id] && (
                                     <div className="expense-body">
                                         <div>
@@ -163,6 +157,19 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                                     <p>Delete</p>
                                                 </div>
                                             )}
+                                            <div className="expense-body-footer-icon">
+                                                <img 
+                                                    className="expense-thumbnail" 
+                                                    //src={expense.thumbNailUrl} 
+                                                    src={invoiceLogo} 
+                                                    alt={`preview-${expense.id}`} 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDisplayedReceipt(expense);
+                                                    }}
+                                                />
+                                                <p>Receipt</p>
+                                            </div>
                                         </div>
                                     </div>
                                 )}

@@ -68,7 +68,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
         }
 
          const getPettyCash = async() => {
-            const pettyCash = ledgerService.getPettyCashBalance(onError);
+            const pettyCash = await ledgerService.getPettyCashBalance(onError);
             setPettyCash(pettyCash);
         }
     
@@ -122,17 +122,19 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                     </div>
                                     <div className="income-header-right">
                                         <div>
-                                            {utils.to_YYMMdd(income.purchasedAt)}
+                                            {utils.formatDisplayPrice(income.amount, true)}
+                                            
                                         </div>
                                         <div className="expand-icon">
                                             {expandedIncomes[income.id] ? '▼' : '▶'}
                                         </div>
                                     </div>
                                 </div>  
-                                
+
                                 <div>
-                                    {utils.formatDisplayPrice(income.amount, true)}
+                                    {utils.to_ddMMYY(income.purchasedAt, "/")}
                                 </div>
+                                
                                 {expandedIncomes[income.id] && (
                                     <div className="income-body">
                                         {income.bookingName && (<div>

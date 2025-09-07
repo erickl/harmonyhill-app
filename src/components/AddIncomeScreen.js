@@ -17,7 +17,6 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         receivedAt    : incomeToEdit ? incomeToEdit.receivedAt    : utils.today(),
         paymentMethod : incomeToEdit ? incomeToEdit.paymentMethod : '', 
         category      : incomeToEdit ? incomeToEdit.category      : '',
-        description   : incomeToEdit ? incomeToEdit.description   : '',
         bookingId     : incomeToEdit ? incomeToEdit.bookingId     : '',
         comments      : incomeToEdit ? incomeToEdit.comments      : '',
     };
@@ -109,7 +108,14 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         }        
     };
 
-    const isGuestPayment = formData.category.trim().toLowerCase() === "guest payment";
+    const category = formData.category.trim().toLowerCase();
+
+    let commentsHint = "";
+    if(category === "commission") {
+        commentsHint = "Please name provider";
+    }
+
+    const needsGuestInfo = category === "guest payment" || category === "commission";
 
     // Initial validation
     useEffect(() => {
@@ -118,7 +124,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
     useEffect(() => {
         const getBookings = async() => {
-            const filter = {"after": utils.monthStart(), "before" : utils.monthEnd()};
+            const filter = {"after": utils.today(-30), "before" : utils.today(10)};
             const bookings = await bookingService.get(filter, onError);
             const bookingsByName = utils.groupBy(bookings, (booking) => {
                 const house = booking.house === "harmony hill" ? "HH" : "JN";
@@ -126,7 +132,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
             });
             setBookings(bookingsByName);
         }
-        if(isGuestPayment && utils.isEmpty(bookings)) {
+        if(needsGuestInfo && utils.isEmpty(bookings)) {
             getBookings();
         }
     }, [formData]);
@@ -140,6 +146,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         'Guest Payment'        : {"name" : "Guest Payment"    },
         'Petty Cash Top Up'    : {"name" : "Petty Cash Top Up"},
         'Commission'           : {"name" : "Commission"       },
+        'Other'                : {"name" : "Other"            },
     };
 
     // todo: put in database
@@ -190,7 +197,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     />
                 </div>
 
-                {!utils.isEmpty(bookings) && (
+                {needsGuestInfo && (
                     <div className="purchase-form-group">
                         <Dropdown 
                             label={"Booking"} 
@@ -220,27 +227,14 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     />
                 </div>
 
-                {/* Description Field */}
+                {/* Comments Field */}
                 <div className="form-group">
-                    <label htmlFor="description">Description:</label>
-                    <input
-                        type="text"
-                        id="description"
-                        name="description"
-                        value={formData.description}
-                        onChange={(e) => handleChange(e.target.name, e.target.value)}
-                        required
-                        className="input"
-                    />
-                </div>
-
-                {/* Comments Field (Optional) */}
-                <div className="form-group">
-                    <label htmlFor="comments">Comments (Optional):</label>
+                    <label htmlFor="comments">Comments:</label>
                     <textarea
                         id="comments"
                         name="comments"
                         value={formData.comments}
+                        placeholder={commentsHint} 
                         onChange={(e) => handleChange(e.target.name, e.target.value)}
                         rows="4"
                         className="input"

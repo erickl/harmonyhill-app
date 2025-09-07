@@ -97,7 +97,19 @@ export async function validate(data, onError) {
         if(utils.isEmpty(data.category)) {
             onError(`Choose category`);
             return false;
-        } 
+        } else {
+            const category = data.category.trim().toLowerCase();
+            if(category === "guest expenses" || category === "guest refunds") {
+                if(utils.isEmpty(data.bookingId)) {
+                    onError(`Choose booking`);
+                    return false;
+                }
+                if(utils.isEmpty(data.activityId)) {
+                    onError(`Choose activity`);
+                    return false;
+                }
+            }
+        }
         if(!utils.isDateTime(data.purchasedAt)) {
             onError(`Pick a date`);
             return false;
@@ -137,6 +149,10 @@ function mapReceiptObject(data) {
     if(!utils.isEmpty(data.fileName)) object.fileName = data.fileName.trim();
 
     if(!utils.isEmpty(data.photoUrl)) object.photoUrl = data.photoUrl.trim();
+
+    if(!utils.isEmpty(data.activityId)) object.activityId = data.activityId.trim();
+    
+    if(!utils.isEmpty(data.bookingId)) object.bookingId = data.bookingId.trim();
 
     return object;
 }

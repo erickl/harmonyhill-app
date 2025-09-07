@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import * as expenseService from "../services/expenseService.js";
 import * as userService from "../services/userService.js";
+import * as bookingService from "../services/bookingService.js";
+import * as activityService from "../services/activityService.js";
 import UploadReceiptScreen from './UploadReceiptScreen.js';
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
@@ -24,6 +26,8 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         comments      : expenseToEdit ? expenseToEdit.comments      : '',
     };
 
+    const [bookings,          setBookings         ] = useState([]       );
+    const [activities,        setActivities       ] = useState([]       );
     const [teamMembers,       setTeamMembers      ] = useState([]       );
     const [readyToSubmit,     setReadyToSubmit    ] = useState(false    );
     const [showList,          setShowList         ] = useState(false    );
@@ -32,6 +36,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const [formData,          setFormData         ] = useState(emptyForm);
     const [imageResetTrigger, setImageResetTrigger] = useState(0        );
     const [showSuccess,       setShowSuccess      ] = useState(false    );
+    const [isAdmin,           setIsAdmin          ] = useState(false    );
 
     const onValidationError = (error) => {
         setValidationError(error);
@@ -43,24 +48,33 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
 
     // todo: put in database
     const categories = {
-        'Food - Daily market'  : {"name" : "Food - Daily market"  },
-        'Food - Non-market'    : {"name" : "Food - Non-market"    },
+        'Food - Daily Market'  : {"name" : "Food - Daily Market"  },
+        'Food - Non-Market'    : {"name" : "Food - Non-Market"    },
         'Laundry'              : {"name" : "Laundry"              },
         'Pool'                 : {"name" : "Pool"                 },
-        'Other villa supplies' : {"name" : "Other villa supplies" },
-        'Guest expenses'       : {"name" : "Guest expenses"       },
+        'Other Villa Supplies' : {"name" : "Other Villa Supplies" },
+        'Guest Expenses'       : {"name" : "Guest Expenses"       },
         'Utilities'            : {"name" : "Utilities"            },
         'Maintenance'          : {"name" : "Maintenance"          },
         'Donations'            : {"name" : "Donations"            },
         'Assets'               : {"name" : "Assets"               },
-        'Tax & accounting'     : {"name" : "Tax & accounting"     },
-        'Guest refunds'        : {"name" : "Guest refunds"        },
+        'Tax & Accounting'     : {"name" : "Tax & Accounting"     },
+        'Guest Refunds'        : {"name" : "Guest Refunds"        },
         'Other'                : {"name" : "Other"                },
     };
 
     // Initial validation
     useEffect(() => {
         validateFormData(emptyForm);
+    }, []);
+
+    useEffect(() => {
+        const getUserPermissions = async() => {
+            const userIsAdmin = await userService.isAdmin();
+            setIsAdmin(userIsAdmin);
+        } 
+
+        getUserPermissions();
     }, []);
 
     useEffect(() => {
@@ -76,19 +90,77 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         fetchTeamMembers();
     }, []);
 
+    const category = formData.category.trim().toLowerCase();
+    const needsGuestInfo = category === "guest expenses" || category === "guest refunds";
+    const needsActivityInfo = needsGuestInfo;
+
+    // Auto fill description in some cases
+    let description = formData.description;
+    if(utils.isEmpty(description) && !utils.isEmpty(category) && !utils.isEmpty(formData.purchasedBy)) {
+        if(category === "food - daily market") {
+            description = `Market Food, by ${formData.purchasedBy}`;
+        }   
+        if(category === "laundry") {
+            description = `Laundry`;
+        }
+    }
+
+    // Fetch booking data only if needed and if it's not already fetched
+    useEffect(() => {
+        const getBookings = async() => {
+            const filter = {"after": utils.today(-30), "before" : utils.today(10)};
+            const bookings = await bookingService.get(filter, onError);
+            const bookingsByName = utils.groupBy(bookings, (booking) => {
+                const house = booking.house === "harmony hill" ? "HH" : "JN";
+                return `${utils.to_YYMMdd(booking.checkInAt)} ${house} ${booking.name}`
+            });
+            setBookings(bookingsByName);
+        }
+        if(needsGuestInfo && utils.isEmpty(bookings)) {
+            getBookings();
+        }
+    }, [formData]);
+
     const onTeamMemberSelect = (teamMember) => {
         const name = teamMember ? teamMember.name : '';
-        handleChange("purchasedBy", name);
+        
+        // Description auto generated sometimes, by category & purchases
+        handleChange("_batch", {
+            "description" : "",
+            "purchasedBy" : name,
+        });
     }
 
     const onCategorySelect = (category) => {
         const name = category ? category.name : '';
-        handleChange("category", name);
+
+        // Description auto generated sometimes, by category & purchases
+        handleChange("_batch", {
+            "description" : "",
+            "category"    : name,
+        });
     }
 
     const onPaymentMethodSelect = (paymentMethod) => {
         const name = paymentMethod ? paymentMethod.name : '';
         handleChange("paymentMethod", name);
+    }
+
+    const onBookingSelect = async (booking) => {
+        const id = booking ? booking[0].id : '';
+        handleChange("bookingId", id);
+        if(needsActivityInfo) {
+            const bookingActivities = await activityService.get(id);
+            const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
+                return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
+            });
+            setActivities(activitiesByName);
+        }
+    }
+
+    const onActivitySelect = (activity) => {
+        const id = activity ? activity[0].id : '';
+        handleChange("activityId", id);
     }
 
     const resetForm = () => {
@@ -170,10 +242,18 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
 
     // todo: put in database
     const paymentMethods = {
-        'Cash'        : {"name" : "Cash"    },
-        'Transfer'    : {"name" : "Transfer"},
-        'AirBnB'      : {"name" : "AirBnB"  },
+        'Cash' : {"name" : "Cash" },
     };
+
+    if(isAdmin) {
+        paymentMethods['Transfer'] = {"name" : "Transfer"};
+    }
+
+    let currentPaymentMethod = formData.paymentMethod;
+    const paymentMethodNames = Object.keys(paymentMethods);
+    if(paymentMethodNames.length === 1 && !currentPaymentMethod) {
+        currentPaymentMethod = paymentMethodNames[0];
+    }
 
     if(showList) {
         return (<ExpensesScreen onClose={() => setShowList(false)}/>);
@@ -197,88 +277,111 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                     current={formData.photoUrl} 
                     onUploadSuccess={(photo) => handleChange("photo", photo)}
                     resetTrigger={imageResetTrigger}
-                /> 
-                    
-                <div className="form-group">
-                    <label htmlFor="amount">Amount (IDR):</label>
-                    <div className="currency-input-wrapper">
-                        <span className="currency-prefix">Rp</span>
+                />
+
+                {formData.photoUrl || formData.photo && (<>
+                    <div className="form-group">
+                        <label htmlFor="amount">Amount (IDR):</label>
+                        <div className="currency-input-wrapper">
+                            <span className="currency-prefix">Rp</span>
+                            <input
+                                type="text" // Use text to allow manual formatting display, number for numeric input
+                                id="amount"
+                                name="amount"
+                                value={utils.formatDisplayPrice(formData.amount)}
+                                onChange={(e) => handleChange(e.target.name, e.target.value)}
+                                required
+                                className="input"
+                                inputMode="numeric" // Optional: for mobile keyboards
+                            />
+                        </div>
+                    </div>
+
+                    <div className="purchase-form-group">
+                        <Dropdown 
+                            label={"Payment Method"} 
+                            options={paymentMethods}
+                            current={currentPaymentMethod}
+                            onSelect={onPaymentMethodSelect}
+                        />
+                    </div>
+
+                    <div className="purchase-form-group">
+                        <Dropdown 
+                            current={formData.purchasedBy} 
+                            label={"Purchased By"} 
+                            options={teamMembers} 
+                            onSelect={onTeamMemberSelect}
+                        />
+                    </div>
+
+                    <div className="purchase-form-group">
+                        <Dropdown 
+                            label={"Category"} 
+                            options={categories}
+                            current={formData.category}
+                            onSelect={onCategorySelect}
+                        />
+                    </div>
+
+                    <div className="purchase-form-group">
+                        <MyDatePicker 
+                            name={"purchasedAt"} 
+                            date={formData.purchasedAt} 
+                            onChange={handleChange}
+                            time={null}
+                            useTime={false}
+                        />
+                    </div>
+
+                    {needsGuestInfo && (
+                        <div className="purchase-form-group">
+                            <Dropdown 
+                                label={"Booking"} 
+                                options={bookings}
+                                current={formData.bookingId}
+                                onSelect={onBookingSelect}
+                            />
+                        </div>
+                    )}
+
+                    {needsActivityInfo && (
+                        <div className="purchase-form-group">
+                            <Dropdown 
+                                label={"Activity"} 
+                                options={activities}
+                                current={formData.activityId}
+                                onSelect={onActivitySelect}
+                            />
+                        </div>
+                    )}
+
+                    <div className="form-group">
+                        <label htmlFor="description">Description:</label>
                         <input
-                            type="text" // Use text to allow manual formatting display, number for numeric input
-                            id="amount"
-                            name="amount"
-                            value={utils.formatDisplayPrice(formData.amount)}
+                            type="text"
+                            id="description"
+                            name="description"
+                            value={description}
                             onChange={(e) => handleChange(e.target.name, e.target.value)}
                             required
                             className="input"
-                            inputMode="numeric" // Optional: for mobile keyboards
                         />
                     </div>
-                </div>
 
-                <div className="purchase-form-group">
-                    <Dropdown 
-                        label={"Payment Method"} 
-                        options={paymentMethods}
-                        current={formData.paymentMethod}
-                        onSelect={onPaymentMethodSelect}
-                    />
-                </div>
-
-                <div className="purchase-form-group">
-                    <Dropdown 
-                        current={formData.purchasedBy} 
-                        label={"Purchased By"} 
-                        options={teamMembers} 
-                        onSelect={onTeamMemberSelect}
-                    />
-                </div>
-
-                <div className="purchase-form-group">
-                    <Dropdown 
-                        label={"Category"} 
-                        options={categories}
-                        current={formData.category}
-                        onSelect={onCategorySelect}
-                    />
-                </div>
-
-                <div className="purchase-form-group">
-                    <MyDatePicker 
-                        name={"purchasedAt"} 
-                        date={formData.purchasedAt} 
-                        onChange={handleChange}
-                        time={null}
-                        useTime={false}
-                    />
-                </div>
-
-                {/* Description Field */}
-                <div className="form-group">
-                    <label htmlFor="description">Description:</label>
-                    <input
-                        type="text"
-                        id="description"
-                        name="description"
-                        value={formData.description}
-                        onChange={(e) => handleChange(e.target.name, e.target.value)}
-                        required
-                        className="input"
-                    />
-                </div>
-
-                {/* Comments Field (Optional) */}
-                <div className="form-group">
-                    <label htmlFor="comments">Comments (Optional):</label>
-                    <textarea
-                        id="comments"
-                        name="comments"
-                        value={formData.comments}
-                        onChange={(e) => handleChange(e.target.name, e.target.value)}
-                        rows="4"
-                        className="input"
-                    ></textarea>
-                </div>
+                    {/* Comments Field */}
+                    <div className="form-group">
+                        <label htmlFor="comments">Comments:</label>
+                        <textarea
+                            id="comments"
+                            name="comments"
+                            value={formData.comments}
+                            onChange={(e) => handleChange(e.target.name, e.target.value)}
+                            rows="4"
+                            className="input"
+                        ></textarea>
+                    </div>
+                </>)}
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 

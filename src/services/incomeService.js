@@ -77,8 +77,6 @@ function mapIncomeObject(data) {
 
     if(utils.isDateTime(data.receivedAt)) object.receivedAt = utils.toFireStoreTime(data.receivedAt);
 
-    if(!utils.isEmpty(data.description)) object.description = data.description.trim();
-
     if(!utils.isEmpty(data.comments)) object.comments = data.comments.trim();
     
     return object;
@@ -95,11 +93,28 @@ export async function validate(data, onError) {
             return false;
         }
         // If guest payment chosen, also have to choose which booking 
-        else if(data.category === "guest payment"){
-            if(utils.isEmpty(data.bookingId)) {
-                onError(`Choose booking`);
+        else {
+            const category = data.category.trim().toLowerCase();
+            if(category === "guest payment") {
+                if(utils.isEmpty(data.bookingId)) {
+                    onError(`Choose booking`);
+                    return false;
+                } 
+            }
+            else if(category === "commission") {
+                if(utils.isEmpty(data.bookingId)) {
+                    onError(`If category is 'Commission', select which booking it came from`);
+                    return false;
+                }
+                if(utils.isEmpty(data.comments)) {
+                    onError(`If category is 'Commission', write provider name in the comments`);
+                    return false;
+                }
+            }
+            else if(category === "other" && utils.isEmpty(data.comments)) {
+                onError(`If category is 'Other', write what it is in the comments`);
                 return false;
-            } 
+            }
         }
         
         if(utils.isEmpty(data.paymentMethod)) {
@@ -108,10 +123,6 @@ export async function validate(data, onError) {
         } 
         if(!utils.isDateTime(data.receivedAt)) {
             onError(`Pick a date`);
-            return false;
-        }
-        if(utils.isEmpty(data.description)) {
-            onError(`Give description`);
             return false;
         }
     } catch(e) {
