@@ -103,16 +103,16 @@ export async function validate(data, onError) {
             }
             else if(category === "commission") {
                 if(utils.isEmpty(data.bookingId)) {
-                    onError(`If category is 'Commission', select which booking it came from`);
+                    onError(`For category 'Commission', select which booking it pertains to`);
                     return false;
                 }
                 if(utils.isEmpty(data.comments)) {
-                    onError(`If category is 'Commission', write provider name in the comments`);
+                    onError(`For category 'Commission', please give provider name in the comments`);
                     return false;
                 }
             }
             else if(category === "other" && utils.isEmpty(data.comments)) {
-                onError(`If category is 'Other', write what it is in the comments`);
+                onError(`For category 'Other', add some comments`);
                 return false;
             }
         }

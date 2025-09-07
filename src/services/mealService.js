@@ -399,6 +399,7 @@ export function getNewCustomDish(id, name) {
         "id"            : `custom-dish-id-${id}`,
         "name"          : `${name}`,
         "custom"        : true,
+        "isFree"        : false,
         "quantity"      : 0,
         "customerPrice" : 0,
         "course"        : "custom",
