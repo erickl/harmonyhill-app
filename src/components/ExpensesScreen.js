@@ -55,7 +55,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         }
 
         const getPettyCash = async() => {
-            const pettyCash = ledgerService.getPettyCashBalance(onError);
+            const pettyCash = await ledgerService.getPettyCashBalance(onError);
             setPettyCash(pettyCash);
         }
 
@@ -87,7 +87,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Expenses</h2>
-                    {pettyCash && (<h4>Petty Cash: ${pettyCash}</h4>)}
+                    {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
                 </div>
             
                 <div>

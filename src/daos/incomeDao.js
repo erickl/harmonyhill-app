@@ -17,7 +17,12 @@ export async function get(filterOptions = {}, limit = -1, onError = null) {
 
     if (Object.hasOwn(filterOptions, "category")) {
         const category = filterOptions.category.trim().toLowerCase();
-        queryFilter.push(where("category", "=", category));
+        queryFilter.push(where("category", "==", category));
+    }
+
+    if (Object.hasOwn(filterOptions, "paymentMethod")) {
+        const paymentMethod = filterOptions.paymentMethod.trim().toLowerCase();
+        queryFilter.push(where("paymentMethod", "==", paymentMethod));
     }
 
     if (Object.hasOwn(filterOptions, "after")) {

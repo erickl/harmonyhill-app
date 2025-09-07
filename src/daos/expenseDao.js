@@ -64,12 +64,17 @@ export async function get(filterOptions = {}, limit = -1, onError = null) {
 
     if (Object.hasOwn(filterOptions, "category")) {
         const category = filterOptions.category.trim().toLowerCase();
-        queryFilter.push(where("category", "=", category));
+        queryFilter.push(where("category", "==", category));
+    }
+    
+    if (Object.hasOwn(filterOptions, "paymentMethod")) {
+        const paymentMethod = filterOptions.paymentMethod.trim().toLowerCase();
+        queryFilter.push(where("paymentMethod", "==", paymentMethod));
     }
 
     if (Object.hasOwn(filterOptions, "purchasedBy")) {
         const purchasedBy = filterOptions.purchasedBy.trim().toLowerCase();
-        queryFilter.push(where("purchasedBy", "=", purchasedBy));
+        queryFilter.push(where("purchasedBy", "==", purchasedBy));
     }
 
     if (Object.hasOwn(filterOptions, "after")) {
@@ -84,8 +89,8 @@ export async function get(filterOptions = {}, limit = -1, onError = null) {
 
     let ordering = [orderBy("purchasedAt", "desc")];
 
-    const receipts = await dao.get(path, queryFilter, ordering, limit, onError);
-    return receipts;
+    const expenses = await dao.get(path, queryFilter, ordering, limit, onError);
+    return expenses;
 }
 
 export async function add(data, onError) {

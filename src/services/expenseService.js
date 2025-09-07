@@ -1,4 +1,3 @@
-import * as ledgerService from './ledgerService.js';
 import * as expenseDao from "../daos/expenseDao.js";
 import * as utils from "../utils.js";
 
@@ -6,12 +5,6 @@ export async function add(data, onError) {
     const object = mapReceiptObject(data);
 
     const addResult = await expenseDao.transaction(async () => {
-        if(object.paymentMethod === "cash") {
-            const pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
-            if(pettyCashBalance === false) {
-                throw new Error(`Could not update petty cash balance`);
-            }
-        }
         const addResult = await expenseDao.add(object, onError);
         if(addResult === false) {
             throw new Error(`Could not add the receipt`);
@@ -28,32 +21,6 @@ export async function update(id, data, onError) {
         const existing = await expenseDao.getOne(id);
         if(!existing) {
             throw new Error(`Could not find existing income ${id}`);
-        }
-
-        // If both existing and new expense are cash, just update petty cash with the difference
-        if(existing.paymentMethod === "cash" && object.paymentMethod === "cash" ) {
-            const amountAdjustment = object.amount - existing.amount;
-
-            const pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * amountAdjustment, onError);
-            if(pettyCashBalance === false) {
-                throw new Error(`Could not update petty cash balance`);
-            }
-        }
-
-        // If new expense isn't cash anymore, add back existing amount to update petty cash, since petty cash wasn't used
-        if(existing.paymentMethod === "cash" && object.paymentMethod !== "cash" ) {
-            const pettyCashBalance = await ledgerService.updatePettyCashBalance(existing.amount, onError);
-            if(pettyCashBalance === false) {
-                throw new Error(`Could not update petty cash balance`);
-            }
-        }
-
-        // If both existing expenses weren't cash before, subtract entire amount from petty cash
-        if(existing.paymentMethod !== "cash" && object.paymentMethod === "cash" ) {
-            const pettyCashBalance = await ledgerService.updatePettyCashBalance(-1 * object.amount, onError);
-            if(pettyCashBalance === false) {
-                throw new Error(`Could not update petty cash balance`);
-            }
         }
         
         const updateResult = await expenseDao.update(id, object, onError);
@@ -86,7 +53,7 @@ export async function uploadReceipt(filename, file, compressionOptions, onError)
 }
 
 export async function get(filterOptions, onError) {
-    const expenses = await expenseDao.get(filterOptions, onError);
+    const expenses = await expenseDao.get(filterOptions, -1, onError);
     const formattedExpenses = expenses.map((expense) => {
         const formattedExpense = expense;
         formattedExpense.purchasedAt = utils.toDateTime(expense.purchasedAt);
@@ -105,13 +72,6 @@ export async function remove(id, onError) {
         const deleteRecordResult = expenseDao.remove(id, onError);
         if(!deleteRecordResult) {
             throw new Error(`Could not delete expense record ${id}`);
-        }
-
-        if(existing.paymentMethod === "cash") {
-            const updatePettyCashResult = ledgerService.updatePettyCashBalance(existing.amount, onError);
-            if(!updatePettyCashResult) {
-                throw new Error(`Could not update petty cash balance when deleting expense ${id}`);
-            }
         }
 
         return true; 

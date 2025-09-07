@@ -32,7 +32,7 @@ export async function getTotal(bookingId) {
     }, 0);
 
     return {
-        total: totalSum,
+        total        : totalSum,
         itemizedList : itemizedList
     }
 }

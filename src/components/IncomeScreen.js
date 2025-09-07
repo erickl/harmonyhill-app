@@ -100,7 +100,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Income</h2>
-                    {pettyCash && (<h4>Petty Cash: ${pettyCash}</h4>)}
+                    {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
                 </div>
             
                 <div>
