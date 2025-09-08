@@ -4,50 +4,17 @@ import * as mealService from "../services/mealService.js";
 import ActivityComponent from './ActivityComponent';
 import "./ActivityComponent.css";
 import {getParent} from "../daos/dao.js";
-import "./Spinner.js";
 import WarningSymbol from './WarningSymbol.js';
-import Spinner from './Spinner.js';
+
 
 const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteActivity, expandAllDates}) => {
-    const [expandedDates,                setExpandedDates          ] = useState({});
-    const [selectedActivities,      setSelectedActivities     ] = useState({});
+    const [expandedDates,           setExpandedDates          ] = useState({}); 
     const [activitiesByDate,        setActivitiesByDate       ] = useState({});
-    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState({});
-
-    const forAllCustomers = customer === null;
 
     const handleSetExpandedDates = (date) => {
         let updatedExpandedList = { ...(expandedDates || {}) }; // Make shallow copy
         updatedExpandedList[date] = updatedExpandedList[date] === true ? false : true;
         setExpandedDates(updatedExpandedList);
-    };
-
-    const handleActivityClick = async (activity) => {
-        setLoadingExpandedActivity((prev) => ({...prev, [activity.id]: true}));
-        await loadActivityInfo(activity);
-        setLoadingExpandedActivity((prev) => ({...prev, [activity.id]: false}));
-    }
-
-    const loadActivityInfo = async (activity) => {
-        if(!activity) return;
-
-        const id = activity.id;
-
-        let updatedList = { ...(selectedActivities || {}) };
-        
-        const expandActivityInfo = updatedList[id] === null || updatedList[id] === undefined;
-
-        if(expandActivityInfo) {
-             if(activity.category === "meal") {
-                // If this list is displayed for all customers, get the customer for each activity 
-                const selectedCustomer = forAllCustomers ? await getParent(activity) : customer;      
-                activity.dishes = await mealService.getDishes(selectedCustomer.id, activity.id);  ;
-            }
-        }
-
-        updatedList[id] = expandActivityInfo ? activity : null;
-
-        setSelectedActivities(updatedList);
     };
 
     const today_ddMMM = utils.to_ddMMM(utils.today());
@@ -80,7 +47,7 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
         }
     }, [activities, customer]);
 
-    if(activitiesByDate.length === 0) {
+    if(Object.keys(activitiesByDate).length === 0) {
         return (<div><h2>No activities yet</h2></div>);
     }
 
@@ -102,32 +69,13 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
                         <div>
                             {activities.map((activity) => {
                                 return (
-                                    <React.Fragment key={activity.id}>
-                                        <div
-                                            className={`customer-list-item clickable-item ${utils.getHouseColor(activity.house)}`} 
-                                            onClick={() => handleActivityClick(activity)}
-                                        >
-                                            <div className="customer-name-in-list">
-                                                <span>{activity.displayName}</span>
-
-                                                {/* {(utils.isString(activity.status) && activity.status.toLowerCase() !== "confirmed" && <WarningSymbol />)} */}
-                                                <span>{activity.startingAt_HHmm}</span>
-                                            </div>  
-                                            
-                                            {forAllCustomers ? utils.capitalizeWords(activity.name) : " "}
-                                            
-                                        </div>
-                                        {loadingExpandedActivity?.[activity.id] === true ? (
-                                            <Spinner />
-                                        ) : selectedActivities[activity.id] ? ( 
-                                            // if global customer unspecified, this is the list for all customers, so each activity should have some customer data
-                                            <ActivityComponent 
-                                                displayCustomer={forAllCustomers}
-                                                activity={selectedActivities[activity.id]}
-                                                handleEditActivity={handleEditActivity}
-                                                handleDeleteActivity={handleDeleteActivity}
-                                            />
-                                        ) : ( <></>)}
+                                    <React.Fragment key={activity.id}>   
+                                        <ActivityComponent 
+                                            customer={customer == null}
+                                            activity={activity}
+                                            handleEditActivity={handleEditActivity}
+                                            handleDeleteActivity={handleDeleteActivity}
+                                        />
                                     </React.Fragment>
                                 )
                             })}

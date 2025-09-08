@@ -1,15 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import * as invoiceService from "../services/invoiceService.js";
 import * as utils from "../utils.js";
+import * as mealService from "../services/mealService.js";
 import "./ActivityComponent.css";
+import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 
-const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, handleDeleteActivity }) => {
-    const [customer,         setCustomer        ] = useState(null );
+const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleDeleteActivity }) => {
+    const [customer,         setCustomer        ] = useState(null);
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
+    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const [dishes, setDishes] = useState([]);
+
+    const handleActivityClick = async (activity) => {
+        setLoadingExpandedActivity(true);
+        await loadActivityInfo(activity);
+        setLoadingExpandedActivity(false);
+    }
+
+    const loadActivityInfo = async () => {
+        if(!activity) return;
+
+        const expand = !expanded;
+
+        if(expand) {
+            if(activity.category === "meal") {
+                // If this list is displayed for all customers, get the customer for each activity 
+                const mealCustomer = customer ? customer : await getParent(activity);
+                const dishes = await mealService.getDishes(mealCustomer.id, activity.id);
+                setDishes(dishes);
+            }
+        }
+        setExpanded(expand);
+    };
 
     useEffect(() => {
         const getCustomer = async() => {
@@ -17,7 +44,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, hand
             setCustomer(customer);
         }
 
-        if(displayCustomer) {
+        if(showCustomer) {
             getCustomer();
         }
 
@@ -29,9 +56,26 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, hand
         setUserRole();
     }, []);
 
-    const showProvider = activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
+    const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
 
-    return (
+    return (<>
+        <div
+            className={`customer-list-item clickable-item ${utils.getHouseColor(activity.house)}`} 
+            onClick={() => handleActivityClick(activity)}
+        >
+            <div className="customer-name-in-list">
+                <span>{activity.displayName}</span>
+
+                {/* {(utils.isString(activity.status) && activity.status.toLowerCase() !== "confirmed" && <WarningSymbol />)} */}
+                <span>{activity.startingAt_HHmm}</span>
+            </div>  
+            
+            {showCustomer ? utils.capitalizeWords(activity.name) : " "}
+            
+        </div>
+        {loadingExpandedActivity ? (
+            <Spinner />
+        ) : expanded ? ( 
         <div className="customer-details">
             {/* {customer !== null && (<p><span className="detail-label">Customer Name:</span> {customer.name}</p>)} */}
             {customer !== null && (<p><span className="detail-label">Villa:</span> {utils.capitalizeWords(customer.house)}</p>)}
@@ -49,7 +93,7 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, hand
 
             {/* List dishes if the activity expanded is a meal */}
             {activity.category === "meal" && (
-                <DishesSummaryComponent dishes={activity.dishes} />
+                <DishesSummaryComponent dishes={dishes} />
             )}
 
             <div className="activity-component-footer">
@@ -75,7 +119,8 @@ const ActivityComponent = ({ displayCustomer, activity, handleEditActivity, hand
                 )}
             </div>   
         </div>
-    );
+        ) : ( <></>)}
+    </>);
 };
 
 export default ActivityComponent;
