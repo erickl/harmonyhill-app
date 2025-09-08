@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
-import * as mealService from "../services/mealService.js";
+import * as userService from "../services/userService.js";
 import ActivityComponent from './ActivityComponent';
 import "./ActivityComponent.css";
-import {getParent} from "../daos/dao.js";
-import WarningSymbol from './WarningSymbol.js';
 
 
 const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteActivity, expandAllDates}) => {
     const [expandedDates,           setExpandedDates          ] = useState({}); 
     const [activitiesByDate,        setActivitiesByDate       ] = useState({});
+    const [users,                   setUsers                  ] = useState([]);
 
     const handleSetExpandedDates = (date) => {
         let updatedExpandedList = { ...(expandedDates || {}) }; // Make shallow copy
@@ -18,6 +17,16 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
     };
 
     const today_ddMMM = utils.to_ddMMM(utils.today());
+
+    useEffect(() => {
+        const getUsers = async() => {
+            const allUsers = await userService.getUsers();
+            setUsers(allUsers);
+        };
+
+        getUsers();
+        
+    }, []);
 
     useEffect(() => {
         const allActivitiesByDate = activities.reduce((m, activity) => {
@@ -71,10 +80,11 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
                                 return (
                                     <React.Fragment key={activity.id}>   
                                         <ActivityComponent 
-                                            customer={customer == null}
+                                            showCustomer={customer == null}
                                             activity={activity}
                                             handleEditActivity={handleEditActivity}
                                             handleDeleteActivity={handleDeleteActivity}
+                                            users={users}
                                         />
                                     </React.Fragment>
                                 )

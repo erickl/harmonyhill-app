@@ -9,7 +9,7 @@ import * as userService from "../services/userService.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 
-const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleDeleteActivity }) => {
+const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users }) => {
     const [customer,         setCustomer        ] = useState(null);
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
@@ -58,25 +58,44 @@ const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleD
 
     const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
 
-    return (<>
-        <div
-            className={`customer-list-item clickable-item ${utils.getHouseColor(activity.house)}`} 
-            onClick={() => handleActivityClick(activity)}
-        >
-            <div className="customer-name-in-list">
-                <span>{activity.displayName}</span>
+    
+    const assignedUser = users ? users.find(user => user.name === activity.assignedTo) : null;
+    const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
+    const assignedUserColor = assignedUserShortName === "?" ? "red" : "green";
 
-                {/* {(utils.isString(activity.status) && activity.status.toLowerCase() !== "confirmed" && <WarningSymbol />)} */}
-                <span>{activity.startingAt_HHmm}</span>
-            </div>  
-            
-            {showCustomer ? utils.capitalizeWords(activity.name) : " "}
-            
+    const houseShortName = activity.house === "harmony hill" ? "HH" : "JN";
+    const houseColor = houseShortName === "HH" ? "darkcyan" : "rgb(2, 65, 116)";
+
+
+    return (<>
+        <div className="activity-header" onClick={() => handleActivityClick(activity)}>
+            <div className="activity-header-left">
+                <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
+                    {houseShortName}
+                </div>
+                <div className="activity-header-assignee" style={{ backgroundColor: assignedUserColor }}>
+                    {assignedUserShortName}
+                </div>
+            </div>
+            <div className="activity-header-time">
+                {activity.startingAt_HHmm}
+            </div>
+            <div className="activity-header-right">
+                <div className="activity-header-name">
+                    {activity.displayName}
+                </div>  
+                <div className="activity-header-provider">
+                    {activity.provider}
+                </div>  
+                <div className="activity-header-guest">
+                    {showCustomer ? activity.name : ""}
+                </div>  
+            </div>
         </div>
         {loadingExpandedActivity ? (
             <Spinner />
         ) : expanded ? ( 
-        <div className="customer-details">
+        <div className="activity-details">
             {/* {customer !== null && (<p><span className="detail-label">Customer Name:</span> {customer.name}</p>)} */}
             {customer !== null && (<p><span className="detail-label">Villa:</span> {utils.capitalizeWords(customer.house)}</p>)}
             <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
