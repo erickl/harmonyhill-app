@@ -14,6 +14,7 @@ export async function getTotal(bookingId) {
         nonFreeActivities.map(async function(activity) {
             let activityItem = {
                 name:          activity.category + ": " + activity.subCategory,
+                displayName:   activity.displayName,
                 customerPrice: activity.customerPrice,
                 date:          activity.startingAt,
                 isFree:        activity.isFree

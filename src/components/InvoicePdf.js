@@ -18,7 +18,7 @@ export default function InvoicePdfLink({customer}) {
     }
 
     const getName = function(item) {
-        const name = `${item.name}`;
+        const name = `${item.displayName}`;
         return `${utils.capitalizeWords(name)}`;
     }
 
