@@ -6,11 +6,10 @@ import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import * as ledgerService from "../services/ledgerService.js";
 import * as utils from "../utils.js";
 import "./IncomeScreen.css";
-import "./Spinner.js";
+import Spinner from "./Spinner.js";
 import AddIncomeScreen from './AddIncomeScreen.js';
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
-import Spinner from './Spinner.js';
 
 export default function IncomeScreen({ onNavigate, onClose }) {
 

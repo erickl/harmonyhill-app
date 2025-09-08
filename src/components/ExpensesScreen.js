@@ -7,12 +7,11 @@ import * as activityService from "../services/activityService.js";
 import * as userService from "../services/userService.js";
 import * as ledgerService from "../services/ledgerService.js";
 import "./ExpensesScreen.css";
-import "./Spinner.js";
+import Spinner from "./Spinner.js";
 import invoiceLogo from "../assets/invoice-icon.png";
 import AddExpensesScreen from "./AddExpensesScreen.js";
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
-import Spinner from './Spinner.js';
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
