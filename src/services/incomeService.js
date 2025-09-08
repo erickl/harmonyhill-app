@@ -1,5 +1,6 @@
 import * as utils from "../utils.js";
 import * as incomeDao from "../daos/incomeDao.js";
+import * as bookingService from "./bookingService.js";
 
 export async function get(filterOptions, onError) {
     const incomes = await incomeDao.get(filterOptions, -1, onError);
@@ -11,7 +12,7 @@ export async function get(filterOptions, onError) {
 }
 
 export async function add(data, onError) {
-    const object = mapIncomeObject(data);
+    const object = await mapIncomeObject(data);
 
     const addResult = await incomeDao.transaction(async () => {
         const addResult = await incomeDao.add(object, onError);
@@ -31,7 +32,7 @@ export async function remove(id, onError) {
             throw new Error(`Could not find income record ${id}`);
         }
 
-        const deleteRecordResult = incomeDao.remove(id, onError);
+        const deleteRecordResult = await incomeDao.remove(id, onError);
         if(!deleteRecordResult) {
             throw new Error(`Could not delete income record ${id}`);
         }
@@ -43,7 +44,7 @@ export async function remove(id, onError) {
 }
 
 export async function update(id, data, onError) {
-    const object = mapIncomeObject(data);
+    const object = await mapIncomeObject(data);
 
     const updateResult = await incomeDao.transaction(async () => {
         const existing = await incomeDao.getOne(id);
@@ -61,7 +62,7 @@ export async function update(id, data, onError) {
     return updateResult;
 }
 
-function mapIncomeObject(data) {
+async function mapIncomeObject(data) {
     let object = {};
 
     if(utils.isAmount(data.amount)) object.amount = data.amount;
@@ -78,6 +79,12 @@ function mapIncomeObject(data) {
     if(utils.isDateTime(data.receivedAt)) object.receivedAt = utils.toFireStoreTime(data.receivedAt);
 
     if(!utils.isEmpty(data.comments)) object.comments = data.comments.trim();
+
+    let booking = object.bookingId ? await bookingService.getOne(object.bookingId) : null;
+    object.description = `${object.category}`;
+    if(booking && booking.name) {
+        object.description = `${object.description}, ${booking.name}`;
+    }
     
     return object;
 }

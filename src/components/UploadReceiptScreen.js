@@ -103,6 +103,9 @@ export default function UploadReceiptScreen({ current, onUploadSuccess, resetTri
 
             const imageDataURL = canvas.toDataURL('image/png');
             onSetPreviewImage(imageDataURL);
+            
+            const file = dataURLtoFile(imageDataURL);
+            onSetFile(file);
 
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
@@ -112,6 +115,18 @@ export default function UploadReceiptScreen({ current, onUploadSuccess, resetTri
             setUploadedImageUrl('');
         }
     };
+
+    function dataURLtoFile(dataURL, filename) {
+        const arr = dataURL.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    }
 
     const handleCloseScreen = () => {
         if (videoStream) {

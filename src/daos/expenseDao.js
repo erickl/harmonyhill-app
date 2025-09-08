@@ -116,8 +116,8 @@ export async function removeImage(fileName) {
 
 export async function remove(id, onError) {
     const path = [dao.constant.EXPENSES];
-    const existing = getOne(id, onError);
-    if(existing) {
+    const existing = await getOne(id, onError);
+    if(existing && existing.fileName) {
         await removeImage(existing.fileName);
     }
     const result = await dao.remove(path, id, onError);

@@ -176,7 +176,7 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
         }
 
         const dishUpdate = await mapDishObject(dishUpdateData);
-        const existingDish = existingDishes[dishUpdate.name];
+        const existingDish = existingDishes.find((dish) => dish.name === dishUpdate.name);
         
         if(!existingDish) {
             const newDishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dishUpdate.name);

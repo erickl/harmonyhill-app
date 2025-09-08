@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import * as expenseService from "../services/expenseService.js";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import * as utils from "../utils.js";
+import * as bookingService from "../services/bookingService.js";
+import * as activityService from "../services/activityService.js";
 import * as userService from "../services/userService.js";
 import * as ledgerService from "../services/ledgerService.js";
 import "./ExpensesScreen.css";
@@ -22,9 +24,23 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [expenseToDelete,  setExpenseToDelete ] = useState(null );
     const [pettyCash,        setPettyCash       ] = useState(null );
 
-    const handleSetExpandedReceipt = (id) => {
+    const handleSetExpandedExpense = async (expense) => {
         let updatedExpandedList = { ...(expandedExpenses || {}) };
-        updatedExpandedList[id] = updatedExpandedList[id] === true ? false : true;
+        
+        const expand = utils.isEmpty(updatedExpandedList[expense.id]);
+        if(expand) {
+            if(!utils.isEmpty(expense.bookingId)) {
+                const booking = await bookingService.getOne(expense.bookingId);
+                expense.bookingName = booking ? booking.name: "missing booking";
+
+                const activity = await activityService.getOne(expense.bookingId, expense.activityId);
+                expense.activityName = activity ? activity.displayName : "missing activity";
+            }
+            updatedExpandedList[expense.id] = expense;
+        } else {
+            updatedExpandedList[expense.id] = null;
+        }
+
         setExpandedExpenses(updatedExpandedList);
     };
 
@@ -79,7 +95,13 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     }
 
     if(expenseToEdit) {
-        return (<AddExpensesScreen expenseToEdit={expenseToEdit} onNavigate={onNavigate} onClose={() => setExpenseToEdit(null)}/>)
+        return (
+            <AddExpensesScreen 
+                expenseToEdit={expenseToEdit} 
+                onNavigate={onNavigate} 
+                onClose={() => setExpenseToEdit(null)}
+            />
+        );
     }
      
     return (
@@ -100,7 +122,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 {receipts.map((expense) => {
                     return (
                         <React.Fragment key={expense.id}>
-                            <div className="expense-box" onClick={()=> handleSetExpandedReceipt(expense.id)}>
+                            <div className="expense-box" onClick={()=> handleSetExpandedExpense(expense)}>
                                 <div className="expense-header">
                                     <div className="expense-header-left">
                                         <div className="expense-title">
@@ -130,6 +152,12 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                         <div>
                                             Category: {utils.capitalizeWords(expense.category)}
                                         </div>
+                                        {expense.bookingName && (<div>
+                                            Booking: {expense.bookingName}
+                                        </div>)}
+                                        {expense.activityName && (<div>
+                                            Activity: {expense.activityName}
+                                        </div>)}
                                         {expense.comments && (<div>
                                             Comments: {expense.comments}
                                         </div>)}

@@ -92,7 +92,13 @@ export default function IncomeScreen({ onNavigate, onClose }) {
     }
 
     if(incomeToEdit) {
-        return (<AddIncomeScreen incomeToEdit={incomeToEdit} onNavigate={onNavigate} onClose={() => setIncomeToEdit(null)}/>)
+        return (
+            <AddIncomeScreen 
+                incomeToEdit={incomeToEdit} 
+                onNavigate={onNavigate} 
+                onClose={() => setIncomeToEdit(null)}
+            />
+        );
     }
      
     return (
@@ -164,7 +170,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                                     <Trash2  
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleDeleteIncome(income);
+                                                            setIncomeToDelete(income);
                                                         }}
                                                     />
                                                     <p>Delete</p>

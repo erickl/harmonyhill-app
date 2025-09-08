@@ -12,6 +12,12 @@ import SuccessModal from './SuccessModel.js';
 
 export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
+    if(!onClose) {
+        onClose = () => {
+            setShowList(true);
+        }
+    }
+
     const emptyForm = {
         amount        : incomeToEdit ? incomeToEdit.amount        : '',
         receivedAt    : incomeToEdit ? incomeToEdit.receivedAt    : utils.today(),
@@ -164,9 +170,11 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                 </div>
             
                 <div>
-                    <button className="add-button" onClick={() => setShowList(true)}>
-                        ☰
-                    </button>
+                    {!incomeToEdit && (
+                        <button className="add-button" onClick={() => setShowList(true)}>
+                            ☰
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="card-content">
@@ -244,7 +252,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 
                 <ButtonsFooter
-                    onCancel={resetForm}
+                    onCancel={onClose}
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />

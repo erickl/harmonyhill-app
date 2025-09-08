@@ -69,7 +69,7 @@ export async function remove(id, onError) {
             throw new Error(`Could not find expense record ${id}`);
         }
 
-        const deleteRecordResult = expenseDao.remove(id, onError);
+        const deleteRecordResult = await expenseDao.remove(id, onError);
         if(!deleteRecordResult) {
             throw new Error(`Could not delete expense record ${id}`);
         }

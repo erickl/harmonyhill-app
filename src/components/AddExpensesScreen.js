@@ -15,12 +15,20 @@ import SuccessModal from './SuccessModel.js';
 
 export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
 
+    if(!onClose) {
+        onClose = () => {
+            setShowList(true);
+        }
+    }
+
     const emptyForm = {
         photoUrl      : expenseToEdit ? expenseToEdit.photoUrl      : null,
         amount        : expenseToEdit ? expenseToEdit.amount        : '',
         purchasedBy   : expenseToEdit ? expenseToEdit.purchasedBy   : '',
         purchasedAt   : expenseToEdit ? expenseToEdit.purchasedAt   : utils.today(),
         category      : expenseToEdit ? expenseToEdit.category      : '',
+        activityId    : expenseToEdit ? expenseToEdit.activityId    : '',
+        bookingId     : expenseToEdit ? expenseToEdit.bookingId     : '',
         paymentMethod : expenseToEdit ? expenseToEdit.paymentMethod : '',
         description   : expenseToEdit ? expenseToEdit.description   : '',
         comments      : expenseToEdit ? expenseToEdit.comments      : '',
@@ -61,6 +69,24 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         'Tax & Accounting'     : {"name" : "Tax & Accounting"     },
         'Guest Refunds'        : {"name" : "Guest Refunds"        },
         'Other'                : {"name" : "Other"                },
+    };
+
+    const getBookingActivities = async(bookingId) => {
+        const bookingActivities = await activityService.get(bookingId);
+            const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
+            return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
+        });
+        setActivities(activitiesByName);
+    };
+
+    const getBookings = async() => {
+        const filter = {"after": utils.today(-30), "before" : utils.today(10)};
+        const bookings = await bookingService.get(filter, onError);
+        const bookingsByName = utils.groupBy(bookings, (booking) => {
+            const house = booking.house === "harmony hill" ? "HH" : "JN";
+            return `${utils.to_YYMMdd(booking.checkInAt)} ${house} ${booking.name}`
+        });
+        setBookings(bookingsByName);
     };
 
     // Initial validation
@@ -107,17 +133,11 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
 
     // Fetch booking data only if needed and if it's not already fetched
     useEffect(() => {
-        const getBookings = async() => {
-            const filter = {"after": utils.today(-30), "before" : utils.today(10)};
-            const bookings = await bookingService.get(filter, onError);
-            const bookingsByName = utils.groupBy(bookings, (booking) => {
-                const house = booking.house === "harmony hill" ? "HH" : "JN";
-                return `${utils.to_YYMMdd(booking.checkInAt)} ${house} ${booking.name}`
-            });
-            setBookings(bookingsByName);
-        }
         if(needsGuestInfo && utils.isEmpty(bookings)) {
             getBookings();
+        }
+        if(needsActivityInfo && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
+            getBookingActivities(formData.bookingId);
         }
     }, [formData]);
 
@@ -150,11 +170,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         const id = booking ? booking[0].id : '';
         handleChange("bookingId", id);
         if(needsActivityInfo) {
-            const bookingActivities = await activityService.get(id);
-            const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
-                return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
-            });
-            setActivities(activitiesByName);
+            getBookingActivities(id);
         }
     }
 
@@ -211,7 +227,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 const fileDescription = formData.description.trim().toLowerCase().replace(/ /g, "-");
                 formData.fileName = `${fileDescription}-${fileDate}-${Date.now()}`;
                 formData.fileName = `expenses/${formData.fileName}.jpg`;
-                formData.photoUrl = await expenseService.uploadReceipt(formData.fileName, formData.photo, {maxSize : 0.1}, onError);
+                formData.photoUrl = await expenseService.uploadReceipt(formData.fileName, formData.photo, {maxSize : 0.12}, onError);
                 delete formData['photo'];
             }
             
@@ -267,9 +283,11 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 </div>
             
                 <div>
-                    <button className="add-button" onClick={() => setShowList(true)}>
-                        ☰
-                    </button>
+                    {!expenseToEdit && (
+                        <button className="add-button" onClick={() => setShowList(true)}>
+                            ☰
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="card-content">
@@ -279,7 +297,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                     resetTrigger={imageResetTrigger}
                 />
 
-                {formData.photoUrl || formData.photo && (<>
+                {(formData.photoUrl || formData.photo) && (<>
                     <div className="form-group">
                         <label htmlFor="amount">Amount (IDR):</label>
                         <div className="currency-input-wrapper">
@@ -386,7 +404,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 
                 <ButtonsFooter
-                    onCancel={resetForm}
+                    onCancel={onClose}
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />
