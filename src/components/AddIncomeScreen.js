@@ -106,6 +106,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
             if(result) {
                 if(incomeToEdit) onClose();
                 else resetForm();
+                setShowSuccess(true);
             } else {
                 throw new Error("Receipt form data upload error");
             }
