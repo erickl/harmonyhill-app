@@ -7,14 +7,17 @@ import * as activityService from "../services/activityService.js";
 import * as userService from "../services/userService.js";
 import * as ledgerService from "../services/ledgerService.js";
 import "./ExpensesScreen.css";
+import "./Spinner.js";
 import invoiceLogo from "../assets/invoice-icon.png";
 import AddExpensesScreen from "./AddExpensesScreen.js";
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
+import Spinner from './Spinner.js';
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
     const [expandedExpenses, setExpandedExpenses] = useState({}   );
+    const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
     const [receipts,         setExpenses        ] = useState([]   );
     const [displayedReceipt, setDisplayedReceipt] = useState(null );
     const [loading,          setLoading         ] = useState(true );
@@ -24,7 +27,13 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [expenseToDelete,  setExpenseToDelete ] = useState(null );
     const [pettyCash,        setPettyCash       ] = useState(null );
 
-    const handleSetExpandedExpense = async (expense) => {
+    const handleSetExpanded = async(income) => {
+        setLoadingExpanded((prev) => ({...prev, [income.id]: true}));
+        await fetchBookingInfo(income);
+        setLoadingExpanded((prev) => ({...prev, [income.id]: false}));
+    }
+
+    const fetchBookingInfo = async (expense) => {
         let updatedExpandedList = { ...(expandedExpenses || {}) };
         
         const expand = utils.isEmpty(updatedExpandedList[expense.id]);
@@ -122,7 +131,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 {receipts.map((expense) => {
                     return (
                         <React.Fragment key={expense.id}>
-                            <div className="expense-box" onClick={()=> handleSetExpandedExpense(expense)}>
+                            <div className="expense-box" onClick={()=> handleSetExpanded(expense)}>
                                 <div className="expense-header">
                                     <div className="expense-header-left">
                                         <div className="expense-title">
@@ -144,7 +153,9 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                     {utils.to_ddMMYY(expense.purchasedAt, "/")}
                                 </div>
 
-                                {expandedExpenses[expense.id] && (
+                                {loadingExpanded?.[expense.id] === true ? (
+                                    <Spinner />
+                                ) : expandedExpenses?.[expense.id] ? (
                                     <div className="expense-body">
                                         <div>
                                             Payment Method: {utils.capitalizeWords(expense.paymentMethod)}
@@ -200,7 +211,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                             </div>
                                         </div>
                                     </div>
-                                )}
+                                ) : (<></>)}
                             </div>
                         </React.Fragment>
                     )

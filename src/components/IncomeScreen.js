@@ -6,22 +6,31 @@ import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import * as ledgerService from "../services/ledgerService.js";
 import * as utils from "../utils.js";
 import "./IncomeScreen.css";
+import "./Spinner.js";
 import AddIncomeScreen from './AddIncomeScreen.js';
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
+import Spinner from './Spinner.js';
 
 export default function IncomeScreen({ onNavigate, onClose }) {
 
-    const [expandedIncomes,  setExpandedIncomes ] = useState({}   );
-    const [incomeToEdit,     setIncomeToEdit    ] = useState(null );
-    const [incomeToDelete,   setIncomeToDelete  ] = useState(null );
-    const [incomes,          setIncomes         ] = useState([]   );
-    const [loading,          setLoading         ] = useState(true );
-    const [errorMessage,     setErrorMessage    ] = useState(null );
-    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
-    const [pettyCash,        setPettyCash       ] = useState(null );
+    const [expandedIncomes,     setExpandedIncomes     ] = useState({}   );
+    const [loadingExpanded,     setLoadingExpanded     ] = useState({}   );
+    const [incomeToEdit,        setIncomeToEdit        ] = useState(null );
+    const [incomeToDelete,      setIncomeToDelete      ] = useState(null );
+    const [incomes,             setIncomes             ] = useState([]   );
+    const [loading,             setLoading             ] = useState(true );
+    const [errorMessage,        setErrorMessage        ] = useState(null );
+    const [isManagerOrAdmin,    setIsManagerOrAdmin    ] = useState(false);
+    const [pettyCash,           setPettyCash           ] = useState(null );
 
-    const handleSetExpandedIncome = async (income) => {
+    const handleSetExpanded = async(income) => {
+        setLoadingExpanded((prev) => ({...prev, [income.id]: true}));
+        await fetchBookingInfo(income);
+        setLoadingExpanded((prev) => ({...prev, [income.id]: false}));
+    }
+
+    const fetchBookingInfo = async (income) => {
         if(!income) return;
 
         let updatedExpandedList = { ...(expandedIncomes || {}) };
@@ -119,7 +128,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                 {incomes.map((income) => {
                     return (
                         <React.Fragment key={income.id}>
-                            <div className="income-box" onClick={()=> handleSetExpandedIncome(income)}>
+                            <div className="income-box" onClick={() => handleSetExpanded(income)}>
                                 <div className="income-header">
                                     <div className="income-header-left">
                                         <div className="income-title">
@@ -141,7 +150,9 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                     {utils.to_ddMMYY(income.purchasedAt, "/")}
                                 </div>
                                 
-                                {expandedIncomes[income.id] && (
+                               {loadingExpanded?.[income.id] === true ? (
+                                    <Spinner />
+                                ) : expandedIncomes?.[income.id] ? (
                                     <div className="income-body">
                                         {income.bookingName && (<div>
                                             Booking: {income.bookingName}
@@ -178,7 +189,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                             )}
                                         </div>
                                     </div>
-                                )}
+                                ) : (<></>)}
                             </div>
                         </React.Fragment>
                     )
