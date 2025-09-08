@@ -4,22 +4,31 @@ import * as mealService from "../services/mealService.js";
 import ActivityComponent from './ActivityComponent';
 import "./ActivityComponent.css";
 import {getParent} from "../daos/dao.js";
+import "./Spinner.js";
 import WarningSymbol from './WarningSymbol.js';
+import Spinner from './Spinner.js';
 
 const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteActivity, expandAllDates}) => {
-    const [expanded, setExpanded] = useState({});
-    const [selectedActivities, setSelectedActivities] = useState({});
-    const [activitiesByDate, setActivitiesByDate] = useState({});
+    const [expandedDates,                setExpandedDates          ] = useState({});
+    const [selectedActivities,      setSelectedActivities     ] = useState({});
+    const [activitiesByDate,        setActivitiesByDate       ] = useState({});
+    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState({});
 
     const forAllCustomers = customer === null;
 
-    const handleSetExpanded = (date) => {
-        let updatedExpandedList = { ...(expanded || {}) }; // Make shallow copy
+    const handleSetExpandedDates = (date) => {
+        let updatedExpandedList = { ...(expandedDates || {}) }; // Make shallow copy
         updatedExpandedList[date] = updatedExpandedList[date] === true ? false : true;
-        setExpanded(updatedExpandedList);
+        setExpandedDates(updatedExpandedList);
     };
 
     const handleActivityClick = async (activity) => {
+        setLoadingExpandedActivity((prev) => ({...prev, [activity.id]: true}));
+        await loadActivityInfo(activity);
+        setLoadingExpandedActivity((prev) => ({...prev, [activity.id]: false}));
+    }
+
+    const loadActivityInfo = async (activity) => {
         if(!activity) return;
 
         const id = activity.id;
@@ -65,9 +74,9 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
                 const startingAt = activity ? activity.startingAt : null;
                 expandedList[date] = startingAt && startingAt >= today;
             } 
-            setExpanded(expandedList);
+            setExpandedDates(expandedList);
         } else {
-            handleSetExpanded(today_ddMMM);
+            handleSetExpandedDates(today_ddMMM);
         }
     }, [activities, customer]);
 
@@ -81,15 +90,15 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
                 <div>
                     <h3
                         className={'customer-group-header clickable-header'}
-                        onClick={() => handleSetExpanded(date) }>
+                        onClick={() => handleSetExpandedDates(date) }>
                         
                         {`${date}${(date === today_ddMMM ? " (Today)" : "")}`}
                         
                         <span className="expand-icon">
-                            {expanded[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
+                            {expandedDates[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
                         </span>
                     </h3>
-                    {expanded[date] ? (
+                    {expandedDates[date] ? (
                         <div>
                             {activities.map((activity) => {
                                 return (
@@ -108,7 +117,9 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
                                             {forAllCustomers ? utils.capitalizeWords(activity.name) : " "}
                                             
                                         </div>
-                                        {selectedActivities[activity.id] && (  
+                                        {loadingExpandedActivity?.[activity.id] === true ? (
+                                            <Spinner />
+                                        ) : selectedActivities[activity.id] ? ( 
                                             // if global customer unspecified, this is the list for all customers, so each activity should have some customer data
                                             <ActivityComponent 
                                                 displayCustomer={forAllCustomers}
@@ -116,7 +127,7 @@ const ActivitiesList = ({customer, activities, handleEditActivity, handleDeleteA
                                                 handleEditActivity={handleEditActivity}
                                                 handleDeleteActivity={handleDeleteActivity}
                                             />
-                                        )}
+                                        ) : ( <></>)}
                                     </React.Fragment>
                                 )
                             })}
