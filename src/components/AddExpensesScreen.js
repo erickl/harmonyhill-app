@@ -120,17 +120,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const needsGuestInfo = category === "guest expenses" || category === "guest refunds";
     const needsActivityInfo = needsGuestInfo;
 
-    // Auto fill description in some cases
-    let description = formData.description;
-    if(utils.isEmpty(description) && !utils.isEmpty(category) && !utils.isEmpty(formData.purchasedBy)) {
-        if(category === "food - daily market") {
-            description = `Market Food, by ${formData.purchasedBy}`;
-        }   
-        if(category === "laundry") {
-            description = `Laundry`;
-        }
-    }
-
     // Fetch booking data only if needed and if it's not already fetched
     useEffect(() => {
         if(needsGuestInfo && utils.isEmpty(bookings)) {
@@ -209,6 +198,17 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
 
         if(!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
+        }
+
+        // Auto fill description in some cases
+        const category = nextFormData.category.trim().toLowerCase();
+        if(utils.isEmpty(nextFormData.description) && !utils.isEmpty(category) && !utils.isEmpty(formData.purchasedBy)) {
+            if(category === "food - daily market") {
+                nextFormData.description = `Market Food, by ${formData.purchasedBy}`;
+            }   
+            if(category === "laundry") {
+                nextFormData.description = `Laundry`;
+            }
         }
 
         validateFormData(nextFormData);
@@ -380,7 +380,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                             type="text"
                             id="description"
                             name="description"
-                            value={description}
+                            value={formData.description}
                             onChange={(e) => handleChange(e.target.name, e.target.value)}
                             required
                             className="input"
