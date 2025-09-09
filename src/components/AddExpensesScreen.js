@@ -227,7 +227,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 const fileDescription = formData.description.trim().toLowerCase().replace(/ /g, "-");
                 formData.fileName = `${fileDescription}-${fileDate}-${Date.now()}`;
                 formData.fileName = `expenses/${formData.fileName}.jpg`;
-                formData.photoUrl = await expenseService.uploadReceipt(formData.fileName, formData.photo, {maxSize : 0.12}, onError);
+                formData.photoUrl = await expenseService.uploadReceipt(formData.fileName, formData.photo, {maxSize : 0.5}, onError);
                 delete formData['photo'];
             }
             
