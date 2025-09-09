@@ -13,14 +13,11 @@ import ErrorNoticeModal from './ErrorNoticeModal.js';
 import InvoicePdfLink from './InvoicePdf.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
-    const [customerActivities, setCustomerActivities] = useState([]   );
-    const [runningTotal,       setRunningTotal      ] = useState(0    );
     const [loading,            setLoading           ] = useState(true );
     const [errorMessage,       setErrorMessage      ] = useState(null );
     const [activityToEdit,     setActivityToEdit    ] = useState(null ); // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
-    const [activityToDelete,   setActivityToDelete  ] = useState(null );
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -31,9 +28,6 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
             return;
         }
         try {
-            const allCustomerActivities = await activityService.get(customer.id);
-            setCustomerActivities(allCustomerActivities);
-            
             const invoice = await invoiceService.getTotal(customer.id);
             setRunningTotal(invoice.total);
 
@@ -71,20 +65,6 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
             </div>
         );
     }
-
-    const handleEditActivity = (activity) => {
-        setActivityToEdit(activity); 
-    };
-
-    const handleDeleteActivity = async () => {
-        if(!activityToDelete || utils.isEmpty(customer.id)) {
-            return;
-        }
-        const deleteActivityResult = await activityService.remove(customer.id, activityToDelete.id, onError);
-        if(deleteActivityResult) {
-            setActivityToDelete(null);
-        } 
-    };
 
     const handleAddPurchase = (customer) => {
         setCustomerPurchasing(customer); // Indicate we need to switch to add purchase screen
@@ -138,7 +118,6 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                             +
                         </button> 
                     )}
-                    {/* <p onClick={() => handleDisplayInvoice()}>Total: {utils.formatDisplayPrice(runningTotal, true)}</p>    */}
                     <InvoicePdfLink customer={customer}/>
                 </div>
             </div>
@@ -153,13 +132,6 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
             <button type="button" onClick={() => onClose() } className="cancel-button">
                 Back to customers
             </button>
-
-            {activityToDelete && (
-                <ConfirmModal 
-                    onCancel={() => setActivityToDelete(null)}
-                    onConfirm={handleDeleteActivity}
-                />
-            )}
 
             {errorMessage && (
                 <ErrorNoticeModal 
