@@ -145,10 +145,8 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
             
             <div className="card-content">
                 <ActivitiesList
+                    onNavigate={onNavigate}
                     customer={customer}
-                    activities={customerActivities}
-                    handleEditActivity={handleEditActivity}
-                    handleDeleteActivity={setActivityToDelete}
                     expandAllDates={true}
                 />  
             </div>

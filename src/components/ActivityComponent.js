@@ -1,25 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import * as invoiceService from "../services/invoiceService.js";
+import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
 import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
+import { Pencil, ShoppingCart, Trash2, ThumbsUp } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
+import ErrorNoticeModal from './ErrorNoticeModal.js';
 
-const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users }) => {
-    const [customer,         setCustomer        ] = useState(null);
-    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
+const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) => {
+    const [customer,                setCustomer               ] = useState(null );
+    const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false);
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
-    const [expanded, setExpanded] = useState(false);
-    const [dishes, setDishes] = useState([]);
+    const [expanded,                setExpanded               ] = useState(false);
+    const [dishes,                  setDishes                 ] = useState([]   );
+    const [errorMessage,            setErrorMessage           ] = useState(null );
 
-    const handleActivityClick = async (activity) => {
+    const onError = (errorMessage) => {
+        setErrorMessage(errorMessage);
+    };
+
+    const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
-        await loadActivityInfo(activity);
+        await loadActivityInfo();
         setLoadingExpandedActivity(false);
+    }
+
+    const handleAssigneeAccept = async () => {
+        const thisCustomer = customer ? customer : await getParent(activity);
+        const result = await activityService.assigneeAccept(thisCustomer.id, activity.id, onError);
+        if(result) {
+            triggerRerender();
+        }
     }
 
     const loadActivityInfo = async () => {
@@ -61,11 +76,17 @@ const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleD
     
     const assignedUser = users ? users.find(user => user.name === activity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
-    const assignedUserColor = assignedUserShortName === "?" ? "red" : "green";
-
+    
+    let assignedUserStyle = { backgroundColor: "red" }
+    if(assignedUserShortName !== "?") {
+        assignedUserStyle = { backgroundColor: "green" };
+        if(activity.assigneeAccept !== true) {
+            assignedUserStyle = { backgroundColor: "yellow", color: "black" };
+        }
+    }
+    
     const houseShortName = activity.house === "harmony hill" ? "HH" : "JN";
     const houseColor = houseShortName === "HH" ? "darkcyan" : "rgb(2, 65, 116)";
-
 
     return (<>
         <div className="activity-header" onClick={() => handleActivityClick(activity)}>
@@ -73,7 +94,7 @@ const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleD
                 <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
                     {houseShortName}
                 </div>
-                <div className="activity-header-assignee" style={{ backgroundColor: assignedUserColor }}>
+                <div className="activity-header-assignee" style={assignedUserStyle}>
                     {assignedUserShortName}
                 </div>
             </div>
@@ -120,7 +141,7 @@ const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleD
                     <Pencil   
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleEditActivity(activity);
+                            handleEditActivity();
                         }}
                     />
                     <p>Edit</p>
@@ -130,11 +151,30 @@ const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleD
                         <Trash2  
                             onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteActivity(activity);
+                                handleDeleteActivity();
                             }}
                         />
                         <p>Delete</p>
                     </div>
+                )}
+
+                { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (
+                    <div className="activity-component-footer-icon">
+                        <ThumbsUp  
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleAssigneeAccept();
+                            }}
+                        />
+                        <p>Accept task?</p>
+                    </div>
+                )}
+
+                {errorMessage && (
+                    <ErrorNoticeModal 
+                        error={errorMessage}
+                        onClose={() => setErrorMessage(null) }
+                    />
                 )}
             </div>   
         </div>

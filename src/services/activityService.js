@@ -139,6 +139,7 @@ export async function add(bookingId, activityData, onError) {
     }
 
     let activity = await mapObject(activityData);
+    activity.assigneeAccepted = false;
 
     activity.bookingId = bookingId;
     activity.name = booking.name;
@@ -181,8 +182,20 @@ export async function assignStaff(bookingId, activityId, userId, onError) {
     }, onError);
 }
 
+export async function assigneeAccept(bookingId, activityId, onError) {
+    return await update(bookingId, activityId, { 
+        assigneeAccept: true,
+    }, onError);
+}
+
 export async function update(bookingId, activityId, activityUpdateData, onError) {
+    const existing = await getOne(bookingId, activityId);
+
     let activityUpdate = await mapObject(activityUpdateData, true);
+
+    if(existing.assignTo !== activityUpdate.assignedTo) {
+        activityUpdate.assigneeAccepted = false;
+    }
     
     // Don't try to update booking name or house
     if(Object.hasOwn(activityUpdate, "name")) {
@@ -206,7 +219,7 @@ export function makeId(startingAt, house, subCategory) {
     return `${startingAt}-${houseShort}-${subCategory}-${Date.now()}`;
 }
 
-async function mapObject(data, isUpdate = false) {
+async function mapObject(data) {
     let activity = {};
 
     if(utils.isString(data?.category))      activity.category = data.category;
@@ -229,7 +242,8 @@ async function mapObject(data, isUpdate = false) {
 
     activity.status = utils.isString(data?.status) ? data.status : "requested";
 
-    activity.assignedTo = utils.isString(data?.assignedTo) ? data.assignedTo : await userService.getCurrentUserName();
+    if(utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
+    if(utils.isBoolean(data?.assigneeAccept)) activity.assigneeAccept = data.assigneeAccept;
 
     return activity;
 }
