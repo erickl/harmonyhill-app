@@ -58,7 +58,7 @@ export default function UploadReceiptScreen({ current, onUploadSuccess, resetTri
     // Helper function to access camera
     const accessCamera = async (setVideoStream) => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: {facingMode: { exact: "environment" } }});
             setVideoStream(stream);
         } catch (error) {
             console.error('Error accessing camera:', error);
