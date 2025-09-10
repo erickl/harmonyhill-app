@@ -27,24 +27,25 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     }
 
     const [formData, setFormData] = useState({
-        startingAt    : activityToEdit.startingAt,
-        startingTime  : activityToEdit.startingTime,
-        category      : activityToEdit.category,
-        subCategory   : activityToEdit.subCategory,
-        displayName   : activityToEdit.displayName,
-        custom        : activityToEdit.custom,
-        comments      : activityToEdit.comments,
-        customerPrice : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
-        provider      : activityToEdit.provider,
-        providerPrice : activityToEdit.providerPrice,
-        assignedTo    : activityToEdit.assignedTo,
-        status        : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
-        dishes        : activityToEdit.dishes, // not null only for meal activities 
+        startingAt     : activityToEdit.startingAt,
+        startingTime   : activityToEdit.startingTime,
+        category       : activityToEdit.category,
+        subCategory    : activityToEdit.subCategory,
+        displayName    : activityToEdit.displayName,
+        custom         : activityToEdit.custom,
+        comments       : activityToEdit.comments,
+        customerPrice  : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
+        provider       : activityToEdit.provider,
+        providerPrice  : activityToEdit.providerPrice,
+        assignedTo     : activityToEdit.assignedTo,
+        assigneeAccept : activityToEdit.assigneeAccept,
+        status         : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
+        dishes         : activityToEdit.dishes, // not null only for meal activities 
         
         // Auxiliary data
-        house         : customer.house,
-        guestCount    : customer.guestCount,
-        internal      : activityToEdit.internal,
+        house          : customer.house,
+        guestCount     : customer.guestCount,
+        internal       : activityToEdit.internal,
     });
 
     const onValidationError = (error) => {
@@ -84,7 +85,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
 
         if(!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
-        }
+        }  
         
         validateFormData(nextFormData); 
     };

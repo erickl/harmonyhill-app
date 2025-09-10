@@ -145,7 +145,10 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     <Pencil   
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleEditActivity();
+                            if(!utils.isEmpty(dishes)) {
+                                activity.dishes = dishes;
+                            }
+                            handleEditActivity(activity);
                         }}
                     />
                     <p>Edit</p>

@@ -177,7 +177,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
                                         <ActivityComponent 
                                             showCustomer={customer == null}
                                             activity={activity}
-                                            handleEditActivity={() => handleEditActivity(activity)}
+                                            handleEditActivity={handleEditActivity}
                                             handleDeleteActivity={() => setActivityToDelete(activity)}
                                             users={users}
                                             user={user}
