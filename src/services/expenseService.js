@@ -2,17 +2,37 @@ import * as expenseDao from "../daos/expenseDao.js";
 import * as utils from "../utils.js";
 
 export async function add(data, onError) {
-    const object = mapReceiptObject(data);
-
     const addResult = await expenseDao.transaction(async () => {
+        data.index = await expenseDao.getNextSerialNumber(data.purchasedAt, onError);
+        data = await processReceipt(data, onError);
+        const object = mapReceiptObject(data);
+
         const addResult = await expenseDao.add(object, onError);
         if(addResult === false) {
             throw new Error(`Could not add the receipt`);
         }
         return true;
-    })
+    });
     
     return addResult;
+}
+
+async function processReceipt(data, onError) {
+     // If just editing the expense, the user might not have taken a new photo
+    if(data.photo) {
+        const fileDate = utils.to_YYMMdd(data.purchasedAt);
+        const fileDescription = data.description.trim().toLowerCase().replace(/ /g, "-");
+        data.fileName = `${data.index}. ${fileDescription}-${fileDate}-${Date.now()}`;
+        data.fileName = `expenses/${data.fileName}.jpg`;
+        data.photoUrl = await uploadReceipt(data.fileName, data.photo, {maxSize : 0.5}, onError);
+        delete data['photo'];
+    }
+    
+    if(!data.photoUrl) {
+        throw new Error(`Unexpected error. Cannot find the photo URL`);
+    }
+
+    return data;
 }
 
 export async function update(id, data, onError) {

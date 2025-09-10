@@ -220,21 +220,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 onError(`Not yet ready to submit. Missing obligatory data`);
                 return;
             }
-
-            // If just editing the expense, the user might not have taken a new photo
-            if(formData.photo) {
-                const fileDate = utils.to_YYMMdd(formData.purchasedAt);
-                const fileDescription = formData.description.trim().toLowerCase().replace(/ /g, "-");
-                formData.fileName = `${fileDescription}-${fileDate}-${Date.now()}`;
-                formData.fileName = `expenses/${formData.fileName}.jpg`;
-                formData.photoUrl = await expenseService.uploadReceipt(formData.fileName, formData.photo, {maxSize : 0.5}, onError);
-                delete formData['photo'];
-            }
-            
-            if(!formData.photoUrl) {
-                onError(`Unexpected error. Cannot find the photo URL`);
-                return;
-            }
             
             let result = null;
             
