@@ -7,7 +7,7 @@ import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, ShoppingCart, Trash2, ThumbsUp, CircleAlert } from 'lucide-react';
+import { Pencil, ShoppingCart, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 import StatusCircle, {Status} from './StatusCircle.js';
@@ -30,9 +30,9 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         setLoadingExpandedActivity(false);
     }
 
-    const handleAssigneeAccept = async () => {
+    const handleAssigneeStatusChange = async (accept) => {
         const thisCustomer = customer ? customer : await getParent(activity);
-        const result = await activityService.assigneeAccept(thisCustomer.id, activity.id, onError);
+        const result = await activityService.changeAssigneeStatus(accept, thisCustomer.id, activity.id, onError);
         if(result) {
             triggerRerender();
         }
@@ -167,10 +167,22 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         <ThumbsUp  
                             onClick={(e) => {
                                 e.stopPropagation();
-                                handleAssigneeAccept();
+                                handleAssigneeStatusChange(true);
                             }}
                         />
                         <p>Accept task?</p>
+                    </div>
+                )}
+
+                { user && user.shortName === assignedUserShortName && activity.assigneeAccept && (
+                    <div className="activity-component-footer-icon">
+                        <ThumbsDown  
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleAssigneeStatusChange(false);
+                            }}
+                        />
+                        <p>Decline task?</p>
                     </div>
                 )}
 

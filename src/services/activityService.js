@@ -182,9 +182,9 @@ export async function assignStaff(bookingId, activityId, userId, onError) {
     }, onError);
 }
 
-export async function assigneeAccept(bookingId, activityId, onError) {
+export async function changeAssigneeStatus(accept, bookingId, activityId, onError) {
     return await update(bookingId, activityId, { 
-        assigneeAccept: true,
+        assigneeAccept: accept,
     }, onError);
 }
 
