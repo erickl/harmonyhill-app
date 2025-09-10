@@ -29,7 +29,10 @@
     display: flex;
     justify-content: space-between;
     align-items: stretch;
-    padding: 0.5rem;      
+    padding: 0.5rem; 
+    /* border-radius: 500px;
+    background: #f5f7fa;
+    overflow: hidden; */
 }
 
 .activity-header-left {
@@ -44,6 +47,15 @@
   flex: 1; /* take up the remaining space */
   background-color: lightgrey;
   padding: 0.5rem;
+}
+
+.activity-header-status {
+    background-color: lightgrey;
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;  
+    padding: 0.5rem; 
 }
 
 .activity-header-house {
@@ -66,6 +78,8 @@
 
 .activity-header-time {
     background-color: grey;
+    color: white;
+    font-weight: bold;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -78,6 +92,8 @@
     display: flex;              
     align-items: center;        
     justify-content: left; 
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .activity-header-provider {

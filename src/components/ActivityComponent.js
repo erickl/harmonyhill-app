@@ -7,11 +7,12 @@ import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, ShoppingCart, Trash2, ThumbsUp } from 'lucide-react';
+import { Pencil, ShoppingCart, Trash2, ThumbsUp, CircleAlert } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import ErrorNoticeModal from './ErrorNoticeModal.js';
+import StatusCircle, {Status} from './StatusCircle.js';
 
-const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) => {
+export default function ActivityComponent({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
     const [customer,                setCustomer               ] = useState(null );
     const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false);
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
@@ -112,6 +113,9 @@ const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleD
                     {showCustomer ? activity.name : ""}
                 </div>  
             </div>
+            {/* <div className="activity-header-status">
+                <StatusCircle status={Status.COMPLETED}/>
+            </div> */}
         </div>
         {loadingExpandedActivity ? (
             <Spinner />
@@ -181,5 +185,3 @@ const ActivityComponent = ({ showCustomer, activity, handleEditActivity, handleD
         ) : ( <></>)}
     </>);
 };
-
-export default ActivityComponent;
