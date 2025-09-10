@@ -3,7 +3,7 @@ import * as incomeDao from "../daos/incomeDao.js";
 import * as bookingService from "./bookingService.js";
 
 export async function get(filterOptions, onError) {
-    const incomes = await incomeDao.get(filterOptions, -1, onError);
+    const incomes = await incomeDao.get(filterOptions, "receivedAt", -1, onError);
     const formattedIncomes = incomes.map((income) => {
         income.receivedAt = utils.toDateTime(income.receivedAt);
         return income;

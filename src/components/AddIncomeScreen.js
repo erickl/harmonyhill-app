@@ -23,6 +23,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         receivedAt    : incomeToEdit ? incomeToEdit.receivedAt    : utils.today(),
         paymentMethod : incomeToEdit ? incomeToEdit.paymentMethod : '', 
         category      : incomeToEdit ? incomeToEdit.category      : '',
+        index         : incomeToEdit ? incomeToEdit.index         : '',
         bookingId     : incomeToEdit ? incomeToEdit.bookingId     : '',
         comments      : incomeToEdit ? incomeToEdit.comments      : '',
     };

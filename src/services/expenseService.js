@@ -36,12 +36,14 @@ async function processReceipt(data, onError) {
 }
 
 export async function update(id, data, onError) {
-    const object = mapReceiptObject(data);
     const updateResult = await expenseDao.transaction(async () => {
         const existing = await expenseDao.getOne(id);
         if(!existing) {
             throw new Error(`Could not find existing income ${id}`);
         }
+
+        data = await processReceipt(data, onError);
+        const object = mapReceiptObject(data);
         
         const updateResult = await expenseDao.update(id, object, onError);
         if(updateResult === false) {
@@ -50,7 +52,7 @@ export async function update(id, data, onError) {
 
         // If photo is updated, remove the old photo
         if(existing.photoUrl !== object.photoUrl) {
-            await expenseDao.removeImage(existing.fileName);
+            await expenseDao.removeImage(existing.fileName);   
         }
 
         return true;
@@ -73,7 +75,7 @@ export async function uploadReceipt(filename, file, compressionOptions, onError)
 }
 
 export async function get(filterOptions, onError) {
-    const expenses = await expenseDao.get(filterOptions, -1, onError);
+    const expenses = await expenseDao.get(filterOptions, "purchasedAt", -1, onError);
     const formattedExpenses = expenses.map((expense) => {
         const formattedExpense = expense;
         formattedExpense.purchasedAt = utils.toDateTime(expense.purchasedAt);
@@ -173,6 +175,8 @@ function mapReceiptObject(data) {
     if(!utils.isEmpty(data.activityId)) object.activityId = data.activityId.trim();
     
     if(!utils.isEmpty(data.bookingId)) object.bookingId = data.bookingId.trim();
+
+    if(!utils.isEmpty(data.index)) object.index = data.index;
 
     return object;
 }

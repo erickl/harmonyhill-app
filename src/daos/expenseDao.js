@@ -58,7 +58,7 @@ export async function getOne(id, onError) {
     return await dao.getOne(path, id, onError);
 }
 
-export async function get(filterOptions = {}, limit = -1, onError = null) {
+export async function get(filterOptions = {}, orderByFieldName, limit = -1, onError = null) {
     const path = [dao.constant.EXPENSES];
     let queryFilter = [];
 
@@ -87,7 +87,7 @@ export async function get(filterOptions = {}, limit = -1, onError = null) {
         queryFilter.push(where("purchasedAt", "<=", beforeDateFireStore));
     }
 
-    let ordering = [orderBy("purchasedAt", "asc")];
+    let ordering = [orderBy(orderByFieldName, "asc")];
 
     const expenses = await dao.get(path, queryFilter, ordering, limit, onError);
     return expenses;
@@ -128,7 +128,7 @@ export async function getNextSerialNumber(date, onError) {
         "after"  : utils.monthStart(date),
         "before" : utils.monthEnd(date),
     };
-    const elements = await get(filter, 1, onError);
+    const elements = await get(filter, "createdAt", 1, onError);
     const last = elements && elements.length > 0 ? elements[0] : null;
     const nextIndex = last && last.index ? last.index + 1 : 1;
     return nextIndex;

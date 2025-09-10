@@ -27,6 +27,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         purchasedBy   : expenseToEdit ? expenseToEdit.purchasedBy   : '',
         purchasedAt   : expenseToEdit ? expenseToEdit.purchasedAt   : utils.today(),
         category      : expenseToEdit ? expenseToEdit.category      : '',
+        index         : expenseToEdit ? expenseToEdit.index         : '',
         activityId    : expenseToEdit ? expenseToEdit.activityId    : '',
         bookingId     : expenseToEdit ? expenseToEdit.bookingId     : '',
         paymentMethod : expenseToEdit ? expenseToEdit.paymentMethod : '',
