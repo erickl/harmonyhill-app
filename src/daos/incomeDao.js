@@ -35,7 +35,7 @@ export async function get(filterOptions = {}, limit = -1, onError = null) {
         queryFilter.push(where("receivedAt", "<=", beforeDateFireStore));
     }
 
-    let ordering = [orderBy("receivedAt", "desc")];
+    let ordering = [orderBy("receivedAt", "asc")];
 
     const incomes = await dao.get(path, queryFilter, ordering, limit, onError);
     return incomes;

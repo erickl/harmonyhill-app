@@ -87,7 +87,7 @@ export async function get(filterOptions = {}, limit = -1, onError = null) {
         queryFilter.push(where("purchasedAt", "<=", beforeDateFireStore));
     }
 
-    let ordering = [orderBy("purchasedAt", "desc")];
+    let ordering = [orderBy("purchasedAt", "asc")];
 
     const expenses = await dao.get(path, queryFilter, ordering, limit, onError);
     return expenses;
@@ -97,9 +97,8 @@ export async function add(data, onError) {
     const purchasedAt = utils.to_YYMMdd(data.purchasedAt);
     const purchasedBy = data.purchasedBy.replace(/ /g, "-");
     const category = data.category.replace(/ /g, "-");
-    const id = `${category}-${purchasedBy}-${purchasedAt}-${Date.now()}`;
+    const id = `${data.index}-${category}-${purchasedBy}-${purchasedAt}-${Date.now()}`;
     const path = [dao.constant.EXPENSES];
-    data.index = await getNextSerialNumber(data.purchasedAt, onError);
     return await dao.add(path, id, data, onError);
 }
 
@@ -124,7 +123,7 @@ export async function remove(id, onError) {
     return result;
 }
 
-async function getNextSerialNumber(date, onError) {
+export async function getNextSerialNumber(date, onError) {
     const filter = {
         "after"  : utils.monthStart(date),
         "before" : utils.monthEnd(date),
