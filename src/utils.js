@@ -290,6 +290,23 @@ export function isToday(inputDate) {
     return luxonDateTime.day == todayDateTime.day;
 }
 
+export function dateIsSame(oldDate, newDate) {
+    if(isEmpty(oldDate)) {
+        return isEmpty(newDate);
+    }
+    if(isEmpty(newDate)) {
+        return isEmpty(oldDate);
+    }
+
+    try {
+        const oldDateTime = toDateTime(oldDate);
+        const newDateTime = toDateTime(newDate);
+        return oldDateTime.equals(newDateTime);
+    } catch(e) {
+        return false;
+    }
+}
+
 /**
  * get a Luxon date time object with time at midnight
  */
