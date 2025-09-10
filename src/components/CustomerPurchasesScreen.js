@@ -13,30 +13,13 @@ import ErrorNoticeModal from './ErrorNoticeModal.js';
 import InvoicePdfLink from './InvoicePdf.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
-    const [loading,            setLoading           ] = useState(true );
     const [errorMessage,       setErrorMessage      ] = useState(null );
-    const [activityToEdit,     setActivityToEdit    ] = useState(null ); // state to enable editing of activities
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
 
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
     }
-
-    const fetchPurchases = async () => {
-        if(!customer) {
-            return;
-        }
-        try {
-            const invoice = await invoiceService.getTotal(customer.id);
-            setRunningTotal(invoice.total);
-
-            setLoading(false);
-        } catch (err) {
-            onError(err.message);
-            setLoading(false);
-        }
-    };
 
     useEffect(() => {
         const setUserRole = async() => {
@@ -47,42 +30,11 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
         setUserRole();
     }, []);
 
-    useEffect(() => {
-        fetchPurchases();
-    }, [customer, customerPurchasing, activityToEdit, activityToDelete]);
-
     const today = utils.today();
-
-    if (loading) {
-        return (
-            <div className="card">
-                <div className="card-header">
-                    <h2 className="card-title">Loading Customers...</h2>
-                </div>
-                <div className="card-content">
-                    <p>Loading customer data...</p>
-                </div>
-            </div>
-        );
-    }
 
     const handleAddPurchase = (customer) => {
         setCustomerPurchasing(customer); // Indicate we need to switch to add purchase screen
     };
-
-    if(activityToEdit) {
-        return (
-            <EditPurchaseScreen
-                customer={customer}
-                activityToEdit={activityToEdit}
-                onClose={() => {
-                    setActivityToEdit(null);
-                    //fetchPurchases();
-                }}
-                onNavigate={onNavigate}
-            />
-        );
-    }
 
     if (customerPurchasing) {
         return (
@@ -90,7 +42,6 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                 customer={customerPurchasing}
                 onClose={() => {     
                     setCustomerPurchasing(null);
-                    fetchPurchases();
                 }}
                 onNavigate={onNavigate}
             />

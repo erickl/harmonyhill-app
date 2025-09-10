@@ -380,7 +380,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                             type="text"
                             id="description"
                             name="description"
-                            value={description}
+                            value={formData.description}
                             onChange={(e) => handleChange(e.target.name, e.target.value)}
                             required
                             className="input"
