@@ -146,7 +146,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                 </div>  
 
                                 <div>
-                                    {utils.to_ddMMYY(income.purchasedAt, "/")}
+                                    {utils.to_ddMMYY(income.receivedAt, "/")}
                                 </div>
                                 
                                {loadingExpanded?.[income.id] === true ? (

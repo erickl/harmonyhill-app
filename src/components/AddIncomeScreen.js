@@ -26,6 +26,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         index         : incomeToEdit ? incomeToEdit.index         : '',
         bookingId     : incomeToEdit ? incomeToEdit.bookingId     : '',
         comments      : incomeToEdit ? incomeToEdit.comments      : '',
+        description   : incomeToEdit ? incomeToEdit.description   : '',
     };
 
     const [showList,        setShowList       ] = useState(false    );

@@ -69,7 +69,7 @@ async function mapIncomeObject(data) {
 
     if(!utils.isEmpty(data.category)) {
         object.category = data.category.trim().toLowerCase();
-        if(object.category === "guest payment") {
+        if(object.category === "guest payment" || object.category === "commission") {
             object.bookingId = data.bookingId;
         }
     }
