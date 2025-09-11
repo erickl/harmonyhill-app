@@ -75,7 +75,7 @@ export async function uploadReceipt(filename, file, compressionOptions, onError)
 }
 
 export async function get(filterOptions, onError) {
-    const expenses = await expenseDao.get(filterOptions, "purchasedAt", -1, onError);
+    const expenses = await expenseDao.get(filterOptions, {"purchasedAt":"desc"}, -1, onError);
     const formattedExpenses = expenses.map((expense) => {
         const formattedExpense = expense;
         formattedExpense.purchasedAt = utils.toDateTime(expense.purchasedAt);

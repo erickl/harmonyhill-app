@@ -41,8 +41,10 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 const booking = await bookingService.getOne(expense.bookingId);
                 expense.bookingName = booking ? booking.name: "missing booking";
 
-                const activity = await activityService.getOne(expense.bookingId, expense.activityId);
-                expense.activityName = activity ? activity.displayName : "missing activity";
+                if(expense.activityId) {
+                    const activity = await activityService.getOne(expense.bookingId, expense.activityId);
+                    expense.activityName = activity ? activity.displayName : "missing activity";
+                }
             }
             updatedExpandedList[expense.id] = expense;
         } else {

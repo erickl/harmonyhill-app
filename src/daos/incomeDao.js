@@ -11,7 +11,7 @@ export async function getOne(id, onError) {
     return await dao.getOne(path, id, onError);
 }
 
-export async function get(filterOptions = {}, orderByFieldName, limit = -1, onError = null) {
+export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, onError = null) {
     const path = [dao.constant.INCOME];
     let queryFilter = [];
 
@@ -35,8 +35,10 @@ export async function get(filterOptions = {}, orderByFieldName, limit = -1, onEr
         queryFilter.push(where("receivedAt", "<=", beforeDateFireStore));
     }
 
-    let ordering = [orderBy(orderByFieldName, "asc")];
-
+    let ordering = [];
+    for(const orderKey of Object.keys(orderingOptions)) {
+        ordering.push(orderBy(orderKey, orderingOptions[orderKey]));
+    }
     const incomes = await dao.get(path, queryFilter, ordering, limit, onError);
     return incomes;
 }
@@ -65,7 +67,7 @@ async function getNextSerialNumber(date, onError) {
         "after"  : utils.monthStart(date),
         "before" : utils.monthEnd(date),
     };
-    const elements = await get(filter, "createdAt", 1, onError);
+    const elements = await get(filter, {"index":"desc"}, 1, onError);
     const last = elements && elements.length > 0 ? elements[0] : null;
     const nextIndex = last && last.index ? last.index + 1 : 1;
     return nextIndex;
