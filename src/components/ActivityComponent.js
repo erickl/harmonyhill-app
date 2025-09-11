@@ -78,11 +78,11 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     const assignedUser = users ? users.find(user => user.name === activity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
     
-    let assignedUserStyle = { backgroundColor: "red" }
+    let assignedUserStyle = { backgroundColor: "#E12C2C" }
     if(assignedUserShortName !== "?") {
         assignedUserStyle = { backgroundColor: "green" };
         if(activity.assigneeAccept !== true) {
-            assignedUserStyle = { backgroundColor: "yellow", color: "black" };
+            assignedUserStyle = { backgroundColor: "#FFA500", color: "black" };
         }
     }
     
