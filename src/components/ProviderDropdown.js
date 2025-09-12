@@ -45,7 +45,7 @@ export default function ProviderDropdown({ label, options, currentName, currentP
         <div className="provider-container">
             <div className="dropdown-menu">
                 <div className="dropdown-row">
-                    <p>{label}</p>
+                    <span>{label}</span>
                     <button type="button" className="open-button" onClick={toggleDropdown}>
                         {selected || 'Select an option'}
                     </button>

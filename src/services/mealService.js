@@ -106,6 +106,13 @@ async function addDishes(bookingId, mealId, dishesData, onError) {
 
 export async function update(bookingId, mealId, mealUpdateData, onError) {
     const updateMealSuccess = await activityDao.transaction(async () => {
+        // const existing = await getMeal(bookingId, mealId);
+        // if(!existing) {
+        //     onError(`Cannot find meal ${bookingId}/${mealId} in database`);
+        //     return false;
+        // } 
+        
+
         // Update meal data
         const mealUpdate = await mapMealObject(mealUpdateData);
         const updateMealSuccess = await activityDao.update(bookingId, mealId, mealUpdate, true, onError);

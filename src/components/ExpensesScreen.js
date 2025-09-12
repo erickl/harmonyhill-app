@@ -115,7 +115,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     }
      
     return (
-        <div className="card">
+        <div className="fullscreen">
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Expenses</h2>
@@ -128,7 +128,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                     </button>
                 </div>
             </div>
-            <div>
+            <div className="card-content">
                 {receipts.map((expense) => {
                     return (
                         <React.Fragment key={expense.id}>

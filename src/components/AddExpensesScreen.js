@@ -262,7 +262,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     }
 
     return (
-        <div className="card">
+        <div className="fullscreen">
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Record New Expense</h2>

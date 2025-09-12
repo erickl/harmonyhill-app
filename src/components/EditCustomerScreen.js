@@ -110,7 +110,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
     const guestCountOptions = Array.from({ length: 6 }, (_, i) => i + 1);
 
     return (
-        <div className="card">
+        <div className="fullscreen">
             <div className="card-header">
                 <h2 className="card-title">Edit Customer</h2>
             </div>

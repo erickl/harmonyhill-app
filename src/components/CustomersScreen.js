@@ -74,7 +74,7 @@ const CustomersScreen = ({ onNavigate }) => {
 
     if (loading) {
         return (
-            <div className="card">
+            <div className="fullscreen">
                 <div className="card-header">
                     <h2 className="card-title">Loading Customers...</h2>
                 </div>
@@ -259,7 +259,7 @@ const CustomersScreen = ({ onNavigate }) => {
     }
 
     return (
-        <div className="card">
+        <div className="fullscreen">
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Customers</h2>    

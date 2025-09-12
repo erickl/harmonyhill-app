@@ -11,11 +11,17 @@
 }
 
 .bottom-navigation {
-    display: flex;
-    justify-content: space-around;
-    padding: 1rem;
-    background-color: #f0f0f0;
-    border-top: 1px solid #ddd;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 60px;              /* adjust as needed */
+  background: #fff;          /* or your theme color */
+  border-top: 1px solid #ccc;/* subtle divider */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 2000;             /* higher than fullscreen content */
 }
 
 .nav-button {
@@ -32,6 +38,21 @@
 .nav-button.active {
     color: #007bff;
     font-weight: bold;
+}
+
+.fullscreen {
+  position: fixed;   /* ignore parent, stick to viewport */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  margin: 0;
+  border-radius: 0;
+  z-index: 1000;     /* make sure it’s above other content */
+  background-color: rgb(247, 243, 243); /* your existing style */
+  box-shadow: none;  /* usually modals don’t need shadows */
+  display: flex;
+  flex-direction: column;
 }
 
 .card {
@@ -66,6 +87,15 @@
     padding: 1rem;
     flex: 1;
     overflow-y: auto;
+}
+
+.purchase-form-group {
+    max-width: 100%;   /* never grow beyond parent */
+    width: 100%;       /* take full width of parent */
+    box-sizing: border-box; /* include padding + border in the width */
+    overflow: hidden;  /* clip anything that still sticks out */
+    word-wrap: break-word; /* for text areas or long values */
+    padding: 0.3rem;
 }
 
 .small-text {

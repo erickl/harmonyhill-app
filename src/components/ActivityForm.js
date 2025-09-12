@@ -64,7 +64,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     };
 
     return (
-        <div>
+        <div className='card-content'>
             <h3>Confirm Purchase Details:</h3>
             
             {selectedActivity.description && (

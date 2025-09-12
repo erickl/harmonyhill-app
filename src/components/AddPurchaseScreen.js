@@ -193,7 +193,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
     if (loadingMenu) {
         return (
-            <div className="card">
+            <div className="fullscreen">
                 <div className="card-content">
                     <p>Loading menu items...</p>
                 </div>
@@ -204,7 +204,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     // --- Render activity form or meal selection
     if (selectedActivity) {
         return (
-            <div className="card">
+            <div className="fullscreen">
                 <div className="card-header">
                     <h3 className="card-title">
                         <span className="ml-2">Add Purchase: {selectedActivity.displayName}</span>
@@ -262,7 +262,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         const filteredItems = activityMenuItems.filter(item => item.category === selectedCategory);
 
         return (
-            <div className="card">
+            <div className="fullscreen">
                 <div className="card-header">
                     <h2 className="card-title">
                         <span className="ml-2">Choose Activity</span>

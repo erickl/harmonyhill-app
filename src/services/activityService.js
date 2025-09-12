@@ -297,6 +297,36 @@ export function validate(customer, data, isUpdate, onError) {
     return true; 
 }
 
+/**
+ * If the activity data changes, in a way that the assignee needs to be aware of, make the assignee accept the task again
+ * @param {} oldData 
+ * @param {*} newData 
+ * @returns 
+ */
+export function changeRequiresAssigneeAttention(oldData, newData) {
+    if(!utils.dateIsSame(oldData.startingAt, newData.startingAt)) {
+        return true;
+    }
+    if(!utils.dateIsSame(oldData.startingTime, newData.startingTime)) {
+        return true;
+    }
+    if(Object.hasOwn(newData, "dishes")) {
+        if(!Object.hasOwn(oldData, "dishes")) {
+            return true;
+        }
+        for(const newDish of newData.dishes) {
+            const oldDish = oldData.dishes.find((dish) => dish.name === newDish.name);
+            if(!oldDish) {
+                return true;
+            }
+            if(oldDish.quantity !== newDish.quantity) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 export async function testActivities(date) {
     const categories = await getCategories();
     const activityTypes1 = await getActivityMenu();

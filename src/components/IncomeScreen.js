@@ -110,7 +110,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
     }
      
     return (
-        <div className="card">
+        <div className="fullscreen">
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Income</h2>
@@ -123,7 +123,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                     </button>
                 </div>
             </div>
-            <div>
+            <div className="card-content">
                 {incomes.map((income) => {
                     return (
                         <React.Fragment key={income.id}>

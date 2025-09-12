@@ -138,7 +138,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
 
     if (loading) {
         return (
-            <div className="card">
+            <div className="fullscreen">
                 <div className="card-header">
                     <h2 className="card-title">Loading Customers...</h2>
                 </div>
@@ -151,7 +151,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
 
     if(activityMenuItem) {
         return (
-            <div className="card">
+            <div className="fullscreen">
                 <div className="card-header">
                     <h3 className="card-title">
                         <span className="ml-2">Edit {activityToEdit.displayName} ({activityToEdit.startingAt_ddMMM})</span>

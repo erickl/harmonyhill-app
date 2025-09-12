@@ -4,7 +4,7 @@ import ActivitiesList from './ActivitiesList.js';
 
 export default  function ActivitiesScreen({onNavigate}) { 
     return (
-        <div className="card">
+        <div className="fullscreen">
             <div className="card-header">
                 <h2 className="card-title">Activities</h2>
             </div>

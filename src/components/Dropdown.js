@@ -31,7 +31,7 @@ export default function Dropdown({ label, options, current, onSelect }) {
     return (
       <div className="dropdown-menu">
         <div className="dropdown-row">
-            <p>{label}</p>
+            <span>{label}</span>
             <button type="button" className="open-button" onClick={toggleDropdown}>
                 {utils.capitalizeWords(selected) || 'Select an option'}
             </button>

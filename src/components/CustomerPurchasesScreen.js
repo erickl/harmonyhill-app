@@ -49,7 +49,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
     }
 
     return (
-        <div className="card">
+        <div className="fullscreen">
             <div className="card-header">
                 <div>
                     <h2 className="card-title"> 

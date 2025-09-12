@@ -166,7 +166,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     };
 
     return (
-         <div className="card">
+         <div className="fullscreen">
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Record New Income</h2>

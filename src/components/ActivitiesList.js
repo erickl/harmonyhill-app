@@ -129,7 +129,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
 
     if (loading) {
         return (
-            <div className="card">
+            <div className="fullscreen">
                 <div className="card-content">
                     <p>Loading activity data...</p>
                 </div>
