@@ -5,7 +5,7 @@ import { db } from "../firebase.js";
 export default class Dish {
     static COLLECTION = "menu";
 
-    constructor(name, allergens, image, houseAvailability, meals, course, priority, customerPrice, instructions, description) {
+    constructor(name, allergens, image, houseAvailability, meals, course, priority, customerPrice, instructions, description, photoUrl) {
         //console.log(`name: ${name}`);
         
         this.name              = name; 
@@ -21,6 +21,8 @@ export default class Dish {
 
         this.isAvailable       = true;
         this.isFavorite        = false;
+
+        this.photoUrl          = photoUrl;
 
         this.id = this.id();
     }
@@ -38,7 +40,8 @@ export default class Dish {
             "course"            : this.course,
             "priority"          : this.priority,
             "name"              : this.name,
-            "customerPrice"     : this.customerPrice
+            "customerPrice"     : this.customerPrice,
+            "photoUrl"          : this.photoUrl
         }
     }
 
@@ -108,7 +111,7 @@ export default class Dish {
             new Dish("Biscoff Caramel Peanut Slice (Square)",       [""],                "", ["harmony hill", "the jungle nook"], [             "lunch", "dinner", "snack", "extra"], "desserts", 300,             50000,  "",               "Small in size, but packs a punch!"                                                                                                                                    ),
             new Dish("Biscoff Cheesecake (Round)",                  [""],                "", ["harmony hill", "the jungle nook"], [             "lunch", "dinner", "snack", "extra"], "desserts", 300,             60000,  "",               "Small in size, but packs a punch!"                                                                                                                                    ),
             new Dish("Chocolate Chip Cookie",                       [""],                "", ["harmony hill", "the jungle nook"], [             "lunch", "dinner", "snack", "extra"], "desserts", 300,             35000,  "",               ""                                                                                                                                                                     ),
-            new Dish("Peanut Butter Chocolate Cookie",              [""],                "", ["harmony hill", "the jungle nook"], [             "lunch", "dinner", "snack", "extra"], "desserts", 300,             35000,  "",               ""                                                                                                                                                                     ),
+            new Dish("Peanut Butter Chocolate Cookie",              [""],                "", ["harmony hill", "the jungle nook"], [             "lunch", "dinner", "snack", "extra"], "desserts", 300,             35000,  "",               ""                                                                                                                                                                     , "gs://harmonyhill-1.firebasestorage.app/resources/menu/peanut-butter-cookie.png"),
             new Dish("Fruit Platter",                               [""],                "", ["harmony hill", "the jungle nook"], ["breakfast", "lunch", "dinner", "snack", "extra"], "desserts", 300,             40000,  "",               ""                                                                                                                                                                     ),           
             new Dish("Ice Cream Sticks",                            [""],                "", ["harmony hill", "the jungle nook"], [             "lunch", "dinner"         , "extra"], "desserts", 300,             35000,  "",               "See the freezer"                                                                                                                                                      ), 
             new Dish("Seasonal Juice",                              [""],                "", ["harmony hill", "the jungle nook"], ["breakfast", "lunch", "dinner", "snack", "extra"], "drinks",   400,             35000,  "",               ""                                                                                                                                                                     ),

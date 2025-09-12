@@ -17,6 +17,11 @@ export async function get(options = {}) {
     return menu;
 }
 
+export async function getOne(id) {
+    const dish = await menuDao.getOne(id);
+    return dish;
+}
+
 export async function groupByCourse(options = {}) {
     const menu = await menuDao.get(options);
     

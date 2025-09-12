@@ -2,11 +2,19 @@ import * as dao from './dao.js';
 import * as utils from "../utils.js";
 import { where, orderBy } from 'firebase/firestore';
 
+export async function getOne(id) {
+    return await dao.getOne(id)
+}
+
 export async function get(options = {}) {
     let filters = [];
 
     if(Object.hasOwn(options, 'isFavorite')) {
         filters.push(where("isFavorite", "==", options.isFavorite));
+    }
+
+    if(Object.hasOwn(options, 'name')) {
+       filters.push(where("name", "==", options.name));
     }
 
     // E.g. when menu items go out of season
