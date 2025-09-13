@@ -25,6 +25,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [expenseToEdit,    setExpenseToEdit   ] = useState(null );
     const [expenseToDelete,  setExpenseToDelete ] = useState(null );
     const [pettyCash,        setPettyCash       ] = useState(null );
+    const [expenseSum,       setExpenseSum      ] = useState(null );
 
     const handleSetExpanded = async(income) => {
         setLoadingExpanded((prev) => ({...prev, [income.id]: true}));
@@ -80,13 +81,15 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
             setLoading(false);
         }
 
-        const getPettyCash = async() => {
-            const pettyCash = await ledgerService.getPettyCashBalance(onError);
-            setPettyCash(pettyCash);
+        const getCashFlow = async() => {
+            const pettyCashSum = await ledgerService.getPettyCashBalance(onError);
+            setPettyCash(pettyCashSum);
+            const expenseSum = await ledgerService.getTotalExpenses(onError);
+            setExpenseSum(expenseSum);
         }
 
         fetchExpenses();
-        getPettyCash();
+        getCashFlow();
     }, [expenseToEdit, expenseToDelete]);
 
     useEffect(() => {
@@ -120,6 +123,9 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 <div>
                     <h2 className="card-title">Expenses</h2>
                     {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
+                </div>
+                <div>
+                    {expenseSum && (<h4>Expense: {utils.formatDisplayPrice(expenseSum, true)}</h4>)}
                 </div>
             
                 <div>

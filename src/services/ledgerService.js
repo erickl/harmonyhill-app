@@ -3,6 +3,32 @@ import * as incomeService from "./incomeService.js";
 import * as expenseService from "./expenseService.js";
 import * as utils from "../utils.js";
 
+export async function getTotalExpenses(onError) {
+    const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(onError);
+    if(lastClosedPettyCashAmount === false) {
+        return false;
+    }
+    const lastClosedAt = lastClosedPettyCashAmount.closedAt;
+    
+    const ledgerFilter = { "after" : lastClosedAt };
+    const expenses = await expenseService.get(ledgerFilter, onError);
+    const expenseSum = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    return expenseSum;
+}
+
+export async function getTotalIncomes(onError) {
+    const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(onError);
+    if(lastClosedPettyCashAmount === false) {
+        return false;
+    }
+    const lastClosedAt = lastClosedPettyCashAmount.closedAt;
+    
+    const ledgerFilter = { "after" : lastClosedAt };
+    const incomes = await incomeService.get(ledgerFilter, onError);
+    const incomeSum = incomes.reduce((sum, income) => sum + income.amount, 0);
+    return incomeSum;
+}
+
 export async function getPettyCashBalance(onError) {
     const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(onError);
     if(lastClosedPettyCashAmount === false) {
@@ -22,5 +48,6 @@ export async function getPettyCashBalance(onError) {
     const expenseSum = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
     const total = lastClosedPettyCashAmount.balance + incomeSum - expenseSum;
+    
     return total;
 }

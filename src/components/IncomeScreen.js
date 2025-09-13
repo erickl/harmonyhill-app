@@ -22,6 +22,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
     const [errorMessage,        setErrorMessage        ] = useState(null );
     const [isManagerOrAdmin,    setIsManagerOrAdmin    ] = useState(false);
     const [pettyCash,           setPettyCash           ] = useState(null );
+    const [incomeSum,           setIncomeSum           ] = useState(null );
 
     const handleSetExpanded = async(income) => {
         setLoadingExpanded((prev) => ({...prev, [income.id]: true}));
@@ -75,13 +76,15 @@ export default function IncomeScreen({ onNavigate, onClose }) {
             setLoading(false);
         }
 
-         const getPettyCash = async() => {
-            const pettyCash = await ledgerService.getPettyCashBalance(onError);
-            setPettyCash(pettyCash);
+         const getCashFlow = async() => {
+            const pettyCashSum = await ledgerService.getPettyCashBalance(onError);
+            setPettyCash(pettyCashSum);
+            const incomeSum = await ledgerService.getTotalIncomes(onError);
+            setIncomeSum(incomeSum);
         }
     
         fetchIncomes();
-        getPettyCash();
+        getCashFlow();
     }, [incomeToEdit, incomeToDelete]);
 
     useEffect(() => {
@@ -115,6 +118,9 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                 <div>
                     <h2 className="card-title">Income</h2>
                     {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
+                </div>
+                <div>
+                    {incomeSum && (<h4>Income: {utils.formatDisplayPrice(incomeSum, true)}</h4>)}
                 </div>
             
                 <div>
