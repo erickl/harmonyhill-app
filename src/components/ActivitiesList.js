@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
 import ActivityComponent from './ActivityComponent';
@@ -20,6 +20,8 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
     const [loading,                 setLoading          ] = useState(true );
     const [currentCustomer,         setCurrentCustomer  ] = useState(null );
     const [errorMessage,            setErrorMessage     ] = useState(null );
+
+    const todaysHeader = useRef(null);
 
     const getCustomer = async(activity) => {
         return customer ? customer : await getParent(activity);
@@ -79,6 +81,13 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
         getUsers();
         getUser();   
     }, []);
+
+     useEffect(() => {
+        if (todaysHeader.current) {
+            todaysHeader.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [activitiesByDate]); // runs whenever activities change
+
 
     useEffect(() => {
         const getActivities = async() => {
@@ -157,43 +166,47 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
 
     return (
         <div className="card-content">
-            {Object.entries(activitiesByDate).map(([date, activities]) => (
-                <React.Fragment key={`activities-${date}`}>
-                    <div>
-                        <h3
-                            className={'customer-group-header clickable-header'}
-                            onClick={() => handleSetExpandedDates(date) }>
-                            
-                            {`${date}${(date === today_ddMMM ? " (Today)" : "")}`}
-                            
-                            <span className="expand-icon">
-                                {expandedDates[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
-                            </span>
-                        </h3>
-                        {expandedDates[date] ? (
-                            <div>
-                                {activities.map((activity) => {
-                                    return (
-                                        <React.Fragment key={activity.id}>   
-                                            <ActivityComponent 
-                                                showCustomer={customer == null}
-                                                activity={activity}
-                                                handleEditActivity={handleEditActivity}
-                                                handleDeleteActivity={() => setActivityToDelete(activity)}
-                                                users={users}
-                                                user={user}
-                                                triggerRerender={() => setTriggerRerender(triggerRerender+1)}
-                                            />
-                                        </React.Fragment>
-                                    )
-                                })}
-                            </div>
-                        ) : (
-                            null
-                        )}
-                    </div>
-                </React.Fragment>
-            ))}
+            {Object.entries(activitiesByDate).map(([date, activities]) => {
+                const isTodaysHeader = date === today_ddMMM;
+                return (
+                    <React.Fragment key={`activities-${date}`}>
+                        <div>
+                            <h3
+                                className={'customer-group-header clickable-header'}
+                                onClick={() => handleSetExpandedDates(date) }
+                                ref={isTodaysHeader ? todaysHeader : null}
+                            >
+                                {`${date}${(isTodaysHeader ? " (Today)" : "")}`}
+                                
+                                <span className="expand-icon">
+                                    {expandedDates[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
+                                </span>
+                            </h3>
+                            {expandedDates[date] ? (
+                                <div>
+                                    {activities.map((activity) => {
+                                        return (
+                                            <React.Fragment key={activity.id}>   
+                                                <ActivityComponent 
+                                                    showCustomer={customer == null}
+                                                    activity={activity}
+                                                    handleEditActivity={handleEditActivity}
+                                                    handleDeleteActivity={() => setActivityToDelete(activity)}
+                                                    users={users}
+                                                    user={user}
+                                                    triggerRerender={() => setTriggerRerender(triggerRerender+1)}
+                                                />
+                                            </React.Fragment>
+                                        )
+                                    })}
+                                </div>
+                            ) : (
+                                null
+                            )}
+                        </div>
+                    </React.Fragment>
+                )
+            })}
 
             {errorMessage && (
                 <ErrorNoticeModal 
