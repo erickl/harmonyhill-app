@@ -76,7 +76,7 @@ export async function enhanceActivities(activities) {
                 newActivity.startingAt_HHmm = utils.to_HHmm(activity.startingTime);
             } else {
                 newActivity.startingTime = null;
-                newActivity.startingAt_HHmm = "Time TBD";
+                newActivity.startingAt_HHmm = "Time\nTBD";
             }
 
             // Custom activities might already have a display name given. If not, create one here

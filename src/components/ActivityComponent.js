@@ -100,7 +100,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                 </div>
             </div>
             <div className="activity-header-time">
-                {activity.startingAt_HHmm}
+                <span className="preserve-whitespaces">{activity.startingAt_HHmm}</span>
             </div>
             <div className="activity-header-right">
                 <div className="activity-header-name">
@@ -126,7 +126,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
             <p><span className="detail-label">Created At:</span> {activity.createdAt_ddMMM_HHmm}</p>
             {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
-            {activity.comments && (<p className="preserve-whitespace"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
+            {activity.comments && (<p className="preserve-whitespaces"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
             <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
             { showProvider && (<>
                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
