@@ -81,7 +81,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     let assignedUserStyle = { backgroundColor: "#E12C2C" }
     if(assignedUserShortName !== "?") {
         assignedUserStyle = { backgroundColor: "green" };
-        if(activity.assigneeAccept !== true) {
+        if(activity.assigneeAccepted !== true) {
             assignedUserStyle = { backgroundColor: "#FFA500", color: "black" };
         }
     }
@@ -140,6 +140,15 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                 <DishesSummaryComponent dishes={dishes} />
             )}
 
+            { !utils.isEmpty(activity.changeDescription) && (
+                <p className="preserve-whitespaces">
+                    <span className="detail-label">Change:</span> 
+                    {activity.changeDescription.map((change) => {
+                        return (<p>• {change}</p>)
+                    })}
+                </p>
+            )}
+
             <div className="activity-component-footer">
                 <div className="activity-component-footer-icon">
                     <Pencil   
@@ -165,7 +174,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     </div>
                 )}
 
-                { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (
+                { user && user.shortName === assignedUserShortName && !activity.assigneeAccepted && (
                     <div className="activity-component-footer-icon">
                         <ThumbsUp  
                             onClick={(e) => {
@@ -177,7 +186,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     </div>
                 )}
 
-                { user && user.shortName === assignedUserShortName && activity.assigneeAccept && (
+                { user && user.shortName === assignedUserShortName && activity.assigneeAccepted && (
                     <div className="activity-component-footer-icon">
                         <ThumbsDown  
                             onClick={(e) => {

@@ -335,6 +335,8 @@ async function mapMealObject(mealData) {
         meal.assignedTo = mealData.assignedTo;
     }
 
+    if(utils.isBoolean(mealData?.assigneeAccepted)) meal.assigneeAccepted = mealData.assigneeAccepted;
+
     meal.status = utils.isString(mealData?.status) ? mealData.status : "requested";
 
     if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
@@ -342,6 +344,10 @@ async function mapMealObject(mealData) {
     if(utils.isBoolean(mealData?.isFree)) meal.isFree = mealData.isFree;
     
     if(utils.isBoolean(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
+
+    if(data?.changeDescription !== undefined) {
+         meal.changeDescription = mealData.changeDescription;
+    }
 
     return meal;
 }

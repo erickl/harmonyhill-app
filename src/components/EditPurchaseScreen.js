@@ -27,20 +27,20 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     }
 
     const [formData, setFormData] = useState({
-        startingAt     : activityToEdit.startingAt,
-        startingTime   : activityToEdit.startingTime,
-        category       : activityToEdit.category,
-        subCategory    : activityToEdit.subCategory,
-        displayName    : activityToEdit.displayName,
-        custom         : activityToEdit.custom,
-        comments       : activityToEdit.comments,
-        customerPrice  : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
-        provider       : activityToEdit.provider,
-        providerPrice  : activityToEdit.providerPrice,
-        assignedTo     : activityToEdit.assignedTo,
-        assigneeAccept : activityToEdit.assigneeAccept,
-        status         : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
-        dishes         : activityToEdit.dishes, // not null only for meal activities 
+        startingAt       : activityToEdit.startingAt,
+        startingTime     : activityToEdit.startingTime,
+        category         : activityToEdit.category,
+        subCategory      : activityToEdit.subCategory,
+        displayName      : activityToEdit.displayName,
+        custom           : activityToEdit.custom,
+        comments         : activityToEdit.comments,
+        customerPrice    : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
+        provider         : activityToEdit.provider,
+        providerPrice    : activityToEdit.providerPrice,
+        assignedTo       : activityToEdit.assignedTo,
+        assigneeAccepted : activityToEdit.assigneeAccepted,
+        status           : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
+        dishes           : activityToEdit.dishes, // not null only for meal activities 
         
         // Auxiliary data
         house          : customer.house,
@@ -100,6 +100,9 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
 
     const handleEditPurchaseSubmit = async() => {
         try {
+            formData.changeDescription = await activityService.getChangeDescription(activityToEdit, formData);
+            formData.assigneeAccepted = formData.assigneeAccepted && utils.isEmpty(formData.changeDescription);
+
             let editActivitySuccess = null;
             if(activityToEdit.category === "meal") {
                 editActivitySuccess = await mealService.update(customer.id, activityToEdit.id, formData, onError);

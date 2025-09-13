@@ -3,6 +3,7 @@ import * as bookingService from './bookingService.js';
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 import {getParent} from "../daos/dao.js";
+import {getDishes} from "./mealService.js";
 
 /**
  * @param {*} filterOptions = {category=transport|yoga|etc.., house=harmony hill|the jungle nook}
@@ -178,13 +179,15 @@ export async function getProviders(category, subCategory) {
  */
 export async function assignStaff(bookingId, activityId, userId, onError) {
     return await update(bookingId, activityId, { 
-        assignTo: userId,
+        assignTo          : userId,
+        changeDescription : null,
     }, onError);
 }
 
 export async function changeAssigneeStatus(accept, bookingId, activityId, onError) {
     return await update(bookingId, activityId, { 
-        assigneeAccept: accept,
+        assigneeAccepted  : accept,
+        changeDescription : null,
     }, onError);
 }
 
@@ -243,7 +246,11 @@ async function mapObject(data) {
     activity.status = utils.isString(data?.status) ? data.status : "requested";
 
     if(utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
-    if(utils.isBoolean(data?.assigneeAccept)) activity.assigneeAccept = data.assigneeAccept;
+    if(utils.isBoolean(data?.assigneeAccepted)) activity.assigneeAccepted = data.assigneeAccepted;
+
+    if(data?.changeDescription !== undefined) {
+        activity.changeDescription = data.changeDescription;
+    }
 
     return activity;
 }
@@ -303,28 +310,33 @@ export function validate(customer, data, isUpdate, onError) {
  * @param {*} newData 
  * @returns 
  */
-export function changeRequiresAssigneeAttention(oldData, newData) {
+export async function getChangeDescription(oldData, newData) {
+    let changeDescription = [];
+
     if(!utils.dateIsSame(oldData.startingAt, newData.startingAt)) {
-        return true;
+        changeDescription.push(`New start date: from ${utils.to_YYMMdd(oldData.startingAt, "/")} to ${utils.to_YYMMdd(newData.startingAt, "/")}`);
     }
     if(!utils.dateIsSame(oldData.startingTime, newData.startingTime)) {
-        return true;
+        changeDescription.push(`New start time: from ${utils.to_HHmm(oldData.startingTime, "/")} to ${utils.to_HHmm(newData.startingTime, "/")}`);
     }
     if(Object.hasOwn(newData, "dishes")) {
         if(!Object.hasOwn(oldData, "dishes")) {
-            return true;
+            changeDescription.push(`Dishes added to the meal`);
         }
-        for(const newDish of newData.dishes) {
-            const oldDish = oldData.dishes.find((dish) => dish.name === newDish.name);
+
+        const oldDishes = await getDishes(oldData.bookingId, oldData.id);
+
+        for(const newDish of newData.dishes) {         
+            const oldDish = oldDishes.find((dish) => dish.name === newDish.name);
             if(!oldDish) {
-                return true;
+                changeDescription.push(`New dish added: ${newDish.quantity}x ${newDish.name}`);
             }
-            if(oldDish.quantity !== newDish.quantity) {
-                return true;
+            else if(oldDish.quantity !== newDish.quantity) {
+                changeDescription.push(`Dish amount for "${newDish.name}" changed, from ${oldDish.quantity}x to ${newDish.quantity}x`);
             }
         }
     }
-    return false;
+    return changeDescription;
 }
 
 export async function testActivities(date) {
