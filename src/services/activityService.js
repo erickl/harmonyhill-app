@@ -319,8 +319,8 @@ export async function getChangeDescription(oldData, newData) {
     if(!utils.dateIsSame(oldData.startingTime, newData.startingTime)) {
         changeDescription.push(`New start time: from ${utils.to_HHmm(oldData.startingTime, "/")} to ${utils.to_HHmm(newData.startingTime, "/")}`);
     }
-    if(Object.hasOwn(newData, "dishes")) {
-        if(!Object.hasOwn(oldData, "dishes")) {
+    if(!utils.isEmpty(newData?.dishes)) {
+        if(utils.isEmpty(oldData.dishes)) {
             changeDescription.push(`Dishes added to the meal`);
         }
 

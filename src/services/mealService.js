@@ -345,7 +345,7 @@ async function mapMealObject(mealData) {
     
     if(utils.isBoolean(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
 
-    if(data?.changeDescription !== undefined) {
+    if(mealData?.changeDescription !== undefined) {
          meal.changeDescription = mealData.changeDescription;
     }
 

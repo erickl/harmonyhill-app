@@ -100,7 +100,10 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
 
     const handleEditPurchaseSubmit = async() => {
         try {
-            formData.changeDescription = await activityService.getChangeDescription(activityToEdit, formData);
+            // If user already accepted the task, get and display change description
+            if(formData.assigneeAccepted) {
+                formData.changeDescription = await activityService.getChangeDescription(activityToEdit, formData);
+            }
             formData.assigneeAccepted = formData.assigneeAccepted && utils.isEmpty(formData.changeDescription);
 
             let editActivitySuccess = null;
