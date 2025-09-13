@@ -155,57 +155,59 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
         return (<div><h2>No activities yet</h2></div>);
     }
 
-    return (<>
-        {Object.entries(activitiesByDate).map(([date, activities]) => (
-            <React.Fragment key={`activities-${date}`}>
-                <div>
-                    <h3
-                        className={'customer-group-header clickable-header'}
-                        onClick={() => handleSetExpandedDates(date) }>
-                        
-                        {`${date}${(date === today_ddMMM ? " (Today)" : "")}`}
-                        
-                        <span className="expand-icon">
-                            {expandedDates[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
-                        </span>
-                    </h3>
-                    {expandedDates[date] ? (
-                        <div>
-                            {activities.map((activity) => {
-                                return (
-                                    <React.Fragment key={activity.id}>   
-                                        <ActivityComponent 
-                                            showCustomer={customer == null}
-                                            activity={activity}
-                                            handleEditActivity={handleEditActivity}
-                                            handleDeleteActivity={() => setActivityToDelete(activity)}
-                                            users={users}
-                                            user={user}
-                                            triggerRerender={() => setTriggerRerender(triggerRerender+1)}
-                                        />
-                                    </React.Fragment>
-                                )
-                            })}
-                        </div>
-                    ) : (
-                        null
-                    )}
-                </div>
-            </React.Fragment>
-        ))}
+    return (
+        <div className="card-content">
+            {Object.entries(activitiesByDate).map(([date, activities]) => (
+                <React.Fragment key={`activities-${date}`}>
+                    <div>
+                        <h3
+                            className={'customer-group-header clickable-header'}
+                            onClick={() => handleSetExpandedDates(date) }>
+                            
+                            {`${date}${(date === today_ddMMM ? " (Today)" : "")}`}
+                            
+                            <span className="expand-icon">
+                                {expandedDates[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
+                            </span>
+                        </h3>
+                        {expandedDates[date] ? (
+                            <div>
+                                {activities.map((activity) => {
+                                    return (
+                                        <React.Fragment key={activity.id}>   
+                                            <ActivityComponent 
+                                                showCustomer={customer == null}
+                                                activity={activity}
+                                                handleEditActivity={handleEditActivity}
+                                                handleDeleteActivity={() => setActivityToDelete(activity)}
+                                                users={users}
+                                                user={user}
+                                                triggerRerender={() => setTriggerRerender(triggerRerender+1)}
+                                            />
+                                        </React.Fragment>
+                                    )
+                                })}
+                            </div>
+                        ) : (
+                            null
+                        )}
+                    </div>
+                </React.Fragment>
+            ))}
 
-        {errorMessage && (
-            <ErrorNoticeModal 
-                error={errorMessage}
-                onClose={() => setErrorMessage(null) }
-            />
-        )}
+            {errorMessage && (
+                <ErrorNoticeModal 
+                    error={errorMessage}
+                    onClose={() => setErrorMessage(null) }
+                />
+            )}
 
-        {activityToDelete && (
-            <ConfirmModal 
-                onCancel={() => setActivityToDelete(null)}
-                onConfirm={handleDeleteActivity}
-            />
-        )}
-    </>);
+            {activityToDelete && (
+                <ConfirmModal 
+                    onCancel={() => setActivityToDelete(null)}
+                    onConfirm={handleDeleteActivity}
+                />
+            )}
+        </div>
+    );
 };
