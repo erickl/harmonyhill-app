@@ -38,7 +38,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         provider         : activityToEdit.provider,
         providerPrice    : activityToEdit.providerPrice,
         assignedTo       : activityToEdit.assignedTo,
-        assigneeAccepted : activityToEdit.assigneeAccepted,
+        assigneeAccept : activityToEdit.assigneeAccept,
         status           : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
         dishes           : activityToEdit.dishes, // not null only for meal activities 
         
@@ -101,10 +101,10 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     const handleEditPurchaseSubmit = async() => {
         try {
             // If user already accepted the task, get and display change description
-            if(formData.assigneeAccepted) {
+            if(formData.assigneeAccept) {
                 formData.changeDescription = await activityService.getChangeDescription(activityToEdit, formData);
             }
-            formData.assigneeAccepted = formData.assigneeAccepted && utils.isEmpty(formData.changeDescription);
+            formData.assigneeAccept = formData.assigneeAccept && utils.isEmpty(formData.changeDescription);
 
             let editActivitySuccess = null;
             if(activityToEdit.category === "meal") {

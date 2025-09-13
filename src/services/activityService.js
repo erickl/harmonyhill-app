@@ -140,7 +140,7 @@ export async function add(bookingId, activityData, onError) {
     }
 
     let activity = await mapObject(activityData);
-    activity.assigneeAccepted = false;
+    activity.assigneeAccept = false;
 
     activity.bookingId = bookingId;
     activity.name = booking.name;
@@ -186,7 +186,7 @@ export async function assignStaff(bookingId, activityId, userId, onError) {
 
 export async function changeAssigneeStatus(accept, bookingId, activityId, onError) {
     return await update(bookingId, activityId, { 
-        assigneeAccepted  : accept,
+        assigneeAccept  : accept,
         changeDescription : null,
     }, onError);
 }
@@ -197,7 +197,7 @@ export async function update(bookingId, activityId, activityUpdateData, onError)
     let activityUpdate = await mapObject(activityUpdateData, true);
 
     if(existing.assignTo !== activityUpdate.assignedTo) {
-        activityUpdate.assigneeAccepted = false;
+        activityUpdate.assigneeAccept = false;
     }
     
     // Don't try to update booking name or house
@@ -232,23 +232,28 @@ async function mapObject(data) {
 
     if(utils.isDate(data?.startingAt))      activity.startingAt = utils.toFireStoreTime(data.startingAt);
     
-    // Date is obligatory, but time might be set later, so might be null
-    activity.startingTime = utils.isDate(data?.startingTime) ? utils.toFireStoreTime(data.startingTime) : null;
+    // Date is obligatory, but time might be set later, so startingTime might be null now
+    if(Object.hasOwn(data, "startingTime")) {
+        activity.startingTime = utils.isDate(data?.startingTime) ? utils.toFireStoreTime(data.startingTime) : null;
+    }
 
     if(utils.isAmount(data?.customerPrice)) activity.customerPrice = data.customerPrice;
 
-    activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
+    if(Object.hasOwn(data, "isFree")) {
+        activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
+    }
     
     if(utils.isString(data?.provider))      activity.provider = data.provider;
     if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
-    // First "requested", then "confirmed" (then "completed"?)
 
-    activity.status = utils.isString(data?.status) ? data.status : "requested";
+    if(Object.hasOwn(data, "status") ) {
+        activity.status = utils.isString(data?.status) ? data.status : "requested";
+    }
 
     if(utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
-    if(utils.isBoolean(data?.assigneeAccepted)) activity.assigneeAccepted = data.assigneeAccepted;
+    if(utils.isBoolean(data?.assigneeAccept)) activity.assigneeAccept = data.assigneeAccept;
 
-    if(data?.changeDescription !== undefined) {
+    if(Object.hasOwn(data, "changeDescription")) {
         activity.changeDescription = data.changeDescription;
     }
 

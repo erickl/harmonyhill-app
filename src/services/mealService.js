@@ -326,7 +326,9 @@ async function mapMealObject(mealData) {
     }
 
     // Date is obligatory, but time might be set later, so might be null
-    meal.startingTime = utils.isDate(mealData?.startingTime) ? utils.toFireStoreTime(mealData.startingTime) : null;
+    if(Object.hasOwn(mealData, "status")) {
+        meal.startingTime = utils.isDate(mealData?.startingTime) ? utils.toFireStoreTime(mealData.startingTime) : null;
+    }
 
     // Provider might not make sense here. I think we should use assignedTo instead, to assign to a staff member
     if(utils.isString(mealData?.provider)) meal.provider = mealData.provider;
@@ -335,9 +337,11 @@ async function mapMealObject(mealData) {
         meal.assignedTo = mealData.assignedTo;
     }
 
-    if(utils.isBoolean(mealData?.assigneeAccepted)) meal.assigneeAccepted = mealData.assigneeAccepted;
+    if(utils.isBoolean(mealData?.assigneeAccept)) meal.assigneeAccept = mealData.assigneeAccept;
 
-    meal.status = utils.isString(mealData?.status) ? mealData.status : "requested";
+    if(Object.hasOwn(mealData, "status")) {
+        meal.status = utils.isString(mealData?.status) ? mealData.status : "requested";
+    }
 
     if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
 
@@ -345,8 +349,8 @@ async function mapMealObject(mealData) {
     
     if(utils.isBoolean(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
 
-    if(mealData?.changeDescription !== undefined) {
-         meal.changeDescription = mealData.changeDescription;
+    if(Object.hasOwn(mealData, "changeDescription")) {
+        meal.changeDescription = mealData.changeDescription;
     }
 
     return meal;

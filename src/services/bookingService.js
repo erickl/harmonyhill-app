@@ -116,8 +116,15 @@ export async function mapBookingObject(data) {
     if(utils.isDate(data?.checkInAt))             booking.checkInAt              = utils.toFireStoreTime(data.checkInAt)    ;
     if(utils.isDate(data?.checkOutAt))            booking.checkOutAt             = utils.toFireStoreTime(data.checkOutAt)   ;
 
-    booking.checkInTime = utils.isDate(data?.checkInTime) ? utils.toFireStoreTime(data.checkInTime) : null;
-    booking.checkOutTime = utils.isDate(data?.checkOutTime) ? utils.toFireStoreTime(data.checkOutTime) : null;
+    // Date is obligatory, but time might be set later, so might be null
+    if(Object.hasOwn(data, "checkInTime")) {
+        booking.checkInTime = utils.isDate(data?.checkInTime) ? utils.toFireStoreTime(data.checkInTime) : null;
+    }
+
+    // Date is obligatory, but time might be set later, so might be null
+    if(Object.hasOwn(data, "checkOutTime")) {
+        booking.checkOutTime = utils.isDate(data?.checkOutTime) ? utils.toFireStoreTime(data.checkOutTime) : null;
+    }
 
     return booking;
 }

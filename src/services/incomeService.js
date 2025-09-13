@@ -72,6 +72,7 @@ async function mapIncomeObject(data) {
         if(object.category === "guest payment" || object.category === "commission") {
             object.bookingId = data.bookingId;
         }
+        object.description = `${object.category}`;
     }
 
     if(!utils.isEmpty(data.paymentMethod)) object.paymentMethod = data.paymentMethod.trim().toLowerCase();
@@ -81,9 +82,8 @@ async function mapIncomeObject(data) {
     if(!utils.isEmpty(data.comments)) object.comments = data.comments.trim();
 
     let booking = object.bookingId ? await bookingService.getOne(object.bookingId) : null;
-    object.description = `${object.category}`;
     if(booking && booking.name) {
-        object.description = `${object.description}, ${booking.name}`;
+        object.description += `, ${booking.name}`;
     }
     
     return object;

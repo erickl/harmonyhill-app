@@ -81,7 +81,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     let assignedUserStyle = { backgroundColor: "#E12C2C" }
     if(assignedUserShortName !== "?") {
         assignedUserStyle = { backgroundColor: "green" };
-        if(activity.assigneeAccepted !== true) {
+        if(activity.assigneeAccept !== true) {
             assignedUserStyle = { backgroundColor: "#FFA500", color: "black" };
         }
     }
@@ -174,7 +174,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     </div>
                 )}
 
-                { user && user.shortName === assignedUserShortName && !activity.assigneeAccepted && (
+                { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (
                     <div className="activity-component-footer-icon">
                         <ThumbsUp  
                             onClick={(e) => {
@@ -186,7 +186,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     </div>
                 )}
 
-                { user && user.shortName === assignedUserShortName && activity.assigneeAccepted && (
+                { user && user.shortName === assignedUserShortName && activity.assigneeAccept && (
                     <div className="activity-component-footer-icon">
                         <ThumbsDown  
                             onClick={(e) => {
