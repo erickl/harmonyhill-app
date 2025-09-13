@@ -93,7 +93,6 @@
     max-width: 100%;   /* never grow beyond parent */
     width: 100%;       /* take full width of parent */
     box-sizing: border-box; /* include padding + border in the width */
-    overflow: hidden;  /* clip anything that still sticks out */
     word-wrap: break-word; /* for text areas or long values */
     padding: 0.3rem;
     white-space: pre-wrap;
