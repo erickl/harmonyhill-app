@@ -140,10 +140,16 @@ export function isDate(value) {
 /**
  * @returns date string in the format YYMMDD HH:MM GMT+X
  */
-export function to_yyMMddHHmmTz(date = null) {
+export function to_yyMMddHHmmTz(date = null, separator = '') {
     date = date ? date : now();
     const data = getData(date);
-    return `${data.yy}${data.month}${data.day} ${data.hours}:${data.minutes} ${data.tz}`;
+    return `${data.yy}${separator}${data.month}${separator}${data.day} ${data.hours}:${data.minutes} ${data.tz}`;
+}
+
+export function to_yyMMddHHmm(date = null, separator = '') {
+    date = date ? date : now();
+    const data = getData(date);
+    return `${data.yy}${separator}${data.month}${separator}${data.day} ${data.hours}:${data.minutes}`;
 }
 
 /**

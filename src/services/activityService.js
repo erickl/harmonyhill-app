@@ -319,11 +319,9 @@ export async function getChangeDescription(oldData, newData) {
     let changeDescription = [];
 
     if(!utils.dateIsSame(oldData.startingAt, newData.startingAt)) {
-        changeDescription.push(`New start date: from ${utils.to_YYMMdd(oldData.startingAt, "/")} to ${utils.to_YYMMdd(newData.startingAt, "/")}`);
+        changeDescription.push(`New start date: from ${utils.to_yyMMddHHmm(oldData.startingAt, "/")} to ${utils.to_yyMMddHHmm(newData.startingAt, "/")}`);
     }
-    if(!utils.dateIsSame(oldData.startingTime, newData.startingTime)) {
-        changeDescription.push(`New start time: from ${utils.to_HHmm(oldData.startingTime, "/")} to ${utils.to_HHmm(newData.startingTime, "/")}`);
-    }
+
     if(!utils.isEmpty(newData?.dishes)) {
         if(utils.isEmpty(oldData.dishes)) {
             changeDescription.push(`Dishes added to the meal`);

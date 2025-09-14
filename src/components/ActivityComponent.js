@@ -141,12 +141,14 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             )}
 
             { !utils.isEmpty(activity.changeDescription) && (
-                <p className="preserve-whitespaces">
-                    <span className="detail-label">Change:</span> 
-                    {activity.changeDescription.map((change) => {
-                        return (<p>• {change}</p>)
-                    })}
-                </p>
+                <div style={{color:"red"}}>
+                    <p className="preserve-whitespaces">
+                        <span className="detail-label">Change:</span> 
+                        {activity.changeDescription.map((change) => {
+                            return (<p>• {change}</p>)
+                        })}
+                    </p>
+                </div>
             )}
 
             <div className="activity-component-footer">
