@@ -12,6 +12,8 @@ import invoiceLogo from "../assets/invoice-icon.png";
 import AddExpensesScreen from "./AddExpensesScreen.js";
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
+import SheetUploader from "./SheetUploader.js";
+
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
@@ -225,6 +227,8 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 })}
             </div>
 
+            {/* <SheetUploader onError={onError}/> */}
+            
             {expenseToDelete && (
                 <ConfirmModal 
                     onCancel={() => setExpenseToDelete(null)}
