@@ -3,6 +3,7 @@ import * as utils from "../utils.js";
 import Spinner from "./Spinner.js";
 import "./ConfirmOrderModal.css";
 import DishesSummaryComponent from "./DishesSummaryComponent.js";
+import ReactDOM from "react-dom";
 
 export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
 
@@ -17,7 +18,7 @@ export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
         }
     }
     
-    return (
+    return ReactDOM.createPortal(
         <div className="modal-overlay">
             <div className="modal-box">
                 <h2>Confirm Your Order</h2>
@@ -47,6 +48,7 @@ export default function ConfirmOrderModal({selected, onCancel, onConfirm}) {
                     { loading && <Spinner />} 
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
