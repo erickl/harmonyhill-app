@@ -21,7 +21,7 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 2000;             /* higher than fullscreen content */
+  z-index: 1100;             /* higher than fullscreen content */
 }
 
 .nav-button {
@@ -33,11 +33,6 @@
     background: none;
     cursor: pointer;
     color: #555;
-}
-
-.nav-button.active {
-    color: #007bff;
-    font-weight: bold;
 }
 
 .fullscreen {
@@ -53,6 +48,11 @@
   box-shadow: none;  /* usually modals don’t need shadows */
   display: flex;
   flex-direction: column;
+}
+
+.nav-button.active {
+    color: #007bff;
+    font-weight: bold;
 }
 
 .card {
