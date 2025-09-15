@@ -39,8 +39,9 @@
   position: fixed;   /* ignore parent, stick to viewport */
   top: 0;
   left: 0;
+  bottom: 60px;
   width: 100vw;
-  height: calc(100vh - 60px);
+ 
   margin: 0;
   border-radius: 0;
   z-index: 1000;     /* make sure it’s above other content */
