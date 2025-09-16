@@ -1,4 +1,6 @@
-export default function StatusCircle({status}) {
+import "./StatusCircle.css";
+
+export default function StatusCircle({status, message}) {
 
     let symbol = "!";
 
@@ -56,6 +58,12 @@ export default function StatusCircle({status}) {
             };
             break;
         }
+        case Status.NONE: {
+            symbol = "";
+            // specific = {
+            //     border: "none",
+            // }
+        }
         
         default : {}
     }
@@ -63,7 +71,10 @@ export default function StatusCircle({status}) {
     const style = { ...common, ...specific };
     
     return (
-        <div style={style}>{symbol}</div>
+        <div className="status-symbol">
+            <div style={style}>{symbol}</div>
+            <p className="status-message">{message}</p>
+        </div>
     );
 };
 
@@ -73,4 +84,5 @@ export const Status = Object.freeze({
     ATTENTION  : "Attention",
     URGENT     : "Urgent",
     EMERGENCY  : "Emergency",
+    NONE       : "None",
 });

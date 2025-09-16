@@ -89,6 +89,38 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     const houseShortName = activity.house === "harmony hill" ? "HH" : "JN";
     const houseColor = houseShortName === "HH" ? "darkcyan" : "rgb(2, 65, 116)";
 
+    let status = Status.NONE;
+    let statusMessage = "";
+    if(activity && activity.startingAt) {
+        const timeLeft = activity.startingAt.diff(utils.now()).hours;
+        const stillNeedsAssignee = utils.isEmpty(activity.assignedTo);
+
+        const startingDayMinusOne = activity.startingAt.startOf("day").minus({days: 1});
+        const isDayBefore = utils.today().equals(startingDayMinusOne);
+
+        if(isDayBefore && stillNeedsAssignee) {
+            status = Status.ATTENTION;
+            statusMessage = "Assign someone";
+        }
+       
+        if(activity.internal === false) {
+            const stillNeedsProvider = utils.isEmpty(activity.provider);
+            
+            if(stillNeedsProvider) {
+                status = Status.ATTENTION;
+                status = "Assign Provider";
+            }
+            if(stillNeedsProvider && timeLeft < activity.deadline1) {
+                status = "Assign Provider!";
+                status = Status.URGENT;
+            }
+            if(stillNeedsProvider && timeLeft < activity.deadline2) {
+                status = "Assign Provider!!";
+                status = Status.EMERGENCY;
+            }
+        }
+    }
+
     return (<>
         <div className="activity-header" onClick={() => handleActivityClick(activity)}>
             <div className="activity-header-left">
@@ -113,9 +145,9 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     {showCustomer ? activity.name : ""}
                 </div>  
             </div>
-            {/* <div className="activity-header-status">
-                <StatusCircle status={Status.COMPLETED}/>
-            </div> */}
+            <div className="activity-header-status">
+                <StatusCircle status={status} message={statusMessage}/>
+            </div>
         </div>
         {loadingExpandedActivity ? (
             <Spinner />
