@@ -1,0 +1,35 @@
+.floating-label-input {
+    position: relative;
+    margin: 20px 0;
+}
+
+.floating-label-input input {
+    width: 100%;
+    padding: 12px 8px;
+    font-size: 16px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    outline: none;
+    background: none;
+}
+
+/* Label starts INSIDE the box */
+.floating-label-input label {
+    position: absolute;
+    left: 8px;
+    top: 12px;
+    color: #666;
+    font-size: 16px;
+    pointer-events: none;
+    transition: 0.2s ease all;
+}
+
+/* When focused or not empty → float up */
+.floating-label-input input:focus + label,
+.floating-label-input input:not(:placeholder-shown) + label {
+    top: -8px;
+    left: 6px;
+    font-size: 12px;
+    background: rgb(247, 243, 243);
+    padding: 0 4px;
+}
