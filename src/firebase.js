@@ -1,8 +1,10 @@
 import { initializeApp } from "firebase/app";
 //import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from "firebase/auth";
+
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
 // To enable running this from a script when seeding database data. Only load dotenv if running in Node (not in the browser)
 // if (typeof process !== 'undefined' && process?.versions?.node) {
@@ -17,13 +19,13 @@ import { getAuth } from "firebase/auth";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey:            process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain:        process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId:         process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket:     process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId:             process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId:     process.env.REACT_APP_MEASUREMENT_ID
+    apiKey:            process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain:        process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    projectId:         process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    storageBucket:     process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId:             process.env.REACT_APP_FIREBASE_APP_ID,
+    measurementId:     process.env.REACT_APP_MEASUREMENT_ID
 };
 
 //console.log("firebaseConfig being passed to initializeApp:", firebaseConfig); 
@@ -42,13 +44,19 @@ const app = initializeApp(firebaseConfig);
 // Optional: for browser only
 let analytics;
 if (typeof window !== 'undefined') {
-  const { getAnalytics } = await import('firebase/analytics');
-  analytics = getAnalytics(app);
+    const { getAnalytics } = await import('firebase/analytics');
+    analytics = getAnalytics(app);
 }
 
+const functions = getFunctions(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app, firebaseConfig.storageBucket);
 
+//if (process.env.NODE_ENV === "dev") {
+if (window.location.hostname === "localhost") {
+    connectFirestoreEmulator(db, "localhost", 8080);
+    connectFunctionsEmulator(functions, "localhost", 5001);
+}
 
-export { db, auth, analytics, storage };
+export { db, functions, auth, analytics, storage };
