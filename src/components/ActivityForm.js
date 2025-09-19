@@ -11,7 +11,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     const [teamMembers, setTeamMembers] = useState([]);
     const [errorMessage, setErrorMessage] = useState(null);
 
-    const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
+    //const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
             
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -81,23 +81,22 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 </div>
             )}
             
-            <form>
-                { custom === true && (
-                     <div className="purchase-form-group">
-                        <label htmlFor="displayName">Name:</label>
-                        <div className="display-name-input-wrapper">
-                            <input
-                                type="text"
-                                id="displayName"
-                                name="displayName"
-                                // Apply formatting here for display inside the input
-                                value={formData.displayName}
-                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
-                                className="input"
-                            />
-                        </div>
+            <form>  
+                <div className="purchase-form-group">
+                    <label htmlFor="displayName">Name:</label>
+                    <div className="display-name-input-wrapper">
+                        <input
+                            type="text"
+                            id="displayName"
+                            name="displayName"
+                            // Apply formatting here for display inside the input
+                            value={formData.displayName}
+                            onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                            className="input"
+                        />
                     </div>
-                )}
+                </div>
+                
                 <div className="purchase-form-group">
                     <label htmlFor="purchasePrice">Price:</label>
                     <div className="price-input-wrapper"> {/* Wrapper for "Rp" and input */}
@@ -113,6 +112,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                         />
                     </div>
                 </div>
+
                 <div className="purchase-form-group">
                     <Dropdown 
                         current={formData.assignedTo} 
@@ -133,33 +133,50 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
                 {/* (External) providers are not needed for activities organized by internal staff */}
                 { selectedActivity.internal !== true && (<>
-                    { custom === true ? (
-                        // For a custom activity, there are no determined set of providers
-                        <div className="purchase-form-group">
-                            <label htmlFor="provider">Provider:</label>
-                            <div className="provider-input-wrapper">
-                                <input
-                                    type="text"
-                                    id="provider"
-                                    name="provider"
-                                    // Apply formatting here for display inside the input
-                                    value={formData.provider}
-                                    onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
-                                    className="input"
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="purchase-form-group">
-                            <ProviderDropdown 
-                                currentName={formData.provider} 
-                                currentPrice={formData.providerPrice} 
-                                label={"Select a provider"} 
-                                options={providers} 
-                                onSelect={onProviderSelect}
+                    
+                    <div className="purchase-form-group">
+                        <label htmlFor="provider">Provider:</label>
+                        <div className="provider-input-wrapper">
+                            <input
+                                type="text"
+                                id="provider"
+                                name="provider"
+                                // Apply formatting here for display inside the input
+                                value={formData.provider}
+                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                                className="input"
                             />
                         </div>
-                    )}
+                        {!utils.isEmpty(providers) && (
+                            <div className="purchase-form-group">
+                                <ProviderDropdown 
+                                    currentName={formData.provider} 
+                                    currentPrice={formData.providerPrice} 
+                                    label={"Providers"} 
+                                    options={providers} 
+                                    onSelect={onProviderSelect}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="purchase-form-group">
+                        <label htmlFor="providerPrice">Provider Price:</label>
+                        <div className="price-input-wrapper"> {/* Wrapper for "Rp" and input */}
+                            <span className="currency-prefix">{utils.getCurrency()}</span>
+                            <input
+                                type="text"
+                                id="providerPrice"
+                                name="providerPrice"
+                                // Apply formatting here for display inside the input
+                                value={utils.formatDisplayPrice(formData.providerPrice)}
+                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
+                                className="input"
+                            />
+                        </div>
+                    </div>
+                    
+                  
                 </>)}
                 <div className="purchase-form-group">
                     <MyDatePicker 

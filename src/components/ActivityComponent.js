@@ -121,11 +121,11 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                 statusMessage = "Needs Provider";
                 status = Status.ATTENTION; 
             }
-            if(stillNeedsProvider && timeLeft <= activityInfo.deadline1) {
+            if(stillNeedsProvider && timeLeft <= activityInfo.deadline1 && activityInfo.deadline1 !== 0) {
                 statusMessage = "Assign Provider!";
                 status = Status.URGENT;
             }
-            if(stillNeedsProvider && timeLeft <= activityInfo.deadline2) {
+            if(stillNeedsProvider && timeLeft <= activityInfo.deadline2 && activityInfo.deadline1 !== 0) {
                 statusMessage = "Assign Provider!!!";
                 status = Status.EMERGENCY;
             }
