@@ -8,10 +8,11 @@ import * as userService from "../services/userService.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
-    const [teamMembers, setTeamMembers] = useState([]);
-    const [errorMessage, setErrorMessage] = useState(null);
+    const [teamMembers,   setTeamMembers  ] = useState([]   );
+    const [errorMessage,  setErrorMessage ] = useState(null );
+    const [needsProvider, setNeedsProvider] = useState(formData?.needsProvider);
 
-    //const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
+    const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
             
     const onError = (errorMessage) => {
         setErrorMessage(errorMessage);
@@ -24,6 +25,11 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
             "provider"      : name,
             "providerPrice" : price,
         });
+    }
+
+    const onSetNeedsProviderChecked = (checked) => {
+        setNeedsProvider(checked);
+        handleFormDataChange("needsProvider", checked);
     }
 
     const onTeamMemberSelect = (teamMember) => {
@@ -175,8 +181,17 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                             />
                         </div>
                     </div>
-                    
-                  
+
+                    { custom && (
+                        <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <input
+                                type="checkbox"
+                                checked={needsProvider}
+                                onChange={(e) => onSetNeedsProviderChecked(e.target.checked)}
+                            />
+                            <span>Needs provider?</span>
+                        </label>
+                    )}
                 </>)}
                 <div className="purchase-form-group">
                     <MyDatePicker 

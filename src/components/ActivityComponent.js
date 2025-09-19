@@ -113,23 +113,26 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             status = Status.ATTENTION;
             statusMessage = "Assign someone";
         }
+
+        const providerEmpty = utils.isEmpty(activity.provider);
+        let stillNeedsProvider = activityInfo && activityInfo.internal === false && providerEmpty; 
+        if(Object.hasOwn(activity, "needsProvider") && utils.isBoolean(activity.needsProvider)) {
+            stillNeedsProvider = providerEmpty && activity.needsProvider;
+        }
        
-        if(activityInfo && activityInfo.internal === false) {
-            const stillNeedsProvider = utils.isEmpty(activity.provider);
-            
-            if(stillNeedsProvider) {
-                statusMessage = "Needs Provider";
-                status = Status.ATTENTION; 
-            }
-            if(stillNeedsProvider && timeLeft <= activityInfo.deadline1 && activityInfo.deadline1 !== 0) {
+        if(stillNeedsProvider) {
+            statusMessage = "Needs Provider";
+            status = Status.ATTENTION; 
+
+            if(activityInfo && activityInfo.deadline1 !== 0 && timeLeft <= activityInfo.deadline1) {
                 statusMessage = "Assign Provider!";
                 status = Status.URGENT;
             }
-            if(stillNeedsProvider && timeLeft <= activityInfo.deadline2 && activityInfo.deadline1 !== 0) {
+            if(activityInfo && activityInfo.deadline2 !== 0 && timeLeft <= activityInfo.deadline2) {
                 statusMessage = "Assign Provider!!!";
                 status = Status.EMERGENCY;
             }
-        }
+        } 
     }
 
     return (<>

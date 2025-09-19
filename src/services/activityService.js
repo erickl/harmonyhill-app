@@ -243,8 +243,19 @@ async function mapObject(data) {
         activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     }
     
-    if(utils.isString(data?.provider))      activity.provider = data.provider;
-    if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
+    if(Object.hasOwn(data, "needsProvider")) {
+        activity.needsProvider = data.needsProvider;
+        if(data.needsProvider === true) {
+            if(utils.isString(data?.provider))      activity.provider = data.provider;
+            if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
+        } else {
+            activity.provider = null;
+            activity.providerPrice = null;
+        }
+    } else {
+        if(utils.isString(data?.provider))      activity.provider = data.provider;
+        if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
+    }
 
     if(Object.hasOwn(data, "status") ) {
         activity.status = utils.isString(data?.status) ? data.status : "requested";
@@ -298,6 +309,11 @@ export function validate(customer, data, isUpdate, onError) {
 
             if(data.internal !== true && utils.isEmpty(data.provider)) {
                 onError(`Status can only be "confirmed" if a provider is assigned`);
+                return false;
+            }
+
+            if(data.needsProvider === true && utils.isEmpty(data.provider)) {
+                onError(`Needs provider. Status can only be "confirmed" if a provider is assigned`);
                 return false;
             }
         }

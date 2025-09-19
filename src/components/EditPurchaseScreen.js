@@ -37,8 +37,9 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         customerPrice    : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
         provider         : activityToEdit.provider,
         providerPrice    : activityToEdit.providerPrice,
+        needsProvider    : activityToEdit.needsProvider,
         assignedTo       : activityToEdit.assignedTo,
-        assigneeAccept : activityToEdit.assigneeAccept,
+        assigneeAccept   : activityToEdit.assigneeAccept,
         status           : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
         dishes           : activityToEdit.dishes, // not null only for meal activities 
         

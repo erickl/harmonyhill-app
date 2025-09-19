@@ -33,7 +33,7 @@ export default function ProviderDropdown({ label, options, currentName, currentP
             <div className="dropdown-menu">
                 <div className="dropdown-row">
                     <button type="button" className="open-button" onClick={toggleDropdown}>
-                        Providers
+                        ☰
                     </button>
                 </div>
                 {isOpen && (
