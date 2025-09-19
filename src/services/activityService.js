@@ -196,7 +196,8 @@ export async function update(bookingId, activityId, activityUpdateData, onError)
 
     let activityUpdate = await mapObject(activityUpdateData, true);
 
-    if(existing.assignedTo !== activityUpdate.assignedTo) {
+    // When changing assignee 
+    if(Object.hasOwn(activityUpdate, "assignedTo") && existing.assignedTo !== activityUpdate.assignedTo) {
         activityUpdate.assigneeAccept = false;
     }
     

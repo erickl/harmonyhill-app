@@ -2,7 +2,7 @@
 import React, { useState, useEffect, use } from 'react';
 import * as mealService from "../services/mealService.js"; 
 import * as activityService from "../services/activityService.js"; 
-import * as menuService from "../services/menuService.js"; 
+import * as userService from "../services/userService.js"; 
 import * as utils from "../utils.js";
 import ActivityForm from "./ActivityForm.js";
 import MealForm from "./MealForm.js";
@@ -103,7 +103,12 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         try {
             // If user already accepted the task, get and display change description
             if(formData.assigneeAccept) {
-                formData.changeDescription = await activityService.getChangeDescription(activityToEdit, formData);
+                const thisUser = await userService.getCurrentUserName();
+                
+                // If the assignee herself is changing the data, no need to accept the task change again
+                if(thisUser !== formData.assignedTo) {
+                    formData.changeDescription = await activityService.getChangeDescription(activityToEdit, formData);
+                }
             }
             formData.assigneeAccept = formData.assigneeAccept && utils.isEmpty(formData.changeDescription);
 
