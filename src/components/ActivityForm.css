@@ -1,0 +1,16 @@
+.provider-row {
+  display: flex;
+  gap: 12px; /* space between inputs */
+  align-items: flex-end;
+  justify-content: flex-start;
+  width: 100%;
+  align-items: stretch;
+}
+
+provider-name, .provider-price {
+  flex: 0 0 auto; /* don’t grow, don’t shrink — use natural width */
+}
+
+.provider-row > *:last-child {
+  flex: none; /* dropdown stays natural width */
+}
