@@ -32,7 +32,7 @@ export default function SideMenu() {
         backgroundColor: '#333',
         color: 'white',
         transition: 'left 0.3s ease-in-out',
-        zIndex: 999,
+        zIndex: 3000,
         padding: '1rem',
       }}
     >

@@ -8,7 +8,6 @@ import AddIncomeScreen from './components/AddIncomeScreen';
 import LoginScreen from './components/LoginScreen';
 import AddCustomerScreen from './components/AddCustomerScreen';
 import BottomNavigation from './components/BottomNavigation.js';
-import VeganHamburgerButton from './components/VeganHamburgerButton.js';
 import SideMenu from './components/SideMenu.js';
 
 import * as bookingService from './services/bookingService.js';
@@ -81,7 +80,6 @@ function App() {
             <div className="app-container">
                 {isLoggedIn ? (
                     <>
-                        <VeganHamburgerButton />
                         <SideMenu />
                         <div className="content">
                             {screenToDisplay}

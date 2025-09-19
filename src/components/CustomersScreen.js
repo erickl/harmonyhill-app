@@ -9,6 +9,7 @@ import '../App.css';
 import EditCustomerScreen from './EditCustomerScreen';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 import ConfirmModal from './ConfirmModal.js';
+import VeganHamburgerButton from './VeganHamburgerButton.js';
 
 const CustomersScreen = ({ onNavigate }) => {
     const [customers,                  setCustomers]               = useState([]    );
@@ -261,7 +262,8 @@ const CustomersScreen = ({ onNavigate }) => {
     return (
         <div className="fullscreen">
             <div className="card-header">
-                <div>
+                <div className='card-header-left'>
+                    <VeganHamburgerButton />
                     <h2 className="card-title">Customers</h2>    
                 </div>
                 <div>
