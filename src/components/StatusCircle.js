@@ -5,13 +5,13 @@ export default function StatusCircle({status, message}) {
     let symbol = "!";
 
     const common = {
-        width           : "40px",
-        height          : "40px",
+        width           : "1.5rem",
+        height          : "1.5rem",
         borderRadius    : "50%",
         display         : "flex",
         alignItems      : "center",
         justifyContent  : "center",
-        fontSize        : "22px",
+        fontSize        : "1rem",
         fontWeight      : "bold",
     };
 
