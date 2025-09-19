@@ -6,6 +6,7 @@ import ProviderDropdown from "./ProviderDropdown.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
+import TextInput from './TextInput.js';
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers,   setTeamMembers  ] = useState([]   );
@@ -102,7 +103,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                         />
                     </div>
                 </div>
-                
+
                 <div className="purchase-form-group">
                     <label htmlFor="purchasePrice">Price:</label>
                     <div className="price-input-wrapper"> {/* Wrapper for "Rp" and input */}
@@ -141,18 +142,16 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 { selectedActivity.internal !== true && (<>
                     
                     <div className="purchase-form-group">
-                        <label htmlFor="provider">Provider:</label>
-                        <div className="provider-input-wrapper">
-                            <input
-                                type="text"
-                                id="provider"
-                                name="provider"
-                                // Apply formatting here for display inside the input
-                                value={formData.provider}
-                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
-                                className="input"
-                            />
-                        </div>
+                        
+                        <TextInput
+                            type="text"
+                            name="provider"
+                            label={"Provider"}
+                            // Apply formatting here for display inside the input
+                            value={formData.provider}
+                            onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                        />
+                       
                         {!utils.isEmpty(providers) && (
                             <div className="purchase-form-group">
                                 <ProviderDropdown 
@@ -181,6 +180,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                             />
                         </div>
                     </div>
+                
 
                     { custom && (
                         <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>

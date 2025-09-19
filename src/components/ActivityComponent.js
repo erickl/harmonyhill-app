@@ -115,7 +115,9 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         }
 
         const providerEmpty = utils.isEmpty(activity.provider);
-        let stillNeedsProvider = activityInfo && activityInfo.internal === false && providerEmpty; 
+        let stillNeedsProvider = activityInfo && activityInfo.internal === false && providerEmpty;
+        
+        // If the check box is checked to say this custom activity needs a provider, take that into account
         if(Object.hasOwn(activity, "needsProvider") && utils.isBoolean(activity.needsProvider)) {
             stillNeedsProvider = providerEmpty && activity.needsProvider;
         }
