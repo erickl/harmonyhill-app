@@ -296,6 +296,12 @@ export function isToday(inputDate) {
     return luxonDateTime.day == todayDateTime.day;
 }
 
+export function wasYesterday(inputDate) {
+    const luxonDateTime = toLuxonDateTime(inputDate);
+    const todayDateTime = today();
+    return luxonDateTime.day < todayDateTime.day;
+}
+
 export function dateIsSame(oldDate, newDate) {
     if(isEmpty(oldDate)) {
         return isEmpty(newDate);

@@ -14,6 +14,7 @@ import StatusCircle, {Status} from './StatusCircle.js';
 
 export default function ActivityComponent({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
     const [customer,                setCustomer               ] = useState(null );
+    const [activityInfo,            setActivityInfo           ] = useState(null );
     const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false);
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
     const [expanded,                setExpanded               ] = useState(false);
@@ -55,13 +56,17 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     };
 
     useEffect(() => {
+         const getActivityInfo = async () => {
+            const activityInfo = await activityService.getActivityMenuItem(activity.category, activity.subCategory, activity.house);
+            setActivityInfo(activityInfo);
+        }
+        getActivityInfo();
+    }, []);
+
+    useEffect(() => {
         const getCustomer = async() => {
             const customer = await getParent(activity);
             setCustomer(customer);
-        }
-
-        if(showCustomer) {
-            getCustomer();
         }
 
         const setUserRole = async() => {
@@ -69,6 +74,10 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             setIsManagerOrAdmin(userRole);
         }
 
+        if(showCustomer) {
+            getCustomer();
+        }
+        
         setUserRole();
     }, []);
 
@@ -91,8 +100,10 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
 
     let status = Status.NONE;
     let statusMessage = "";
-    if(activity && activity.startingAt) {
-        const timeLeft = activity.startingAt.diff(utils.now()).hours;
+    if(activity && activity.startingAt && !utils.wasYesterday(activity.startingAt)) {
+        let timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
+        timeLeft = Math.floor(timeLeft.hours);
+
         const stillNeedsAssignee = utils.isEmpty(activity.assignedTo);
 
         const startingDayMinusOne = activity.startingAt.startOf("day").minus({days: 1});
@@ -103,19 +114,19 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             statusMessage = "Assign someone";
         }
        
-        if(activity.internal === false) {
+        if(activityInfo && activityInfo.internal === false) {
             const stillNeedsProvider = utils.isEmpty(activity.provider);
             
             if(stillNeedsProvider) {
-                status = Status.ATTENTION;
-                status = "Assign Provider";
+                statusMessage = "Needs Provider";
+                status = Status.ATTENTION; 
             }
-            if(stillNeedsProvider && timeLeft < activity.deadline1) {
-                status = "Assign Provider!";
+            if(stillNeedsProvider && timeLeft <= activityInfo.deadline1) {
+                statusMessage = "Assign Provider!";
                 status = Status.URGENT;
             }
-            if(stillNeedsProvider && timeLeft < activity.deadline2) {
-                status = "Assign Provider!!";
+            if(stillNeedsProvider && timeLeft <= activityInfo.deadline2) {
+                statusMessage = "Assign Provider!!!";
                 status = Status.EMERGENCY;
             }
         }

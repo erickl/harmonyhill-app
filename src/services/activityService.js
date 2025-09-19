@@ -196,7 +196,7 @@ export async function update(bookingId, activityId, activityUpdateData, onError)
 
     let activityUpdate = await mapObject(activityUpdateData, true);
 
-    if(existing.assignTo !== activityUpdate.assignedTo) {
+    if(existing.assignedTo !== activityUpdate.assignedTo) {
         activityUpdate.assigneeAccept = false;
     }
     
@@ -320,6 +320,10 @@ export async function getChangeDescription(oldData, newData) {
 
     if(!utils.dateIsSame(oldData.startingAt, newData.startingAt)) {
         changeDescription.push(`New start date: from ${utils.to_yyMMddHHmm(oldData.startingAt, "/")} to ${utils.to_yyMMddHHmm(newData.startingAt, "/")}`);
+    }
+
+    if(oldData.provider !== newData.provider) {
+        changeDescription.push(`New provider: from ${oldData.provider} to ${newData.provider}`);
     }
 
     if(!utils.isEmpty(newData?.dishes)) {
