@@ -1,0 +1,15 @@
+.side-menu {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;         /* full height */
+  width: 240px;          /* or whatever your sidebar width is */
+  background: #fff;      /* adjust */
+  
+}
+
+.side-menu-footer {
+  margin-top: auto;        /* pushes it to the very bottom */
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;       /* smaller text */
+  color: #777;             /* grey */
+}
