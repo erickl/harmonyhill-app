@@ -3,15 +3,15 @@ import * as incomeService from "./incomeService.js";
 import * as expenseService from "./expenseService.js";
 import * as utils from "../utils.js";
 
-export async function getTotalExpenses(onError) {
+export async function getTotalExpenses(filter, onError) {
     const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(onError);
     if(lastClosedPettyCashAmount === false) {
         return false;
     }
     const lastClosedAt = lastClosedPettyCashAmount.closedAt;
     
-    const ledgerFilter = { "after" : lastClosedAt };
-    const expenses = await expenseService.get(ledgerFilter, onError);
+    filter["after"] = lastClosedAt;
+    const expenses = await expenseService.get(filter, onError);
     const expenseSum = expenses.reduce((sum, expense) => sum + expense.amount, 0);
     return expenseSum;
 }

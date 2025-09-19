@@ -24,6 +24,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [loading,          setLoading         ] = useState(true );
     const [errorMessage,     setErrorMessage    ] = useState(null );
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
+    const [isAdmin,          setIsAdmin         ] = useState(false);
     const [expenseToEdit,    setExpenseToEdit   ] = useState(null );
     const [expenseToDelete,  setExpenseToDelete ] = useState(null );
     const [pettyCash,        setPettyCash       ] = useState(null );
@@ -77,21 +78,23 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
 
     useEffect(() => {
         const fetchExpenses = async() => {
-            const filter = {};
+            const userIsAdmin = await userService.isAdmin();
+            setIsAdmin(userIsAdmin);
+
+            // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
+            const filter = userIsAdmin ? {} : {paymentMethod : "cash"};
             const uploadedExpenses = await expenseService.get(filter, onError);
             setExpenses(uploadedExpenses);
+            
+            const pettyCashSum = await ledgerService.getPettyCashBalance(onError);
+            setPettyCash(pettyCashSum);
+            const expenseSum = await ledgerService.getTotalExpenses(filter, onError);
+            setExpenseSum(expenseSum);
+
             setLoading(false);
         }
 
-        const getCashFlow = async() => {
-            const pettyCashSum = await ledgerService.getPettyCashBalance(onError);
-            setPettyCash(pettyCashSum);
-            const expenseSum = await ledgerService.getTotalExpenses(onError);
-            setExpenseSum(expenseSum);
-        }
-
         fetchExpenses();
-        getCashFlow();
     }, [expenseToEdit, expenseToDelete]);
 
     useEffect(() => {
