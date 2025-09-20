@@ -146,7 +146,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
         // Add change to the update logs
         let diffStr = "";
         if(updateLogs) {
-            diffStr = await utils.jsonObjectDiffStr(originalData, updatedData);
+            diffStr = await jsonObjectDiffStr(originalData, updatedData);
         
             // todo: should the user be notified whether or not the update wasn't necessary?
             if(diffStr.length === 0) {
@@ -277,4 +277,63 @@ export async function transaction(inTransaction) {
         console.error(`Error in DB transaction`, e);
         return false;
     }
+}
+
+export async function jsonObjectDiffStr(obj1, obj2) {
+    let diff = "";
+    
+    try {
+        if(utils.isEmpty(obj1)) {
+            throw new Error("Original object was null");
+        }
+        if(utils.isEmpty(obj2)) {
+            throw new Error("New object was null");
+        }
+
+        for (const key in obj2) {
+            try {
+                if(key === "updatedBy") continue;
+                if(key === "updatedAt") continue;
+                if(key === "createdBy") continue;
+                if(key === "createdAt") continue;
+
+                const val1 = obj1[key];
+                const val2 = obj2[key];
+
+                if(utils.isEmpty(val1) && utils.isEmpty(val2)) {
+                    continue;
+                }
+                else if (utils.isEmpty(val1)) {
+                    // Display human readable data
+                    const val2Legible = utils.isDate(val2) ? utils.toDateTime(val2) : val2; 
+                    diff += `Added ${key}: ${val2Legible}, `;
+                } 
+                else if(utils.isDate(val2)) {
+                    const val1DateTime = utils.toDateTime(val1);
+                    const val2DateTime = utils.toDateTime(val2);
+                    if(!val1DateTime.equals(val2DateTime)) {
+                        diff += ` ${key}: ${val1DateTime} -> ${val2DateTime}, `;
+                    }
+                }
+                else if (val2 !== val1) {
+                    const val2_ = utils.isEmpty(val2) ? "[empty]" : val2;
+                    diff += ` ${key}: ${val1} -> ${val2_}, `;
+                }
+            } catch(e) {
+                diff += `Failed comparing field ${key}: ${e.message}, `;
+            }
+        }
+
+        // add prefix with user info & remove the last comma and space
+        if (diff.length > 0) {
+            const username = await userService.getCurrentUserName();
+            const nowStr = utils.to_yyMMddHHmmTz(DateTime.now());
+            diff = `Updated by ${username} at ${nowStr}: ${diff}`;
+            diff = diff.slice(0, -2);
+        }
+    } catch(e) {
+        diff += `Unexpected error in update comparison: ${e.message}`;
+    }
+
+    return diff;
 }
