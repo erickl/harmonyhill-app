@@ -5,7 +5,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
       // For debugging the seeder script
       {
         "type": "node",
@@ -17,17 +16,22 @@
           "NODE_ENV": "development"
         },
         "skipFiles": ["<node_internals>/**"]
-      },
-      
-      // For debugging the react app
-      {
+      },{ // Debugging the event based fireabse functions
+        "type": "node",
+        "request": "attach",
+        "name": "Debug Event Based Firebase Functions",
+        "port": 9229,
+        "restart": true,
+        "skipFiles": [
+          "<node_internals>/**"
+        ]
+      },{ // Debugging the react app
           "name": "Attach to Chrome",
           "port": 9222,
           "request": "attach",
           "type": "chrome",
           "webRoot": "${workspaceFolder}"
-      },
-      {
+      },{
           "type": "chrome",
           "request": "launch",
           "name": "Launch Chrome against localhost",
