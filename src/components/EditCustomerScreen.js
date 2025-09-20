@@ -260,9 +260,9 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
 
                 {/* Special Requests */}
                 <div>
-                    <h3>Other Details</h3>
+                    <h3>Special Requests</h3>
                     <textarea
-                        placeholder="Enter other details"
+                        placeholder="Enter special requests"
                         value={formData.specialRequests}
                         onChange={(e) => handleInputChange('specialRequests', e.target.value)}
 
