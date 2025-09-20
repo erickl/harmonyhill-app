@@ -7,6 +7,8 @@ import * as utils from "../utils.js";
 import "./SideMenu.css";
 
 export default function SideMenu() {
+    const [user, setUser] = useState(null);
+
     const { open, close } = useMenu();
 
     const [errorMessage, setErrorMessage] = useState(null);
@@ -23,6 +25,14 @@ export default function SideMenu() {
             onError("Couldn't logout");
         }
     }
+
+    useEffect(() => {
+        const getUser = async() => {
+            const thisUser = await userService.getCurrentUserName();
+            setUser(thisUser);
+        }
+        getUser();
+    }, []);
 
     return (
         <div
@@ -44,12 +54,14 @@ export default function SideMenu() {
         >
             <button onClick={close} style={{ color: 'white', marginBottom: '1rem' }}>Close</button>
             <ul>
+                
                 <li><a href="/" style={{ color: 'white' }}>Home</a></li>
                 <li><a onClick={() => logout()} style={{ color: 'white' }}>Logout</a></li>
             </ul>
 
             <div className="side-menu-footer">
-                <p>v{packageJson.version}, {utils.to_yyMMddHHmm(null, "/")}</p>
+                <p>User: {user}</p>
+                <p>v{packageJson.version}</p>
             </div>
 
             {errorMessage && (
