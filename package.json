@@ -1,6 +1,6 @@
 {
   "name": "harmonyhill-app",
-  "version": "3.0",
+  "version": "3.5",
   "private": true,
   "dependencies": {
     "@capacitor/android": "^7.4.0",
