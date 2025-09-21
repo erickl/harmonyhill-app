@@ -81,6 +81,26 @@ export function sort(unsorted, fieldName, order = "asc") {
     }
 }
 
+export async function getOneFromSubCollection(collectionName, id, onError = null) {
+    try {
+        const q = query(
+            collectionGroup(db, collectionName),
+            where("__name__", "==", id),
+            limit(1)
+        );
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            return null;
+        }
+        
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+        return docs[0];
+    } catch(e) {
+        if(onError) onError(`Error getting ${id} from ${collectionName}: ${e.message}`);
+    }
+}
+
 export async function getSubCollections(collectionName, filters = [], ordering = []) {
     try {
         const collectionGroupRef = collectionGroup(db, collectionName);
