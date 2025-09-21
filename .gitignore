@@ -27,6 +27,7 @@ yarn-error.log*
 .firebaserc
 .firebase/
 firebase-debug.log
+firestore-debug.log
 firebase-debug.*.log
 firebase.json.local
 **/serviceAccountKey.json

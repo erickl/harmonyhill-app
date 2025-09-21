@@ -58,6 +58,12 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 - see local DB: http://localhost:4000/firestore/default/data
 - export data: firebase emulators:export ./emulator-data
 
+- How to start debugging firebase functions
+    - node --inspect=9229 ./node_modules/.bin/firebase emulators:start --import=./emulator-data
+
+How to trigger scheduled functions
+- firebase functions:shell, then hourlyJob()
+
 
 
 
