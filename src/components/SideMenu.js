@@ -40,10 +40,10 @@ export default function SideMenu() {
                 display: "flex",
                 flexDirection: "column",
                 height: "100vh",         /* full height */
-                width: "40vw",         /* or whatever your sidebar width is */
+                width: "20vw",         /* or whatever your sidebar width is */
                 position: 'fixed',
                 top: 0,
-                left: open ? 0 : '-500px',
+                transform: open ? 'translateX(0)' : 'translateX(-100%)',
                 height: '100%',
                 backgroundColor: '#333',
                 color: 'white',

@@ -244,7 +244,7 @@ async function mapObject(data) {
         activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     }
     
-    if(Object.hasOwn(data, "needsProvider")) {
+    if(Object.hasOwn(data, "needsProvider") && !utils.isEmpty(data.needsProvider)) {
         activity.needsProvider = data.needsProvider;
         if(data.needsProvider === true) {
             if(utils.isString(data?.provider))      activity.provider = data.provider;
