@@ -18,21 +18,21 @@ export async function get(filterOptions = {}, onError = null) {
     let path = [dao.constant.BOOKINGS];
     let queryFilter = [];
 
-    if (Object.hasOwn(filterOptions, "house")) {
+    if (utils.exists(filterOptions, "house")) {
         queryFilter.push(where("house", "==", filterOptions.house));
     }
-    if (Object.hasOwn(filterOptions, "date")) {
+    if (utils.exists(filterOptions, "date")) {
         const fireStoreDate = utils.toFireStoreTime(filterOptions.date);
         queryFilter.push(where("checkInAt", "<=", fireStoreDate));
         queryFilter.push(where("checkOutAt", ">=", fireStoreDate));
     }
 
-    if (Object.hasOwn(filterOptions, "after")) {
+    if (utils.exists(filterOptions, "after")) {
         const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
         queryFilter.push(where("checkOutAt", ">=", afterDateFireStore));
     }
 
-    if (Object.hasOwn(filterOptions, "before")) {
+    if (utils.exists(filterOptions, "before")) {
         const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
         queryFilter.push(where("checkInAt", "<=", beforeDateFireStore));
     }

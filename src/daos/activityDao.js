@@ -50,20 +50,20 @@ export async function getMeals(bookingId, options = {}) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
     let filters = [];
 
-    if(!Object.hasOwn(options, "category")) {
+    if(!utils.exists(options, "category")) {
         options.category = "meal";
     }
 
     // startingAt is a string in the format YYYY-MM-DD, without time
-    if (Object.hasOwn(options, "startingAt")) {
+    if (utils.exists(options, "startingAt")) {
         filters.push(where("startingAt", "==", utils.toFireStoreTime(options.startingAt)));
     }
 
-    if (Object.hasOwn(options, "category")) {
+    if (utils.exists(options, "category")) {
         filters.push(where("category", "==", options.category));
     }
 
-    if (Object.hasOwn(options, "subCategory")) {
+    if (utils.exists(options, "subCategory")) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
     
@@ -78,27 +78,27 @@ export async function getBookingActivities(bookingId, options = {}) {
 
     let filters = [];
     
-    if (Object.hasOwn(options, "category")) {
+    if (utils.exists(options, "category")) {
         filters.push(where("category", "==", options.category));
     }
 
-    if (Object.hasOwn(options, "subCategory")) {
+    if (utils.exists(options, "subCategory")) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    if (Object.hasOwn(options, "after")) {
+    if (utils.exists(options, "after")) {
         filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
     }
 
-    if (Object.hasOwn(options, "before")) {
+    if (utils.exists(options, "before")) {
         filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
     }
 
-    if (Object.hasOwn(options, "assignedTo")) {
+    if (utils.exists(options, "assignedTo")) {
         filters.push(where("assignedTo", "==", options.assignedTo));
     }
 
-    if (Object.hasOwn(options, "hasProvider")) {
+    if (utils.exists(options, "hasProvider")) {
         filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
     }
 
@@ -111,20 +111,20 @@ export async function getBookingActivities(bookingId, options = {}) {
 export async function getAllActivities(options = {}) { 
     let filters = [];
     
-    if (Object.hasOwn(options, "category")) {
+    if (utils.exists(options, "category")) {
         filters.push(where("category", "==", options.category));
     }
 
-    if (Object.hasOwn(options, "subCategory")) {
+    if (utils.exists(options, "subCategory")) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    if (Object.hasOwn(options, "after")) {
+    if (utils.exists(options, "after")) {
         const after = utils.toFireStoreTime(options.after);
         filters.push(where("startingAt", ">=", after));
     }
 
-    if (Object.hasOwn(options, "before")) {
+    if (utils.exists(options, "before")) {
         const before = utils.toFireStoreTime(options.before);
         filters.push(where("startingAt", "<=", before));
     }
@@ -155,7 +155,7 @@ export async function getDishes(bookingId, mealId, filterOptions = {}) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES];
     let filters = [];
 
-    if (Object.hasOwn(filterOptions, "isFree")) {
+    if (utils.exists(filterOptions, "isFree")) {
         filters.push(where("isFree", "==", filterOptions.isFree));
     }
     
@@ -175,11 +175,11 @@ export async function getOne(bookingId, id) {
 export async function getTypes(filterOptions = {}) {
     let filters = [];
 
-    if (Object.hasOwn(filterOptions, "category")) {
+    if (utils.exists(filterOptions, "category")) {
         filters.push(where("category", "==", filterOptions.category));
     }
 
-    if (Object.hasOwn(filterOptions, "subCategory")) {
+    if (utils.exists(filterOptions, "subCategory")) {
         filters.push(where("subCategory", "==", filterOptions.subCategory));
     }
 
@@ -191,7 +191,7 @@ export async function getTypes(filterOptions = {}) {
         return [];
     }
 
-    if(Object.hasOwn(filterOptions, 'house')) {
+    if(utils.exists(filterOptions, 'house')) {
         activityTypes = activityTypes.filter(item => item.houseAvailability.includes(filterOptions.house));
     }
 

@@ -149,17 +149,17 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
         const now = new Date();
 
         // Remove any field which should not be updated
-        if(Object.hasOwn(updatedData, "createdAt")) {
+        if(utils.exists(updatedData, "createdAt")) {
             delete updatedData.createdAt;
         }
-        if(Object.hasOwn(updatedData, "createdBy")) {
+        if(utils.exists(updatedData, "createdBy")) {
             delete updatedData.createdBy;
         }
 
-        if(Object.hasOwn(updatedData, "id")) {
+        if(utils.exists(updatedData, "id")) {
             delete updatedData.id;
         }
-        if(Object.hasOwn(updatedData, "ref")) {
+        if(utils.exists(updatedData, "ref")) {
             delete updatedData.ref;
         }
 
@@ -174,7 +174,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
                 return true;
             }
                 
-            updatedData.updateLogs = Object.hasOwn(originalData, "updateLogs") ? originalData.updateLogs : [];
+            updatedData.updateLogs = utils.exists(originalData, "updateLogs") ? originalData.updateLogs : [];
             updatedData.updateLogs.push(diffStr);
 
             // Log user activity

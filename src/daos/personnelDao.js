@@ -1,18 +1,19 @@
 import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js"
+import * as utils from "../utils.js";
 
 export async function get(options = {}) {
     let filters = [];
     
-    if(Object.hasOwn(options, "name")) {
+    if(utils.exists(options, "name")) {
         filters.push(where("name", "==", options.name));
     }
 
-    if(Object.hasOwn(options, "activity")) {
+    if(utils.exists(options, "activity")) {
         filters.push(where("activity", "==", options.activity.toLowerCase()));
     }
 
-    if(Object.hasOwn(options, "location")) {
+    if(utils.exists(options, "location")) {
         filters.push(where("location", "==", options.location.toLowerCase()));
     }
 

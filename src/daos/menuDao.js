@@ -9,11 +9,11 @@ export async function getOne(id) {
 export async function get(options = {}) {
     let filters = [];
 
-    if(Object.hasOwn(options, 'isFavorite')) {
+    if(utils.exists(options, 'isFavorite')) {
         filters.push(where("isFavorite", "==", options.isFavorite));
     }
 
-    if(Object.hasOwn(options, 'name')) {
+    if(utils.exists(options, 'name')) {
        filters.push(where("name", "==", options.name));
     }
 
@@ -32,16 +32,16 @@ export async function get(options = {}) {
     }
 
     // Cannot have more than 1 array-contains filter in one firestore query (??), so we'll do it manually here instead 
-    if(Object.hasOwn(options, 'meal')) {
+    if(utils.exists(options, 'meal')) {
         menu = menu.filter(item => item.meals.includes(options.meal));
     }
 
-    if(Object.hasOwn(options, 'house')) {
+    if(utils.exists(options, 'house')) {
         menu = menu.filter(item => item.houseAvailability.includes(options.house));
     }
 
     // Remove any menu items which contain any of the given allergens
-    if (Object.hasOwn(options, 'allergens')) {
+    if (utils.exists(options, 'allergens')) {
         menu = menu.filter(item =>
             !options.allergens.some(allergen => item.allergens.includes(allergen))
         );

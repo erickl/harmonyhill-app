@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useGoogleApi } from "../hooks/useGoogleApi";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import * as utils from "../utils.js";
 
 // https://console.cloud.google.com/auth/overview?project=harmonyhill-1
 
@@ -97,7 +98,7 @@ export default function SheetUploader({onError}) {
             const response = await fetch(sheetApiEndpoint, requestBody);
             const result = await response.json();
             
-            if(Object.hasOwn(result, "error")) {
+            if(utils.exists(result, "error")) {
                 const error = result.error;
                 onError(`Error calling Google Sheet API: ${error.message} (${error.code})`);
             } else {

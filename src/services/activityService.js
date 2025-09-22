@@ -197,15 +197,15 @@ export async function update(bookingId, activityId, activityUpdateData, onError)
     let activityUpdate = await mapObject(activityUpdateData, true);
 
     // When changing assignee 
-    if(Object.hasOwn(activityUpdate, "assignedTo") && existing.assignedTo !== activityUpdate.assignedTo) {
+    if(utils.exists(activityUpdate, "assignedTo") && utils.isString(activityUpdate.assignedTo) && existing.assignedTo !== activityUpdate.assignedTo) {
         activityUpdate.assigneeAccept = false;
     }
     
     // Don't try to update booking name or house
-    if(Object.hasOwn(activityUpdate, "name")) {
+    if(utils.exists(activityUpdate, "name")) {
         delete activityUpdate.name;
     }
-    if(Object.hasOwn(activityUpdate, "house")) {
+    if(utils.exists(activityUpdate, "house")) {
         delete activityUpdate.house;
     }
 
@@ -234,17 +234,17 @@ async function mapObject(data) {
     if(utils.isDate(data?.startingAt))      activity.startingAt = utils.toFireStoreTime(data.startingAt);
     
     // Date is obligatory, but time might be set later, so startingTime might be null now
-    if(Object.hasOwn(data, "startingTime")) {
+    if(utils.exists(data, "startingTime")) {
         activity.startingTime = utils.isDate(data?.startingTime) ? utils.toFireStoreTime(data.startingTime) : null;
     }
 
     if(utils.isAmount(data?.customerPrice)) activity.customerPrice = data.customerPrice;
 
-    if(Object.hasOwn(data, "isFree")) {
+    if(utils.exists(data, "isFree")) {
         activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     }
     
-    if(Object.hasOwn(data, "needsProvider") && !utils.isEmpty(data.needsProvider)) {
+    if(utils.exists(data, "needsProvider") && !utils.isEmpty(data.needsProvider)) {
         activity.needsProvider = data.needsProvider;
         if(data.needsProvider === true) {
             if(utils.isString(data?.provider))      activity.provider = data.provider;
@@ -258,14 +258,14 @@ async function mapObject(data) {
         if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
     }
 
-    if(Object.hasOwn(data, "status") ) {
+    if(utils.exists(data, "status") ) {
         activity.status = utils.isString(data?.status) ? data.status : "requested";
     }
 
     if(utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
     if(utils.isBoolean(data?.assigneeAccept)) activity.assigneeAccept = data.assigneeAccept;
 
-    if(Object.hasOwn(data, "changeDescription")) {
+    if(utils.exists(data, "changeDescription")) {
         activity.changeDescription = data.changeDescription;
     }
 
@@ -341,6 +341,10 @@ export async function getChangeDescription(oldData, newData) {
 
     if(oldData.provider !== newData.provider) {
         changeDescription.push(`New provider: from ${oldData.provider} to ${newData.provider}`);
+    }
+
+    if(oldData.comments !== newData.comments) {
+        changeDescription.push(`Comments update: from ${oldData.comments} to ${newData.comments}`);
     }
 
     if(!utils.isEmpty(newData?.dishes)) {

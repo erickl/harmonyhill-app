@@ -55,14 +55,14 @@ function makePersonnelId(personnel) {
 
 async function mapPriceObject(data, isUpdate = false) {
     let object = {};
-    if(Object.hasOwn(data, "name"))        object.name     = data.name;
+    if(utils.exists(data, "name"))        object.name     = data.name;
     if(typeof data?.activity === "string") object.activity = data.activity.toLowerCase();
     if(typeof data?.subCategory === "string") object.subCategory = data.subCategory.toLowerCase();
-    if(Object.hasOwn(data, "price"))       object.price = data.price;
+    if(utils.exists(data, "price"))       object.price = data.price;
     
     // Transport data
-    if(Object.hasOwn(data, "to"))          object.to = data.to;
-    if(Object.hasOwn(data, "from"))        object.from = data.from;
+    if(utils.exists(data, "to"))          object.to = data.to;
+    if(utils.exists(data, "from"))        object.from = data.from;
 
     return object;
 }

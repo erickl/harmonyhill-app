@@ -38,7 +38,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
     const handleExpandCourseSection = (course) => {
         const newExpandedCourses = { ...(expandedCourses || {}) };
-        if(!Object.hasOwn(newExpandedCourses, course)) {
+        if(!utils.exists(newExpandedCourses, course)) {
             newExpandedCourses[course] = false;
         }
         newExpandedCourses[course] = !newExpandedCourses[course];

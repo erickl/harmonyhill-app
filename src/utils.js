@@ -12,6 +12,10 @@ export function toNumber(valueIn) {
     }
 }
 
+export function exists(obj, fieldName) {
+    return Object.hasOwn(obj, fieldName) && obj[fieldName] !== undefined;
+}
+
 export function isBoolean(value) {
     return typeof value === "boolean";
 }

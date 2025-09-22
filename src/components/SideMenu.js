@@ -39,8 +39,8 @@ export default function SideMenu() {
             style={{
                 display: "flex",
                 flexDirection: "column",
-                height: "100vh",         /* full height */
-                width: "20vw",         /* or whatever your sidebar width is */
+                height: "100vh",    
+                width: "20vw",         
                 position: 'fixed',
                 top: 0,
                 transform: open ? 'translateX(0)' : 'translateX(-100%)',

@@ -68,27 +68,27 @@ export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, 
     const path = [dao.constant.EXPENSES];
     let queryFilter = [];
 
-    if (Object.hasOwn(filterOptions, "category")) {
+    if (utils.exists(filterOptions, "category")) {
         const category = filterOptions.category.trim().toLowerCase();
         queryFilter.push(where("category", "==", category));
     }
     
-    if (Object.hasOwn(filterOptions, "paymentMethod")) {
+    if (utils.exists(filterOptions, "paymentMethod")) {
         const paymentMethod = filterOptions.paymentMethod.trim().toLowerCase();
         queryFilter.push(where("paymentMethod", "==", paymentMethod));
     }
 
-    if (Object.hasOwn(filterOptions, "purchasedBy")) {
+    if (utils.exists(filterOptions, "purchasedBy")) {
         const purchasedBy = filterOptions.purchasedBy.trim().toLowerCase();
         queryFilter.push(where("purchasedBy", "==", purchasedBy));
     }
 
-    if (Object.hasOwn(filterOptions, "after")) {
+    if (utils.exists(filterOptions, "after")) {
         const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
         queryFilter.push(where("purchasedAt", ">=", afterDateFireStore));
     }
 
-    if (Object.hasOwn(filterOptions, "before")) {
+    if (utils.exists(filterOptions, "before")) {
         const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
         queryFilter.push(where("purchasedAt", "<=", beforeDateFireStore));
     }
