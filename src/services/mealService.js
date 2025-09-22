@@ -106,12 +106,16 @@ async function addDishes(bookingId, mealId, dishesData, onError) {
 
 export async function update(bookingId, mealId, mealUpdateData, onError) {
     const updateMealSuccess = await activityDao.transaction(async () => {
-        // const existing = await getMeal(bookingId, mealId);
-        // if(!existing) {
-        //     onError(`Cannot find meal ${bookingId}/${mealId} in database`);
-        //     return false;
-        // } 
-        
+        const existing = await getMeal(bookingId, mealId);
+        if(!existing) {
+            onError(`Cannot find meal ${bookingId}/${mealId} in database`);
+            return false;
+        } 
+
+        // When changing assignee 
+        if(utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && existing.assignedTo !== mealUpdateData.assignedTo) {
+            mealUpdateData.assigneeAccept = false;
+        }
 
         // Update meal data
         const mealUpdate = await mapMealObject(mealUpdateData);
@@ -326,7 +330,7 @@ async function mapMealObject(mealData) {
     }
 
     // Date is obligatory, but time might be set later, so might be null
-    if(Object.hasOwn(mealData, "status")) {
+    if(utils.exists(mealData, "startingTime")) {
         meal.startingTime = utils.isDate(mealData?.startingTime) ? utils.toFireStoreTime(mealData.startingTime) : null;
     }
 
@@ -339,7 +343,7 @@ async function mapMealObject(mealData) {
 
     if(utils.isBoolean(mealData?.assigneeAccept)) meal.assigneeAccept = mealData.assigneeAccept;
 
-    if(Object.hasOwn(mealData, "status")) {
+    if(utils.exists(mealData, "status")) {
         meal.status = utils.isString(mealData?.status) ? mealData.status : "requested";
     }
 
@@ -349,7 +353,7 @@ async function mapMealObject(mealData) {
     
     if(utils.isBoolean(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
 
-    if(Object.hasOwn(mealData, "changeDescription")) {
+    if(utils.exists(mealData, "changeDescription")) {
         meal.changeDescription = mealData.changeDescription;
     }
 
