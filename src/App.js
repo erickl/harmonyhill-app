@@ -32,6 +32,7 @@ function App() {
     //activityService.testActivities(dt);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [loading,    setLoading]    = useState(true);
     const [activeTab, setActiveTab] = useState('customers');
     const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
 
@@ -42,6 +43,7 @@ function App() {
                 setIsLoggedIn(isApproved);
             }
             else setIsLoggedIn(false);
+            setLoading(false);
         });
 
         // cleanup to avoid multiple listeners
@@ -59,6 +61,12 @@ function App() {
     const navigate = (screen) => { // For navigation within a tab
         setCurrentScreen(screen);
     };
+
+    if(loading) {
+        return (
+            <p>Loading...</p>
+        )
+    }
 
     let screenToDisplay;
     if (!isLoggedIn) {
