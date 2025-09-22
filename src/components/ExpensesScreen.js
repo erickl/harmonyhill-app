@@ -175,6 +175,12 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                         <div>
                                             Category: {utils.capitalizeWords(expense.category)}
                                         </div>
+                                        <div>
+                                            Created At: {utils.to_yyMMddHHmm(expense.createdAt, "/")}
+                                        </div>
+                                        <div>
+                                            Created By: {utils.capitalizeWords(expense.createdBy)}
+                                        </div>
                                         {expense.bookingName && (<div>
                                             Booking: {expense.bookingName}
                                         </div>)}
