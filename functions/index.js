@@ -7,9 +7,9 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+
+// const logger = require("firebase-functions/logger");
+// const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
@@ -20,7 +20,7 @@ if (!admin.apps.length) {
 }
 
 // Only when running Firestore emulator
-if (process.env.FUNCTIONS_EMULATOR === 'true') {
+if (process.env.FUNCTIONS_EMULATOR === "true") {
     admin.firestore().settings({
         host: "localhost:8080",
         ssl: false,
@@ -34,10 +34,10 @@ if (process.env.FIREBASE_DATABASE_EMULATOR_HOST) {
 }
 
 // To get more time for step debugging during development
-if (process.env.FUNCTIONS_EMULATOR === 'true') {
+if (process.env.FUNCTIONS_EMULATOR === "true") {
     setGlobalOptions({ timeoutSeconds: 300 });
 } else {
-    setGlobalOptions({ timeoutSeconds: 60 }); 
+    setGlobalOptions({ timeoutSeconds: 60 });
 }
 
 // Create and deploy your first functions
@@ -80,19 +80,19 @@ exports.hourlyJob = onSchedule("every 60 minutes", async (event) => {
         .where("needsProvider", "==", true)
         .where("provider", "==", "")
         .orderBy("startingAt")
-        //.limit(10)
+        // .limit(10)
         .get();
 
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+    const docs = snapshot.docs.map((doc) => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
     const docIds = docs.map((doc) => doc.id);
- 
+
     // Update the activity providers notification document
     await db.collection("notifications").doc("activity-providers-neededP") .set({
         name           : "Activity Providers Needed",
         collectionName : "activities",
         createdAt      : new Date().toISOString(),
         count          : docs.length,
-        ids            : docIds
+        ids            : docIds,
     });
 
     console.log("⏰ Hourly job done", new Date().toISOString());

@@ -11,6 +11,11 @@ module.exports = {
     "google",
   ],
   rules: {
+    "indent": ["warn", 2],
+    "key-spacing": "off",
+    "object-curly-spacing": ["off"],
+    "max-len": ["off"],
+    "no-unused-vars": ["warn"],
     "no-restricted-globals": ["error", "name", "length"],
     "prefer-arrow-callback": "error",
     "quotes": ["error", "double", {"allowTemplateLiterals": true}],
