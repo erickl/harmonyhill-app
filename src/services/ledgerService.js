@@ -16,16 +16,21 @@ export async function getTotalExpenses(filter, onError) {
     return expenseSum;
 }
 
+/**
+ * Get total company income since the last closed financial date, excluding petty cash top ups
+ * @param {*} onError 
+ * @returns 
+ */
 export async function getTotalIncomes(onError) {
     const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(onError);
     if(lastClosedPettyCashAmount === false) {
         return false;
     }
-    const lastClosedAt = lastClosedPettyCashAmount.closedAt;
     
-    const ledgerFilter = { "after" : lastClosedAt };
+    const ledgerFilter = { "after" : lastClosedPettyCashAmount.closedAt };
     const incomes = await incomeService.get(ledgerFilter, onError);
-    const incomeSum = incomes.reduce((sum, income) => sum + income.amount, 0);
+    const filteredIncomes = incomes.filter((income) => income.category !== "petty cash top up");
+    const incomeSum = filteredIncomes.reduce((sum, income) => sum + income.amount, 0);
     return incomeSum;
 }
 

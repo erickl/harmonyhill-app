@@ -119,14 +119,12 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                     <h2 className="card-title">Income</h2>
                     {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
                 </div>
-                <div>
-                    {incomeSum && (<h4>Income: {utils.formatDisplayPrice(incomeSum, true)}</h4>)}
-                </div>
             
                 <div>
                     <button className="add-button" onClick={() => onClose()}>
                         +
                     </button>
+                    {incomeSum && (<h4>Income (excl top ups): {utils.formatDisplayPrice(incomeSum, true)}</h4>)}
                 </div>
             </div>
             <div className="card-content">
