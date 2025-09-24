@@ -41,7 +41,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         assignedTo       : activityToEdit.assignedTo,
         assigneeAccept   : activityToEdit.assigneeAccept,
         status           : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
-        dishes           : activityToEdit.dishes, // not null only for meal activities 
+        dishes           : activityToEdit.dishes, // not null only for meal activities
+        isFree           : activityToEdit.isFree,
         
         // Auxiliary data
         house          : customer.house,
