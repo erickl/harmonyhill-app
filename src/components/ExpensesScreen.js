@@ -129,14 +129,12 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                     <h2 className="card-title">Expenses</h2>
                     {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
                 </div>
-                <div>
-                    {expenseSum && (<h4>Expense: {utils.formatDisplayPrice(expenseSum, true)}</h4>)}
-                </div>
             
                 <div>
                     <button className="add-button" onClick={() => onClose()}>
                         +
                     </button>
+                    {expenseSum && (<h4>Expense: {utils.formatDisplayPrice(expenseSum, true)}</h4>)}
                 </div>
             </div>
             <div className="card-content">
