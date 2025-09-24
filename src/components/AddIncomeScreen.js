@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
 import * as incomeService from "../services/incomeService.js";
 import * as bookingService from "../services/bookingService.js";
+import * as activityService from "../services/activityService.js";
 import "./AddIncomeScreen.css";
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
 import IncomeScreen from "./IncomeScreen.js";
@@ -36,6 +37,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     const [bookings,        setBookings       ] = useState([]       );
     const [formData,        setFormData       ] = useState(emptyForm);
     const [showSuccess,     setShowSuccess    ] = useState(false    );
+    const [activities,      setActivities     ] = useState([]       );
 
     const onValidationError = (error) => {
         setValidationError(error);
@@ -50,6 +52,11 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         handleChange("category", name);
     }
 
+    const onActivitySelect = (activity) => {
+        const id = activity ? activity[0].id : '';
+        handleChange("activityId", id);
+    }
+
     const onPaymentMethodSelect = (paymentMethod) => {
         const name = paymentMethod ? paymentMethod.name : '';
         handleChange("paymentMethod", name);
@@ -58,6 +65,9 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     const onBookingSelect = (booking) => {
         const id = booking ? booking[0].id : '';
         handleChange("bookingId", id);
+        if(needsActivityInfo) {
+            getBookingActivities(id);
+        }
     }
 
     const validateFormData = async (newFormData) => {
@@ -124,7 +134,26 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         commentsHint = "Please name provider";
     }
 
+    const getBookings = async() => {
+        const filter = {"after": utils.today(-30), "before" : utils.today(10)};
+        const bookings = await bookingService.get(filter, onError);
+        const bookingsByName = utils.groupBy(bookings, (booking) => {
+            const house = booking.house === "harmony hill" ? "HH" : "JN";
+            return `${utils.to_YYMMdd(booking.checkInAt)} ${house} ${booking.name}`
+        });
+        setBookings(bookingsByName);
+    }
+
+    const getBookingActivities = async(bookingId) => {
+        const bookingActivities = await activityService.get(bookingId);
+            const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
+            return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
+        });
+        setActivities(activitiesByName);
+    };
+
     const needsGuestInfo = category === "guest payment" || category === "commission";
+    const needsActivityInfo = needsGuestInfo;
 
     // Initial validation
     useEffect(() => {
@@ -132,17 +161,12 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     }, []);
 
     useEffect(() => {
-        const getBookings = async() => {
-            const filter = {"after": utils.today(-30), "before" : utils.today(10)};
-            const bookings = await bookingService.get(filter, onError);
-            const bookingsByName = utils.groupBy(bookings, (booking) => {
-                const house = booking.house === "harmony hill" ? "HH" : "JN";
-                return `${utils.to_YYMMdd(booking.checkInAt)} ${house} ${booking.name}`
-            });
-            setBookings(bookingsByName);
-        }
         if(needsGuestInfo && utils.isEmpty(bookings)) {
             getBookings();
+        }
+
+        if(needsActivityInfo && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
+            getBookingActivities(formData.bookingId);
         }
     }, [formData]);
 
@@ -215,6 +239,17 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                             options={bookings}
                             current={formData.bookingId}
                             onSelect={onBookingSelect}
+                        />
+                    </div>
+                )}
+
+                {needsActivityInfo && (
+                    <div className="purchase-form-group">
+                        <Dropdown 
+                            label={"Activity"} 
+                            options={activities}
+                            current={formData.activityId}
+                            onSelect={onActivitySelect}
                         />
                     </div>
                 )}
