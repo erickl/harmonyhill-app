@@ -26,6 +26,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         category      : incomeToEdit ? incomeToEdit.category      : '',
         index         : incomeToEdit ? incomeToEdit.index         : '',
         bookingId     : incomeToEdit ? incomeToEdit.bookingId     : '',
+        activityId    : incomeToEdit ? incomeToEdit.activityId    : '',
         comments      : incomeToEdit ? incomeToEdit.comments      : '',
         description   : incomeToEdit ? incomeToEdit.description   : '',
     };
@@ -38,6 +39,15 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     const [formData,        setFormData       ] = useState(emptyForm);
     const [showSuccess,     setShowSuccess    ] = useState(false    );
     const [activities,      setActivities     ] = useState([]       );
+ 
+    const needsGuestInfo = (formDataCategory) => {
+        const category = formDataCategory.trim().toLowerCase();
+        return category === "guest payment" || category === "commission";
+    }
+    const needsActivityInfo = (formDataCategory) => {
+        const category = formDataCategory.trim().toLowerCase();
+        return category === "guest payment" || category === "commission";
+    }
 
     const onValidationError = (error) => {
         setValidationError(error);
@@ -49,7 +59,18 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
     const onCategorySelect = (category) => {
         const name = category ? category.name : '';
-        handleChange("category", name);
+        const change = {
+            "category": name,
+        }
+
+        const guestInfoNeeded = needsGuestInfo(category);
+
+        if(!guestInfoNeeded) {
+            change["bookingId"] = null;
+            change["activityId"] = null;
+        }
+
+        handleChange("_batch", change);
     }
 
     const onActivitySelect = (activity) => {
@@ -64,8 +85,12 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
     const onBookingSelect = (booking) => {
         const id = booking ? booking[0].id : '';
-        handleChange("bookingId", id);
-        if(needsActivityInfo) {
+        handleChange("_batch", {
+            "bookingId"  : id,
+            "activityId" : null
+        });
+
+        if(needsActivityInfo(formData.category)) {
             getBookingActivities(id);
         }
     }
@@ -127,10 +152,8 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         }        
     };
 
-    const category = formData.category.trim().toLowerCase();
-
     let commentsHint = "";
-    if(category === "commission") {
+    if(formData.category.trim().toLowerCase() === "commission") {
         commentsHint = "Please name provider";
     }
 
@@ -152,20 +175,17 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         setActivities(activitiesByName);
     };
 
-    const needsGuestInfo = category === "guest payment" || category === "commission";
-    const needsActivityInfo = needsGuestInfo;
-
     // Initial validation
     useEffect(() => {
         validateFormData(emptyForm);
     }, []);
 
     useEffect(() => {
-        if(needsGuestInfo && utils.isEmpty(bookings)) {
+        if(needsGuestInfo(formData.category) && utils.isEmpty(bookings)) {
             getBookings();
         }
 
-        if(needsActivityInfo && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
+        if(needsActivityInfo(formData.category) && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
             getBookingActivities(formData.bookingId);
         }
     }, [formData]);
@@ -232,7 +252,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     />
                 </div>
 
-                {needsGuestInfo && (
+                {needsGuestInfo(formData.category) && (
                     <div className="purchase-form-group">
                         <Dropdown 
                             label={"Booking"} 
@@ -243,7 +263,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     </div>
                 )}
 
-                {needsActivityInfo && (
+                {needsActivityInfo(formData.category) && !utils.isEmpty(formData.bookingId) && (
                     <div className="purchase-form-group">
                         <Dropdown 
                             label={"Activity"} 

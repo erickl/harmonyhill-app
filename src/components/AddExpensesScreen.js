@@ -117,17 +117,33 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         fetchTeamMembers();
     }, []);
 
-    const category = formData.category.trim().toLowerCase();
-    const needsGuestInfo = category === "guest expenses" || category === "guest refunds";
-    const needsActivityInfo = needsGuestInfo;
+    
+    const needsGuestInfo = (formDataCategory) => {
+        const category = formDataCategory.category.trim().toLowerCase();
+        return category === "guest expenses" || category === "guest refunds";
+    }
+    const needsActivityInfo = (formDataCategory) => {
+        const category = formDataCategory.category.trim().toLowerCase();
+        return category === "guest expenses" || category === "guest refunds";
+    }
 
     // Fetch booking data only if needed and if it's not already fetched
     useEffect(() => {
-        if(needsGuestInfo && utils.isEmpty(bookings)) {
+        const guestInfoNeeded = needsGuestInfo(formData.category);
+        const activityInfoNeeded = needsActivityInfo(formData.category);
+
+        if(guestInfoNeeded && utils.isEmpty(bookings)) {
             getBookings();
         }
-        if(needsActivityInfo && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
+        if(activityInfoNeeded && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
             getBookingActivities(formData.bookingId);
+        }
+
+        if(!guestInfoNeeded) {
+            handleChange("_batch", {
+                "bookingId"  : null,
+                "activityId" : null
+            });
         }
     }, [formData]);
 
@@ -144,11 +160,20 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const onCategorySelect = (category) => {
         const name = category ? category.name : '';
 
-        // Description auto generated sometimes, by category & purchases
-        handleChange("_batch", {
-            "description" : "",
+        const change = {
             "category"    : name,
-        });
+            // Description auto generated sometimes, by category & purchases
+            "description" : "",
+        }
+
+        const guestInfoNeeded = needsGuestInfo(category);
+
+        if(!guestInfoNeeded) {
+            change["bookingId"] = null;
+            change["activityId"] = null;
+        }
+
+        handleChange("_batch", change);
     }
 
     const onPaymentMethodSelect = (paymentMethod) => {
@@ -158,8 +183,12 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
 
     const onBookingSelect = async (booking) => {
         const id = booking ? booking[0].id : '';
-        handleChange("bookingId", id);
-        if(needsActivityInfo) {
+        handleChange("_batch", {
+            "bookingId"  : id,
+            "activityId" : null
+        });
+        
+        if(needsActivityInfo(formData.category)) {
             getBookingActivities(id);
         }
     }
@@ -338,7 +367,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                         />
                     </div>
 
-                    {needsGuestInfo && (
+                    {needsGuestInfo(formData.category) && (
                         <div className="purchase-form-group">
                             <Dropdown 
                                 label={"Booking"} 
@@ -349,7 +378,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                         </div>
                     )}
 
-                    {needsActivityInfo && (
+                    {needsActivityInfo(formData.category) && !utils.isEmpty(formData.bookingId) && (
                         <div className="purchase-form-group">
                             <Dropdown 
                                 label={"Activity"} 
