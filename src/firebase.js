@@ -1,8 +1,8 @@
 import { initializeApp } from "firebase/app";
 //import { getAnalytics } from "firebase/analytics";
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { getAuth } from "firebase/auth";
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
@@ -57,6 +57,8 @@ const storage = getStorage(app, firebaseConfig.storageBucket);
 if (window.location.hostname === "localhost") {
     connectFirestoreEmulator(db, "localhost", 8080);
     connectFunctionsEmulator(functions, "localhost", 5001);
+    connectAuthEmulator(auth, "http://localhost:9099", 9099);
+    connectStorageEmulator(storage, "localhost", 9199);
 }
 
 export { db, functions, auth, analytics, storage };
