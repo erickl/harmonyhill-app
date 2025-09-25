@@ -10,7 +10,8 @@ import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import "./EditPurchaseScreen.css";
 import "../App.css";
-import ErrorNoticeModal from './ErrorNoticeModal.js';
+import { useNotification } from "../context/NotificationContext.js";
+
 
 const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) => {
 
@@ -19,12 +20,9 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     const [activityMenuItem, setActivityMenuItem] = useState(null );
     const [readyToSubmit,    setReadyToSubmit]    = useState(false);
     const [loading,          setLoading]          = useState(true );
-    const [errorMessage,     setErrorMessage]     = useState(null );
     const [validationError,  setValidationError]  = useState(null );
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError, onWarning } = useNotification();
 
     const [formData, setFormData] = useState({
         startingAt       : activityToEdit.startingAt,
@@ -140,6 +138,10 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
         fetchActivityMenuItemData();
 
         validateFormData(formData); 
+
+        if(formData.startingAt < utils.now()) {
+            onWarning(`You are editing an ongoing or old activity (started ${utils.to_yyMMddHHmm(formData.startingAt, "/")})`)
+        }
     }, []);
 
     // --- Render activityToEdit form or meal selection
@@ -195,13 +197,6 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
                         selected={formData.dishes}
                         onCancel={handleCancelConfirm}
                         onConfirm={handleEditPurchaseSubmit}
-                    />
-                )}
-
-                {errorMessage && (
-                    <ErrorNoticeModal 
-                        error={errorMessage}
-                        onClose={() => setErrorMessage(null) }
                     />
                 )}
 
