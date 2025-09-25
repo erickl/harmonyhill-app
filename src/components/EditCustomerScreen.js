@@ -54,7 +54,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
 
     // Initial validation
     useEffect(() => {
-            validateFormData(formData);
+        validateFormData(formData);
     }, [customer]);
 
     useEffect(() => {

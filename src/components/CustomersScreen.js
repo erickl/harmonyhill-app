@@ -10,6 +10,7 @@ import EditCustomerScreen from './EditCustomerScreen';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 import ConfirmModal from './ConfirmModal.js';
 import VeganHamburgerButton from './VeganHamburgerButton.js';
+import { useNotification } from "../context/NotificationContext.js";
 
 const CustomersScreen = ({ onNavigate }) => {
     const [customers,                  setCustomers]               = useState([]    );
@@ -24,10 +25,8 @@ const CustomersScreen = ({ onNavigate }) => {
     const [canSeeAllBookings,          setCanSeeAllBookings]       = useState(false ); // true if current user can see all future/past bookings or just the closest ones
     const [errorMessage,               setErrorMessage]            = useState(null  );
     const [bookingToDelete,            setBookingToDelete]         = useState(null  );
-    
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    };
+
+    const { onError, onWarning } = useNotification();
 
     const loadPermissions = async () => {
         const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
@@ -65,7 +64,7 @@ const CustomersScreen = ({ onNavigate }) => {
 
     useEffect(() => {
         const load = async () => {
-            await userService.logLastActive();
+            await userService.logLastActive(onError);
             await loadPermissions();    
             await fetchCustomers(false);
         };
@@ -123,7 +122,7 @@ const CustomersScreen = ({ onNavigate }) => {
     };
 
     const handleEditCustomer = (customer) => {
-        setCustomerToEdit(customer); // Set the customer to be edited
+        setCustomerToEdit(customer);
     };
 
     const handleGetAllCustomers = () => {
