@@ -142,7 +142,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
         const originalData = await getOne(path, id);
 
         if(!originalData) {
-            return await add(path, id, updatedData, onError);
+            throw new Error(`Document ${path}/${id} doesn't exist. Can't be updated`);
         }
 
         const currentUsername = await getCurrentUsername();
