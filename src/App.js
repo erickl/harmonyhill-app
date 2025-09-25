@@ -18,6 +18,7 @@ import * as userService from './services/userService.js';
 import * as personnelService from './services/personnelService.js';
 import { DateTime } from 'luxon';
 import { auth } from "./firebase";
+import { AppProviders } from './components/AppProviders.js';
 
 import './App.css';
 //import './models/Dish.js';
@@ -43,6 +44,7 @@ function App() {
                 setIsLoggedIn(isApproved);
             }
             else setIsLoggedIn(false);
+
             setLoading(false);
         });
 
@@ -88,11 +90,13 @@ function App() {
             <div className="app-container">
                 {isLoggedIn ? (
                     <>
-                        <SideMenu />
-                        <div className="content">
-                            {screenToDisplay}
-                        </div> { /* Use screenToDisplay */}
-                        <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+                        <AppProviders>
+                            <SideMenu />
+                            <div className="content">
+                                {screenToDisplay}
+                            </div> { /* Use screenToDisplay */}
+                            <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+                        </AppProviders>
                     </>
                 ) : (
                     <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
