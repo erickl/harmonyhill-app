@@ -41,12 +41,12 @@ export async function add(id, userData) {
     }
 }
 
-export async function update(id, userData) {
+export async function update(id, userData, onError) {
     try {
-        const success = await dao.update(['users'], id, userData, false);
+        const success = await dao.update(['users'], id, userData, false, onError);
         return success;
     } catch (error) {
-        console.error('Error updating user:', error);
+        onError(`Error updating user: ${error.message}`);
         return false;
     }
 }
