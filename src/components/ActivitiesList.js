@@ -4,6 +4,7 @@ import * as userService from "../services/userService.js";
 import ActivityComponent from './ActivityComponent';
 import EditPurchaseScreen from './EditPurchaseScreen.js';
 import * as activityService from "../services/activityService.js";
+import * as mealService from "../services/mealService.js";
 import "./ActivityComponent.css";
 import ConfirmModal from './ConfirmModal.js';
 import ErrorNoticeModal from "./ErrorNoticeModal.js";
@@ -93,13 +94,17 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
         const getActivities = async() => {
             setLoading(true);
 
-            const userCanSeeAllBookings = await loadPermissions();
-                        
-            const after = userCanSeeAllBookings  ? utils.now(-7) : utils.now(-2);
-            const before = userCanSeeAllBookings ? utils.now(30) : utils.now(7);
-            const filter = {"after" : after, "before" : before};
+            let activities = [];
 
-            const activities = customer ? await activityService.get(customer.id, filter) : await activityService.getAll(filter);
+            if(customer) {
+                activities = await activityService.get(customer.id);
+            } else {
+                const userCanSeeAllBookings = await loadPermissions();       
+                const after = userCanSeeAllBookings  ? utils.now(-7) : utils.now(-2);
+                const before = userCanSeeAllBookings ? utils.now(30) : utils.now(7);
+                const filter = {"after" : after, "before" : before};
+                activities = await activityService.getAll(filter);
+            }
 
             const allActivitiesByDate = activities.reduce((m, activity) => {
                 const date = activity.startingAt_ddMMM ? activity.startingAt_ddMMM : "Date TBD";
