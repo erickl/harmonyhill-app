@@ -119,11 +119,11 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
 
     
     const needsGuestInfo = (formDataCategory) => {
-        const category = formDataCategory.category.trim().toLowerCase();
+        const category = formDataCategory.trim().toLowerCase();
         return category === "guest expenses" || category === "guest refunds";
     }
     const needsActivityInfo = (formDataCategory) => {
-        const category = formDataCategory.category.trim().toLowerCase();
+        const category = formDataCategory.trim().toLowerCase();
         return category === "guest expenses" || category === "guest refunds";
     }
 
