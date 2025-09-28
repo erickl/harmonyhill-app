@@ -138,7 +138,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
 
         // Update total meal price
         if(updateDishesSuccess !== false) {
-            const updatedDishes = await getDishes(bookingId, mealId);
+            const updatedDishes = await getMealDishes(bookingId, mealId);
 
             const customerMealTotalPrice = mealUpdateData["isFree"] ? 0 : Object.values(updatedDishes).reduce((sum, dish) => {
                 return sum + (dish.isFree ? 0 : dish.quantity * parseInt(dish.customerPrice));
@@ -165,7 +165,7 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
         return false;
     }
 
-    const existingDishes = await getDishes(bookingId, mealId);
+    const existingDishes = await getMealDishes(bookingId, mealId);
 
     // If any existingDishes are no longer part of the meal, delete dish
     for(const existingDish of Object.values(existingDishes)) {
@@ -244,8 +244,12 @@ export async function getMealsByBooking(bookingId, options = {}) {
  * @returns all dishes for the given booking and meal, as key-value pairs, 
  * where the dish name is the key, and the dish is the value
  */
-export async function getDishes(bookingId, mealId, filterOptions) {
-    return await activityDao.getDishes(bookingId, mealId, filterOptions);
+export async function getMealDishes(bookingId, mealId, filterOptions) {
+    return await activityDao.getMealDishes(bookingId, mealId, filterOptions);
+}
+
+export async function getDishes(filterOptions, onError) {
+    return await activityDao.getDishes(filterOptions, onError);
 }
 
 export async function deleteDish(bookingId, mealId, dishId) {
@@ -408,7 +412,7 @@ export async function testMeal() {
         return false;
     }
 
-    const returnedMealItems = await getDishes(bookingId, mealId);
+    const returnedMealItems = await getMealDishes(bookingId, mealId);
     const wingkoMealItem = returnedMealItems.find(mealItem => mealItem.name === "Wingko Waffle");
 
     let x = 1;

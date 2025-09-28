@@ -151,7 +151,7 @@ export async function remove(bookingId, activityId, onError) {
     return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, onError);
 }
 
-export async function getDishes(bookingId, mealId, filterOptions = {}) {
+export async function getMealDishes(bookingId, mealId, filterOptions = {}) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES];
     let filters = [];
 
@@ -161,6 +161,44 @@ export async function getDishes(bookingId, mealId, filterOptions = {}) {
     
     return await dao.get(path, filters, [], -1);
 }
+
+export async function getDishes(filterOptions = {}, onError) {
+    ;
+    let filters = [];
+
+    if (utils.exists(filterOptions, "isFree")) {
+        filters.push(where("isFree", "==", filterOptions.isFree));
+    }
+
+    if (utils.exists(filterOptions, "name")) {
+        filters.push(where("name", "==", filterOptions.name));
+    }
+
+    if (utils.exists(filterOptions, "after")) {
+        const after = utils.toFireStoreTime(filterOptions.after);
+        filters.push(where("createdAt", ">=", after));
+    }
+
+    if (utils.exists(filterOptions, "before")) {
+        const before = utils.toFireStoreTime(filterOptions.before);
+        filters.push(where("createdAt", "<=", before));
+    }
+
+    const ordering = [ orderBy("createdAt", "asc") ];
+
+    const dishes = await dao.getSubCollections(dao.constant.DISHES, filters, ordering, onError);
+
+    const dishesWithParent = await Promise.all(dishes.map(async (dish) => {
+        const parent = await dao.getParent(dish);
+        return {
+            ...dish,      
+            parent: parent,
+        };
+    }));
+    
+    return dishesWithParent;
+}
+
 
 export async function getOne(bookingId, id) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];

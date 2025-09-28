@@ -98,10 +98,11 @@ export async function getOneFromSubCollection(collectionName, id, onError = null
         return docs[0];
     } catch(e) {
         if(onError) onError(`Error getting ${id} from ${collectionName}: ${e.message}`);
+        return null;
     }
 }
 
-export async function getSubCollections(collectionName, filters = [], ordering = []) {
+export async function getSubCollections(collectionName, filters = [], ordering = [], onError = null) {
     try {
         const collectionGroupRef = collectionGroup(db, collectionName);
         const docQuery = query(collectionGroupRef, ...filters, ...ordering);
@@ -114,7 +115,8 @@ export async function getSubCollections(collectionName, filters = [], ordering =
         const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
         return docs;
     } catch (e) {
-        throw new Error(`Error getting documents from collection ${collectionName}: `, e);
+        if(onError) onError(`Error getting documents from collection ${collectionName}: `, e);
+        return [];
     }
 }
 

@@ -48,7 +48,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             if(activity.category === "meal") {
                 // If this list is displayed for all customers, get the customer for each activity 
                 const mealCustomer = customer ? customer : await getParent(activity);
-                const dishes = await mealService.getDishes(mealCustomer.id, activity.id);
+                const dishes = await mealService.getMealDishes(mealCustomer.id, activity.id);
                 setDishes(dishes);
             }
         }

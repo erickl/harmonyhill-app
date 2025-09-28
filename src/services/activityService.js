@@ -3,7 +3,7 @@ import * as bookingService from './bookingService.js';
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 import {getParent} from "../daos/dao.js";
-import {getDishes} from "./mealService.js";
+import {getMealDishes} from "./mealService.js";
 
 /**
  * @param {*} filterOptions = {category=transport|yoga|etc.., house=harmony hill|the jungle nook}
@@ -352,7 +352,7 @@ export async function getChangeDescription(oldData, newData) {
             changeDescription.push(`Dishes added to the meal`);
         }
 
-        const oldDishes = await getDishes(oldData.bookingId, oldData.id);
+        const oldDishes = await getMealDishes(oldData.bookingId, oldData.id);
 
         for(const newDish of newData.dishes) {         
             const oldDish = oldDishes.find((dish) => dish.name === newDish.name);

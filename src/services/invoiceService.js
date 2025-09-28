@@ -22,7 +22,7 @@ export async function getTotal(bookingId) {
             if(activity.category === "meal") {
                 // E.g. even though a whole breakfast can be free, it can still include non-free, extra items
                 const filters = {"isFree" : false};
-                const dishes = await mealService.getDishes(bookingId, activity.id, filters);
+                const dishes = await mealService.getMealDishes(bookingId, activity.id, filters);
                 activityItem.dishes = dishes;
             }
             return activityItem;  
