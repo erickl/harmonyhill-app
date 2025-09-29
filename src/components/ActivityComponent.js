@@ -100,41 +100,50 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
 
     let status = Status.NONE;
     let statusMessage = "";
-    if(activity && activity.startingAt && !utils.wasYesterday(activity.startingAt)) {
-        let timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
-        timeLeft = Math.floor(timeLeft.hours);
 
-        const stillNeedsAssignee = utils.isEmpty(activity.assignedTo);
+    if(activity) {
+        if(activity.startingAt && !utils.wasYesterday(activity.startingAt)) {
+            let timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
+            timeLeft = Math.floor(timeLeft.hours);
 
-        const startingDayMinusOne = activity.startingAt.startOf("day").minus({days: 1});
-        const isDayBefore = utils.today().equals(startingDayMinusOne);
+            const stillNeedsAssignee = utils.isEmpty(activity.assignedTo);
 
-        if(isDayBefore && stillNeedsAssignee) {
-            status = Status.ATTENTION;
-            statusMessage = "Assign someone";
-        }
+            const startingDayMinusOne = activity.startingAt.startOf("day").minus({days: 1});
+            const today = utils.today();
 
-        const providerEmpty = utils.isEmpty(activity.provider);
-        let stillNeedsProvider = activityInfo && activityInfo.internal === false && providerEmpty;
+            // Starting from the day before, display warning to assign someone
+            if(today.diff(startingDayMinusOne) > 0 && stillNeedsAssignee) {
+                status = Status.ATTENTION;
+                statusMessage = "Assign staff";
+            }
+
+            const providerEmpty = utils.isEmpty(activity.provider);
+            let stillNeedsProvider = activityInfo && activityInfo.internal === false && providerEmpty;
+            
+            // If the check box is checked to say this custom activity needs a provider, take that into account
+            if(utils.exists(activity, "needsProvider") && utils.isBoolean(activity.needsProvider)) {
+                stillNeedsProvider = providerEmpty && activity.needsProvider;
+            }
         
-        // If the check box is checked to say this custom activity needs a provider, take that into account
-        if(utils.exists(activity, "needsProvider") && utils.isBoolean(activity.needsProvider)) {
-            stillNeedsProvider = providerEmpty && activity.needsProvider;
-        }
-       
-        if(stillNeedsProvider) {
-            statusMessage = "Needs Provider";
-            status = Status.ATTENTION; 
+            if(stillNeedsProvider) {
+                statusMessage = "Needs Provider";
+                status = Status.ATTENTION; 
 
-            if(activityInfo && activityInfo.deadline1 !== 0 && timeLeft <= activityInfo.deadline1) {
-                statusMessage = "Assign Provider!";
-                status = Status.URGENT;
+                if(activityInfo && activityInfo.deadline1 !== 0 && timeLeft <= activityInfo.deadline1) {
+                    statusMessage = "Assign Provider!";
+                    status = Status.URGENT;
+                }
+                if(activityInfo && activityInfo.deadline2 !== 0 && timeLeft <= activityInfo.deadline2) {
+                    statusMessage = "Assign Provider!!!";
+                    status = Status.EMERGENCY;
+                }
             }
-            if(activityInfo && activityInfo.deadline2 !== 0 && timeLeft <= activityInfo.deadline2) {
-                statusMessage = "Assign Provider!!!";
-                status = Status.EMERGENCY;
-            }
-        } 
+        }
+
+        if(status === Status.NONE) {
+            status = Status.GOOD_TO_GO;
+            statusMessage = "All Set";
+        }
     }
 
     return (<>
