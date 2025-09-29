@@ -169,14 +169,6 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             <Spinner />
         ) : expanded ? ( 
         <div className="activity-details">
-            {/* {customer !== null && (<p><span className="detail-label">Customer Name:</span> {customer.name}</p>)} */}
-            {customer !== null && (<p><span className="detail-label">Villa:</span> {utils.capitalizeWords(customer.house)}</p>)}
-            <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
-            <p><span className="detail-label">Created At:</span> {activity.createdAt_ddMMM_HHmm}</p>
-            {activity.updatedBy && (<>
-                <p><span className="detail-label">Updated Last By:</span> {activity.updatedBy}</p>
-                <p><span className="detail-label">Updated Last At:</span> {activity.updatedAt_ddMMM_HHmm}</p>
-            </>)}
             {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
             {activity.comments && (<p className="preserve-whitespaces"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
             <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
@@ -184,7 +176,6 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                 <p><span className="detail-label">Provider:</span> {activity.provider}</p>
                 { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
             </>)}
-            <p><span className="detail-label">Assigned To:</span> {activity.assignedTo}</p>
             <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }</p>
 
             {/* List dishes if the activity expanded is a meal */}
@@ -258,7 +249,18 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         onClose={() => setErrorMessage(null) }
                     />
                 )}
-            </div>   
+            </div> 
+            
+            {activity.updatedBy && (
+                <div>
+                    <span className="meta-text">Created: {activity.createdBy}, {activity.createdAt_ddMMM_HHmm}  
+                        &nbsp; | &nbsp;  
+                        Updated: {activity.updatedBy}, {activity.updatedAt_ddMMM_HHmm}
+                    </span>
+                </div>
+            )}
+
+            {/* <span className="meta-text">Updated At: </span>   */}
         </div>
         ) : ( <></>)}
     </>);
