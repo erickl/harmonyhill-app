@@ -145,7 +145,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 "activityId" : null
             });
         }
-    }, [formData]);
+    }, [formData.category]);
 
     const onTeamMemberSelect = (teamMember) => {
         const name = teamMember ? teamMember.name : '';
@@ -166,7 +166,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
             "description" : "",
         }
 
-        const guestInfoNeeded = needsGuestInfo(category);
+        const guestInfoNeeded = needsGuestInfo(name);
 
         if(!guestInfoNeeded) {
             change["bookingId"] = null;
