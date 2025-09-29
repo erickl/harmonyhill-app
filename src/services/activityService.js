@@ -96,6 +96,7 @@ export async function enhanceActivities(activities) {
             }
             
             newActivity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
+            newActivity.updatedAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.updatedAt); 
         } catch(e) {
             throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
         }

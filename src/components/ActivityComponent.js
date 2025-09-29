@@ -173,6 +173,10 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             {customer !== null && (<p><span className="detail-label">Villa:</span> {utils.capitalizeWords(customer.house)}</p>)}
             <p><span className="detail-label">Created By:</span> {activity.createdBy}</p>
             <p><span className="detail-label">Created At:</span> {activity.createdAt_ddMMM_HHmm}</p>
+            {activity.updatedBy && (<>
+                <p><span className="detail-label">Updated Last By:</span> {activity.updatedBy}</p>
+                <p><span className="detail-label">Updated Last At:</span> {activity.updatedAt_ddMMM_HHmm}</p>
+            </>)}
             {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
             {activity.comments && (<p className="preserve-whitespaces"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
             <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
