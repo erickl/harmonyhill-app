@@ -54,7 +54,7 @@ const auth = getAuth(app);
 const storage = getStorage(app, firebaseConfig.storageBucket);
 
 //if (process.env.NODE_ENV === "dev") {
-if (window.location.hostname === "localhost") {
+if (true && window.location.hostname === "localhost") {
     connectFirestoreEmulator(db, "localhost", 8080);
     connectFunctionsEmulator(functions, "localhost", 5001);
     connectAuthEmulator(auth, "http://localhost:9099", 9099);
