@@ -97,6 +97,13 @@ export default function InvoicePdfLink({customer}) {
             textAlign: 'left',
             fontSize: 15,
             marginLeft: 40,
+        },
+        metadata: {
+            position: 'absolute',
+            top: 30, 
+            right: 30,  
+            fontSize: 8,
+            color: 'gray',
         }
     });
 
@@ -142,6 +149,7 @@ export default function InvoicePdfLink({customer}) {
                         );
                     })} 
                     <Text style={styles.total}>Total: {utils.getCurrency()} {utils.formatDisplayPrice(invoice.total)}</Text>
+                    <Text style={styles.metadata}>{utils.to_yyMMddHHmm(null, "/")}</Text>
                 </Page>
             </Document>
         );
