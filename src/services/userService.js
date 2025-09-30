@@ -63,7 +63,7 @@ export async function login(username, password, onError) {
         // In case username is not the email, find the email to use email auth with firebases
         const userData = await getUser(username);
         if(!userData) {
-            onError(`Username or password is is incorrect (3)`);
+            onError(`Username or password is incorrect (3)`);
             return false;
         }
         const email = userData.email;
@@ -73,7 +73,7 @@ export async function login(username, password, onError) {
         const success = await userDao.updateLastLoggedIn(firebaseUser.uid);
         return success;
     } catch (error) {
-        onError(`Error logging in: ${error.message}`);
+        onError(`Username or password is is incorrect (4)`);
         return false;
     }
 }
