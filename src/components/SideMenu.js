@@ -1,7 +1,7 @@
 import React, { useState, useEffect, use } from 'react';
 import { useMenu } from '../context/MenuContext';
 import * as userService from "../services/userService.js";
-import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import { useNotification } from "../context/NotificationContext.js";
 import packageJson from '../../package.json';
 import * as utils from "../utils.js";
 import "./SideMenu.css";
@@ -11,11 +11,7 @@ export default function SideMenu() {
 
     const { open, close } = useMenu();
 
-    const [errorMessage, setErrorMessage] = useState(null);
-
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError } = useNotification();
 
     const logout = async () => {
         const success = await userService.logout();
@@ -63,13 +59,6 @@ export default function SideMenu() {
                 <p>User: {user}</p>
                 <p>v{packageJson.version}</p>
             </div>
-
-            {errorMessage && (
-                <ErrorNoticeModal
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null)}
-                />
-            )}
         </div>
     );
 }

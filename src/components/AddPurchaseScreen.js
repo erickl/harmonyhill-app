@@ -7,10 +7,10 @@ import ActivityForm from "./ActivityForm.js";
 import MealForm from "./MealForm.js";
 import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
-import ErrorNoticeModal from './ErrorNoticeModal.js';
+import { useNotification } from "../context/NotificationContext.js";
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
-
+    
     // Show purchase summary and confirmation pop up modal
     const [showConfirm, setShowConfirm] = useState(false);
     const [readyToSubmit, setReadyToSubmit] = useState(false);
@@ -50,11 +50,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         internal      : false,
     };
 
-    const [errorMessage, setErrorMessage] = useState(null);
-    
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError } = useNotification();
 
     const onValidationError = (error) => {
         setValidationError(error);
@@ -240,13 +236,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     />
                 )}
 
-                {errorMessage && (
-                    <ErrorNoticeModal 
-                        error={errorMessage}
-                        onClose={() => setErrorMessage(null) }
-                    />
-                )}
-
                 {(validationError && <p className="validation-error">{validationError}</p>)}
                 
                 <ButtonsFooter 
@@ -300,13 +289,6 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                         Back to categories
                     </button>
                 </div>
-
-                {errorMessage && (
-                    <ErrorNoticeModal 
-                        error={errorMessage}
-                        onClose={() => setErrorMessage(null) }
-                    />
-                )}
             </div>
         )
     }
@@ -335,17 +317,11 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 ) : (
                     <p>No categories available.</p>
                 )}
-
             </div>
+
             <div>
                 <button type="button" onClick={onClose} className="cancel-button">Cancel</button>
             </div>
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
         </div>
     );
 };

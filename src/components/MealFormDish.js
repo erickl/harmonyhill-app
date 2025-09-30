@@ -1,13 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
-import ErrorNoticeModal from './ErrorNoticeModal.js';
+import { useNotification } from "../context/NotificationContext.js";
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 import "./MealFormDish.css"
 
 export default function MealFormDish({dish, formData, handleFormDataChange, custom, isFree}) {
-
-    const [errorMessage, setErrorMessage] = useState(null);
     
     const getDishData = (fieldName, defaultValue) => {
         let existingDishIndex = formData.dishes.findIndex((d) => {
@@ -19,9 +17,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
         return utils.isEmpty(formData.dishes[existingDishIndex][fieldName]) ? defaultValue : formData.dishes[existingDishIndex][fieldName];
     }
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError } = useNotification();
 
     const handleEditOrderQuantity = (newDish, quantity) => {
         let updatedDishes = [ ...(formData.dishes || []) ];
@@ -176,12 +172,5 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                 </div>
             )}
         </div>
-
-        {errorMessage && (
-            <ErrorNoticeModal 
-                error={errorMessage}
-                onClose={() => setErrorMessage(null) }
-            />
-        )}
     </>);
 }

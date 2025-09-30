@@ -5,7 +5,7 @@ import * as menuService from '../services/menuService.js';
 import * as userService from '../services/userService.js';
 import * as mealService from "../services/mealService.js";
 import * as utils from "../utils.js";
-import ErrorNoticeModal from './ErrorNoticeModal.js';
+import { useNotification } from "../context/NotificationContext.js";
 import MealFormDish from "./MealFormDish.js";
 import Dropdown from './Dropdown.js';
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
@@ -19,11 +19,8 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     const [extraDishes,     setExtraDishes    ] = useState([]  ); // For breakfast, present extra options for extra charge
     const [expandedCourses, setExpandedCourses] = useState({}  );
     const [loadingMenu,     setLoadingMenu    ] = useState(true); // to indicate when data is being fetched
-    const [errorMessage,    setErrorMessage   ] = useState(null);
             
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError } = useNotification();
 
     const onTeamMemberSelect = (teamMember) => {
         const name = teamMember ? teamMember.name : '';
@@ -243,13 +240,6 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     label="Check box if the entire meals is free"
                 />
             </div>
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
         </div>
     );
 }

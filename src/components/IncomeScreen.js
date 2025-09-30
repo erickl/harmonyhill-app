@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as incomeService from "../services/incomeService.js";
 import * as userService from "../services/userService.js";
 import * as bookingService from "../services/bookingService.js";
-import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import { useNotification } from "../context/NotificationContext.js";
 import * as ledgerService from "../services/ledgerService.js";
 import * as utils from "../utils.js";
 import "./IncomeScreen.css";
@@ -19,7 +19,6 @@ export default function IncomeScreen({ onNavigate, onClose }) {
     const [incomeToDelete,      setIncomeToDelete      ] = useState(null );
     const [incomes,             setIncomes             ] = useState([]   );
     const [loading,             setLoading             ] = useState(true );
-    const [errorMessage,        setErrorMessage        ] = useState(null );
     const [isManagerOrAdmin,    setIsManagerOrAdmin    ] = useState(false);
     const [pettyCash,           setPettyCash           ] = useState(null );
     const [incomeSum,           setIncomeSum           ] = useState(null );
@@ -64,9 +63,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
         }
     }
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    };
+    const { onError } = useNotification();
 
     useEffect(() => {
         const fetchIncomes = async() => {
@@ -203,13 +200,6 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                 <ConfirmModal 
                     onCancel={() => setIncomeToDelete(null)}
                     onConfirm={handleDeleteIncome}
-                />
-            )}
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
                 />
             )}
         </div>

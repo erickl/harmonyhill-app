@@ -3,7 +3,7 @@ import * as bookingService from '../services/bookingService.js'; // Import the b
 import './AddCustomerScreen.css';
 import MyDatePicker from "./MyDatePicker.js";
 import * as utils from '../utils.js';
-import ErrorNoticeModal from './ErrorNoticeModal.js';
+import { useNotification } from "../context/NotificationContext.js";
 import ButtonsFooter from './ButtonsFooter.js';
 import BookingForm from './BookingForm.js';
 
@@ -39,11 +39,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
         setValidationError(error);
     }
 
-    const [errorMessage, setErrorMessage] = useState(null);
-        
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError } = useNotification();
 
     const validateFormData = (newFormData) => {
         const validationResult = bookingService.validate(newFormData, onValidationError);
@@ -387,16 +383,8 @@ const AddCustomerScreen = ({ onNavigate }) => {
                 onSubmit={handleSubmit}
                 submitEnabled={readyToSubmit}
             />
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
         </div>
     );
 };
 
 export default AddCustomerScreen;
-

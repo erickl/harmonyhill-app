@@ -9,7 +9,7 @@ import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
 import * as utils from "../utils.js";
 import "./AddExpenseScreen.css";
-import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import { useNotification } from "../context/NotificationContext.js";
 import ExpensesScreen from './ExpensesScreen.js';
 import SuccessModal from './SuccessModel.js';
 
@@ -41,7 +41,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const [readyToSubmit,     setReadyToSubmit    ] = useState(false    );
     const [showList,          setShowList         ] = useState(false    );
     const [validationError,   setValidationError  ] = useState(null     );
-    const [errorMessage,      setErrorMessage     ] = useState(null     );
     const [formData,          setFormData         ] = useState(emptyForm);
     const [imageResetTrigger, setImageResetTrigger] = useState(0        );
     const [showSuccess,       setShowSuccess      ] = useState(false    );
@@ -51,9 +50,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         setValidationError(error);
     };
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    };
+    const { onError } = useNotification();
 
     // todo: put in database
     const categories = {
@@ -427,13 +424,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 {showSuccess && (
                     <SuccessModal onClose={() => setShowSuccess(false)} />
                 )} 
-
-                {errorMessage && (
-                    <ErrorNoticeModal 
-                        error={errorMessage}
-                        onClose={() => setErrorMessage(null) }
-                    />
-                )}
             </div>
         </div>
     );

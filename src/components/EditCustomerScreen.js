@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MyDatePicker from "./MyDatePicker.js";
 import * as bookingService from '../services/bookingService.js'; 
 import * as utils from '../utils.js';
-import ErrorNoticeModal from './ErrorNoticeModal.js';
+import { useNotification } from "../context/NotificationContext.js";
 import ButtonsFooter from './ButtonsFooter.js';
 
 const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
@@ -85,11 +85,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
         validateFormData(nextFormData);
     };
 
-    const [errorMessage, setErrorMessage] = useState(null);
-        
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError } = useNotification();
 
     const handleSubmit = async (e) => {
         const updatedCustomerData = { ...formData };
@@ -376,13 +372,6 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
                     submitEnabled={readyToSubmit}
                 />
             </div>
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
         </div>
     );
 };

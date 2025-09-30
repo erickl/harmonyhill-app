@@ -7,7 +7,7 @@ import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import "./ActivityComponent.css";
 import ConfirmModal from './ConfirmModal.js';
-import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import { useNotification } from "../context/NotificationContext.js";
 import {getParent} from "../daos/dao.js";
 
 export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
@@ -20,7 +20,6 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
     const [activityToDelete,        setActivityToDelete ] = useState(null );
     const [loading,                 setLoading          ] = useState(true );
     const [currentCustomer,         setCurrentCustomer  ] = useState(null );
-    const [errorMessage,            setErrorMessage     ] = useState(null );
 
     const todaysHeader = useRef(null);
 
@@ -28,9 +27,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
         return customer ? customer : await getParent(activity);
     };
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    };
+    const { onError } = useNotification();
 
     const handleEditActivity = async(activity) => {
         if(activity) {
@@ -212,13 +209,6 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
                     </React.Fragment>
                 )
             })}
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
 
             {activityToDelete && (
                 <ConfirmModal 

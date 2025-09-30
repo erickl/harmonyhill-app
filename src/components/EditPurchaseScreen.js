@@ -12,7 +12,6 @@ import "./EditPurchaseScreen.css";
 import "../App.css";
 import { useNotification } from "../context/NotificationContext.js";
 
-
 const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) => {
 
     // Show purchase summary and confirmation pop up modal

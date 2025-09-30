@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as expenseService from "../services/expenseService.js";
-import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import { useNotification } from "../context/NotificationContext.js";
 import * as utils from "../utils.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
@@ -14,7 +14,6 @@ import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 
-
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
     const [expandedExpenses, setExpandedExpenses] = useState({}   );
@@ -22,7 +21,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [receipts,         setExpenses        ] = useState([]   );
     const [displayedReceipt, setDisplayedReceipt] = useState(null );
     const [loading,          setLoading         ] = useState(true );
-    const [errorMessage,     setErrorMessage    ] = useState(null );
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
     const [isAdmin,          setIsAdmin         ] = useState(false);
     const [expenseToEdit,    setExpenseToEdit   ] = useState(null );
@@ -58,9 +56,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         setExpandedExpenses(updatedExpandedList);
     };
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    };
+    const { onError } = useNotification();
 
     const handleEditExpense = async(expense) => {
         setExpenseToEdit(expense);
@@ -240,13 +236,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 <ConfirmModal 
                     onCancel={() => setExpenseToDelete(null)}
                     onConfirm={handleDeleteExpense}
-                />
-            )}
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
                 />
             )}
 

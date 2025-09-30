@@ -9,17 +9,14 @@ import EditPurchaseScreen from './EditPurchaseScreen.js';
 import './CustomerPurchasesScreen.css'; 
 import ActivitiesList from './ActivitiesList.js';
 import ConfirmModal from './ConfirmModal.js';
-import ErrorNoticeModal from './ErrorNoticeModal.js';
+import { useNotification } from "../context/NotificationContext.js";
 import InvoicePdfLink from './InvoicePdf.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
-    const [errorMessage,       setErrorMessage      ] = useState(null );
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError } = useNotification();
 
     useEffect(() => {
         const setUserRole = async() => {
@@ -83,13 +80,6 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
             <button type="button" onClick={() => onClose() } className="cancel-button">
                 Back to customers
             </button>
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
         </div>
     );
 };

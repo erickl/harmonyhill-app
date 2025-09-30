@@ -7,6 +7,7 @@ import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 import TextInput from './TextInput.js';
+import { useNotification } from "../context/NotificationContext.js";
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers,   setTeamMembers  ] = useState([]   );
@@ -15,9 +16,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
     const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
             
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    }
+    const { onError } = useNotification();
 
     const onProviderSelect = (provider) => {
         const name = provider ? provider.name : '';
@@ -172,13 +171,8 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                                 />
                             </div>
                         )}
-                    </div> 
-                
-                    
+                    </div>                
                 </div>
-
-            
-            
 
                 { custom && (
                     <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -210,13 +204,6 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     className="input"
                 ></textarea>
             </div>
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
-            )}
         </div>
     );
 }

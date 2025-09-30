@@ -4,7 +4,7 @@ import * as incomeService from "../services/incomeService.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import "./AddIncomeScreen.css";
-import ErrorNoticeModal from "./ErrorNoticeModal.js";
+import { useNotification } from "../context/NotificationContext.js";
 import IncomeScreen from "./IncomeScreen.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
@@ -34,7 +34,6 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     const [showList,        setShowList       ] = useState(false    );
     const [readyToSubmit,   setReadyToSubmit  ] = useState(false    );
     const [validationError, setValidationError] = useState(null     );
-    const [errorMessage,    setErrorMessage   ] = useState(null     );
     const [bookings,        setBookings       ] = useState([]       );
     const [formData,        setFormData       ] = useState(emptyForm);
     const [showSuccess,     setShowSuccess    ] = useState(false    );
@@ -44,6 +43,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         const category = formDataCategory.trim().toLowerCase();
         return category === "guest payment" || category === "commission";
     }
+
     const needsActivityInfo = (formDataCategory) => {
         const category = formDataCategory.trim().toLowerCase();
         return category === "guest payment" || category === "commission";
@@ -53,9 +53,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         setValidationError(error);
     };
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    };
+    const { onError } = useNotification();
 
     const onCategorySelect = (category) => {
         const name = category ? category.name : '';
@@ -318,13 +316,6 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                 {showSuccess && (
                     <SuccessModal onClose={() => setShowSuccess(false)} />
                 )} 
-
-                {errorMessage && (
-                    <ErrorNoticeModal 
-                        error={errorMessage}
-                        onClose={() => setErrorMessage(null) }
-                    />
-                )}
             </div>
         </div>
     );
