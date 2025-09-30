@@ -9,8 +9,8 @@ import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
 import { Pencil, ShoppingCart, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
-import ErrorNoticeModal from './ErrorNoticeModal.js';
 import StatusCircle, {Status} from './StatusCircle.js';
+import { useNotification } from "../context/NotificationContext.js";
 
 export default function ActivityComponent({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
     const [customer,                setCustomer               ] = useState(null );
@@ -19,16 +19,19 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
     const [expanded,                setExpanded               ] = useState(false);
     const [dishes,                  setDishes                 ] = useState([]   );
-    const [errorMessage,            setErrorMessage           ] = useState(null );
 
-    const onError = (errorMessage) => {
-        setErrorMessage(errorMessage);
-    };
+    const { onError } = useNotification();
 
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
         await loadActivityInfo();
         setLoadingExpandedActivity(false);
+    }
+
+    const handleActivityStatusChange = async (currentStatus) => {
+        if(currentStatus === Status.GOOD_TO_GO) {
+            const success = await activityService.setActivityStatus(activity.bookingId, activity.id, Status.COMPLETED);
+        } 
     }
 
     const handleAssigneeStatusChange = async (accept) => {
@@ -82,7 +85,6 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     }, []);
 
     const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
-
     
     const assignedUser = users ? users.find(user => user.name === activity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
@@ -146,8 +148,15 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         }
     }
 
+    const createdMetaInfo = activity ? `Created By ${activity.createdBy}, ${activity.createdAt_ddMMM_HHmm}` : "";
+    const updatedMetaInfo = activity  && activity.updatedBy ? ` | Updated By ${activity.updatedBy}, ${activity.updatedAt_ddMMM_HHmm}` : "";
+    const metaInfo = `${createdMetaInfo}${updatedMetaInfo}`;              
+
     return (<>
-        <div className="activity-header" onClick={() => handleActivityClick(activity)}>
+        <div className="activity-header" onClick={(e) => {
+                e.stopPropagation();
+                handleActivityClick(activity);
+            }}>
             <div className="activity-header-left">
                 <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
                     {houseShortName}
@@ -171,7 +180,14 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                 </div>  
             </div>
             <div className="activity-header-status">
-                <StatusCircle status={status} message={statusMessage}/>
+                <StatusCircle 
+                    status={status} 
+                    message={statusMessage}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleActivityStatusChange(status);
+                    }}
+                />
             </div>
         </div>
         {loadingExpandedActivity ? (
@@ -251,25 +267,11 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         <p>Decline task?</p>
                     </div>
                 )}
-
-                {errorMessage && (
-                    <ErrorNoticeModal 
-                        error={errorMessage}
-                        onClose={() => setErrorMessage(null) }
-                    />
-                )}
             </div> 
             
-            {activity.updatedBy && (
-                <div>
-                    <span className="meta-text">Created: {activity.createdBy}, {activity.createdAt_ddMMM_HHmm}  
-                        &nbsp; | &nbsp;  
-                        Updated: {activity.updatedBy}, {activity.updatedAt_ddMMM_HHmm}
-                    </span>
-                </div>
-            )}
-
-            {/* <span className="meta-text">Updated At: </span>   */}
+            <div>
+                <span className="meta-text">{metaInfo}</span>
+            </div>
         </div>
         ) : ( <></>)}
     </>);

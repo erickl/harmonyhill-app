@@ -91,12 +91,15 @@ export default function DishesSummaryComponent({dishes}) {
                     )
                 })}
             </div>
-            {displayImageForDish !== null && (     
+            {displayImageForDish !== null && (    
                 <img
                     src={photoUrls[displayImageForDish.name]}
                     className="dish-image"
                     onClick={() => setDisplayImageForDish(null)}
                     onLoad={() => handleDishImageLoadStatusChange(displayImageForDish, false)}
+                    onError={(e) => {
+                        alert("Woops!");
+                    }}
                 />
             )}
         </div>

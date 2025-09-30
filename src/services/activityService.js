@@ -171,6 +171,12 @@ export async function getProviders(category, subCategory) {
     return providers;
 }
 
+export async function setActivityStatus(bookingId, id, status, onError) {
+    return await update(bookingId, id, { 
+        status : status,
+    }, onError);
+}
+
 /**
  * Assigns a staff to an activity of a booking, making sure someone is responsible for a good activity execution
  * @param {*} bookingId ID from the bookings collection
