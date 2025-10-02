@@ -142,14 +142,14 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             }
         }
 
-        if(status === Status.NONE) {
-            status = Status.GOOD_TO_GO;
-            statusMessage = "All Set";
-        }
+        // if(status === Status.NONE) {
+        //     status = Status.GOOD_TO_GO;
+        //     statusMessage = "All Set";
+        // }
     }
 
-    const createdMetaInfo = activity ? `Created By ${activity.createdBy}, ${activity.createdAt_ddMMM_HHmm}` : "";
-    const updatedMetaInfo = activity  && activity.updatedBy ? ` | Updated By ${activity.updatedBy}, ${activity.updatedAt_ddMMM_HHmm}` : "";
+    const createdMetaInfo = activity ? `Created by ${activity.createdBy}, ${activity.createdAt_ddMMM_HHmm}` : "";
+    const updatedMetaInfo = activity  && activity.updatedBy ? ` | Updated by ${activity.updatedBy}, ${activity.updatedAt_ddMMM_HHmm}` : "";
     const metaInfo = `${createdMetaInfo}${updatedMetaInfo}`;              
 
     return (<>
