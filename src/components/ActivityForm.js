@@ -138,41 +138,43 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
             {/* (External) providers are not needed for activities organized by internal staff */}
             { selectedActivity.internal !== true && (<> 
-                <div className="purchase-form-group">
-                    <div className="provider-row">
-                        <div className="provider-name">
-                            <TextInput
-                                type="text"
-                                name="provider"
-                                label={"Provider"}
-                                value={formData.provider}
-                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
-                            />
-                        </div>
-
-                        <div className="provider-price">
-                            <TextInput
-                                type="amount"
-                                name="providerPrice"
-                                label={"Provider Price"}
-                                value={formData.providerPrice}
-                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
-                            />
-                        </div>
-
-                        {!utils.isEmpty(providers) && (
-                            <div className="last-chile">
-                                <ProviderDropdown 
-                                    currentName={formData.provider} 
-                                    currentPrice={formData.providerPrice} 
-                                    label={"Providers"} 
-                                    options={providers} 
-                                    onSelect={onProviderSelect}
+                { formData.needsProvider !== false && (
+                    <div className="purchase-form-group">
+                        <div className="provider-row">
+                            <div className="provider-name">
+                                <TextInput
+                                    type="text"
+                                    name="provider"
+                                    label={"Provider"}
+                                    value={formData.provider}
+                                    onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
                                 />
                             </div>
-                        )}
-                    </div>                
-                </div>
+
+                            <div className="provider-price">
+                                <TextInput
+                                    type="amount"
+                                    name="providerPrice"
+                                    label={"Provider Price"}
+                                    value={formData.providerPrice}
+                                    onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
+                                />
+                            </div>
+
+                            {!utils.isEmpty(providers) && (
+                                <div className="last-chile">
+                                    <ProviderDropdown 
+                                        currentName={formData.provider} 
+                                        currentPrice={formData.providerPrice} 
+                                        label={"Providers"} 
+                                        options={providers} 
+                                        onSelect={onProviderSelect}
+                                    />
+                                </div>
+                            )}
+                        </div>                
+                    </div>
+                )}
 
                 { custom && (
                     <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
