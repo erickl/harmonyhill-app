@@ -1,6 +1,6 @@
 import "./StatusCircle.css";
 
-export default function StatusCircle({status, message}) {
+export default function StatusCircle({status, message, onClick}) {
 
     let symbol = "!";
 
@@ -71,7 +71,7 @@ export default function StatusCircle({status, message}) {
     const style = { ...common, ...specific };
     
     return (
-        <div className="status-symbol">
+        <div className="status-symbol" onClick={onClick}>
             <div style={style}>{symbol}</div>
             <p className="status-message">{message}</p>
         </div>
