@@ -12,7 +12,8 @@ import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
 
-    const meal = selectedActivity.subCategory;
+    let meal = selectedActivity.subCategory;
+    if(meal.includes("floating-breakfast")) meal = "breakfast";
     
     const [teamMembers,     setTeamMembers    ] = useState([]  );
     const [allDishes,       setAllDishes      ] = useState([]  );
