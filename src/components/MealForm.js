@@ -128,7 +128,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                                         dish={dish}
                                         formData={formData}
                                         handleFormDataChange={handleFormDataChange}
-                                        isFree={meal === "breakfast"}
+                                        isFree={meal === "breakfast" || meal === "afternoon-tea"}
                                     />
                                 ))}
                             </>)}

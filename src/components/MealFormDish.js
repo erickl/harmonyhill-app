@@ -91,6 +91,8 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
 
     const quantity = getDishData("quantity", 0);
 
+    const dishPrice = isFree ? "" : ` (${utils.formatDisplayPrice(dish.customerPrice, false)})`;
+
     return (<>
         <div className="meal-dish" key={`${dish.id}-wrapper`}>
             <div className="meal-dish-row" key={`${dish.id}-wrapper-row`}>
@@ -125,7 +127,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                     </div>
                     
                 ) : ( 
-                    <span>{`${dish.name} (${utils.formatDisplayPrice(dish.customerPrice, false)})`}</span>
+                    <span>{`${dish.name}${dishPrice}`}</span>
                 )}
                 <div className="meal-dish-row-counter">
                     <button
