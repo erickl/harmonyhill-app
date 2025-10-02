@@ -52,6 +52,27 @@ export async function addMeal(bookingId, mealData, onError) {
     return addMealSuccess ? mealId : false;
 }
 
+export async function removeMeal(bookingId, mealId, onError) {
+    const success = await activityDao.transaction(async () => {
+        const dishes = await getMealDishes(bookingId, mealId);
+        for(const dish of dishes) {
+            const deleteDishResult = await deleteDish(bookingId, mealId, dish.id, onError);
+            if(deleteDishResult === false) {
+                throw new Error(`Unexpected error when deleting dish ${dish.id}`);
+            }
+        }
+
+        const success = await activityDao.remove(bookingId, mealId, onError);
+        if(success === false) {
+            throw new Error(`Unexpected error when deleting meal ${mealId}`);
+        }
+
+        return true;
+    });
+
+    return success;
+}
+
 // Example result: 250530-hh-breakfast-178492929
 export function makeMealId(startingAt, house, meal) {
     const houseShort = house.toLowerCase().trim() === "harmony hill" ? "hh" : "jn";
@@ -252,8 +273,8 @@ export async function getDishes(filterOptions, onError) {
     return await activityDao.getDishes(filterOptions, onError);
 }
 
-export async function deleteDish(bookingId, mealId, dishId) {
-    return await activityDao.deleteDish(bookingId, mealId, dishId);
+export async function deleteDish(bookingId, mealId, dishId, onError) {
+    return await activityDao.deleteDish(bookingId, mealId, dishId, onError);
 }
 
 export function validate(customer, data, isUpdate, onError) {

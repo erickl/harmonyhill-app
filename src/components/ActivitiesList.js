@@ -45,7 +45,14 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
         if(!activityCustomer || utils.isEmpty(activityCustomer.id)) {
             onError(`Can't find customer for activity ${activityToDelete.id}`);
         }
-        const deleteActivityResult = await activityService.remove(activityCustomer.id, activityToDelete.id, onError);
+
+        const deleteActivityResult = false;
+        if(activityToDelete.category === "meal") {
+            deleteActivityResult = mealService.removeMeal(activityCustomer.id, activityToDelete.id, onError);
+        } else {
+            deleteActivityResult = await activityService.remove(activityCustomer.id, activityToDelete.id, onError);
+        }
+        
         if(deleteActivityResult) {
             setActivityToDelete(null);
             setCurrentCustomer(null);
