@@ -30,7 +30,7 @@ export function isNumber(value) {
 
 export function isEmpty(value) {
     value = isString(value) ? value.trim() : value;
-    if(value == "" || value == undefined || value == null) {
+    if(value === "" || value === undefined || value === null) {
         return true;
     }
 
