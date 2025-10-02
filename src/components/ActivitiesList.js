@@ -46,7 +46,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
             onError(`Can't find customer for activity ${activityToDelete.id}`);
         }
 
-        const deleteActivityResult = false;
+        let deleteActivityResult = false;
         if(activityToDelete.category === "meal") {
             deleteActivityResult = mealService.removeMeal(activityCustomer.id, activityToDelete.id, onError);
         } else {
