@@ -45,9 +45,13 @@ export async function compressImage(file, compressionOptions, onError) {
 }
 
 export async function getPhotoUrl(filePath) {
-  const fileRef = ref(storage, filePath); // e.g. "images/myPhoto.png"
-  const url = await getDownloadURL(fileRef);
-  return url;
+    try {
+        const fileRef = ref(storage, filePath); // e.g. "images/myPhoto.png"
+        const url = await getDownloadURL(fileRef);
+        return url;
+    } catch(e) {
+        return null
+    }
 }
 
 export function blobToBase64(blob) {
