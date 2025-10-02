@@ -3,27 +3,39 @@ import React, { createContext, useState, useContext } from "react";
 const NotificationContext = createContext();
 
 export function NotificationProvider({ children }) {
-  const [error, setError] = useState(null);
+    const [header, setHeader] = useState(null);
+    const [message, setMessage] = useState(null);
 
-  const onError = (message) => setError(`Error: ${message}`);
-  const onWarning = (message) => setError(`Warning: ${message}`);
-  const hideError = () => setError(null);
+    const onError = (message) => {
+        setHeader("Something happened...");
+        setMessage(`${message}`);
+    } 
 
-  return (
-    <NotificationContext.Provider value={{ onError, onWarning }}>
-      {children}
-      {error && (
-        <div className="modal-overlay" onClick={() => hideError()}>
-            <div className="modal-box">
-                <h2>Something happened...</h2>
-                <p>{error}</p>
-            </div>
-        </div>
-      )}
-    </NotificationContext.Provider>
-  );
+    const onWarning = (message) => {
+        setHeader("Warning!");
+        setMessage(`${message}`);
+    }
+    
+    const hidePopup = () => {
+        setHeader(null);
+        setMessage(null);
+    }
+
+    return (
+        <NotificationContext.Provider value={{ onError, onWarning }}>
+            {children}
+            {message && (
+                <div className="modal-overlay" onClick={() => hidePopup()}>
+                    <div className="modal-box">
+                        <h2>{header}</h2>
+                        <p>{message}</p>
+                    </div>
+                </div>
+            )}
+        </NotificationContext.Provider>
+    );
 }
 
 export function useNotification() {
-  return useContext(NotificationContext);
+    return useContext(NotificationContext);
 }
