@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, act } from 'react';
 import * as invoiceService from "../services/invoiceService.js";
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
@@ -20,7 +20,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     const [expanded,                setExpanded               ] = useState(false);
     const [dishes,                  setDishes                 ] = useState([]   );
 
-    const { onError } = useNotification();
+    const { onError, onInfo } = useNotification();
 
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
@@ -39,6 +39,12 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         const result = await activityService.changeAssigneeStatus(accept, thisCustomer.id, activity.id, onError);
         if(result) {
             triggerRerender();
+        }
+    }
+
+    const handleMetaInfoClick = () => {
+        if(utils.exists(activity, "updateLogs")) {
+            onInfo("Change Log", JSON.stringify(activity.updateLogs));
         }
     }
 
@@ -270,7 +276,9 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                 </div> 
                 
                 <div>
-                    <span className="meta-text">{metaInfo}</span>
+                    <span className="meta-text" onClick={() => handleMetaInfoClick()}>
+                        {metaInfo}
+                    </span>
                 </div>
             </div>
         ) : ( 
