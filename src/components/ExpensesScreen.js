@@ -13,6 +13,7 @@ import AddExpensesScreen from "./AddExpensesScreen.js";
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
+import MetaInfo from './MetaInfo.js';
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
@@ -236,6 +237,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                                 <p>Receipt</p>
                                             </div>
                                         </div>
+                                        <MetaInfo document={expense}/>
                                     </div>
                                 ) : (<></>)}
                             </div>

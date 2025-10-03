@@ -11,6 +11,7 @@ import { Pencil, ShoppingCart, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle, {Status} from './StatusCircle.js';
 import { useNotification } from "../context/NotificationContext.js";
+import MetaInfo from './MetaInfo.js';
 
 export default function ActivityComponent({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
     const [customer,                setCustomer               ] = useState(null );
@@ -39,12 +40,6 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         const result = await activityService.changeAssigneeStatus(accept, thisCustomer.id, activity.id, onError);
         if(result) {
             triggerRerender();
-        }
-    }
-
-    const handleMetaInfoClick = () => {
-        if(utils.exists(activity, "updateLogs")) {
-            onInfo("Change Log", JSON.stringify(activity.updateLogs));
         }
     }
 
@@ -152,11 +147,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         //     status = Status.GOOD_TO_GO;
         //     statusMessage = "All Set";
         // }
-    }
-
-    const createdMetaInfo = activity ? `Created by ${activity.createdBy}, ${activity.createdAt_ddMMM_HHmm}` : "";
-    const updatedMetaInfo = activity  && activity.updatedBy ? ` | Updated by ${activity.updatedBy}, ${activity.updatedAt_ddMMM_HHmm}` : "";
-    const metaInfo = `${createdMetaInfo}${updatedMetaInfo}`;              
+    }             
 
     return (<>
         <div className="activity-header" onClick={(e) => {
@@ -274,12 +265,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         </div>
                     )}
                 </div> 
-                
-                <div>
-                    <span className="meta-text" onClick={() => handleMetaInfoClick()}>
-                        {metaInfo}
-                    </span>
-                </div>
+                <MetaInfo document={activity}/>
             </div>
         ) : ( 
             <></>
