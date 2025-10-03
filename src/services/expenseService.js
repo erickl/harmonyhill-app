@@ -1,5 +1,6 @@
 import * as expenseDao from "../daos/expenseDao.js";
 import * as utils from "../utils.js";
+import { getOne as getActivity } from "./activityService.js";
 
 export async function add(data, onError) {
     const addResult = await expenseDao.transaction(async () => {
@@ -179,4 +180,47 @@ function mapReceiptObject(data) {
     if(!utils.isEmpty(data.index)) object.index = data.index;
 
     return object;
+}
+
+export async function toArrays(filter) {
+    const documents = await get(filter);
+
+    const headers = [
+        "index",
+        "purchasedAt",
+        "purchasedBy",
+        "amount",
+        "category",
+        "paymentMethod",
+        "description",
+        "filename",
+        "bookingName",
+        "activityCategory",
+        "activitySubCategory",
+        "customerPrice",
+        "providerPrice",
+        "activityId",
+    ];
+
+    let rows = [headers];
+
+    for(const document of documents) {
+        if(utils.exists(document, "activityId")) {
+            const activity = await getActivity(document.bookingId, document.activityId);
+            document.activityCategory = activity.category;
+            document.activitySubCategory = activity.subCategory;
+            document.customerPrice = activity.customerPrice;
+            document.providerPrice = activity.providerPrice;
+            document.bookingName = activity.name;
+        }
+
+        let values = [];
+        for(const header of headers) {
+            values.push((utils.exists(document, header) ? document[header] : "-"))
+        }
+
+        rows.push(values);
+    }
+
+    return rows;
 }
