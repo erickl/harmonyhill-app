@@ -193,86 +193,88 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         {loadingExpandedActivity ? (
             <Spinner />
         ) : expanded ? ( 
-        <div className="activity-details">
-            {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
-            {activity.comments && (<p className="preserve-whitespaces"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
-            <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
-            { showProvider && (<>
-                <p><span className="detail-label">Provider:</span> {activity.provider}</p>
-                { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
-            </>)}
-            <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }</p>
+            <div className="activity-details">
+                {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
+                {activity.comments && (<p className="preserve-whitespaces"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
+                <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
+                { showProvider && (<>
+                    <p><span className="detail-label">Provider:</span> {activity.provider}</p>
+                    { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
+                </>)}
+                <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }</p>
 
-            {/* List dishes if the activity expanded is a meal */}
-            {activity.category === "meal" && (
-                <DishesSummaryComponent dishes={dishes} />
-            )}
+                {/* List dishes if the activity expanded is a meal */}
+                {activity.category === "meal" && (
+                    <DishesSummaryComponent dishes={dishes} />
+                )}
 
-            { !utils.isEmpty(activity.changeDescription) && (
-                <div style={{color:"red"}}>
-                    <p className="preserve-whitespaces">
-                        <span className="detail-label">Change:</span> 
-                        {activity.changeDescription.map((change) => {
-                            return (<p>• {change}</p>)
-                        })}
-                    </p>
+                { !utils.isEmpty(activity.changeDescription) && (
+                    <div style={{color:"red"}}>
+                        <p className="preserve-whitespaces">
+                            <span className="detail-label">Change:</span> 
+                            {activity.changeDescription.map((change) => {
+                                return (<p>• {change}</p>)
+                            })}
+                        </p>
+                    </div>
+                )}
+
+                <div className="activity-component-footer">
+                    <div className="activity-component-footer-icon">
+                        <Pencil   
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if(!utils.isEmpty(dishes)) {
+                                    activity.dishes = dishes;
+                                }
+                                handleEditActivity(activity);
+                            }}
+                        />
+                        <p>Edit</p>
+                    </div>
+                    {isManagerOrAdmin && (
+                        <div className="activity-component-footer-icon">
+                            <Trash2  
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteActivity();
+                                }}
+                            />
+                            <p>Delete</p>
+                        </div>
+                    )}
+
+                    { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (
+                        <div className="activity-component-footer-icon">
+                            <ThumbsUp  
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAssigneeStatusChange(true);
+                                }}
+                            />
+                            <p>Accept task?</p>
+                        </div>
+                    )}
+
+                    { user && user.shortName === assignedUserShortName && activity.assigneeAccept && (
+                        <div className="activity-component-footer-icon">
+                            <ThumbsDown  
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAssigneeStatusChange(false);
+                                }}
+                            />
+                            <p>Decline task?</p>
+                        </div>
+                    )}
+                </div> 
+                
+                <div>
+                    <span className="meta-text">{metaInfo}</span>
                 </div>
-            )}
-
-            <div className="activity-component-footer">
-                <div className="activity-component-footer-icon">
-                    <Pencil   
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if(!utils.isEmpty(dishes)) {
-                                activity.dishes = dishes;
-                            }
-                            handleEditActivity(activity);
-                        }}
-                    />
-                    <p>Edit</p>
-                </div>
-                {isManagerOrAdmin && (
-                    <div className="activity-component-footer-icon">
-                        <Trash2  
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteActivity();
-                            }}
-                        />
-                        <p>Delete</p>
-                    </div>
-                )}
-
-                { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (
-                    <div className="activity-component-footer-icon">
-                        <ThumbsUp  
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleAssigneeStatusChange(true);
-                            }}
-                        />
-                        <p>Accept task?</p>
-                    </div>
-                )}
-
-                { user && user.shortName === assignedUserShortName && activity.assigneeAccept && (
-                    <div className="activity-component-footer-icon">
-                        <ThumbsDown  
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleAssigneeStatusChange(false);
-                            }}
-                        />
-                        <p>Decline task?</p>
-                    </div>
-                )}
-            </div> 
-            
-            <div>
-                <span className="meta-text">{metaInfo}</span>
             </div>
-        </div>
-        ) : ( <></>)}
+        ) : ( 
+            <></>
+        )}
     </>);
 };
