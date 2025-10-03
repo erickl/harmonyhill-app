@@ -11,6 +11,7 @@ import { Pencil, ShoppingCart, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle, {Status} from './StatusCircle.js';
 import { useNotification } from "../context/NotificationContext.js";
+import {get as getIncome} from "../services/incomeService.js";
 import MetaInfo from './MetaInfo.js';
 
 export default function ActivityComponent({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
@@ -20,6 +21,8 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
     const [expanded,                setExpanded               ] = useState(false);
     const [dishes,                  setDishes                 ] = useState([]   );
+    const [needsCommission,         setNeedsCommission        ] = useState(false);
+    const [commission,              setCommission             ] = useState(null );
 
     const { onError, onInfo } = useNotification();
 
@@ -73,6 +76,24 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             setCustomer(customer);
         }
 
+        const checkCommission = async() => {
+            // If customer paid to provider, instead of to us, we should get a commission from the provider
+            const noCustomerPrice = !utils.exists(activity, "customerPrice") || utils.isEmpty(activity.customerPrice) || activity.customerPrice == 0;
+            if(!noCustomerPrice) return;
+
+            const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;
+            if(!providerPriceExists) return;
+            
+            const isPast = utils.isPast(activity.startingAt);
+            if(!isPast) return;
+
+            if(noCustomerPrice && providerPriceExists && isPast) {
+                setNeedsCommission(true);
+                const commissions = await getIncome({activityId : activity.id}, onError);
+                setCommission(commissions.length > 0 ? commissions[0] : null);
+            }
+        }
+
         const setUserRole = async() => {
             const userRole = await userService.isManagerOrAdmin();
             setIsManagerOrAdmin(userRole);
@@ -83,6 +104,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         }
         
         setUserRole();
+        checkCommission();
     }, []);
 
     const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
@@ -176,6 +198,14 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     {showCustomer ? activity.name : ""}
                 </div>  
             </div>
+            {needsCommission && !commission && (
+                <div className="activity-header-status">
+                    <StatusCircle 
+                        status={Status.URGENT} 
+                        message={"Commission Missing"}
+                    />
+                </div>
+            )}
             <div className="activity-header-status">
                 <StatusCircle 
                     status={status} 
