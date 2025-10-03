@@ -281,6 +281,21 @@ export function monthEnd(date = null, addDays = 0) {
 }
 
 /**
+ * @param {*} monthInt, 1-indexed (1 = January). No month given, means using current month
+ * @returns JSON object with two luxon dates: {after: monthStart, before: monthEnd}
+ */
+export function monthRange(monthInt = 0) {
+    const selectedMonthDate = now();
+    if(monthInt !== 0) {
+        selectedMonthDate.set({month : monthInt});
+    }
+    return {
+        after  : monthStart(selectedMonthDate),
+        before : monthEnd(selectedMonthDate),
+    };
+}
+
+/**
  * get a Luxon date time object with time at midnight
  */
 export function today(addDays = 0) {
