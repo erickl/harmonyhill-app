@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useGoogleApi } from "../hooks/useGoogleApi";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import * as utils from "../utils.js";
+import { useNotification } from "../context/NotificationContext.js";
+import { Upload } from 'lucide-react';
+
+import * as expenseService from "../services/expenseService.js";
+import * as activityService from "../services/activityService.js";
 
 // https://console.cloud.google.com/auth/overview?project=harmonyhill-1
 
@@ -10,9 +15,10 @@ const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
 const SPREADSHEET_ID = `${process.env.REACT_APP_SHEET_ID}`;
 
-export default function SheetUploader({onError}) {
+export default function SheetUploader({onExportRequest}) {
     const googleLoaded = useGoogleApi();
     const [accessToken, setAccessToken] = useState(null);
+    const {onError} = useNotification();
 
     const isTokenExpired = (token) => {
         try {
@@ -54,7 +60,7 @@ export default function SheetUploader({onError}) {
 
         let token = null;
         try {
-            token = localStorage.getItem("google_access_token");
+            token = null;//localStorage.getItem("google_access_token");
             if(!token) {
                 if (!googleLoaded) {
                     alert("Google login not ready yet");
@@ -73,20 +79,20 @@ export default function SheetUploader({onError}) {
     }
 
     const handleUploadClick = async () => {
+        const data = await onExportRequest();
         const token = await auth();
-        uploadData(token);
+        uploadData(data, token);
     } 
 
-    const uploadData = async (token) => {
-        const values = [["Eric", "eric@example.com", "Yes"]];
-
+    const uploadData = async (rows, token) => {
         const requestBody = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ values }),
+            // example: const rows = [["Name", "name@example.com", "data"]];
+            body: JSON.stringify({ rows }),
         }
 
         // the range or sheet name you want to append to
@@ -113,7 +119,7 @@ export default function SheetUploader({onError}) {
     return (
         <GoogleOAuthProvider clientId={`${CLIENT_ID}.apps.googleusercontent.com`}>
             <div>
-                <button onClick={handleUploadClick}>Upload Row</button>
+                <Upload onClick={handleUploadClick}/>
             </div>
         </GoogleOAuthProvider>
     );
