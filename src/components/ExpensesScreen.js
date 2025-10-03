@@ -28,10 +28,23 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
 
+    const { onError } = useNotification();
+
+    const filterHeaders = {
+        "after"  : "date",
+        "before" : "date",
+        "paymentMethod" : "string",
+    };
+
     const handleSetExpanded = async(income) => {
         setLoadingExpanded((prev) => ({...prev, [income.id]: true}));
         await fetchBookingInfo(income);
         setLoadingExpanded((prev) => ({...prev, [income.id]: false}));
+    }
+
+    const getDataForExport = async(filterValues) => {
+        const rows = await expenseService.toArrays(filterValues, onError);
+        return rows;
     }
 
     const fetchBookingInfo = async (expense) => {
@@ -55,8 +68,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
 
         setExpandedExpenses(updatedExpandedList);
     };
-
-    const { onError } = useNotification();
 
     const handleEditExpense = async(expense) => {
         setExpenseToEdit(expense);
@@ -126,7 +137,8 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                     {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
                 </div>
             
-                <div>
+                <div className="card-header-right">
+                    <SheetUploader onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                     <button className="add-button" onClick={() => onClose()}>
                         +
                     </button>
@@ -134,6 +146,8 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 </div>
             </div>
             <div className="card-content">
+                
+                
                 {receipts.map((expense) => {
                     return (
                         <React.Fragment key={expense.id}>
@@ -229,8 +243,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                     )
                 })}
             </div>
-
-            {/* <SheetUploader onError={onError}/> */}
             
             {expenseToDelete && (
                 <ConfirmModal 

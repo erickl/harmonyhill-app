@@ -182,8 +182,8 @@ function mapReceiptObject(data) {
     return object;
 }
 
-export async function toArrays(filter) {
-    const documents = await get(filter);
+export async function toArrays(filters, onError) {
+    const documents = await get(filters, onError);
 
     const headers = [
         "index",

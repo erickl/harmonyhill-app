@@ -28,6 +28,11 @@
 
 .expense-header-right {
   display: flex;
+  align-items: center; 
+}
+
+.card-header-right {
+  display: flex;
 }
 
 .expense-body {
