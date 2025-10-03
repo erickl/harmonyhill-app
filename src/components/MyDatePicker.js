@@ -57,7 +57,7 @@ export default function MyDatePicker({ name, date, time, onChange, useTime }) {
     };
 
     return (
-        <div>
+        <div className="date-time-input">
             <LocalizationProvider dateAdapter={AdapterLuxon} adapterLocale="en-gb">
                 <MobileDateTimePicker
                     slotProps={{
@@ -74,7 +74,7 @@ export default function MyDatePicker({ name, date, time, onChange, useTime }) {
             </LocalizationProvider>
 
             {useTime !== false && (<>
-                <div style={{ marginTop: "8px" }} />
+                <div className="time-input" />
                 <LocalizationProvider dateAdapter={AdapterLuxon}>
                     <MobileTimePicker
                         label="Select a time"
