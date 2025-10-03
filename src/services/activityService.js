@@ -374,38 +374,30 @@ export async function getChangeDescription(oldData, newData) {
     return changeDescription;
 }
 
-export async function testActivities(date) {
-    const categories = await getCategories();
-    const activityTypes1 = await getActivityMenu();
-    const activityTypes2 = await getActivityMenu({"category": "transport"});
+export async function toArrays(filter) {
+    const documents = await get(filter);
 
-    const bookingId = "Eric-Klaesson-hh-251110";
-    const activityData = {
-        category: "transport",
-        subCategory: "to-airport",
-        startingAt: date.toISO(),
-        isFree: false,
-        customerPrice: 1500,
-        status: "requested",
-        comments: "They have 7 bags with them",
-        assignedTo: "",
-        provider: "Dewa",
-    };
+    const headers = [
+        "startingAt",
+        "displayName",
+        "bookingName",
+        "house",
+        "customerPrice",
+        "provider",
+        "providerPrice",
+        "id",
+    ];
 
-    const activityId = await add(bookingId, activityData);
+    let rows = [headers];
 
-    // const assigned = await assignProvider(bookingId, activityId, "Rena");
+    for(const document of documents) {
+        let values = [];
+        for(const header of headers) {
+            values.push((utils.exists(document, header) ? document[header] : "-"))
+        }
 
+        rows.push(values);
+    }
 
-    //const user = userService.getCurrentUser();
-    // const assigned = await assignStaff(bookingId, activityId, userId);
-    
-    // const updated = await update(bookingId, activityId, { time: "13:00" });
-
-    // const updatedActivity = await getOne(bookingId, activityId);
-
-    const allActivities = await getAll();
-    let x = 1;
-
-    //const deleted = await remove(bookingId, activityId);
+    return rows;
 }
