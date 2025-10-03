@@ -76,22 +76,30 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             setCustomer(customer);
         }
 
+        // If customer paid to provider, instead of to us, we should get a commission from the provider
         const checkCommission = async() => {
-            // If customer paid to provider, instead of to us, we should get a commission from the provider
             const noCustomerPrice = !utils.exists(activity, "customerPrice") || utils.isEmpty(activity.customerPrice) || activity.customerPrice == 0;
-            if(!noCustomerPrice) return;
-
-            const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;
-            if(!providerPriceExists) return;
-            
+            const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;   
             const isPast = utils.isPast(activity.startingAt);
-            if(!isPast) return;
+            
+            const commissions = await getIncome({activityId : activity.id}, onError);
+            const commission = commissions.length > 0 ? commissions[0] : null;
 
-            if(noCustomerPrice && providerPriceExists && isPast) {
+            const needsCommissionNow = noCustomerPrice && providerPriceExists && isPast;
+            const needsCommissionLater = noCustomerPrice && providerPriceExists && !isPast;
+
+            // Commission is needed now
+            if(needsCommissionNow) {
                 setNeedsCommission(true);
-                const commissions = await getIncome({activityId : activity.id}, onError);
-                setCommission(commissions.length > 0 ? commissions[0] : null);
+            // No commission yet exists, but for now it's okay
+            } else if(needsCommissionLater && commission) {
+                setNeedsCommission(true);
+            // If commission exists, this must be corrected
+            } else if(!needsCommissionLater && commission) {
+                setNeedsCommission(false);
             }
+
+            setCommission(commission);
         }
 
         const setUserRole = async() => {
@@ -198,14 +206,23 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     {showCustomer ? activity.name : ""}
                 </div>  
             </div>
-            {needsCommission && !commission && (
+
+            {needsCommission && !commission ? (
                 <div className="activity-header-status">
                     <StatusCircle 
                         status={Status.URGENT} 
                         message={"Commission Missing"}
                     />
                 </div>
-            )}
+            ) : !needsCommission && commission ? (
+                <div className="activity-header-status">
+                    <StatusCircle 
+                        status={Status.URGENT} 
+                        message={"Commission Not Needed"}
+                    />
+                </div>
+            ) : (<></>)}
+            
             <div className="activity-header-status">
                 <StatusCircle 
                     status={status} 
