@@ -138,7 +138,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 </div>
             
                 <div className="card-header-right">
-                    <SheetUploader onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                    {isAdmin && (<SheetUploader onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>)}
                     <button className="add-button" onClick={() => onClose()}>
                         +
                     </button>
