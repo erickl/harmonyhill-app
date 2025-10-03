@@ -68,7 +68,7 @@ export default class ActivityType {
     } 
 
     static async seed() {
-        //                    subCategory                        category   priority price    providerPrices                            House availability                    Description                                                                         Instructions                                                     custom?   internal?
+        //                    subCategory                        category   priority price    providerPrices                            House availability                    Description                                                                         Instructions                                                       custom? internal?
         const activityTypes = [
             new ActivityType("breakfast",                         "meal",       100, 0,       {                                       }, ["harmony hill", "the jungle nook"], "Available from 08:00 - 11:00",                                                      "Choose 1 main, 1 coffee/tea, 1 juice, 1 fruit platter per guest", false, true,  0, 0 ),
             new ActivityType("floating-breakfast-for-1-to-2",     "meal",       101, 200000,  {                                       }, ["harmony hill", "the jungle nook"], "Available from 08:00 - 11:00, only for Harmony Hill (and the nook if HH is empty)", "1 cake/cookie per couple. Offer to stand-by for photos"         , false, true,  0, 0 ),
@@ -151,6 +151,7 @@ export default class ActivityType {
             new ActivityType("laundry-express",                   "service",    999, 0,       {                                       }, ["harmony hill", "the jungle nook"], "One day return, 30k/kg",                                                            "Accept latest the morning the day before checkout"              , false, false, 0, 0 ),
             new ActivityType("house-keeping",                     "service",    999, 0,       {                                       }, ["harmony hill", "the jungle nook"], "",                                                                                  ""                                                               , false, true,  0, 0 ),
             new ActivityType("baby-sitting",                      "service",    999, 0,       {                                       }, ["harmony hill", "the jungle nook"], "50k/hour",                                                                          "Ask the parents for their rules"                                , false, true,  0, 0 ),
+            new ActivityType("red-envelope",                      "service",    999, 0,       {                                       }, ["harmony hill", "the jungle nook"], "Put the day before, with personalized letter and feedback form",                    ""                                                               , false, true,  0, 0 ),
                    
             new ActivityType("custom",                            "custom",     999, 0,       {                                       }, ["harmony hill", "the jungle nook"], "",                                                                                  ""                                                               , true , false, 0, 0 ),
         ];
