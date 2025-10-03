@@ -15,6 +15,11 @@ export function NotificationProvider({ children }) {
         setHeader("Warning!");
         setMessage(`${message}`);
     }
+
+    const onInfo = (header, message) => {
+        setHeader(header);
+        setMessage(`${message}`);
+    }
     
     const hidePopup = () => {
         setHeader(null);
@@ -22,7 +27,7 @@ export function NotificationProvider({ children }) {
     }
 
     return (
-        <NotificationContext.Provider value={{ onError, onWarning }}>
+        <NotificationContext.Provider value={{ onError, onWarning, onInfo }}>
             {children}
             {message && (
                 <div className="modal-overlay" onClick={() => hidePopup()}>
