@@ -56,13 +56,16 @@ export default function MyDatePicker({ name, date, time, onChange, useTime }) {
         }
     };
 
+    const slotProps = {
+        textField: { fullWidth: true },
+        //popper: {sx: { zIndex: 10001,},},
+    };
+
     return (
         <div className="date-time-input">
             <LocalizationProvider dateAdapter={AdapterLuxon} adapterLocale="en-gb">
                 <MobileDateTimePicker
-                    slotProps={{
-                        textField: { fullWidth: true }
-                    }}  
+                    slotProps={slotProps}  
                     label="Select a date"
                     value={date}
                     format="dd/MM/yyyy"
@@ -84,9 +87,7 @@ export default function MyDatePicker({ name, date, time, onChange, useTime }) {
                         ampm={false}
                         views={["hours", "minutes"]}
                         desktopModeMediaQuery="(max-width: 999999px)" // force modal mode
-                        slotProps={{
-                            textField: { fullWidth: true }
-                        }}  
+                        slotProps={slotProps} 
                     />
                 </LocalizationProvider>
             </>)}
