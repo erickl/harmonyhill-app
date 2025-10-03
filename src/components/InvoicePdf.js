@@ -1,5 +1,3 @@
-//"use client";
-
 import React, { useState, useEffect } from "react";
 import { PDFDownloadLink, Document, Page, Text, Image, View, StyleSheet, Font } from "@react-pdf/renderer";
 import * as invoiceService from "../services/invoiceService.js";
