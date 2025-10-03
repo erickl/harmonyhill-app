@@ -4,6 +4,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { Upload } from 'lucide-react';
+import { useFilters } from "../context/FilterContext.js";
 
 import * as expenseService from "../services/expenseService.js";
 import * as activityService from "../services/activityService.js";
@@ -15,10 +16,11 @@ const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
 const SPREADSHEET_ID = `${process.env.REACT_APP_SHEET_ID}`;
 
-export default function SheetUploader({onExportRequest}) {
+export default function SheetUploader({onExportRequest, filterHeaders}) {
     const googleLoaded = useGoogleApi();
     const [accessToken, setAccessToken] = useState(null);
     const {onError} = useNotification();
+    const {onFilter, getFilters} = useFilters();
 
     const isTokenExpired = (token) => {
         try {
@@ -78,10 +80,17 @@ export default function SheetUploader({onExportRequest}) {
         return token;
     }
 
-    const handleUploadClick = async () => {
-        const data = await onExportRequest();
+    const handleExportClick = async () => {
+        const onFilterValuesSubmit = (filterValues) => {
+            handleUploadClick(filterValues);
+        };
+        onFilter(filterHeaders, onFilterValuesSubmit);
+    } 
+
+    const handleUploadClick = async (filterValues) => {
+        const data = await onExportRequest(filterValues);
         const token = await auth();
-        uploadData(data, token);
+        await uploadData(data, token);
     } 
 
     const uploadData = async (rows, token) => {
@@ -118,8 +127,8 @@ export default function SheetUploader({onExportRequest}) {
 
     return (
         <GoogleOAuthProvider clientId={`${CLIENT_ID}.apps.googleusercontent.com`}>
-            <div>
-                <Upload onClick={handleUploadClick}/>
+            <div style={{margin:"1rem"}}>
+                <Upload onClick={handleExportClick}/>
             </div>
         </GoogleOAuthProvider>
     );
