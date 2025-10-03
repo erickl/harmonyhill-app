@@ -1,6 +1,7 @@
 import * as utils from "../utils.js";
 import * as incomeDao from "../daos/incomeDao.js";
-import * as bookingService from "./bookingService.js";
+import {getOne as getBooking} from "./bookingService.js";
+import {getOne as getActivity} from "./activityService.js";
 
 export async function get(filterOptions, onError) {
     const incomes = await incomeDao.get(filterOptions, {"receivedAt":"desc"}, -1, onError);
@@ -69,8 +70,11 @@ async function mapIncomeObject(data) {
 
     if(!utils.isEmpty(data.category)) {
         object.category = data.category.trim().toLowerCase();
-        if(object.category === "guest payment" || object.category === "commission") {
-            object.bookingId = data.bookingId;
+        if(object.category === "guest payment" ) {
+            object.bookingId = utils.exists(data, "bookingId") ? data.bookingId: null;
+        } else if(object.category === "commission") {
+            object.bookingId = utils.exists(data, "bookingId") ? data.bookingId: null;
+            object.activityId = utils.exists(data, "activityId") ? data.activityId: null;
         }
         object.description = `${object.category}`;
     }
@@ -81,11 +85,16 @@ async function mapIncomeObject(data) {
 
     if(!utils.isEmpty(data.comments)) object.comments = data.comments.trim();
 
-    let booking = object.bookingId ? await bookingService.getOne(object.bookingId) : null;
+    const booking = object.bookingId ? await getBooking(object.bookingId) : null;
     if(booking && booking.name) {
         object.description += `, ${booking.name}`;
     }
-    
+
+    const activity = object.bookingId && object.activityId ? await getActivity(object.bookingId, object.activityId) : null;
+    if(activity && activity.displayName) {
+        object.description += `, ${activity.displayName}`;
+    }
+
     return object;
 }
 
@@ -98,10 +107,9 @@ export async function validate(data, onError) {
         if(utils.isEmpty(data.category)) {
             onError(`Choose category`);
             return false;
-        }
-        // If guest payment chosen, also have to choose which booking 
-        else {
+        } else {
             const category = data.category.trim().toLowerCase();
+            // If guest payment chosen, also have to choose which booking 
             if(category === "guest payment") {
                 if(utils.isEmpty(data.bookingId)) {
                     onError(`Choose booking`);
@@ -111,6 +119,10 @@ export async function validate(data, onError) {
             else if(category === "commission") {
                 if(utils.isEmpty(data.bookingId)) {
                     onError(`For category 'Commission', select which booking it pertains to`);
+                    return false;
+                }
+                if(utils.isEmpty(data.activityId)) {
+                    onError(`For category 'Commission', select which activity it pertains to`);
                     return false;
                 }
                 if(utils.isEmpty(data.comments)) {

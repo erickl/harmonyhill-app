@@ -61,10 +61,11 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
             "category": name,
         }
 
-        const guestInfoNeeded = needsGuestInfo(category);
-
-        if(!guestInfoNeeded) {
+        if(!needsGuestInfo(name)) {
             change["bookingId"] = null;
+            
+        }
+        if(!needsActivityInfo(name)) {
             change["activityId"] = null;
         }
 

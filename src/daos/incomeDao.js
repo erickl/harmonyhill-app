@@ -20,6 +20,14 @@ export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, 
         queryFilter.push(where("category", "==", category));
     }
 
+    if (utils.exists(filterOptions, "bookingId")) {
+        queryFilter.push(where("bookingId", "==", filterOptions.bookingId));
+    }
+
+    if (utils.exists(filterOptions, "activityId")) {
+        queryFilter.push(where("activityId", "==", filterOptions.activityId));
+    }
+
     if (utils.exists(filterOptions, "paymentMethod")) {
         const paymentMethod = filterOptions.paymentMethod.trim().toLowerCase();
         queryFilter.push(where("paymentMethod", "==", paymentMethod));
