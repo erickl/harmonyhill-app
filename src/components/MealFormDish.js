@@ -34,10 +34,10 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
 
         if(existingDishIndex === -1) {
             newDish.quantity = 0;
+            newDish.isFree = isFree;
             existingDishIndex = updatedDishes.push(newDish) - 1;
         } 
 
-        updatedDishes[existingDishIndex].isFree = isFree;
         updatedDishes[existingDishIndex].quantity += quantity;
         updatedDishes[existingDishIndex].quantity = Math.max(updatedDishes[existingDishIndex].quantity, 0);
 
