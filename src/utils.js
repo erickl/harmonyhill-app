@@ -246,6 +246,12 @@ export function wasYesterday(inputDate) {
     return luxonDateTime.day < todayDateTime.day;
 }
 
+export function isPast(inputDate) {
+    const luxonDateTime = toLuxonDateTime(inputDate);
+    const diff = luxonDateTime.toMillis() - now().toMillis();
+    return diff < 0;
+}
+
 export function dateIsSame(oldDate, newDate) {
     if(isEmpty(oldDate)) {
         return isEmpty(newDate);
@@ -336,7 +342,7 @@ export function cleanNumeric(value) {
     // Remove all non-digit characters (commas, dots, currency symbols, etc.)
     const cleanValue = isString(value) ? value.replace(/[^0-9]/g, '') : value;
     // Convert to integer; use empty string if input is empty
-    const numericValue = cleanValue === '' ? '' : parseInt(cleanValue, 10);
+    const numericValue = cleanValue === '' ? 0 : parseInt(cleanValue, 10);
     return numericValue;
 }
 
