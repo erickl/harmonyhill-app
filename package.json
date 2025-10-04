@@ -1,6 +1,6 @@
 {
   "name": "harmonyhill-app",
-  "version": "3.5",
+  "version": "3.6",
   "private": true,
   "dependencies": {
     "@capacitor/android": "^7.4.0",
@@ -26,6 +26,7 @@
     "luxon": "^3.6.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.1",
+    "react-pdf": "^10.1.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
