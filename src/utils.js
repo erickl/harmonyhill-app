@@ -291,9 +291,9 @@ export function monthEnd(date = null, addDays = 0) {
  * @returns JSON object with two luxon dates: {after: monthStart, before: monthEnd}
  */
 export function monthRange(monthInt = 0) {
-    const selectedMonthDate = now();
+    let selectedMonthDate = now();
     if(monthInt !== 0) {
-        selectedMonthDate.set({month : monthInt});
+        selectedMonthDate = selectedMonthDate.set({month : monthInt});
     }
     return {
         after  : monthStart(selectedMonthDate),
