@@ -51,8 +51,8 @@ export async function get(bookingId, filterOptions = {}) {
  * @param {*} filterOptions same as get() above
  * @returns all activities across all bookings, ordered by date (oldest first), from today onwards
  */
-export async function getAll(filterOptions = {}) {
-    const activities = await activityDao.getAllActivities(filterOptions);
+export async function getAll(filterOptions = {}, onError) {
+    const activities = await activityDao.getAllActivities(filterOptions, onError);
     const enhancedActivities = await enhanceActivities(activities);
     return enhancedActivities; 
 }
@@ -224,7 +224,7 @@ export async function remove(bookingId, activityId, onError) {
 }
 
 export function makeId(startingAt, house, subCategory) {
-    const houseShort = house.trim().toLowerCase() == "harmony hill" ? "hh" : "jn";
+    const houseShort = house.trim().toLowerCase() === "harmony hill" ? "hh" : "jn";
     startingAt = utils.to_YYMMdd(startingAt);
     subCategory = subCategory.trim().toLowerCase().replace(/ /g, '-');
     return `${startingAt}-${houseShort}-${subCategory}-${Date.now()}`;
@@ -374,8 +374,8 @@ export async function getChangeDescription(oldData, newData) {
     return changeDescription;
 }
 
-export async function toArrays(filter) {
-    const documents = await get(filter);
+export async function toArrays(filters, onError) {
+    const documents = await getAll(filters, onError);
 
     const headers = [
         "startingAt",

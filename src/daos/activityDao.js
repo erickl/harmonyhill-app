@@ -99,7 +99,7 @@ export async function getBookingActivities(bookingId, options = {}) {
     return sortedActivities;
 }
 
-export async function getAllActivities(options = {}) { 
+export async function getAllActivities(options = {}, onError) { 
     let filters = [];
     
     if (utils.exists(options, "category")) {
@@ -120,7 +120,7 @@ export async function getAllActivities(options = {}) {
         filters.push(where("startingAt", "<=", before));
     }
     
-    const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters);
+    const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters, [], onError);
     const sortedActivities = dao.sort(allActivities, "startingAt");
 
     // Can get parent from the activity, but might decide to duplicate booking data into the activity instead
