@@ -37,10 +37,10 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         "paymentMethod" : "string",
     };
 
-    const handleSetExpanded = async(income) => {
-        setLoadingExpanded((prev) => ({...prev, [income.id]: true}));
-        await fetchBookingInfo(income);
-        setLoadingExpanded((prev) => ({...prev, [income.id]: false}));
+    const handleSetExpanded = async(expense) => {
+        setLoadingExpanded((prev) => ({...prev, [expense.id]: true}));
+        await fetchBookingInfo(expense);
+        setLoadingExpanded((prev) => ({...prev, [expense.id]: false}));
     }
 
     const getDataForExport = async(filterValues) => {
