@@ -88,12 +88,13 @@ export default function SheetUploader({onExportRequest, filterHeaders}) {
     } 
 
     const handleUploadClick = async (filterValues) => {
-        const data = await onExportRequest(filterValues);
+        const rows = await onExportRequest(filterValues);
         const token = await auth();
-        await uploadData(data, token);
+        await uploadData(rows, token);
     } 
 
-    const uploadData = async (rows, token) => {
+    // Note: 'values' is a key word for the google sheets API. Keep the name
+    const uploadData = async (values, token) => {
         const requestBody = {
             method: "POST",
             headers: {
@@ -101,7 +102,7 @@ export default function SheetUploader({onExportRequest, filterHeaders}) {
                 Authorization: `Bearer ${token}`,
             },
             // example: const rows = [["Name", "name@example.com", "data"]];
-            body: JSON.stringify({ rows }),
+            body: JSON.stringify({values}),
         }
 
         // the range or sheet name you want to append to
