@@ -67,6 +67,10 @@
     /* border-bottom: 1px solid #ddd; */
 }
 
+.card-header-right {
+  display: flex;
+}
+
 .card-header-left {
     display: flex;
     align-items: center;
