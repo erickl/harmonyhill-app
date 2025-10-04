@@ -31,10 +31,6 @@
   align-items: center; 
 }
 
-.card-header-right {
-  display: flex;
-}
-
 .expense-body {
   padding: 1rem;
 }
