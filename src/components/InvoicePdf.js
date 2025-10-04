@@ -176,7 +176,8 @@ export default function InvoicePdfLink({customer}) {
     const linkName = `Total: ${utils.formatDisplayPrice(total, true)}`
     const customerName = customer.name.replace(/ /g, "-");
     const date = utils.to_YYMMdd(customer.checkOutAt);
-    const filename = `${date} invoice ${customerName}.pdf`;
+    const uuid = Date.now();
+    const filename = `${date} invoice ${customerName} ${uuid}.pdf`;
 
     return (
         <div>
