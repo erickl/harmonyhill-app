@@ -1,4 +1,4 @@
-import React, { useState, useEffect, act } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as invoiceService from "../services/invoiceService.js";
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
