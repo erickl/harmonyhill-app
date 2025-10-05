@@ -1,10 +1,12 @@
 import * as expenseDao from "../daos/expenseDao.js";
+import * as storageDao from "../daos/storageDao.js";
 import * as utils from "../utils.js";
 import { getOne as getActivity } from "./activityService.js";
+import {getNextSerialNumber} from "../daos/dao.js";
 
 export async function add(data, onError) {
     const addResult = await expenseDao.transaction(async () => {
-        data.index = await expenseDao.getNextSerialNumber(data.purchasedAt, onError);
+        data.index = await getNextSerialNumber(data.purchasedAt, onError);
         data = await processReceipt(data, onError);
         const object = mapReceiptObject(data);
 
@@ -53,7 +55,7 @@ export async function update(id, data, onError) {
 
         // If photo is updated, remove the old photo
         if(existing.photoUrl !== object.photoUrl) {
-            await expenseDao.removeImage(existing.fileName);   
+            await storageDao.removeImage(existing.fileName);   
         }
 
         return true;
@@ -69,10 +71,10 @@ export async function update(id, data, onError) {
  */
 export async function uploadReceipt(filename, file, compressionOptions, onError) {
     if(!utils.isEmpty(compressionOptions)) {
-        file = await expenseDao.compressImage(file, compressionOptions, onError);
+        file = await storageDao.compressImage(file, compressionOptions, onError);
     }
-    const imageDataUrl = await expenseDao.blobToBase64(file);
-    return await expenseDao.uploadImage(filename, imageDataUrl, onError);
+    const imageDataUrl = await storageDao.blobToBase64(file);
+    return await storageDao.uploadImage(filename, imageDataUrl, onError);
 }
 
 export async function get(filterOptions, onError) {

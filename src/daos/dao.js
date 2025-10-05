@@ -359,3 +359,14 @@ export async function jsonObjectDiffStr(obj1, obj2) {
 
     return diff;
 }
+
+export async function getNextSerialNumber(date, onError) {
+    const filter = {
+        "after"  : utils.monthStart(date),
+        "before" : utils.monthEnd(date),
+    };
+    const elements = await get(filter, {"index":"desc"}, 1, onError);
+    const last = elements && elements.length > 0 ? elements[0] : null;
+    const nextIndex = last && last.index ? last.index + 1 : 1;
+    return nextIndex;
+}

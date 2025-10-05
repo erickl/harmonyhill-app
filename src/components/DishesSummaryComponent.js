@@ -7,7 +7,7 @@ import "./DishesSummaryComponent.css";
 import { Image as ImageIcon} from 'lucide-react';
 import Spinner from './Spinner.js';
 
-import { getPhotoUrl } from '../daos/expenseDao.js';
+import { getPhotoUrl } from '../daos/storageDao.js';
 
 export default function DishesSummaryComponent({dishes}) {
 
