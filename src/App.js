@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-
 import CustomersScreen from './components/CustomersScreen';
 import ActivitiesScreen from './components/ActivitiesScreen';
 import AddExpensesScreen from './components/AddExpensesScreen';
@@ -9,33 +8,15 @@ import LoginScreen from './components/LoginScreen';
 import AddCustomerScreen from './components/AddCustomerScreen';
 import BottomNavigation from './components/BottomNavigation.js';
 import SideMenu from './components/SideMenu.js';
-
-import * as bookingService from './services/bookingService.js';
-import * as menuService from './services/menuService.js';
-import * as activityService from './services/activityService.js';
-import * as invoiceService from './services/invoiceService.js';
 import * as userService from './services/userService.js';
-import * as personnelService from './services/personnelService.js';
-import { DateTime } from 'luxon';
 import { auth } from "./firebase";
-import { AppProviders } from './components/AppProviders.js';
-
 import './App.css';
-//import './models/Dish.js';
 
 function App() {
-    //userService.logout();
-    //bookingService.uploadData('/Booking list - Bookings Harmony Hill.tsv');
-    //bookingService.uploadData('/Booking list - Bookings Jungle Nook.tsv');
-
-    //personnelService.testPersonnel();
-    //userService.testLogin();
-    //activityService.testActivities(dt);
-
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [loading,    setLoading]    = useState(true);
-    const [activeTab, setActiveTab] = useState('customers');
-    const [currentScreen, setCurrentScreen] = useState('customers'); // Added state for screen navigation
+    const [isLoggedIn,    setIsLoggedIn]    = useState(false);
+    const [loading,       setLoading]       = useState(true);
+    const [activeTab,     setActiveTab]     = useState('customers');
+    const [currentScreen, setCurrentScreen] = useState('customers');
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -87,22 +68,20 @@ function App() {
 
     return (
         <>
-            <div className="app-container">
-                <AppProviders>
-                    {isLoggedIn ? (
-                        <>
-                            
-                                <SideMenu />
-                                <div className="content">
-                                    {screenToDisplay}
-                                </div> { /* Use screenToDisplay */}
-                                <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-                            
-                        </>
-                    ) : (
-                        <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
-                    )}
-                </AppProviders>
+            <div className="app-container">   
+                {isLoggedIn ? (
+                    <>
+                        
+                            <SideMenu />
+                            <div className="content">
+                                {screenToDisplay}
+                            </div> { /* Use screenToDisplay */}
+                            <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+                        
+                    </>
+                ) : (
+                    <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
+                )}
             </div>
         </>
     );
