@@ -63,6 +63,8 @@ export async function getAll(filterOptions = {}, onError) {
  */
 export async function enhanceActivities(activities) {
     const enhance = async (activity) => {
+        if(!activity) return;
+
         const newActivity = activity;
         try {
             // Date time stored in timestamp format in database. Convert to Luxon Date time to display correct time zone 
@@ -375,12 +377,13 @@ export async function getChangeDescription(oldData, newData) {
 }
 
 export async function toArrays(filters, onError) {
+    //filters = utils.monthRange(9);
     const documents = await getAll(filters, onError);
 
     const headers = [
         "startingAt",
         "displayName",
-        "bookingName",
+        "name", // guest name
         "house",
         "customerPrice",
         "provider",
