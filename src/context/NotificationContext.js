@@ -33,7 +33,7 @@ export function NotificationProvider({ children }) {
                 <div className="modal-overlay" onClick={() => hidePopup()}>
                     <div className="modal-box">
                         <h2>{header}</h2>
-                        <p>{message}</p>
+                        <p className="preserve-whitespaces">{message}</p>
                     </div>
                 </div>
             )}
