@@ -64,6 +64,13 @@ export async function update(id, data, onError) {
     return updateResult;
 }
 
+export async function downloadExpenseReceipts(toFilename, filters, onError) {
+    const expenses = await get(filters, onError);
+    const filePaths = expenses.map((expense) => expense.fileName);
+    const success = await storageDao.downloadAllZipped(toFilename, filePaths, onError);
+    return success;
+}
+
 /**
  * Upload invoice for purchases for your business (e.g. of market groceries, construction materials, etc...)
  * @param {*} filename 
@@ -202,12 +209,13 @@ export async function toArrays(filters, onError) {
         "customerPrice",
         "providerPrice",
         "activityId",
+        "comments",
     ];
 
     let rows = [headers];
 
     for(const document of documents) {
-        if(utils.exists(document, "activityId")) {
+        if(utils.exists(document, "bookingId") && utils.exists(document, "activityId")) {
             const activity = await getActivity(document.bookingId, document.activityId);
             document.activityCategory = activity.category;
             document.activitySubCategory = activity.subCategory;

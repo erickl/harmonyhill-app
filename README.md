@@ -43,6 +43,14 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 - run the seeder script with path of "./public/<filename>"
 - Note: if running from the node script, instead of the react app, use fs/promises/readFile, instead of fetch
 
+# How to download storage files (expenses)
+- brew install --cask google-cloud-sdk
+- gcloud auth login
+- gcloud config set project harmonyhill-1
+- You may see more info here: gcloud storage buckets list
+- gsutil -m cp -r gs://harmonyhill-1.firebasestorage.app/expenses <absolute path to local destination folder>
+
+- set cors: gsutil cors set cors.json gs://harmonyhill-1.firebasestorage.app
 
 
 # Versions

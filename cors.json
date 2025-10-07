@@ -1,0 +1,9 @@
+[
+  {
+    "origin": ["https://harmonyhill-1.web.app"],
+    "responseHeader": ["Content-Type", "Authorization"],
+    "method": ["GET", "HEAD", "OPTIONS"],
+    "maxAgeSeconds": 3600,
+    "_comment": "used for downloading files from firebase storage"
+  }
+]

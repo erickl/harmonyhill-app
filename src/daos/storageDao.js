@@ -2,6 +2,8 @@ import { storage } from '../firebase';
 import { ref, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
 import imageCompression from "browser-image-compression";
 import * as utils from "../utils.js";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 export async function uploadImage(filename, imageDataURL, onError) {
     try {
@@ -61,4 +63,27 @@ export function blobToBase64(blob) {
         reader.onerror = reject;
         reader.readAsDataURL(blob);
     });
+}
+
+export async function downloadAllZipped(toFilename, paths, onError) {
+    try {
+        const zip = new JSZip();
+
+        for (const path of paths) {
+            const fileRef = ref(storage, path);
+            const url = await getDownloadURL(fileRef);
+            // For this to work, we have to set CORS restrictions: see cors.json
+            const res = await fetch(url);
+            const filedata = await res.blob();
+            const filename = path.split("/").pop();
+            zip.file(filename, filedata);
+        }
+
+        const content = await zip.generateAsync({ type: "blob" });
+        saveAs(content, `${toFilename}.zip`);
+    } catch(e) {
+        onError(`Could not download all files: ${e.message}`);
+        return false;
+    }
+    return true;
 }

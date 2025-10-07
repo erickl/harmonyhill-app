@@ -377,7 +377,6 @@ export async function getChangeDescription(oldData, newData) {
 }
 
 export async function toArrays(filters, onError) {
-    //filters = utils.monthRange(9);
     const documents = await getAll(filters, onError);
 
     const headers = [

@@ -6,9 +6,6 @@ import { useNotification } from "../context/NotificationContext.js";
 import { Upload } from 'lucide-react';
 import { useFilters } from "../context/FilterContext.js";
 
-import * as expenseService from "../services/expenseService.js";
-import * as activityService from "../services/activityService.js";
-
 // https://console.cloud.google.com/auth/overview?project=harmonyhill-1
 
 const CLIENT_ID = `${process.env.REACT_APP_OAUTH2_CLIENT_ID}.apps.googleusercontent.com`;

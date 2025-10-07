@@ -11,9 +11,10 @@ import Spinner from "./Spinner.js";
 import invoiceLogo from "../assets/invoice-icon.png";
 import AddExpensesScreen from "./AddExpensesScreen.js";
 import ConfirmModal from "./ConfirmModal.js";
-import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
+import { Pencil, ShoppingCart, Trash2, ImageDown } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 import MetaInfo from './MetaInfo.js';
+import { useFilters } from "../context/FilterContext.js";
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
@@ -28,6 +29,8 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [expenseToDelete,  setExpenseToDelete ] = useState(null );
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
+
+    const {onFilter} = useFilters();
 
     const { onError } = useNotification();
 
@@ -46,6 +49,19 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const getDataForExport = async(filterValues) => {
         const rows = await expenseService.toArrays(filterValues, onError);
         return rows;
+    }
+
+    const handleReceiptsDownloadFilter = async() => {
+        const onFilterValuesSubmit = (filterValues) => {
+            handlePicturesDownload(filterValues);
+        };
+        onFilter(filterHeaders, onFilterValuesSubmit);
+    }
+
+    const handlePicturesDownload = async(filters) => {
+        const filename = `receipts`;
+        const success = await expenseService.downloadExpenseReceipts(filename, filters, onError);
+        const x = 1; // todo, if success = true, display onSuccess?
     }
 
     const fetchBookingInfo = async (expense) => {
@@ -139,16 +155,22 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 </div>
             
                 <div className="card-header-right">
-                    {isAdmin && (<SheetUploader onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>)}
-                    <button className="add-button" onClick={() => onClose()}>
-                        +
-                    </button>
-                    {expenseSum && (<h4>Expense: {utils.formatDisplayPrice(expenseSum, true)}</h4>)}
-                </div>
+                    <div>
+                        <div className="card-header-right-top-row">
+                            {isAdmin && (<>
+                                <SheetUploader onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                                <ImageDown style={{margin:"1rem"}} onClick={() => handleReceiptsDownloadFilter()} />
+                            </>)}
+                            <button className="add-button" onClick={() => onClose()}>
+                                + 
+                            </button>
+                        </div>
+                        {expenseSum && (<h4>Expense: {utils.formatDisplayPrice(expenseSum, true)}</h4>)}
+                    </div>
+                    
+                </div>  
             </div>
             <div className="card-content">
-                
-                
                 {receipts.map((expense) => {
                     return (
                         <React.Fragment key={expense.id}>
@@ -162,7 +184,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                     <div className="expense-header-right">
                                         <div>
                                             {utils.formatDisplayPrice(expense.amount, true)}
-                                            
                                         </div>
                                         <div className="expand-icon">
                                             {expandedExpenses[expense.id] ? '▼' : '▶'}

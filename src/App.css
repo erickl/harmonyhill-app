@@ -69,6 +69,18 @@
 
 .card-header-right {
   display: flex;
+  flex-direction: column;   /* stack top & bottom rows */
+   justify-content: space-between; /* push bottom row down */
+  width: auto;
+}
+
+.card-header-right-top-row {
+  display: flex;
+}
+
+.card-header-right-bottom-row {
+  margin-top: auto;
+  text-align: right;
 }
 
 .card-header-left {
