@@ -73,7 +73,7 @@ export async function login(username, password, onError) {
         const success = await userDao.updateLastLoggedIn(firebaseUser.uid);
         return success;
     } catch (error) {
-        onError(`Username or password is is incorrect (4)`);
+        onError(`Username or password is incorrect (4)`);
         return false;
     }
 }
