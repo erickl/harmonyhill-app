@@ -34,7 +34,13 @@ export async function getTotalIncomes(onError) {
     return incomeSum;
 }
 
-export async function getPettyCashBalance(onError) {
+/**
+ * 
+ * @param {*} untilDate calculate petty cash until this date. Can be set to null, in which case the cash is counted up until now
+ * @param {*} onError 
+ * @returns total petty cash on the given date
+ */
+export async function getPettyCashBalance(untilDate, onError) {
     const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(onError);
     if(lastClosedPettyCashAmount === false) {
         return false;
@@ -46,6 +52,10 @@ export async function getPettyCashBalance(onError) {
         "after"         : lastClosedAt,
     };
 
+    if(!utils.isEmpty(untilDate)) {
+        ledgerFilter["before"] = untilDate;
+    }
+
     const incomes = await incomeService.get(ledgerFilter, onError);
     const incomeSum = incomes.reduce((sum, income) => sum + income.amount, 0);
 
@@ -55,4 +65,11 @@ export async function getPettyCashBalance(onError) {
     const total = lastClosedPettyCashAmount.balance + incomeSum - expenseSum;
     
     return total;
+}
+
+export async function closeMonth(onError) {
+    const monthEnd = utils.monthStart().plus({seconds: -1});
+    const balance = await getPettyCashBalance(monthEnd, onError);
+    const success = await ledgerDao.addCloseRecord(balance, onError);
+    return success;
 }
