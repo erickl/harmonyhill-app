@@ -1,4 +1,6 @@
 import * as dao from "./dao.js";
+import * as utils from "../utils.js";
+import { where, orderBy } from 'firebase/firestore';
 
 export async function get(filterOptions, onError) {
     const path = dao.constant.USER_LOGS;
@@ -14,15 +16,15 @@ export async function get(filterOptions, onError) {
 
     if (utils.exists(filterOptions, "after")) {
         const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
-        queryFilter.push(where("receivedAt", ">=", afterDateFireStore));
+        queryFilter.push(where("createdAt", ">=", afterDateFireStore));
     }
 
     if (utils.exists(filterOptions, "before")) {
         const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
-        queryFilter.push(where("receivedAt", "<=", beforeDateFireStore));
+        queryFilter.push(where("createdAt", "<=", beforeDateFireStore));
     }
 
-    let logs = await dao.get([path], filters, [], -1, onError);
+    let logs = await dao.get([path], queryFilter, [], -1, onError);
 
     if(utils.exists(filterOptions, 'collection')) {
         logs = logs.filter(item => item.document.includes(filterOptions.collection));
@@ -30,6 +32,10 @@ export async function get(filterOptions, onError) {
 
     const sortedLogs = dao.sort(logs, "createdAt", "desc");
     return sortedLogs;
+}
+
+export async function getDocument(path, id,  onError) {
+    return await dao.getOne(path, id, onError);
 }
 
 export async function remove(id, onError) {

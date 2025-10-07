@@ -26,6 +26,10 @@
   align-items: center; 
 }
 
+.log-body {
+  padding: 1rem;
+}
+
 .log-body-footer {
     margin-top: 2rem;
     display: flex;

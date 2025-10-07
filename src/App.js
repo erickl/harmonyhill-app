@@ -7,6 +7,8 @@ import AddIncomeScreen from './components/AddIncomeScreen';
 import LoginScreen from './components/LoginScreen';
 import AddCustomerScreen from './components/AddCustomerScreen';
 import BottomNavigation from './components/BottomNavigation.js';
+import AdminScreen from './components/AdminScreen.js';
+import ChangeLogsComponent from "./components/ChangeLogsComponent.js";
 import SideMenu from './components/SideMenu.js';
 import * as userService from './services/userService.js';
 import { auth } from "./firebase";
@@ -64,6 +66,10 @@ function App() {
         screenToDisplay = <AddIncomeScreen onNavigate={navigate} />;
     } else if (currentScreen === 'add-customer') {
         screenToDisplay = <AddCustomerScreen onNavigate={navigate} />;
+    } else if (currentScreen === 'admin') {
+        screenToDisplay = <AdminScreen onNavigate={navigate} />;
+    } else if (currentScreen === 'userLogs') {
+        screenToDisplay = <ChangeLogsComponent onNavigate={navigate} />;
     }
 
     return (
@@ -72,7 +78,7 @@ function App() {
                 {isLoggedIn ? (
                     <>
                         
-                            <SideMenu />
+                            <SideMenu onNavigate={navigate}/>
                             <div className="content">
                                 {screenToDisplay}
                             </div> { /* Use screenToDisplay */}

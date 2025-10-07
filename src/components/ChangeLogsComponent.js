@@ -3,16 +3,20 @@ import * as utils from "../utils.js";
 import "./ChangeLogsComponent.css";
 import * as logsService from "../services/logsService.js";
 import { useNotification } from "../context/NotificationContext.js";
+import { useMarkDownModal } from "../context/MarkDownContext.js";
 import Spinner from './Spinner.js';
 import ConfirmModal from "./ConfirmModal.js";
+import { FileUp, Trash2 } from 'lucide-react';
 
 export default function ChangeLogsComponent({}) {
     const [loading, setLoading] = useState(true);
     const [loadingExpanded, setLoadingExpanded] = useState({});
+    
     const [logs, setLogs] = useState([]);
     const [logToDelete,  setLogToDelete ] = useState(null);
     const [expandedLogs, setExpandedLogs] = useState({});
-    const { onError } = useNotification();
+    const { onError, onInfo } = useNotification();
+    const {onDisplay} = useMarkDownModal();
 
     const handleSetExpanded = async(log) => {
         let updatedExpandedList = { ...(expandedLogs || {}) };
@@ -27,6 +31,11 @@ export default function ChangeLogsComponent({}) {
         }
 
         setExpandedLogs(updatedExpandedList);
+    }
+
+    const displayDocument = async(log) => {
+        const document = await logsService.getDocument(log.document, onError);
+        onDisplay("Data", document);
     }
 
     const handleDeleteLog = async() => {
@@ -48,7 +57,7 @@ export default function ChangeLogsComponent({}) {
         }
 
         getLogs();
-    });
+    }, []);
 
     if(loading) {
         return (
@@ -65,6 +74,8 @@ export default function ChangeLogsComponent({}) {
             </div>
             <div className="card-content">
                 {logs.map((log) => {
+                    const collectionName = log.document.slice(0, log.document.lastIndexOf("/"));
+                    const documentId = log.document.split("/").pop();
                     return (
                         <React.Fragment key={log.id}>
                             <div className="log-box" onClick={()=> handleSetExpanded(log)}>
@@ -76,7 +87,7 @@ export default function ChangeLogsComponent({}) {
                                     </div>
                                     <div className="log-header-right">
                                         <div>
-                                            {"Placeholder 1"}
+                                            {collectionName}
                                         </div>
                                         <div className="expand-icon">
                                             {expandedLogs[log.id] ? '▼' : '▶'}
@@ -91,16 +102,28 @@ export default function ChangeLogsComponent({}) {
                                 {loadingExpanded?.[log.id] === true ? (
                                     <Spinner />
                                 ) : expandedLogs?.[log.id] ? (
-                                    <div className="expense-body">
+                                    <div className="log-body">
                                         <div>
-                                            Purchased By: {utils.capitalizeWords(expense.purchasedBy)}
+                                            Done by: {log.createdBy}
+                                        </div>
+                                        <div>
+                                            Document ID: {documentId}
                                         </div>
                                         <div className="log-body-footer">   
+                                            <div className="log-body-footer-icon">
+                                                <FileUp
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        displayDocument(log);
+                                                    }}
+                                                />
+                                                <p>Open</p>
+                                            </div>
                                             <div className="log-body-footer-icon">
                                                 <Trash2  
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setExpenseToDelete(expense);
+                                                        setLogToDelete(log);
                                                     }}
                                                 />
                                                 <p>Delete</p>
