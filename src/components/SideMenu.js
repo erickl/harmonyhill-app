@@ -4,6 +4,7 @@ import * as userService from "../services/userService.js";
 import { useNotification } from "../context/NotificationContext.js";
 import packageJson from '../../package.json';
 import * as utils from "../utils.js";
+import { XIcon } from 'lucide-react';
 import "./SideMenu.css";
 
 export default function SideMenu({onNavigate}) {
@@ -52,12 +53,25 @@ export default function SideMenu({onNavigate}) {
                 padding: '1rem',
             }}
         >
-            <button onClick={close} style={{ color: 'white', marginBottom: '1rem' }}>Close</button>
-            <ul>
-                
-                <li><a href="/" style={{ color: 'white' }}>Home</a></li>
-                {isAdmin && (<li><a onClick={() => onNavigate('admin')} style={{ color: 'white' }}>Admin</a></li>)}
-                <li><a onClick={() => logout()} style={{ color: 'white' }}>Logout</a></li>
+            <XIcon onClick={close} style={{ color: 'white', marginBottom: '1rem' }} />
+            
+            <ul className='menu-list'> 
+                {isAdmin && (<>
+                    <li><p onClick={() => {
+                            onNavigate('admin');
+                            close();
+                        }} 
+                        style={{ color: 'white' }}>Admin</p>
+                    </li>
+
+                    <li><p onClick={() => {
+                            onNavigate('userLogs');
+                            close();
+                        }} 
+                        style={{ color: 'white' }}>User Logs</p>
+                    </li>
+                </>)}
+                <li><p onClick={() => logout()} style={{ color: 'white' }}>Logout</p></li>
             </ul>
 
             <div className="side-menu-footer">

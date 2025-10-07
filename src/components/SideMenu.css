@@ -4,7 +4,13 @@
   height: 100vh;         /* full height */
   width: 240px;          /* or whatever your sidebar width is */
   background: #fff;      /* adjust */
-  
+}
+
+@media (max-width: 768px) {
+  .side-menu {
+    width: 70vw;       /* take 70% of viewport on smaller screens */
+    min-width: 220px;  /* still prevent tiny size */
+  }
 }
 
 .side-menu-footer {
@@ -13,3 +19,12 @@
   font-size: 0.8rem;       /* smaller text */
   color: #777;             /* grey */
 }
+
+.menu-list {
+  list-style: none;
+}
+
+.menu-list li {
+  cursor: pointer;
+}
+  
