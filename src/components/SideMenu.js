@@ -6,8 +6,9 @@ import packageJson from '../../package.json';
 import * as utils from "../utils.js";
 import "./SideMenu.css";
 
-export default function SideMenu() {
+export default function SideMenu({onNavigate}) {
     const [user, setUser] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const { open, close } = useMenu();
 
@@ -26,6 +27,9 @@ export default function SideMenu() {
         const getUser = async() => {
             const thisUser = await userService.getCurrentUserName();
             setUser(thisUser);
+            
+            const userIsAdmin = await userService.isAdmin();
+            setIsAdmin(userIsAdmin);
         }
         getUser();
     }, []);
@@ -52,6 +56,7 @@ export default function SideMenu() {
             <ul>
                 
                 <li><a href="/" style={{ color: 'white' }}>Home</a></li>
+                {isAdmin && (<li><a onClick={() => onNavigate('admin')} style={{ color: 'white' }}>Admin</a></li>)}
                 <li><a onClick={() => logout()} style={{ color: 'white' }}>Logout</a></li>
             </ul>
 
