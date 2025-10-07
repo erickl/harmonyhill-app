@@ -76,7 +76,10 @@ const CustomersScreen = ({ onNavigate }) => {
         return (
             <div className="fullscreen">
                 <div className="card-header">
-                    <h2 className="card-title">Loading Customers...</h2>
+                    <div className='card-header-left'>
+                        <VeganHamburgerButton />
+                        <h2 className="card-title">Customers</h2>    
+                    </div>
                 </div>
                 <div className="card-content">
                     <p>Loading customer data...</p>
