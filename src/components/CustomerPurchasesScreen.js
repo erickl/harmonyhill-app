@@ -10,11 +10,13 @@ import './CustomerPurchasesScreen.css';
 import ActivitiesList from './ActivitiesList.js';
 import ConfirmModal from './ConfirmModal.js';
 import { useNotification } from "../context/NotificationContext.js";
-import InvoicePdfLink from './InvoicePdf.js';
+import InvoicePdfLink from './InvoicePdfLink.js';
+import PdfViewer from './PdfViewer.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
+    const [showInvoice,        setShowInvoice       ] = useState(false);
 
     const { onError } = useNotification();
 
@@ -32,6 +34,10 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
     const handleAddPurchase = (customer) => {
         setCustomerPurchasing(customer); // Indicate we need to switch to add purchase screen
     };
+
+    if(showInvoice) {
+        return (<PdfViewer customer={customer} onClose={() => setShowInvoice(false)}/>);
+    }
 
     if (customerPurchasing) {
         return (
@@ -67,6 +73,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                         </button> 
                     )}
                     <InvoicePdfLink customer={customer}/>
+                    {/* <p onClick={() => setShowInvoice(true)}>Invoice</p> */}
                 </div>
             </div>
             
