@@ -9,7 +9,11 @@ export default function MetaInfo({document}) {
 
     const handleMetaInfoClick = () => {
         if(utils.exists(document, "updateLogs")) {
-            onInfo("Change Log", JSON.stringify(document.updateLogs));
+            let changeLogs = "";
+            for(const log of document.updateLogs) {
+                changeLogs += `${log}\n\n`;
+            }
+            onInfo("Change Log", changeLogs);
         }
     }
 
