@@ -107,7 +107,8 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
 
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(onError);
 
-            const filter = { "after" : lastClosedPettyCashRecord.closedAt };
+            const filter = lastClosedPettyCashRecord ? { "after" : lastClosedPettyCashRecord.closedAt} : {};
+            
             if(!userIsAdmin) {
                 // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
                 filter["paymentMethod"] = "cash";
