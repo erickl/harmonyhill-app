@@ -67,14 +67,15 @@ export default function IncomeScreen({ onNavigate, onClose }) {
 
     useEffect(() => {
         const fetchIncomes = async() => {
-            const filter = {};
+            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(onError);
+            const filter = { "after" : lastClosedPettyCashRecord.closedAt };
             const uploadedIncomes = await incomeService.get(filter, onError);
             setIncomes(uploadedIncomes);
             setLoading(false);
         }
 
-         const getCashFlow = async() => {
-            const pettyCashSum = await ledgerService.getPettyCashBalance(onError);
+        const getCashFlow = async() => {
+            const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
             setPettyCash(pettyCashSum);
             const incomeSum = await ledgerService.getTotalIncomes(onError);
             setIncomeSum(incomeSum);

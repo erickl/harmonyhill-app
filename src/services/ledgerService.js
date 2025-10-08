@@ -73,3 +73,9 @@ export async function closeMonth(onError) {
     const success = await ledgerDao.addCloseRecord(balance, onError);
     return success;
 }
+
+export async function getLastClosedPettyCashRecord(onError) {
+    const lastClosedPettyCashRecord = await ledgerDao.getLastClosedPettyCashRecord(onError);
+    lastClosedPettyCashRecord.closedAt = utils.toDateTime(lastClosedPettyCashRecord.closedAt);
+    return lastClosedPettyCashRecord;
+}
