@@ -1,6 +1,6 @@
 .share-button {
-    width: 40px;
-    height: 40px;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
     border: none;
     background-color: #007bff; /* Or your preferred color */
@@ -20,8 +20,8 @@
 }
 
 .close-button {
-    width: 40px;
-    height: 40px;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
     border: none;
     background-color: red; /* Or your preferred color */
@@ -33,6 +33,11 @@
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: background-color 0.2s ease;
+}
+
+.inner-icon {
+  height: 1rem;
+  width: 1rem;
 }
 
 .close-button:hover {
@@ -49,7 +54,7 @@
   align-items: center; 
   bottom: 1rem;
   position: absolute;
-  right: 1rem;
+  right: 0.1rem;
   z-index: 10;
 }
 

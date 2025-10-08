@@ -62,6 +62,7 @@ export default function PdfViewer({customer, onClose}) {
                 onError("Sharing is not supported on this device.");
             }
         } catch (e) {
+            if(e.message.includes("cancellation")) return;
             onError(`Error sharing: ${e.message}`);
         }
     };
@@ -74,17 +75,18 @@ export default function PdfViewer({customer, onClose}) {
         <div style={{ position: "relative", height: "90vh", width: "100%" }}>
             <div className="share-container">
                 <WhatsappShareButton
+                    style={{margin:"0"}}
                     url={pdfUrl}
-                    title={"Hello!"}
+                    title={`Dear ${customer.name}. Here's your invoice`}
                     separator=" | "
                 >
-                    <WhatsappIcon size={90} round={true} />
+                    <WhatsappIcon size={95} round={true} />
                 </WhatsappShareButton>
                 <button className="share-button" onClick={() => handleShare()}>
-                    <Share className="h-4 w-4" />
+                    <Share className="inner-icon" />
                 </button>
                 <button className="close-button" onClick={() => onClose()}>
-                    <XIcon className="h-4 w-4" />
+                    <XIcon className="inner-icon" />
                 </button>
             </div>
             {pdfUrl ? (
