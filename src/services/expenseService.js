@@ -81,7 +81,7 @@ export async function uploadReceipt(filename, file, compressionOptions, onError)
         file = await storageDao.compressImage(file, compressionOptions, onError);
     }
     const imageDataUrl = await storageDao.blobToBase64(file);
-    return await storageDao.uploadImage(filename, imageDataUrl, onError);
+    return await storageDao.upload(filename, imageDataUrl, onError);
 }
 
 export async function get(filterOptions, onError) {

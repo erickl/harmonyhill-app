@@ -1,25 +1,25 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { pdf } from "@react-pdf/renderer";
 import { pdfjs } from 'react-pdf';
-import { Document, Page } from 'react-pdf'; // For viewing the PDF
-import InvoicePdf from "./InvoicePdfLink.js";
 import * as invoicePdfService from "../services/invoicePdfService.js";
 import { Share, XIcon } from 'lucide-react';
-import {  Text, View } from "@react-pdf/renderer";
 import "./PdfViewer.css";
 import { useNotification } from "../context/NotificationContext.js";
 import { WhatsappShareButton, WhatsappIcon } from 'react-share';
+
+import * as storageDao from "../daos/storageDao.js";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 export default function PdfViewer({customer, onClose}) {
     const [pdfUrl, setPdfUrl] = useState(null);
+    const [title, setTitle] = useState(null);
 
     const { onError } = useNotification();
 
     useEffect(() => {
         let isMounted = true;
-        let url = null;
+        let dataUrl = null;
 
         const createPdfDoc = async () => {
             const pdfDoc = await invoicePdfService.make(customer);
@@ -31,14 +31,19 @@ export default function PdfViewer({customer, onClose}) {
 
             if (!isMounted) return;
 
-            url = URL.createObjectURL(blob);
-            setPdfUrl(url);
+            //url = URL.createObjectURL(blob);
+            const dataUrl = await storageDao.blobToBase64(blob);
+            const title = invoicePdfService.makeTitle(customer);
+            setTitle(title);
+            const filename = `invoices/${title}`;
+            const downloadUrl = await storageDao.upload(filename, dataUrl, onError);
+            setPdfUrl(downloadUrl);
         };
         createPdfDoc();
 
         return () => {
             isMounted = false;
-            if (url) URL.revokeObjectURL(url);
+            if (dataUrl) URL.revokeObjectURL(dataUrl);
         };
     }, [customer]);
 
@@ -49,8 +54,8 @@ export default function PdfViewer({customer, onClose}) {
             // Check if the browser supports native sharing
             if (navigator.share) {
                 await navigator.share({
-                    title: "Invoice PDF",
-                    text: "Here's your generated invoice.",
+                    title: title,
+                    text: "Here's your generated invoice",
                     url: pdfUrl,
                 });
             } else {

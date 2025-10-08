@@ -59,8 +59,9 @@ export function makeTitle(customer) {
     
     const customerName = customer.name.replace(/ /g, "-");
     const date = utils.to_YYMMdd(customer.checkOutAt);
-    const uuid = Date.now();
-    const filename = `${date} invoice ${customerName} ${uuid}.pdf`;
+    //const uuid = Date.now();
+    //const filename = `${date}-invoice-${customerName}-${uuid}.pdf`;
+    const filename = `${date}-invoice-${customerName}.pdf`;
     return filename;
 }
 

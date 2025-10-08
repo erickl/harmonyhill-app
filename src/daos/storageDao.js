@@ -5,11 +5,11 @@ import * as utils from "../utils.js";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-export async function uploadImage(filename, imageDataURL, onError) {
+export async function upload(filename, dataURL, onError) {
     try {
         const storageRef = ref(storage, filename);
 
-        const snapshot = await uploadString(storageRef, imageDataURL, 'data_url');
+        const snapshot = await uploadString(storageRef, dataURL, 'data_url');
         if (!snapshot) {
             onError(`Unknown file upload error! Result: ${snapshot}`);
             return false;
