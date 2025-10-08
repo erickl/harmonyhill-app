@@ -7,6 +7,7 @@ import * as ledgerService from "../services/ledgerService.js";
 import * as utils from "../utils.js";
 import "./IncomeScreen.css";
 import Spinner from "./Spinner.js";
+import MetaInfo from './MetaInfo.js';
 import AddIncomeScreen from './AddIncomeScreen.js';
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
@@ -68,7 +69,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
     useEffect(() => {
         const fetchIncomes = async() => {
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(onError);
-            const filter = { "after" : lastClosedPettyCashRecord.closedAt };
+            const filter = lastClosedPettyCashRecord ? { "after" : lastClosedPettyCashRecord.closedAt} : {};
             const uploadedIncomes = await incomeService.get(filter, onError);
             setIncomes(uploadedIncomes);
             setLoading(false);
@@ -189,6 +190,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                                                 </div>
                                             )}
                                         </div>
+                                        <MetaInfo document={income}/>
                                     </div>
                                 ) : (<></>)}
                             </div>
