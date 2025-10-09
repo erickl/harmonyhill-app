@@ -173,7 +173,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                         </div>
                         {expenseSum && (<h4>Expense: {utils.formatDisplayPrice(expenseSum, true)}</h4>)}
                     </div>
-                    
                 </div>  
             </div>
             <div className="card-content">

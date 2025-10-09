@@ -2,6 +2,7 @@ import * as expenseDao from "../daos/expenseDao.js";
 import * as storageDao from "../daos/storageDao.js";
 import * as utils from "../utils.js";
 import { getOne as getActivity } from "./activityService.js";
+import {getOne as getBooking} from "./bookingService.js";
 import {getNextSerialNumber} from "../daos/dao.js";
 
 export async function add(data, onError) {
@@ -215,13 +216,17 @@ export async function toArrays(filters, onError) {
     let rows = [headers];
 
     for(const document of documents) {
-        if(utils.exists(document, "bookingId") && utils.exists(document, "activityId")) {
-            const activity = await getActivity(document.bookingId, document.activityId);
-            document.activityCategory = activity.category;
-            document.activitySubCategory = activity.subCategory;
-            document.customerPrice = activity.customerPrice;
-            document.providerPrice = activity.providerPrice;
-            document.bookingName = activity.name;
+        if(utils.exists(document, "bookingId")) {
+            const booking = await getBooking(document.bookingId);
+            document.bookingName = booking.name;
+
+            if(utils.exists(document, "activityId")) {
+                const activity = await getActivity(document.bookingId, document.activityId);
+                document.activityCategory = activity.category;
+                document.activitySubCategory = activity.subCategory;
+                document.customerPrice = activity.customerPrice;
+                document.providerPrice = activity.providerPrice;
+            }
         }
 
         let values = [];

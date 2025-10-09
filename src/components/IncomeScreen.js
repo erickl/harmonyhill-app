@@ -11,6 +11,7 @@ import MetaInfo from './MetaInfo.js';
 import AddIncomeScreen from './AddIncomeScreen.js';
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
+import SheetUploader from "./SheetUploader.js";
 
 export default function IncomeScreen({ onNavigate, onClose }) {
 
@@ -21,8 +22,17 @@ export default function IncomeScreen({ onNavigate, onClose }) {
     const [incomes,             setIncomes             ] = useState([]   );
     const [loading,             setLoading             ] = useState(true );
     const [isManagerOrAdmin,    setIsManagerOrAdmin    ] = useState(false);
+    const [isAdmin,             setIsAdmin             ] = useState(false);
     const [pettyCash,           setPettyCash           ] = useState(null );
     const [incomeSum,           setIncomeSum           ] = useState(null );
+
+    const { onError } = useNotification();
+
+    const filterHeaders = {
+        "after"  : "date",
+        "before" : "date",
+        "paymentMethod" : "string",
+    };
 
     const handleSetExpanded = async(income) => {
         setLoadingExpanded((prev) => ({...prev, [income.id]: true}));
@@ -64,7 +74,10 @@ export default function IncomeScreen({ onNavigate, onClose }) {
         }
     }
 
-    const { onError } = useNotification();
+    const getDataForExport = async(filterValues) => {
+        const rows = await incomeService.toArrays(filterValues, onError);
+        return rows;
+    }
 
     useEffect(() => {
         const fetchIncomes = async() => {
@@ -78,6 +91,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
         const getCashFlow = async() => {
             const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
             setPettyCash(pettyCashSum);
+            
             const incomeSum = await ledgerService.getTotalIncomes(onError);
             setIncomeSum(incomeSum);
         }
@@ -90,6 +104,9 @@ export default function IncomeScreen({ onNavigate, onClose }) {
         const getUserPermissions = async() => {
             const userIsAdminOrManager = await userService.isManagerOrAdmin();
             setIsManagerOrAdmin(userIsAdminOrManager);
+
+            const userIsAdmin = await userService.isAdmin();
+            setIsAdmin(userIsAdmin);
         }
 
         getUserPermissions();
@@ -118,13 +135,20 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                     <h2 className="card-title">Income</h2>
                     {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
                 </div>
-            
-                <div>
-                    <button className="add-button" onClick={() => onClose()}>
-                        +
-                    </button>
-                    {incomeSum && (<h4>Income (excl top ups): {utils.formatDisplayPrice(incomeSum, true)}</h4>)}
-                </div>
+
+                <div className="card-header-right">
+                    <div>
+                        <div className="card-header-right-top-row">
+                            {isAdmin && (<>
+                                <SheetUploader onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                            </>)}
+                            <button className="add-button" onClick={() => onClose()}>
+                                + 
+                            </button>
+                        </div>
+                        {incomeSum && (<h4>Income (excl top ups): {utils.formatDisplayPrice(incomeSum, true)}</h4>)}
+                    </div>
+                </div>  
             </div>
             <div className="card-content">
                 {incomes.map((income) => {

@@ -150,3 +150,46 @@ export async function validate(data, onError) {
     }
     return true;
 }
+
+export async function toArrays(filters, onError) {
+    const documents = await get(filters, onError);
+
+    const headers = [
+        "index",
+        "receivedAt",
+        "purchasedBy",
+        "amount",
+        "category",
+        "paymentMethod",
+        "description",
+        "bookingName",
+        "activityId",
+        "activityCategory",
+        "activitySubCategory",
+        "comments",
+    ];
+
+    let rows = [headers];
+
+    for(const document of documents) {
+        if(utils.exists(document, "bookingId")) {
+            const booking = await getBooking(document.bookingId);
+            document.bookingName = booking.name;
+
+            if(utils.exists(document, "activityId")) {
+                const activity = await getActivity(document.bookingId, document.activityId);
+                document.activityCategory = activity.category;
+                document.activitySubCategory = activity.subCategory;
+            }
+        }
+
+        let values = [];
+        for(const header of headers) {
+            values.push((utils.exists(document, header) ? document[header] : "-"))
+        }
+
+        rows.push(values);
+    }
+
+    return rows;
+}
