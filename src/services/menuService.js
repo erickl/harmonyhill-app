@@ -12,8 +12,8 @@ import * as utils from "../utils.js";
  * }
  * groupByCourse: if true, group meals by course (e.g. lunch meals), e.g. mains, starters, desserts, etc...
  */
-export async function get(options = {}) {
-    const menu = await menuDao.get(options);
+export async function get(options = {}, onError) {
+    const menu = await menuDao.get(options, onError);
     return menu;
 }
 

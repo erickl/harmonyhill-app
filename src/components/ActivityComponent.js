@@ -3,14 +3,16 @@ import * as invoiceService from "../services/invoiceService.js";
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
+import * as minibarService from "../services/minibarService.js";
 import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, ShoppingCart, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Pencil, ShoppingCart, Trash2, ThumbsUp, ThumbsDown, Candy } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle, {Status} from './StatusCircle.js';
 import { useNotification } from "../context/NotificationContext.js";
+import { useItemsCounter } from "../context/ItemsCounterContext.js";
 import {get as getIncome} from "../services/incomeService.js";
 import MetaInfo from './MetaInfo.js';
 
@@ -25,6 +27,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     const [commission,              setCommission             ] = useState(null );
 
     const { onError, onInfo } = useNotification();
+    const {onCountItems} = useItemsCounter();
 
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
@@ -44,6 +47,17 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         if(result) {
             triggerRerender();
         }
+    }
+
+    const handleMinibarRefill = async() => {
+        return;
+        const minibarList = await minibarService.getSelection(onError);
+        onCountItems(minibarList, async (refill) => {
+            const result = await minibarService.add(customer.id, activity.id, refill, onError);
+            if(result) {
+                // todo show success
+            }
+        });
     }
 
     const loadActivityInfo = async () => {
@@ -309,6 +323,18 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                                 }}
                             />
                             <p>Decline task?</p>
+                        </div>
+                    )}
+
+                    {activity.subCategory === "house-keeping" && utils.isToday(activity.startingAt) && (
+                        <div className="activity-component-footer-icon">
+                            <Candy  
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMinibarRefill();
+                                }}
+                            />
+                            <p>Minibar Refill</p>
                         </div>
                     )}
                 </div> 

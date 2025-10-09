@@ -97,9 +97,6 @@ export default function DishesSummaryComponent({dishes}) {
                     className="dish-image"
                     onClick={() => setDisplayImageForDish(null)}
                     onLoad={() => handleDishImageLoadStatusChange(displayImageForDish, false)}
-                    onError={(e) => {
-                        alert("Woops!");
-                    }}
                 />
             )}
         </div>

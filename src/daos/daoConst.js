@@ -9,3 +9,4 @@ exports.USER_LOGS      = "userLogs";
 exports.EXPENSES       = "expenses";
 exports.INCOME         = "income";
 exports.COMPANY        = "company";
+exports.MINIBAR        = "minibar";

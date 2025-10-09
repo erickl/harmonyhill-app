@@ -6,7 +6,7 @@ export async function getOne(id) {
     return await dao.getOne(id)
 }
 
-export async function get(options = {}) {
+export async function get(options = {}, onError) {
     let filters = [];
 
     if(utils.exists(options, 'isFavorite')) {
@@ -25,7 +25,7 @@ export async function get(options = {}) {
     let menu = [];
 
     try {
-        menu = await dao.get(['menu'], filters, ordering, -1);
+        menu = await dao.get(['menu'], filters, ordering, -1, onError);
     } catch (error) {
         console.error('Error fetching menu:', error);
         return [];
