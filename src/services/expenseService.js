@@ -3,11 +3,10 @@ import * as storageDao from "../daos/storageDao.js";
 import * as utils from "../utils.js";
 import { getOne as getActivity } from "./activityService.js";
 import {getOne as getBooking} from "./bookingService.js";
-import {getNextSerialNumber} from "../daos/dao.js";
 
 export async function add(data, onError) {
     const addResult = await expenseDao.transaction(async () => {
-        data.index = await getNextSerialNumber(data.purchasedAt, onError);
+        data.index = await expenseDao.getNextSerialNumber(data.purchasedAt, onError);
         data = await processReceipt(data, onError);
         const object = mapReceiptObject(data);
 
