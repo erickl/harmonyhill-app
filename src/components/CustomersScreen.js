@@ -183,10 +183,20 @@ const CustomersScreen = ({ onNavigate }) => {
                                         <p><span className="detail-label">Length of Stay:</span> {customer.nightsCount} night{customer.nightsCount > 1 ? "s" : ""}</p>
                                         <p><span className="detail-label">Guest Count:</span> {customer.guestCount}</p>
                                         { customer.arrivalInfo && (<p><span className="detail-label">Arrival Information:</span> {customer.arrivalInfo}</p>)}
-                                        { customer.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{customer.dietaryRestrictions}</span></p>)}
+                                        { customer.dietaryRestrictions && (
+                                            <p>
+                                                <span className="detail-label">Dietary restrictions: </span> {" "}
+                                                <span className="important-badge">{customer.dietaryRestrictions}</span>
+                                            </p>
+                                        )}
                                         { customer.customerInfo && (<p><span className="detail-label">Other Customer Information:</span> {customer.customerInfo}</p>)}
                                         { customer.specialRequests && (<p><span className="detail-label">Special Requests:</span> {customer.specialRequests}</p> )}
-                                        { customer.promotions && (<p><span className="detail-label">Promotions:</span> {customer.promotions}</p>)}
+                                        { customer.promotions && (
+                                            <p>
+                                                <span className="detail-label">Promotions:</span> {" "}
+                                                <span className="important-badge">{customer.promotions}</span>
+                                            </p>
+                                        )}
                                         <p><span className="detail-label">Country:</span> {utils.capitalizeWords(customer.country)}</p>
                                         <p><span className="detail-label">Source:</span> {utils.capitalizeWords(customer.source)}</p>
                                         { customer.phoneNumber && (<p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>)}

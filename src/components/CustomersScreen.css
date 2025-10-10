@@ -81,11 +81,13 @@
     font-weight: 600;
 }
 
-.dietaryRestrictions {
-    background-color: red;
+.important-badge {
+    background: red;
     color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
     font-weight: 600;
-    /* padding: 2px 5px; */
+    font-size: 0.85rem;
 }
 
 .edit-booking {
