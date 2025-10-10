@@ -11,7 +11,7 @@ import * as utils from "../utils.js";
 import "./AddExpenseScreen.css";
 import { useNotification } from "../context/NotificationContext.js";
 import ExpensesScreen from './ExpensesScreen.js';
-import SuccessModal from './SuccessModal.js';
+import { useSuccessNotification } from "../context/SuccessContext.js";
 
 export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
 
@@ -43,7 +43,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const [validationError,   setValidationError  ] = useState(null     );
     const [formData,          setFormData         ] = useState(emptyForm);
     const [imageResetTrigger, setImageResetTrigger] = useState(0        );
-    const [showSuccess,       setShowSuccess      ] = useState(false    );
     const [isAdmin,           setIsAdmin          ] = useState(false    );
 
     const onValidationError = (error) => {
@@ -51,6 +50,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     };
 
     const { onError } = useNotification();
+    const {onSuccess} = useSuccessNotification();
 
     // todo: put in database
     const categories = {
@@ -259,7 +259,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
             if(result) {
                 if(expenseToEdit) onClose();
                 else resetForm();
-                setShowSuccess(true);
+                onSuccess();
             } else {
                 throw new Error("Receipt form data upload error");
             }
@@ -420,10 +420,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />
-
-                {showSuccess && (
-                    <SuccessModal onClose={() => setShowSuccess(false)} />
-                )} 
             </div>
         </div>
     );

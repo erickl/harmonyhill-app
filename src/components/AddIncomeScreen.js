@@ -9,7 +9,7 @@ import IncomeScreen from "./IncomeScreen.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
-import SuccessModal from './SuccessModal.js';
+import { useSuccessNotification } from "../context/SuccessContext.js";
 
 export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
@@ -36,7 +36,6 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     const [validationError, setValidationError] = useState(null     );
     const [bookings,        setBookings       ] = useState([]       );
     const [formData,        setFormData       ] = useState(emptyForm);
-    const [showSuccess,     setShowSuccess    ] = useState(false    );
     const [activities,      setActivities     ] = useState([]       );
  
     const needsGuestInfo = (formDataCategory) => {
@@ -54,6 +53,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
     };
 
     const { onError } = useNotification();
+    const {onSuccess} = useSuccessNotification();
 
     const onCategorySelect = (category) => {
         const name = category ? category.name : '';
@@ -142,7 +142,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
             if(result) {
                 if(incomeToEdit) onClose();
                 else resetForm();
-                setShowSuccess(true);
+                onSuccess();
             } else {
                 throw new Error("Receipt form data upload error");
             }
@@ -312,11 +312,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     onCancel={onClose}
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
-                />
-
-                {showSuccess && (
-                    <SuccessModal onClose={() => setShowSuccess(false)} />
-                )} 
+                /> 
             </div>
         </div>
     );
