@@ -4,9 +4,11 @@ import { FilterProvider } from "../context/FilterContext";
 import { MenuProvider } from '../context/MenuContext';
 import { MarkDownProvider } from '../context/MarkDownContext';
 import { ItemsCounterProvider } from "../context/ItemsCounterContext";
+import { SuccessNotificationProvider } from "../context/SuccessContext";
 
 export function AppProviders({ children }) {
   return (
+    <SuccessNotificationProvider>
     <NotificationProvider>
     <FilterProvider>
     <MenuProvider>
@@ -18,5 +20,6 @@ export function AppProviders({ children }) {
     </MenuProvider>
     </FilterProvider>
     </NotificationProvider>
+    </SuccessNotificationProvider>
   );
 }
