@@ -7,13 +7,14 @@ import { Upload } from 'lucide-react';
 import { useFilters } from "../context/FilterContext.js";
 
 // https://console.cloud.google.com/auth/overview?project=harmonyhill-1
+// Data uploaded to : https://docs.google.com/spreadsheets/d/1hX74179qK7E_SOjuTqcPRc5_RX2KhkAp_jn9bZp5EGI/edit?gid=0#gid=0
 
 const CLIENT_ID = `${process.env.REACT_APP_OAUTH2_CLIENT_ID}.apps.googleusercontent.com`;
 const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
 const SPREADSHEET_ID = `${process.env.REACT_APP_SHEET_ID}`;
 
-export default function SheetUploader({onExportRequest, filterHeaders}) {
+export default function SheetUploader({label, onExportRequest, filterHeaders}) {
     const googleLoaded = useGoogleApi();
     const [accessToken, setAccessToken] = useState(null);
     const {onError} = useNotification();
@@ -125,8 +126,9 @@ export default function SheetUploader({onExportRequest, filterHeaders}) {
 
     return (
         <GoogleOAuthProvider clientId={`${CLIENT_ID}.apps.googleusercontent.com`}>
-            <div style={{margin:"1rem"}}>
-                <Upload onClick={handleExportClick}/>
+            <div style={{margin:"1rem", display:"flex", flexDirection: "column", alignItems: "center"}}>
+                <Upload onClick={handleExportClick} />
+                {label && (<span>{label}</span>)}
             </div>
         </GoogleOAuthProvider>
     );

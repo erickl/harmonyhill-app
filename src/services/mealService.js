@@ -402,41 +402,24 @@ async function mapDishObject(data) {
     return object;
 }
 
-export async function testMeal() {
-    const bookingId = "Eric-Klaesson-Harmony-Hill-251010";
+export async function toArrays(filters, onError) {
+    filters.category = "meal";
+    const meals = await activityService.getAll(filters, onError);
 
-    const mealCategory = "breakfast";
-    const mealId = await addMeal(bookingId, {
-        category: "meal",
-        subCategory: mealCategory,
-        startingAt: "2025-10-10",
-        serveTime: "08:00",
-        status: "confirmed",
-        orderedAt: new Date(),
-    });
+    let rows = [["startingAt", "dish", "quantity", "course", "guestName", "house", "price", "mealFree", "dishFree", "assignedTo", "comments"]];
 
-    const dishIds = await addDishes(bookingId, mealId, [{
-        name: "Wingko Waffle",
-        customerPrice: 100,
-        quantity: 2,
-    },{
-        name: "Fruit Salad",
-        customerPrice: 50,
-        quantity: 1,
-    }]);
-
-    const meal = await getMeal(bookingId, mealId);
-    if(!meal) {
-        return false;
-    }
-    if(meal.customerPrice !== 150) {
-        return false;
+    for(const meal of meals) {
+        const dishes = await getMealDishes(meal.bookingId, meal.id, filters);
+        for(const dish of dishes) {
+            //             startingAt, dish                                   guestName    house      price
+            let row = [meal.startingAt, dish.name, dish.quantity, dish.course, meal.name, meal.house, dish.customerPrice, meal.isFree, dish.isFree, meal.assignedTo, dish.comments];
+            row = row.map((col) => col === null || col === undefined ? "" : col);
+            rows.push(row);
+            //console.log(JSON.stringify(row));
+        }
     }
 
-    const returnedMealItems = await getMealDishes(bookingId, mealId);
-    const wingkoMealItem = returnedMealItems.find(mealItem => mealItem.name === "Wingko Waffle");
-
-    let x = 1;
+    return rows;
 }
 
 export function getNewCustomDish(id, name) {
