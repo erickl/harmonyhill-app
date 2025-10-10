@@ -22,11 +22,22 @@
     gap: 30px;
 }
 
+.activity-component-footer-icon {
+    cursor: pointer;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.activity-component-footer-icon:hover {
+  color: #007bff; /* or any accent color */
+  transform: scale(1.05);
+}
+
 .activity-component-footer-icon p {
     font-size: 10px; 
     margin-top: 0rem;
-    cursor: pointer;
-    align-items: center;
 }
 
 .activity-header {
