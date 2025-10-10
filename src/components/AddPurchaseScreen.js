@@ -8,6 +8,7 @@ import MealForm from "./MealForm.js";
 import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import { useNotification } from "../context/NotificationContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
 
 const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     
@@ -51,6 +52,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     };
 
     const { onError } = useNotification();
+    const { onSuccess } = useSuccessNotification();
 
     const onValidationError = (error) => {
         setValidationError(error);
@@ -103,6 +105,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         }
         
         if(addActivityResult) {
+            onSuccess();
             handleCategorySelection(null);
             handleActivitySelection(null);
             setShowConfirm(false)

@@ -11,6 +11,7 @@ import ButtonsFooter from './ButtonsFooter.js';
 import "./EditPurchaseScreen.css";
 import "../App.css";
 import { useNotification } from "../context/NotificationContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
 
 const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) => {
 
@@ -22,6 +23,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
     const [validationError,  setValidationError]  = useState(null );
 
     const { onError, onWarning } = useNotification();
+    const {onSuccess} = useSuccessNotification();
 
     const [formData, setFormData] = useState({
         startingAt       : activityToEdit.startingAt,
@@ -118,6 +120,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
             }
             
             if(editActivitySuccess) {
+                onSuccess();
                 onClose();
             }
         } catch(error) {

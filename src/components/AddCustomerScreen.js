@@ -6,6 +6,7 @@ import * as utils from '../utils.js';
 import { useNotification } from "../context/NotificationContext.js";
 import ButtonsFooter from './ButtonsFooter.js';
 import BookingForm from './BookingForm.js';
+import { useSuccessNotification } from "../context/SuccessContext.js";
 
 const AddCustomerScreen = ({ onNavigate }) => {
     const initialFormData = {
@@ -40,6 +41,7 @@ const AddCustomerScreen = ({ onNavigate }) => {
     }
 
     const { onError } = useNotification();
+    const {onSuccess} = useSuccessNotification();
 
     const validateFormData = (newFormData) => {
         const validationResult = bookingService.validate(newFormData, onValidationError);
@@ -97,6 +99,8 @@ const AddCustomerScreen = ({ onNavigate }) => {
         try {
             const createResult = await bookingService.add(bookingData, onError);
             if(createResult !== false) {
+                onSuccess();
+
                 // Optionally, reset the form or show a success message
                 setFormData(initialFormData);
                 setNightsCount(''); // Clear stay duration

@@ -4,6 +4,7 @@ import * as bookingService from '../services/bookingService.js';
 import * as utils from '../utils.js';
 import { useNotification } from "../context/NotificationContext.js";
 import ButtonsFooter from './ButtonsFooter.js';
+import { useSuccessNotification } from "../context/SuccessContext.js";
 
 const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
 
@@ -86,6 +87,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
     };
 
     const { onError } = useNotification();
+    const { onSuccess } = useSuccessNotification();
 
     const handleSubmit = async (e) => {
         const updatedCustomerData = { ...formData };
@@ -95,6 +97,7 @@ const EditCustomerScreen = ({ customer, onClose, onNavigate }) => {
             const updateResult = await bookingService.update(customer.id, updatedCustomerData, onError);
 
             if(updateResult) {
+                onSuccess();
                 onNavigate('customers');
                 onClose();
             }      
