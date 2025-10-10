@@ -1,8 +1,9 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 import "../components/ItemsCounterModal.css";
 import { ArrowBigLeftIcon, ArrowBigRightIcon } from 'lucide-react';
 import ButtonsFooter from "../components/ButtonsFooter.js";
 import * as utils from "../utils.js";
+import {getPhotoUrl} from "../daos/storageDao.js";
 
 const ItemsCounterContext = createContext();
 
@@ -10,6 +11,7 @@ export function ItemsCounterProvider({ children }) {
 
     const [items, setItems] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentPhotoUrl, setCurrentPhotoUrl] = useState(null);
     const [onSubmit, setOnSubmit] = useState(null);
 
     const onCountItems = (items, onSubmit) => {
@@ -25,6 +27,7 @@ export function ItemsCounterProvider({ children }) {
     
     const hidePopup = () => {
        setItems([]);
+       setCurrentPhotoUrl(null);
        setCurrentIndex(0);
     }
 
@@ -37,9 +40,25 @@ export function ItemsCounterProvider({ children }) {
     }
 
     const onSubmitCount = async() => {
-        if(onSubmit) onSubmit(items);
-        hidePopup();
+        if(!onSubmit) return;
+        const nonZeroItems = items.filter((item) => item && utils.exists(item, "quantity") && item.quantity > 0);
+        const result = await onSubmit(nonZeroItems);
+        
+        if(result === true) {
+            hidePopup();
+        }
     }
+
+    useEffect(() => {
+        const getCurrentPhotoUrl = async() => {
+            if(items && items.length > currentIndex) {
+                const photoUrl = items[currentIndex].photoUrl;
+                const currentPhotoUrl = await getPhotoUrl(photoUrl);
+                setCurrentPhotoUrl(currentPhotoUrl);
+            }
+        }
+        getCurrentPhotoUrl();
+    });
 
     let currentQuantity = 0;
     if(items && items.length > currentIndex && utils.exists(items[currentIndex], "quantity")) {
@@ -54,13 +73,13 @@ export function ItemsCounterProvider({ children }) {
                     <div className="modal-box">
                         <h2>{"Count Items"}</h2>
                         {items[currentIndex] && (<>
-                            {!utils.isEmpty(items[currentIndex].image) && (
-                                <img
-                                    src={items[currentIndex].image}
-                                    //className="dish-image"
-                                    //onLoad={() => handleDishImageLoadStatusChange(displayImageForDish, false)}
-                                />
-                            )}
+                            <div className="image-box">
+                                {!utils.isEmpty(items[currentIndex].image) ? (
+                                    <img src={currentPhotoUrl} alt="minibar-image" />
+                                ) : (
+                                    <div className="image-placeholder" />
+                                )}
+                            </div>
                             <p>{items[currentIndex].name}</p>
                             <div className="nav-controls">
                                 <ArrowBigLeftIcon onClick={(e) => {
