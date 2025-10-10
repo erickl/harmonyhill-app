@@ -304,7 +304,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         </div>
                     )}
 
-                    { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (
+                    { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && !utils.wasYesterday(activity.startingAt) && (
                         <div className="activity-component-footer-icon">
                             <ThumbsUp  
                                 onClick={(e) => {
@@ -316,7 +316,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         </div>
                     )}
 
-                    { user && user.shortName === assignedUserShortName && activity.assigneeAccept && (
+                    { user && user.shortName === assignedUserShortName && activity.assigneeAccept && !utils.wasYesterday(activity.startingAt) &&  (
                         <div className="activity-component-footer-icon">
                             <ThumbsDown  
                                 onClick={(e) => {
