@@ -9,7 +9,7 @@ import IncomeScreen from "./IncomeScreen.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
-import SuccessModal from './SuccessModel.js';
+import SuccessModal from './SuccessModal.js';
 
 export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 

@@ -11,7 +11,7 @@ import * as utils from "../utils.js";
 import "./AddExpenseScreen.css";
 import { useNotification } from "../context/NotificationContext.js";
 import ExpensesScreen from './ExpensesScreen.js';
-import SuccessModal from './SuccessModel.js';
+import SuccessModal from './SuccessModal.js';
 
 export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
 

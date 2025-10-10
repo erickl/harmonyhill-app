@@ -12,6 +12,7 @@ import { Pencil, ShoppingCart, Trash2, ThumbsUp, ThumbsDown, Candy } from 'lucid
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle, {Status} from './StatusCircle.js';
 import { useNotification } from "../context/NotificationContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useItemsCounter } from "../context/ItemsCounterContext.js";
 import {get as getIncome} from "../services/incomeService.js";
 import MetaInfo from './MetaInfo.js';
@@ -28,6 +29,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
 
     const { onError, onInfo } = useNotification();
     const {onCountItems} = useItemsCounter();
+    const {onSuccess} = useSuccessNotification();
 
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
@@ -50,13 +52,13 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     }
 
     const handleMinibarRefill = async() => {
-        return;
         const minibarList = await minibarService.getSelection(onError);
         onCountItems(minibarList, async (refill) => {
-            const result = await minibarService.add(customer.id, activity.id, refill, onError);
+            const result = await minibarService.add(activity.bookingId, activity.id, "refill", refill, onError); 
             if(result) {
-                // todo show success
+                onSuccess();
             }
+            return result;
         });
     }
 

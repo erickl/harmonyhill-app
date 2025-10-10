@@ -15,7 +15,7 @@ export default function ChangeLogsComponent({}) {
     const [logs, setLogs] = useState([]);
     const [logToDelete,  setLogToDelete ] = useState(null);
     const [expandedLogs, setExpandedLogs] = useState({});
-    const { onError, onInfo } = useNotification();
+    const { onError } = useNotification();
     const {onDisplay} = useMarkDownModal();
 
     const handleSetExpanded = async(log) => {

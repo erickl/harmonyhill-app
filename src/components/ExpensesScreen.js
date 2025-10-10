@@ -113,6 +113,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
                 filter["paymentMethod"] = "cash";
             } 
+
             const uploadedExpenses = await expenseService.get(filter, onError);
             setExpenses(uploadedExpenses);
             
