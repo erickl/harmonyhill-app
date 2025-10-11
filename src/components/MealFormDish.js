@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
+import { XCircle } from "lucide-react";
 import "./MealFormDish.css"
 
 export default function MealFormDish({dish, formData, handleFormDataChange, custom, isFree}) {
@@ -22,14 +23,9 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
     const handleEditOrderQuantity = (newDish, quantity) => {
         let updatedDishes = [ ...(formData.dishes || []) ];
 
-        // e.g. for custom dishes, must give name before setting quantity 
-        if(utils.isEmpty(newDish.name)) {
-            onError(`Missing dish name data...`);
-            return;
-        }
-
         let existingDishIndex = updatedDishes.findIndex((dish) => {
-            return dish.name === newDish.name && dish.course === newDish.course;
+            //return dish.name === newDish.name && dish.course === newDish.course;
+            return dish.id === newDish.id;
         })
 
         if(existingDishIndex === -1) {
@@ -48,28 +44,6 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
         handleFormDataChange("dishes", updatedDishes);
     };
 
-    const handleEditCustomOrderName = (newDish, newName) => {
-        let updatedDishes = [ ...(formData.dishes || []) ]; // Make shallow copy
-
-        let existingDishIndex = utils.isEmpty(newDish.name) ? -1 : updatedDishes.findIndex((dish) => {
-            return dish.name === newDish.name;
-        })
-
-        if(existingDishIndex === -1) {
-            newDish.quantity = 1;
-            existingDishIndex = updatedDishes.push(newDish) - 1;
-        }
-
-        updatedDishes[existingDishIndex].name = newName;
-
-        // If the name is removed, remove the dish
-        if(utils.isEmpty(newName)) {
-            updatedDishes = updatedDishes.filter((_, i) => i !== existingDishIndex);
-        }
-
-        handleFormDataChange("dishes", updatedDishes);
-    };
-
     const handleEditOrder = (newDish, field, value) => {
         let updatedDishes = [ ...(formData.dishes || []) ];
 
@@ -77,12 +51,22 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
             return dish.name === newDish.name && dish.course === newDish.course;
         })
 
+        if(existingDishIndex === -1) {
+            existingDishIndex = updatedDishes.push(newDish) - 1;
+        }
+
         if(field === "customerPrice") {
             value = utils.cleanNumeric(value); 
         }
 
-        if(existingDishIndex === -1) {
-            existingDishIndex = updatedDishes.push(newDish) - 1;;
+        // If editing name (for custom dishes)
+        if(field === "name") {
+            if(utils.isEmpty(newDish.name) && newDish.quantity === 0) {
+                newDish.quantity = 1;
+            }
+            if(utils.isEmpty(value)) {
+                newDish.quantity = 0;
+            }
         }
 
         updatedDishes[existingDishIndex][field] = value;
@@ -97,16 +81,19 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
         <div className="meal-dish" key={`${dish.id}-wrapper`}>
             <div className="meal-dish-row" key={`${dish.id}-wrapper-row`}>
                 {custom === true ? (
-                    <div>
+                    <div className="custom-meal-dish-row">
+                        <XCircle color="red" onClick={() => {
+                            handleEditOrderQuantity(dish, -dish.quantity);
+                        }}/>
                         <label for={`${dish.id}-name`}>
                             Custom Name:
                         </label>
                         <input
                             type="text"
                             id={`${dish.id}-name`}
-                            name={`${dish.id}-name`}
+                            name={`name`}
                             value={dish.name}
-                            onChange={(e) => handleEditCustomOrderName(dish, e.target.value)}
+                            onChange={(e) => handleEditOrder(dish, "name", e.target.value)}
                             className="input"
                         />
                         <span 
@@ -125,7 +112,6 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                             className="input"
                         />
                     </div>
-                    
                 ) : ( 
                     <span>{`${dish.name}${dishPrice}`}</span>
                 )}

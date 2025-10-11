@@ -34,6 +34,14 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
         handleFormDataChange("status", name);
     }
 
+    const handleAddCustomDish = (() => {
+        formData.dishes = utils.isEmpty(formData.dishes) ? [] : formData.dishes;
+        const customDishes = formData.dishes.filter(dish => dish.custom === true);
+        const newCustomDish = mealService.getNewCustomDish(customDishes.length + 1, "");
+        formData.dishes.push(newCustomDish);
+        handleFormDataChange("dishes", formData.dishes);
+    });
+
     const handleExpandCourseSection = (course) => {
         const newExpandedCourses = { ...(expandedCourses || {}) };
         if(!utils.exists(newExpandedCourses, course)) {
@@ -171,25 +179,25 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             {expandedCourses["custom"] && (<>
                 {!utils.isEmpty(customDishes) && (
                     <div key="custom-wrapper">   
-                        {customDishes.map((dish) => (
+                        {customDishes.map((dish) => (<>
                             <MealFormDish 
                                 dish={dish}
                                 formData={formData}
                                 handleFormDataChange={handleFormDataChange}
                                 custom={true}
                             />
-                        ))}
+                        </>))}
                     </div>
                 )}
 
-                {/* A field for a new custom dish */}
-                <MealFormDish 
-                    dish={newCustomDish}
-                    formData={formData}
-                    handleFormDataChange={handleFormDataChange}
-                    custom={true}
-                />
+                <button onClick={() => {
+                    handleAddCustomDish();
+                }}>
+                    Add custom dish
+                </button>
             </>)}
+
+            
 
             <div className="">
                 <label htmlFor="mealComments">Comments:</label>
