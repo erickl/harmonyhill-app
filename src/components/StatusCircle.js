@@ -1,7 +1,10 @@
 import "./StatusCircle.css";
+import { Status } from "../services/activityService";
+import StatusNoStaffAssignedIcon from "./StatusNoStaffAssignedIcon";
+import StatusStartedIcon from "./StatusStartedIcon";
+import * as utils from "../utils";
 
 export default function StatusCircle({status, message, onClick}) {
-
     let symbol = "!";
 
     const common = {
@@ -13,11 +16,46 @@ export default function StatusCircle({status, message, onClick}) {
         justifyContent  : "center",
         fontSize        : "1rem",
         fontWeight      : "bold",
-    };
-
+    };   
+    
     let specific = {};
     
     switch(status) {
+        case Status.PENDING_GUEST_CONFIRM : {
+            const color = "black";
+            specific = {
+                border : `3px solid ${color}`,
+                color : color,
+            };
+            break;
+        }
+        case Status.PLEASE_BOOK: {
+            const color = "black";
+            specific = {
+                border : `3px solid ${color}`,
+                color : color,
+            };
+            break;
+        }
+        case Status.ASSIGN_STAFF: {
+            return <StatusNoStaffAssignedIcon />
+        }
+        case Status.STAFF_NOT_CONFIRM: {
+            const color = "black";
+            specific = {
+                border : `3px solid ${color}`,
+                color : color,
+            };
+            break;
+        }
+        case Status.DETAILS_MISSING: {
+            const color = "black";
+            specific = {
+                border : `3px solid ${color}`,
+                color : color,
+            };
+            break;
+        }
         case Status.GOOD_TO_GO : {
             symbol = "✓";
             const color = "green";
@@ -27,6 +65,9 @@ export default function StatusCircle({status, message, onClick}) {
             };
             break;
         }
+        case Status.STARTED: {
+            return <StatusStartedIcon onClick={onClick}/>
+        }
         case Status.COMPLETED : {
             symbol = "✓";
             specific = {
@@ -35,7 +76,7 @@ export default function StatusCircle({status, message, onClick}) {
             };
             break;
         }
-        case Status.ATTENTION : {
+        case Status.AWAIT_COMMISSION: {
             const color = "black";
             specific = {
                 border : `3px solid ${color}`,
@@ -43,23 +84,33 @@ export default function StatusCircle({status, message, onClick}) {
             };
             break;
         }
-        case Status.URGENT : {
-            const color = "#FF7A00";
+        case Status.REMOVE_COMMISSION: {
+            const color = "black";
             specific = {
                 border : `3px solid ${color}`,
                 color : color,
             };
             break;
         }
-        case Status.EMERGENCY: {
+        case Status.AWAIT_EXPENSE: {
+            const color = "black";
             specific = {
-                backgroundColor : "red",
-                color : "white",
+                border : `3px solid ${color}`,
+                color : color,
+            };
+            break;
+        }
+        case Status.REMOVE_EXPENSE: {
+            const color = "black";
+            specific = {
+                border : `3px solid ${color}`,
+                color : color,
             };
             break;
         }
         case Status.NONE: {
             symbol = "";
+            break;
             // specific = {
             //     border: "none",
             // }
@@ -73,16 +124,7 @@ export default function StatusCircle({status, message, onClick}) {
     return (
         <div className="status-symbol" onClick={onClick}>
             <div style={style}>{symbol}</div>
-            <p className="status-message">{message}</p>
+            <p className="status-message">{utils.capitalizeWords(message)}</p>
         </div>
     );
 };
-
-export const Status = Object.freeze({
-    GOOD_TO_GO : "Good To Go",
-    COMPLETED  : "Completed",
-    ATTENTION  : "Attention",
-    URGENT     : "Urgent",
-    EMERGENCY  : "Emergency",
-    NONE       : "None",
-});
