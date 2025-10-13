@@ -4,6 +4,33 @@ import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 import {getParent} from "../daos/dao.js";
 import {getMealDishes} from "./mealService.js";
+import {get as getIncome} from "../services/incomeService.js";
+import {get as getExpense} from "../services/expenseService.js";
+
+export const Status = Object.freeze({
+    GOOD_TO_GO            : "good to go",
+    COMPLETED             : "completed",
+    PENDING_GUEST_CONFIRM : "pending guest confirmation",
+    GUEST_CONFIRMED       : "guest confirmed",
+    PLEASE_BOOK           : "please book",
+    ASSIGN_STAFF          : "assign staff",
+    STAFF_NOT_CONFIRM     : "staff not confirmed",
+    DETAILS_MISSING       : "details missing",
+    STARTED               : "started",
+    COMPLETED             : "completed",
+    AWAIT_COMMISSION      : "awaiting commission",
+    REMOVE_COMMISSION     : "remove commission",
+    AWAIT_EXPENSE         : "awaiting expense",
+    REMOVE_EXPENSE        : "remove expense",
+    NONE                  : "",
+});
+
+export const Alert = Object.freeze({
+    ATTENTION  : "attention",
+    URGENT     : "urgent",
+    EMERGENCY  : "emergency",
+    NONE       : "",
+});
 
 /**
  * @param {*} filterOptions = {category=transport|yoga|etc.., house=harmony hill|the jungle nook}
@@ -128,7 +155,7 @@ export async function getOne(bookingId, activityId) {
  *      isFree: false,
  *      time: "07:00",
  *      customerPrice: 500,
- *      status: "requested",
+ *      status: "pending-guest-confirmation",
  *      comments: "They have 5 bags with them",
  *      assignedTo: "", // staff member taking care of the activity
  *      provider: "" // The driver or masseuse
@@ -155,7 +182,7 @@ export async function add(bookingId, activityData, onError) {
 }
 
 /**
- * Assigns a personnel to an activity in a booking. Also sets activity status to "confirmed".
+ * Assigns a personnel to an activity in a booking
  * @param {*} bookingId ID from the bookings collection
  * @param {*} activityId ID from the activities collection, inside a booking document
  * @param {*} personnelId ID from the personnel collection
@@ -164,7 +191,6 @@ export async function add(bookingId, activityData, onError) {
 export async function assignProvider(bookingId, activityId, personnelId, onError) {
     return await update(bookingId, activityId, { 
         provider : personnelId,
-        status   : "confirmed"
     }, onError);
 }
 
@@ -268,7 +294,7 @@ async function mapObject(data) {
     }
 
     if(utils.exists(data, "status") ) {
-        activity.status = utils.isString(data?.status) ? data.status : "requested";
+        activity.status = utils.isString(data?.status) ? data.status.trim().toLowerCase() :  "pending-guest-confirmation";
     }
 
     if(utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
@@ -300,32 +326,6 @@ export function validate(customer, data, isUpdate, onError) {
         if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
             onError(`Activity date too late. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
             return false;
-        }
-        
-        // If dateTime decided and staff assigned, then it counts as confirmed
-        if(data.status === "confirmed") {
-            if(utils.isEmpty(data.assignedTo)) {
-                onError(`Status can only be "confirmed" if a staff member is assigned`);
-                return false;
-            } 
-            if(!utils.isDate(data.startingAt)) {
-                onError(`Status can only be "confirmed" if a date is set`);
-                return false;
-            }
-            if(!utils.isDate(data.startingTime)) {
-                onError(`Status can only be "confirmed" if a time is set`);
-                return false;
-            }
-
-            if(data.internal !== true && utils.isEmpty(data.provider)) {
-                onError(`Status can only be "confirmed" if a provider is assigned`);
-                return false;
-            }
-
-            if(data.needsProvider === true && utils.isEmpty(data.provider)) {
-                onError(`Needs provider. Status can only be "confirmed" if a provider is assigned`);
-                return false;
-            }
         }
     } catch(e) {
         onError(`Unexpected error in activity form: ${e.message}`);
@@ -374,6 +374,135 @@ export async function getChangeDescription(oldData, newData) {
         }
     }
     return changeDescription;
+}
+
+export function getAlert(activity, activityUnit, onError) {
+    const alert = (category = Alert.NONE, message = "") => {
+        return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
+    };
+
+    if(activity == null) return alert();
+    if(activityUnit == null) return alert();
+
+    const timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
+    const hoursLeft = Math.floor(timeLeft.hours);
+    const urgent = !utils.isEmpty(activityUnit.deadline1) && hoursLeft <= activityUnit.deadline1;
+    const emergency = !utils.isEmpty(activityUnit.deadline2) && hoursLeft <= activityUnit.deadline2;
+
+    const needsProvider = activity.needsProvider === true && utils.isEmpty(activity.provider);
+
+    if(activity.status === "pending-guest-confirmation") {
+        if(emergency) {
+            return alert(Alert.EMERGENCY, "Confirm with guest immediately!");
+        }
+
+        if(urgent) {
+            return alert(Alert.URGENT, "Confirm with guest");
+        }
+    }
+
+    if(needsProvider) {
+        if(emergency) {
+            return alert(Alert.EMERGENCY, "Book activity now!");
+        }
+
+        if(urgent) {
+            return alert(Alert.URGENT, "Book activity!");
+        }
+    }
+
+    return alert(Alert.NONE);
+}
+
+export async function getStatus(activity, onError) {
+    const status = (category = Status.NONE, message = "") => {
+        return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
+    };
+
+    if(activity == null) return status();
+
+    if(activity.status === "pending-guest-confirmation") {
+        return status(Status.PENDING_GUEST_CONFIRM);
+    }
+    if(activity.needsProvider === true && utils.isEmpty(activity.provider)) {
+        return status(Status.PLEASE_BOOK);
+    }
+    if(utils.isEmpty(activity.assignedTo)) {
+        return status(Status.ASSIGN_STAFF);
+    }
+    if(utils.isEmpty(activity.startingTime)) {
+        return status(Status.DETAILS_MISSING, "Set starting time");
+    }
+    if(utils.isEmpty(activity.customerPrice)) {
+        return status(Status.DETAILS_MISSING, "Provide customer price");
+    }
+    if(utils.isEmpty(activity.providerPrice)) {
+        return status(Status.DETAILS_MISSING, "Provide provider price");
+    }
+    if(activity.category === "meal" && utils.isEmpty(activity.dishes)) {
+        return status(Status.DETAILS_MISSING, "Dishes missing");
+    }
+    if(activity.assigneeAccept !== true) {
+        if(utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) {
+            return status(Status.STAFF_NOT_CONFIRM);
+        }
+    }
+
+    if(activity.status === Status.COMPLETED) {
+        const activityNeedsCommission = needsCommission(activity);
+        const activityHasCommission = await hasCommission(activity, onError);
+        if(activityNeedsCommission && !hasCommission) {
+            return status(Status.AWAIT_COMMISSION);
+        } else if(!activityNeedsCommission && activityHasCommission) {
+            return status(Status.REMOVE_COMMISSION);
+        }
+
+        const activityNeedsExpense = needsExpense(activity);
+        const activityHasExpense = await hasExpense(activity, onError);
+        if(activityNeedsExpense && !activityHasExpense) {
+            return status(Status.AWAIT_EXPENSE);
+        } else if(!activityNeedsExpense && activityHasExpense) {
+            return status(Status.REMOVE_EXPENSE);
+        } else {
+            return status(Status.COMPLETED); 
+        }
+    }
+
+    if(activity.status === Status.GUEST_CONFIRMED) {
+        return status(Status.GOOD_TO_GO);
+    } else if(activity.status === Status.STARTED) {
+        return status(Status.STARTED);
+    }
+
+    return status(Status.NONE);
+}
+
+export async function hasExpense(activity, onError) {
+    const expenses = await getExpense({activityId : activity.id}, onError);
+    const existingExpense = expenses.length > 0 ? expenses[0] : null;
+    return existingExpense !== null;
+}
+
+export async function hasCommission(activity, onError) {
+    const commissions = await getIncome({activityId : activity.id}, onError);
+    const existingCommission = commissions.length > 0 ? commissions[0] : null;
+    return existingCommission !== null;
+}
+
+export function needsCommission(activity) {
+    const noCustomerPrice = !utils.exists(activity, "customerPrice") || utils.isEmpty(activity.customerPrice) || activity.customerPrice == 0;
+    const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;   
+    const isPast = utils.isPast(activity.startingAt);
+    const needsCommission = noCustomerPrice && providerPriceExists && isPast;
+    return needsCommission;
+}
+
+export function needsExpense(activity) {
+    const customerPriceExists = utils.exists(activity, "customerPrice") && !utils.isEmpty(activity.customerPrice) && activity.customerPrice > 0;
+    const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;   
+    const isPast = utils.isPast(activity.startingAt);
+    const needsExpenseNow = customerPriceExists && providerPriceExists && isPast;
+    return needsExpenseNow;
 }
 
 export async function toArrays(filters, onError) {

@@ -95,11 +95,10 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
     formData.dishes = utils.isEmpty(formData.dishes) ? [] : formData.dishes;
     const customDishes = formData.dishes.filter(dish => dish.custom === true);
-    const newCustomDish = mealService.getNewCustomDish(customDishes.length + 1, "");
 
     const statuses = {
-        "requested" : {"name" : "requested"},
-        "confirmed" : {"name" : "confirmed"},
+        "pending-guest-confirmation" : {"name" : "Pending Guest Confirmation"},
+        "guest-confirmed" : {"name" : "Guest Confirmed"},
     };
 
     return (
@@ -196,8 +195,6 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     Add custom dish
                 </button>
             </>)}
-
-            
 
             <div className="">
                 <label htmlFor="mealComments">Comments:</label>

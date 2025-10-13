@@ -12,7 +12,7 @@ import { useNotification } from "../context/NotificationContext.js";
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers,   setTeamMembers  ] = useState([]   );
     const [errorMessage,  setErrorMessage ] = useState(null );
-    const [needsProvider, setNeedsProvider] = useState(formData?.needsProvider);
+    const [needsProvider, setNeedsProvider] = useState(formData?.needsProvider || selectedActivity.internal === false);
 
     const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
             
@@ -65,8 +65,8 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     }, []);
 
     const statuses = {
-        "requested" : {"name" : "requested"},
-        "confirmed" : {"name" : "confirmed"},
+        "pending-guest-confirmation" : {"name" : "Pending Guest Confirmation"},
+        "guest-confirmed" : {"name" : "Guest Confirmed"},
     };
 
     return (
@@ -176,16 +176,15 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     </div>
                 )}
 
-                { custom && (
-                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <input
-                            type="checkbox"
-                            checked={needsProvider}
-                            onChange={(e) => onSetNeedsProviderChecked(e.target.checked)}
-                        />
-                        <span>Needs provider?</span>
-                    </label>
-                )}
+                <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                        type="checkbox"
+                        checked={needsProvider}
+                        onChange={(e) => onSetNeedsProviderChecked(e.target.checked)}
+                    />
+                    <span>Needs provider?</span>
+                </label>
+               
             </>)}
             <div className="purchase-form-group">
                 <MyDatePicker 

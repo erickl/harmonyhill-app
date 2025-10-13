@@ -300,25 +300,6 @@ export function validate(customer, data, isUpdate, onError) {
 
         // todo: get other lunches/dinners on this date. If this is not an update, we should decline?
 
-        // If dateTime decided and staff assigned, then it counts as confirmed
-        if(data.status === "confirmed") {
-            if(utils.isEmpty(data.assignedTo)) {
-                onError(`Status can only be "confirmed" if it's assigned to a staff member`);
-                return false;
-            } 
-            if(!utils.isDate(data.startingAt)) {
-                onError(`Status can only be "confirmed" if a date is set`);
-                return false;
-            }
-            if(!utils.isDate(data.startingTime)) {
-                onError(`Status can only be "confirmed" if a time is set`);
-                return false;
-            }
-
-            // All meals are internal activities
-            //if(data.internal !== true && utils.isEmpty(data.provider)) {}
-        }
-
         if(!utils.isEmpty(data.dishes)) {
             const dishes = Object.values(data.dishes);
             for(const dish of dishes) {
@@ -369,7 +350,7 @@ async function mapMealObject(mealData) {
     if(utils.isBoolean(mealData?.assigneeAccept)) meal.assigneeAccept = mealData.assigneeAccept;
 
     if(utils.exists(mealData, "status")) {
-        meal.status = utils.isString(mealData?.status) ? mealData.status : "requested";
+        meal.status = utils.isString(mealData?.status) ? mealData.status : "pending-guest-confirmation";
     }
 
     if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
@@ -406,13 +387,14 @@ export async function toArrays(filters, onError) {
     filters.category = "meal";
     const meals = await activityService.getAll(filters, onError);
 
-    let rows = [["startingAt", "dish", "quantity", "course", "guestName", "house", "price", "mealFree", "dishFree", "assignedTo", "comments"]];
+    let rows = [["startingAt", "dish", "quantity", "course", "guestName", "house", "price", "mealFree", "dishFree", "assignedTo", "comments", "shouldBeFree"]];
 
     for(const meal of meals) {
         const dishes = await getMealDishes(meal.bookingId, meal.id, filters);
         for(const dish of dishes) {
+            const x = meal.isFree && !dish.isFree ? "x" : "";
             //             startingAt, dish                                   guestName    house      price
-            let row = [meal.startingAt, dish.name, dish.quantity, dish.course, meal.name, meal.house, dish.customerPrice, meal.isFree, dish.isFree, meal.assignedTo, dish.comments];
+            let row = [meal.startingAt, dish.name, dish.quantity, dish.course, meal.name, meal.house, dish.customerPrice, meal.isFree, dish.isFree, meal.assignedTo, dish.comments, x];
             row = row.map((col) => col === null || col === undefined ? "" : col);
             rows.push(row);
             //console.log(JSON.stringify(row));

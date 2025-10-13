@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import * as invoiceService from "../services/invoiceService.js";
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
@@ -8,13 +7,14 @@ import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, ShoppingCart, Trash2, ThumbsUp, ThumbsDown, Candy } from 'lucide-react';
+import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
-import StatusCircle, {Status} from './StatusCircle.js';
+import StatusCircle from './StatusCircle.js';
+import AlertCircle from './AlertCircle.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useItemsCounter } from "../context/ItemsCounterContext.js";
-import {get as getIncome} from "../services/incomeService.js";
+import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import MetaInfo from './MetaInfo.js';
 
 export default function ActivityComponent({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
@@ -24,12 +24,13 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
     const [expanded,                setExpanded               ] = useState(false);
     const [dishes,                  setDishes                 ] = useState([]   );
-    const [needsCommission,         setNeedsCommission        ] = useState(false);
-    const [commission,              setCommission             ] = useState(null );
+    const [status,                  setStatus                 ] = useState(null );
+    const [alert,                   setAlert                  ] = useState(null );
 
-    const { onError, onInfo } = useNotification();
-    const {onCountItems} = useItemsCounter();
-    const {onSuccess} = useSuccessNotification();
+    const { onError } = useNotification();
+    const { onCountItems } = useItemsCounter();
+    const { onSuccess } = useSuccessNotification();
+    const { onConfirm } = useConfirmationModal();
 
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
@@ -38,14 +39,25 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     }
 
     const handleActivityStatusChange = async (currentStatus) => {
-        if(currentStatus === Status.GOOD_TO_GO) {
-            const success = await activityService.setActivityStatus(activity.bookingId, activity.id, Status.COMPLETED);
-        } 
+        let newStatus = null;
+        if(currentStatus.category === activityService.Status.GOOD_TO_GO) {
+            newStatus = activityService.Status.STARTED;
+        } else if(currentStatus.category === activityService.Status.STARTED) {
+            newStatus = activityService.Status.COMPLETED;
+        }
+        if(newStatus !== null) {
+            onConfirm(`Is the activity ${newStatus}?`, async() => {
+                const success = await activityService.setActivityStatus(activity.bookingId, activity.id, newStatus);
+                if(success) {
+                    setStatus({ "category" : newStatus, "message" : newStatus}); // Shows the new status live without needing a rerender
+                    onSuccess();
+                }
+            }); 
+        }
     }
 
     const handleAssigneeStatusChange = async (accept) => {
-        const thisCustomer = customer ? customer : await getParent(activity);
-        const result = await activityService.changeAssigneeStatus(accept, thisCustomer.id, activity.id, onError);
+        const result = await activityService.changeAssigneeStatus(accept, activity.bookingId, activity.id, onError);
         if(result) {
             triggerRerender();
         }
@@ -79,43 +91,24 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     };
 
     useEffect(() => {
-         const getActivityInfo = async () => {
+        const getActivityInfo = async() => {
             const activityInfo = await activityService.getActivityMenuItem(activity.category, activity.subCategory, activity.house);
             setActivityInfo(activityInfo);
+
+            const activityStatus = await activityService.getStatus(activity, onError);
+            setStatus(activityStatus);
+
+            const activityAlert = await activityService.getAlert(activity, activityInfo, onError);
+            setAlert(activityAlert);
         }
+
         getActivityInfo();
     }, []);
 
     useEffect(() => {
-        const getCustomer = async() => {
+        const setActivityCustomer = async() => {
             const customer = await getParent(activity);
             setCustomer(customer);
-        }
-
-        // If customer paid to provider, instead of to us, we should get a commission from the provider
-        const checkCommission = async() => {
-            const noCustomerPrice = !utils.exists(activity, "customerPrice") || utils.isEmpty(activity.customerPrice) || activity.customerPrice == 0;
-            const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;   
-            const isPast = utils.isPast(activity.startingAt);
-            
-            const commissions = await getIncome({activityId : activity.id}, onError);
-            const commission = commissions.length > 0 ? commissions[0] : null;
-
-            const needsCommissionNow = noCustomerPrice && providerPriceExists && isPast;
-            const needsCommissionLater = noCustomerPrice && providerPriceExists && !isPast;
-
-            // Commission is needed now
-            if(needsCommissionNow) {
-                setNeedsCommission(true);
-            // No commission yet exists, but for now it's okay
-            } else if(needsCommissionLater && commission) {
-                setNeedsCommission(true);
-            // If commission exists, this must be corrected
-            } else if(!needsCommissionLater && commission) {
-                setNeedsCommission(false);
-            }
-
-            setCommission(commission);
         }
 
         const setUserRole = async() => {
@@ -124,11 +117,10 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
         }
 
         if(showCustomer) {
-            getCustomer();
+            setActivityCustomer();
         }
         
         setUserRole();
-        checkCommission();
     }, []);
 
     const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
@@ -146,54 +138,6 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     
     const houseShortName = activity.house === "harmony hill" ? "HH" : "JN";
     const houseColor = houseShortName === "HH" ? "darkcyan" : "rgb(2, 65, 116)";
-
-    let status = Status.NONE;
-    let statusMessage = "";
-
-    if(activity) {
-        if(activity.startingAt && !utils.wasYesterday(activity.startingAt)) {
-            let timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
-            timeLeft = Math.floor(timeLeft.hours);
-
-            const stillNeedsAssignee = utils.isEmpty(activity.assignedTo);
-
-            const startingDayMinusOne = activity.startingAt.startOf("day").minus({days: 1});
-            const today = utils.today();
-
-            // Starting from the day before, display warning to assign someone
-            if(today.diff(startingDayMinusOne) > 0 && stillNeedsAssignee) {
-                status = Status.ATTENTION;
-                statusMessage = "Assign staff";
-            }
-
-            const providerEmpty = utils.isEmpty(activity.provider);
-            let stillNeedsProvider = activityInfo && activityInfo.internal === false && providerEmpty;
-            
-            // If the check box is checked to say this custom activity needs a provider, take that into account
-            if(utils.exists(activity, "needsProvider") && utils.isBoolean(activity.needsProvider)) {
-                stillNeedsProvider = providerEmpty && activity.needsProvider;
-            }
-        
-            if(stillNeedsProvider) {
-                statusMessage = "Needs Provider";
-                status = Status.ATTENTION; 
-
-                if(activityInfo && activityInfo.deadline1 !== 0 && timeLeft <= activityInfo.deadline1) {
-                    statusMessage = "Assign Provider!";
-                    status = Status.URGENT;
-                }
-                if(activityInfo && activityInfo.deadline2 !== 0 && timeLeft <= activityInfo.deadline2) {
-                    statusMessage = "Assign Provider!!!";
-                    status = Status.EMERGENCY;
-                }
-            }
-        }
-
-        // if(status === Status.NONE) {
-        //     status = Status.GOOD_TO_GO;
-        //     statusMessage = "All Set";
-        // }
-    }             
 
     return (<>
         <div className="activity-header" onClick={(e) => {
@@ -223,33 +167,25 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                 </div>  
             </div>
 
-            {needsCommission && !commission ? (
-                <div className="activity-header-status">
-                    <StatusCircle 
-                        status={Status.URGENT} 
-                        message={"Commission Missing"}
-                    />
-                </div>
-            ) : !needsCommission && commission ? (
-                <div className="activity-header-status">
-                    <StatusCircle 
-                        status={Status.URGENT} 
-                        message={"Commission Not Needed"}
-                    />
-                </div>
-            ) : (<></>)}
-            
-            <div className="activity-header-status">
+            {status && (<div className="activity-header-status">
                 <StatusCircle 
-                    status={status} 
-                    message={statusMessage}
+                    status={status.category} 
+                    message={status.message}
                     onClick={(e) => {
                         e.stopPropagation();
                         handleActivityStatusChange(status);
                     }}
                 />
-            </div>
+            </div>)}
+            
+            {alert && (<div className="activity-header-status">
+                <AlertCircle 
+                    status={alert.category} 
+                    message={alert.message}
+                />
+            </div>)}
         </div>
+
         {loadingExpandedActivity ? (
             <Spinner />
         ) : expanded ? ( 
@@ -304,7 +240,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         </div>
                     )}
 
-                    { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && !utils.wasYesterday(activity.startingAt) && (
+                    { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) && (
                         <div className="activity-component-footer-icon">
                             <ThumbsUp  
                                 onClick={(e) => {
@@ -316,7 +252,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         </div>
                     )}
 
-                    { user && user.shortName === assignedUserShortName && activity.assigneeAccept && !utils.wasYesterday(activity.startingAt) &&  (
+                    { user && user.shortName === assignedUserShortName && activity.assigneeAccept && (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) &&  (
                         <div className="activity-component-footer-icon">
                             <ThumbsDown  
                                 onClick={(e) => {
