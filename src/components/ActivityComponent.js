@@ -185,7 +185,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                 />
             </div>)}
 
-            {activity && utils.isToday(activity.startingAt) && !utils.isEmpty(activity.startingTime) && utils.isPast(activity.startingAt) && (
+            {activity && activity.status === activityService.Status.COMPLETED && utils.isToday(activity.startingAt) && (
                 <div className="activity-overlay" />
             )}
         </div>
