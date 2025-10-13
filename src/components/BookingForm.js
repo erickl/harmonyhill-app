@@ -3,11 +3,101 @@ import "./BookingForm.css";
 import * as utils from "../utils.js";
 import * as bookingService from "../services/bookingService.js";
 import MyDatePicker from './MyDatePicker.js';
+import ButtonsFooter from './ButtonsFooter.js';
+import { useNotification } from "../context/NotificationContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
 
-export default function BookingForm({ formData, handleInputChange }) {
-
+export default function BookingForm({ booking, onClose }) {
     // for calculating the length of stay based on checkin and checkout date 
     const [nightsCount, setNightsCount] = useState('');
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
+    const [validationError, setValidationError] = useState(null);
+
+    const { onError } = useNotification();
+    const { onSuccess } = useSuccessNotification();
+
+    const initialFormData = {
+        name:                booking ? booking.name                : '', 
+        house:               booking ? booking.house               : '',
+        phoneNumber:         booking ? booking.phoneNumber         : '',
+        email:               booking ? booking.email               : '',
+        checkInAt:           booking ? booking.checkInAt           : null, 
+        checkInTime:         booking ? booking.checkInTime         : null, 
+        checkOutAt:          booking ? booking.checkOutAt          : null,
+        checkOutTime:        booking ? booking.checkOutTime        : null,
+        guestCount:          booking ? booking.guestCount          : 1,
+        dietaryRestrictions: booking ? booking.dietaryRestrictions : '',
+        customerInfo:        booking ? booking.customerInfo        : '',
+        arrivalInfo:         booking ? booking.arrivalInfo         : '',
+        specialRequests:     booking ? booking.specialRequests     : '',
+        promotions:          booking ? booking.promotions          : '',
+        country:             booking ? booking.country             : '',
+        source:              booking ? booking.source              : '',
+        roomRate:            booking ? booking.roomRate            : '',
+        guestPaid:           booking ? booking.guestPaid           : '',
+        hostPayout:          booking ? booking.hostPayout          : '',
+    };
+
+    const [formData, setFormData] = useState(initialFormData);
+
+    const validateFormData = (newFormData) => {
+        const validationResult = bookingService.validate(newFormData, onValidationError);
+
+        setReadyToSubmit(validationResult);
+
+        if(validationResult === true) {
+            setValidationError(null);
+        }
+    }
+
+    const handleSubmit = async () => { 
+        const bookingData = {
+            ...formData
+        };
+
+        try {
+            let result = false;
+            if(booking) {
+                result = await bookingService.update(booking.id, bookingData, onError);
+            } else {
+                 result = await bookingService.add(bookingData, onError);
+            }
+           
+            if(result !== false) {
+                onSuccess();
+                onClose();
+            }
+        } catch (error) {
+            onError(`Error ${booking ? "editing" : "adding"} booking: ${error.message}`);
+        }
+    };
+
+    const handleInputChange = (name, value, type) => {
+        let nextFormData = {};
+        
+        if (name === "_batch" && typeof value === 'object' && value !== null) {
+            nextFormData = ({ ...formData, ...value });
+        } else if(type === "amount") {
+            nextFormData = { ...formData, [name]: utils.cleanNumeric(value)};
+        } else {
+            nextFormData = { ...formData, [name]: value };
+        }
+        
+        if(!utils.isEmpty(nextFormData)) {
+            setFormData(nextFormData);
+        }
+
+        validateFormData(nextFormData);
+    };
+
+    const onValidationError = (error) => {
+        setValidationError(error);
+    }
+
+    // Initial validation
+    useEffect(() => {
+        validateFormData(formData);
+    }, []);
 
     useEffect(() => {
         if (formData.checkInAt && formData.checkOutAt) {
@@ -275,6 +365,14 @@ export default function BookingForm({ formData, handleInputChange }) {
                     </div>
                 </div>
             </div>
+
+            {(validationError && <p className="validation-error">{validationError}</p>)}
+
+            <ButtonsFooter 
+                onCancel={onClose} 
+                onSubmit={handleSubmit}
+                submitEnabled={readyToSubmit}
+            />
         </div>
     );
 };

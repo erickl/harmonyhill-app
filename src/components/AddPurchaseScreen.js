@@ -249,7 +249,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                 {(validationError && <p className="validation-error">{validationError}</p>)}
                 
                 <ButtonsFooter 
-                    onCancel={handleActivitySelection} 
+                    onCancel={() => handleActivitySelection(null)} 
                     onSubmit={onSubmit}
                     submitEnabled={readyToSubmit}
                 />

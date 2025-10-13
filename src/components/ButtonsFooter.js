@@ -21,7 +21,7 @@ export default function ButtonsFooter({onCancel, onSubmit, submitEnabled }) {
         <div className="buttons-footer">
             <button 
                 type="button" 
-                onClick={() => onCancel(null)} 
+                onClick={() => onCancel()} 
                 className="cancel-button"
             >
                 Back
