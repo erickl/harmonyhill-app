@@ -70,7 +70,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
         return canSeeAllBookings;
     };
 
-    const today_ddMMM = utils.to_ddMMM(utils.today());
+    const today_ddMMM = utils.to_ddMMM(utils.today(0, false));
 
     useEffect(() => {
         const getUsers = async() => {
