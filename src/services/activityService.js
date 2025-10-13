@@ -155,7 +155,7 @@ export async function getOne(bookingId, activityId) {
  *      isFree: false,
  *      time: "07:00",
  *      customerPrice: 500,
- *      status: "pending-guest-confirmation",
+ *      status: "pending guest confirmation",
  *      comments: "They have 5 bags with them",
  *      assignedTo: "", // staff member taking care of the activity
  *      provider: "" // The driver or masseuse
@@ -294,7 +294,7 @@ async function mapObject(data) {
     }
 
     if(utils.exists(data, "status") ) {
-        activity.status = utils.isString(data?.status) ? data.status.trim().toLowerCase() :  "pending-guest-confirmation";
+        activity.status = utils.isString(data?.status) ? data.status.trim().toLowerCase() :  "pending guest confirmation";
     }
 
     if(utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
@@ -325,6 +325,11 @@ export function validate(customer, data, isUpdate, onError) {
 
         if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
             onError(`Activity date too late. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
+            return false;
+        }
+
+        if(data.status === Status.PENDING_GUEST_CONFIRM && !utils.isEmpty(data.provider)) {
+            onError(`Don't book a provider before the guest has confirmed`);
             return false;
         }
     } catch(e) {

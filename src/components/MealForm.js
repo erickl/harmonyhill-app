@@ -97,8 +97,8 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     const customDishes = formData.dishes.filter(dish => dish.custom === true);
 
     const statuses = {
-        "pending-guest-confirmation" : {"name" : "Pending Guest Confirmation"},
-        "guest-confirmed" : {"name" : "Guest Confirmed"},
+        "pending guest confirmation" : {"name" : "Pending Guest Confirmation"},
+        "guest confirmed" : {"name" : "Guest Confirmed"},
     };
 
     return (

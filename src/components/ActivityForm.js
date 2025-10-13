@@ -65,8 +65,8 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     }, []);
 
     const statuses = {
-        "pending-guest-confirmation" : {"name" : "Pending Guest Confirmation"},
-        "guest-confirmed" : {"name" : "Guest Confirmed"},
+        "pending guest confirmation" : {"name" : "Pending Guest Confirmation"},
+        "guest confirmed" : {"name" : "Guest Confirmed"},
     };
 
     return (

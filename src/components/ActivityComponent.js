@@ -98,7 +98,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             const currentStatus = await activityService.getStatus(activity, onError);
             setStatus(currentStatus);
 
-            const currentAlert = await activityService.getAlert(activity, currentStatus, activityInfo, onError);
+            const currentAlert = await activityService.getAlert(activity, currentStatus.category, activityInfo, onError);
             setAlert(currentAlert);
         }
 

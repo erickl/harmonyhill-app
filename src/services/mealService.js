@@ -350,7 +350,7 @@ async function mapMealObject(mealData) {
     if(utils.isBoolean(mealData?.assigneeAccept)) meal.assigneeAccept = mealData.assigneeAccept;
 
     if(utils.exists(mealData, "status")) {
-        meal.status = utils.isString(mealData?.status) ? mealData.status : "pending-guest-confirmation";
+        meal.status = utils.isString(mealData?.status) ? mealData.status : "pending guest confirmation";
     }
 
     if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
