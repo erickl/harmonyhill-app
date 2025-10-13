@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import * as invoiceService from "../services/invoiceService.js";
 import * as invoicePdfService from "../services/invoicePdfService.js";
@@ -6,7 +6,7 @@ import * as utils from "../utils.js";
 import "./InvoicePdf.css";
 import '../assets/fonts.js';
 
-export default function InvoicePdfLink({customer}) {
+export default function InvoicePdfLink({customer, triggerRerender}) {
     const [pdfDoc, setPdfDoc] = useState(null);
     const [total,  setTotal ] = useState(0   );
 
@@ -22,7 +22,9 @@ export default function InvoicePdfLink({customer}) {
         }
 
         loadInvoice();
-    }, []);
+    }, [triggerRerender]);
+
+    // const memoizedPdfDoc = useMemo(() => pdfDoc, [pdfDoc]);
 
     if(!pdfDoc) {
         return (

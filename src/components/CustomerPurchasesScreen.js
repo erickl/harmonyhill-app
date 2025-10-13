@@ -17,6 +17,8 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
     const [customerPurchasing, setCustomerPurchasing] = useState(null ); // state to enable adding purchases
     const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
     const [showInvoice,        setShowInvoice       ] = useState(false);
+    const [total,              setTotal             ] = useState(0);
+    const [triggerRerender,    setTriggerRerender   ] = useState(0    );
 
     const { onError } = useNotification();
 
@@ -29,6 +31,14 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
         setUserRole();
     }, []);
 
+    useEffect(() => {
+        const getTotal = async() => {
+            const total = await invoiceService.getTotal(customer.id);
+            setTotal(total.total);
+        }
+        getTotal();
+    }, [triggerRerender]);
+
     const today = utils.today();
 
     const handleAddPurchase = (customer) => {
@@ -36,7 +46,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
     };
 
     if(showInvoice) {
-        return (<PdfViewer customer={customer} onClose={() => setShowInvoice(false)}/>);
+        return (<PdfViewer customer={customer} triggerRerender={triggerRerender} onClose={() => setShowInvoice(false)}/>);
     }
 
     if (customerPurchasing) {
@@ -72,8 +82,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                             +
                         </button> 
                     )}
-                    <InvoicePdfLink customer={customer}/>
-                    {/* <p onClick={() => setShowInvoice(true)}>Invoice</p> */}
+                    <p onClick={() => setShowInvoice(true)}>See invoice ({total} Rp)</p>
                 </div>
             </div>
             
@@ -82,6 +91,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                     onNavigate={onNavigate}
                     customer={customer}
                     expandAllDates={true}
+                    triggerRerender={() => setTriggerRerender(triggerRerender + 1)}
                 />  
             </div>
             <button type="button" onClick={() => onClose() } className="cancel-button">

@@ -10,12 +10,12 @@ import ConfirmModal from './ConfirmModal.js';
 import { useNotification } from "../context/NotificationContext.js";
 import {getParent} from "../daos/dao.js";
 
-export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
+export default function ActivitiesList({onNavigate, customer, expandAllDates, triggerRerender}) {
     const [expandedDates,           setExpandedDates    ] = useState({}   ); 
     const [activitiesByDate,        setActivitiesByDate ] = useState({}   );
     const [users,                   setUsers            ] = useState([]   );
     const [user,                    setUser             ] = useState(null );
-    const [triggerRerender,         setTriggerRerender  ] = useState(0    );
+
     const [activityToEdit,          setActivityToEdit   ] = useState(null );
     const [activityToDelete,        setActivityToDelete ] = useState(null );
     const [loading,                 setLoading          ] = useState(true );
@@ -56,6 +56,9 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
         if(deleteActivityResult) {
             setActivityToDelete(null);
             setCurrentCustomer(null);
+            if(triggerRerender) {
+                triggerRerender();
+            }
         } 
     };
 
@@ -165,6 +168,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
                     setCurrentCustomer(null);
                 }}
                 onNavigate={onNavigate}
+                triggerRerender={triggerRerender}
             />
         );
     }
@@ -203,7 +207,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates}) {
                                                     handleDeleteActivity={() => setActivityToDelete(activity)}
                                                     users={users}
                                                     user={user}
-                                                    triggerRerender={() => setTriggerRerender(triggerRerender+1)}
+                                                    triggerRerender={triggerRerender}
                                                 />
                                             </React.Fragment>
                                         )

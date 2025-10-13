@@ -59,7 +59,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
     const handleAssigneeStatusChange = async (accept) => {
         const result = await activityService.changeAssigneeStatus(accept, activity.bookingId, activity.id, onError);
         if(result) {
-            triggerRerender();
+            if(triggerRerender) triggerRerender();
         }
     }
 

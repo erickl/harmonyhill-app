@@ -11,7 +11,7 @@ import * as storageDao from "../daos/storageDao.js";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
-export default function PdfViewer({customer, onClose}) {
+export default function PdfViewer({customer, triggerRerender, onClose }) {
     const [pdfUrl, setPdfUrl] = useState(null);
     const [title, setTitle] = useState(null);
 
@@ -45,7 +45,7 @@ export default function PdfViewer({customer, onClose}) {
             isMounted = false;
             if (dataUrl) URL.revokeObjectURL(dataUrl);
         };
-    }, [customer]);
+    }, [customer, triggerRerender]);
 
     const handleShare = async () => {
         if (!pdfUrl) return;

@@ -10,6 +10,7 @@ import { useNotification } from "../context/NotificationContext.js";
 export default  function ActivitiesScreen({onNavigate}) { 
     const [isAdmin, setIsAdmin] = useState(false);
     const { onError } = useNotification();
+    const [triggerRerender, setTriggerRerender] = useState(0);
 
     const filterHeaders = {
         "after"  : "date",
@@ -53,6 +54,7 @@ export default  function ActivitiesScreen({onNavigate}) {
                 onNavigate={onNavigate}
                 customer={null} 
                 expandAllDates={true}
+                triggerRerender={() => setTriggerRerender(triggerRerender + 1)}
             />
         </div>
     );

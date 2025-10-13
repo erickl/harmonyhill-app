@@ -13,7 +13,7 @@ import "../App.css";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) => {
+const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, triggerRerender }) => {
 
     // Show purchase summary and confirmation pop up modal
     const [showConfirm,      setShowConfirm]      = useState(false);
@@ -122,6 +122,9 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate }) =
             if(editActivitySuccess) {
                 onSuccess();
                 onClose();
+                if(triggerRerender) {
+                    triggerRerender();
+                }
             }
         } catch(error) {
             onError(`Unexpected error while trying to update meal: ${error.message}`);
