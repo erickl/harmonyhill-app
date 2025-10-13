@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
-import { XCircle } from "lucide-react";
+import { Trash2} from "lucide-react";
 import "./MealFormDish.css"
 
 export default function MealFormDish({dish, formData, handleFormDataChange, custom, isFree}) {
@@ -82,7 +82,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
             <div className="meal-dish-row" key={`${dish.id}-wrapper-row`}>
                 {custom === true ? (
                     <div className="custom-meal-dish-row">
-                        <XCircle color="red" onClick={() => {
+                        <Trash2 color="red" onClick={() => {
                             handleEditOrderQuantity(dish, -dish.quantity);
                         }}/>
                         <label for={`${dish.id}-name`}>
