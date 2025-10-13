@@ -43,7 +43,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         assignedTo    : '',
         isFree        : false,
         dishes        : [], // only not null when ordering meals, null for all other activities
-        status        : "requested",
+        status        : "pending-guest-confirmation",
 
         // Auxiliary data
         house         : customer.house,
@@ -63,23 +63,29 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
     const handleCategorySelection = async (category) => {
         setSelectedCategory(category);
-        if(category == null) {
+
+        const formResetData = {...(initialForm || {})};
+        
+        if(category == null) { 
             setSelectedCategory(null);
-            setFormData(initialForm);
+            setFormData(formResetData);
             return;
-        }
+        } 
     }
 
     const handleActivitySelection = async (activity) => {
         setSelectedActivity(activity);
+
+        const formResetData = {...(initialForm || {})};
+        
         if(activity == null) {
             setSelectedCategory(null);
-            setFormData(initialForm);
+            setFormData(formResetData);
             return;
         }
 
         if(selectedCategory == null) {
-            console.log(`Error: subCategory ${activity.subCategory} selected without a category`);
+            onError(`Error: subCategory ${activity.subCategory} selected without a category`);
         }
 
         handleFormDataChange("_batch", {
@@ -87,6 +93,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             "customerPrice" : activity.customerPrice,
             "custom"        : activity.custom,
             "internal"      : activity.internal,
+            "needsProvider" : activity.needsProvider || activity.internal === false,
         });
     }
 
