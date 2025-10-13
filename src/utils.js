@@ -236,25 +236,25 @@ export function toDateTime(inputDate) {
 
 export function isToday(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
-    const todayDateTime = today();
+    const todayDateTime = today(0, false);
     return luxonDateTime.day == todayDateTime.day;
 }
 
 export function isTomorrow(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
-    const tomorrow = today().plus({days: 1});
+    const tomorrow = today(0, false).plus({days: 1});
     return luxonDateTime.day === tomorrow.day;
 }
 
 export function isBeforeToday(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
-    const todayDateTime = today();
+    const todayDateTime = today(0, false);
     return luxonDateTime.day < todayDateTime.day;
 }
 
 export function isPast(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
-    const diff = luxonDateTime.toMillis() - now().toMillis();
+    const diff = luxonDateTime.toMillis() - now(0, false).toMillis();
     return diff < 0;
 }   
 
@@ -310,21 +310,21 @@ export function monthRange(monthInt = 0) {
 /**
  * get a Luxon date time object with time at midnight
  */
-export function today(addDays = 0) {
-    return now(addDays).startOf('day');
+export function today(addDays = 0, keepLocalTime = true) {
+    return now(addDays, keepLocalTime).startOf('day');
 }
 
 /**
  * get a Luxon date time object with time at this moment
  */
-export function now(addDays = 0) {
-    return setZone(DateTime.now()).plus({days: addDays});
+export function now(addDays = 0, keepLocalTime = true) {
+    return setZone(DateTime.now(), keepLocalTime).plus({days: addDays});
 }
 
-export function setZone(date) {
+export function setZone(date, keepLocalTime = true) {
     if(!date) return null;
     date = toDateTime(date);
-    date = date.setZone(getHotelTimezone(), { keepLocalTime: true });
+    date = date.setZone(getHotelTimezone(), { keepLocalTime: keepLocalTime });
     return date;
 }
 
