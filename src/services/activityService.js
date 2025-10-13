@@ -376,7 +376,7 @@ export async function getChangeDescription(oldData, newData) {
     return changeDescription;
 }
 
-export function getAlert(activity, activityUnit, onError) {
+export function getAlert(activity, currentStatus, activityUnit, onError) {
     const alert = (category = Alert.NONE, message = "") => {
         return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
     };
@@ -391,7 +391,7 @@ export function getAlert(activity, activityUnit, onError) {
 
     const needsProvider = activity.needsProvider === true && utils.isEmpty(activity.provider);
 
-    if(activity.status === "pending-guest-confirmation") {
+    if(currentStatus === Status.PENDING_GUEST_CONFIRM) {
         if(emergency) {
             return alert(Alert.EMERGENCY, "Confirm with guest immediately!");
         }
@@ -411,6 +411,12 @@ export function getAlert(activity, activityUnit, onError) {
         }
     }
 
+    if(hoursLeft < 0) {
+        if(currentStatus !== Status.STARTED && currentStatus !== Status.COMPLETED) {
+            return alert(Alert.URGENT, "Did it start?");
+        }
+    } 
+
     return alert(Alert.NONE);
 }
 
@@ -421,7 +427,7 @@ export async function getStatus(activity, onError) {
 
     if(activity == null) return status();
 
-    if(activity.status === "pending-guest-confirmation") {
+    if(activity.status === Status.PENDING_GUEST_CONFIRM) {
         return status(Status.PENDING_GUEST_CONFIRM);
     }
     if(activity.needsProvider === true && utils.isEmpty(activity.provider)) {
