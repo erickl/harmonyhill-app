@@ -40,11 +40,19 @@
     margin-top: 0rem;
 }
 
+.activity-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* dim background */
+  z-index: 10000; /* make sure it's on top */
+}
+
 .activity-header {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: stretch;
-    padding-top: 0.5rem; 
+    margin-top: 0.5rem;
     background: #f5f5f5;   /* subtle header background */
     /* border: 1px solid #ddd; */
     cursor: pointer; /* if clickable */

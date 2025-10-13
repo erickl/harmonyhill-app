@@ -95,11 +95,11 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             const activityInfo = await activityService.getActivityMenuItem(activity.category, activity.subCategory, activity.house);
             setActivityInfo(activityInfo);
 
-            const activityStatus = await activityService.getStatus(activity, onError);
-            setStatus(activityStatus);
+            const currentStatus = await activityService.getStatus(activity, onError);
+            setStatus(currentStatus);
 
-            const activityAlert = await activityService.getAlert(activity, activityInfo, onError);
-            setAlert(activityAlert);
+            const currentAlert = await activityService.getAlert(activity, currentStatus, activityInfo, onError);
+            setAlert(currentAlert);
         }
 
         getActivityInfo();
@@ -184,6 +184,10 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     message={alert.message}
                 />
             </div>)}
+
+            {activity && utils.isToday(activity.startingAt) && !utils.isEmpty(activity.startingTime) && utils.isPast(activity.startingAt) && (
+                <div className="activity-overlay" />
+            )}
         </div>
 
         {loadingExpandedActivity ? (
