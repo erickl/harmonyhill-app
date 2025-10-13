@@ -240,7 +240,13 @@ export function isToday(inputDate) {
     return luxonDateTime.day == todayDateTime.day;
 }
 
-export function wasYesterday(inputDate) {
+export function isTomorrow(inputDate) {
+    const luxonDateTime = toLuxonDateTime(inputDate);
+    const tomorrow = today().plus({days: 1});
+    return luxonDateTime.day === tomorrow.day;
+}
+
+export function isBeforeToday(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
     const todayDateTime = today();
     return luxonDateTime.day < todayDateTime.day;
@@ -250,7 +256,7 @@ export function isPast(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
     const diff = luxonDateTime.toMillis() - now().toMillis();
     return diff < 0;
-}
+}   
 
 export function dateIsSame(oldDate, newDate) {
     if(isEmpty(oldDate)) {
