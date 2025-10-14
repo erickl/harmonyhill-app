@@ -1,4 +1,4 @@
-import { storage } from '../firebase';
+import { storage } from '../firebase.js';
 import { ref, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
 import imageCompression from "browser-image-compression";
 import * as utils from "../utils.js";
