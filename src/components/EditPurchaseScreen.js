@@ -138,6 +138,9 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
             const menuItem = await activityService.getActivityMenuItem(activityToEdit.category, activityToEdit.subCategory, customer.house);
             setActivityMenuItem(menuItem);
             setLoading(false);
+            if(!menuItem) {
+                onError(`Can't find any information on the activity type '${activityToEdit.displayName}'`);
+            }
         };
 
         fetchActivityMenuItemData();
