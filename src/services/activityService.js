@@ -444,10 +444,10 @@ export async function getStatus(activity, onError) {
     if(utils.isEmpty(activity.startingTime)) {
         return status(Status.DETAILS_MISSING, "Set starting time");
     }
-    if(utils.isEmpty(activity.customerPrice)) {
+    if(activity.isFree === false && utils.isEmpty(activity.customerPrice)) {
         return status(Status.DETAILS_MISSING, "Provide customer price");
     }
-    if(utils.isEmpty(activity.providerPrice)) {
+    if(activity.needsProvider === true && utils.isEmpty(activity.providerPrice)) {
         return status(Status.DETAILS_MISSING, "Provide provider price");
     }
     if(activity.category === "meal" && utils.isEmpty(activity.dishes)) {
