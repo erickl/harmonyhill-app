@@ -7,12 +7,13 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-
 // const logger = require("firebase-functions/logger");
 // const { onDocumentCreated } = require("firebase-functions/v2/firestore");
-const { setGlobalOptions } = require("firebase-functions/v2");
-const { onSchedule } = require("firebase-functions/v2/scheduler");
-const admin = require("firebase-admin");
+import { setGlobalOptions } from "firebase-functions/v2";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onRequest } from "firebase-functions/v2/https"; 
+import admin from "firebase-admin";
+import { makeFirestoreAdapter } from "../shared/firestoreAdapter.js";
 
 // Initialize admin SDK once
 if (!admin.apps.length) {
@@ -63,27 +64,25 @@ if (process.env.FUNCTIONS_EMULATOR === "true") {
 //     return null;
 // });
 
-// Test run in shell: hourlyJob()
-exports.hourlyJob = onSchedule("every 60 minutes", async (event) => {
-    const db = admin.firestore();
-
+export const hourlyWork = async() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const oneWeekFromNow = new Date();
     oneWeekFromNow.setDate(today.getDate() + 7);
     oneWeekFromNow.setHours(0, 0, 0, 0);
-
-    const snapshot = await db.collectionGroup("activities")
-        .where("startingAt", ">=", today)
-        .where("startingAt", "<=", oneWeekFromNow)
-        .where("needsProvider", "==", true)
-        .where("provider", "==", "")
-        .orderBy("startingAt")
-        // .limit(10)
-        .get();
-
-    const docs = snapshot.docs.map((doc) => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+    
+    const db = admin.firestore();
+    const adapter = await makeFirestoreAdapter(db);
+    
+    const docs = await adapter.getCollectionGroup("activities", [
+        ["startingAt", ">=", today],
+        ["startingAt", "<=", oneWeekFromNow],
+        ["needsProvider", "==", true],
+        ["provider", "==", ""]
+    ],
+        "startingAt"
+    );
     const docIds = docs.map((doc) => doc.id);
 
     // Update the activity providers notification document
@@ -96,4 +95,15 @@ exports.hourlyJob = onSchedule("every 60 minutes", async (event) => {
     });
 
     console.log("⏰ Hourly job done", new Date().toISOString());
+}
+
+// Upload count of activities which still need more information (providers missing, etc)
+export const hourlyJob = onSchedule("every 60 minutes", async (event) => {
+    await hourlyWork();
+});
+
+// Local-only HTTP trigger for debugging: http://localhost:5001/harmonyhill-1/us-central1/hourlyJob-0
+export const hourlyJobDebug = onRequest(async (req, res) => {
+    await runHourlyJob();
+    res.send("Ran hourly job manually");
 });
