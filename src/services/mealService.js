@@ -129,8 +129,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
     const updateMealSuccess = await activityDao.transaction(async () => {
         const existing = await getMeal(bookingId, mealId);
         if(!existing) {
-            onError(`Cannot find meal ${bookingId}/${mealId} in database`);
-            return false;
+            throw new Error(`Cannot find meal ${bookingId}/${mealId}`);
         } 
 
         // When changing assignee 
@@ -142,7 +141,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
         const mealUpdate = await mapMealObject(mealUpdateData);
         const updateMealSuccess = await activityDao.update(bookingId, mealId, mealUpdate, true, onError);
         if(!updateMealSuccess) {
-            return false;
+            throw new Error(`Cannot update meal ${bookingId}/${mealId}`);
         }
         
         let updateDishesSuccess = false;
@@ -154,7 +153,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
         }
 
         if(!updateDishesSuccess) {
-            return false;
+            throw new Error(`Cannot update dishes for ${bookingId}/${mealId}`);
         }
 
         // Update total meal price
@@ -168,8 +167,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
             const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: customerMealTotalPrice }, true, onError);
             
             if(!updateMealPriceSuccess) {
-                onError(`Cannot update total meal price for meal with dish ${mealId}`);
-                return false;
+                throw new Error(`Cannot update total meal price for meal with dish ${mealId}`);
             }
         }
     });
