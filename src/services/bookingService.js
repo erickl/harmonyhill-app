@@ -1,6 +1,8 @@
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
+import {transaction} from "../daos/dao.js";
+import * as activityService from "./activityService.js";
 
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
@@ -57,21 +59,74 @@ export function calculateNightsStayed(checkInAtInput, checkOutAtInput) {
     return diffInDays.days;
 }
 
+async function addCheckIn(bookingId, booking, onError) {
+     const checkInData = {
+        category      : "service",
+        subCategory   : "checkin",
+        isFree        : true,
+        customerPrice : 0,
+        status        : booking.checkInTime ? activityService.Status.GUEST_CONFIRMED : activityService.Status.PENDING_GUEST_CONFIRM,
+        needsProvider : false,
+        startingAt    : booking.checkInAt,
+        startingTime  : booking.checkInTime,
+
+    }
+
+    const addCheckInResult = await activityService.add(bookingId, checkInData, onError);
+    if(addCheckInResult === false) {
+        throw new Error(`Couldn't add check in data for booking ${bookingId}`);
+    }
+
+    return true;
+}
+
+async function addCheckOut(bookingId, booking, onError) {
+     const checkOutData = {
+        category      : "service",
+        subCategory   : "checkout",
+        isFree        : true,
+        customerPrice : 0,
+        status        : booking.checkOutTime ? activityService.Status.GUEST_CONFIRMED : activityService.Status.PENDING_GUEST_CONFIRM,
+        needsProvider : false,
+        startingAt    : booking.checkOutAt,
+        startingTime  : booking.checkOutTime,
+
+    }
+
+    const addCheckOutResult = await activityService.add(bookingId, checkOutData, onError);
+    if(addCheckOutResult === false) {
+        throw new Error(`Couldn't add checkout data for booking ${bookingId}`);
+    }
+
+    return true;
+}
+
 export async function add(bookingData, onError) {
-    const bookingObject = await mapBookingObject(bookingData);
-    const bookingId = createBookingId(bookingObject.name, bookingObject.house, bookingObject.checkInAt);
-    const success = await bookingDao.add(bookingId, bookingObject, onError);
-    if(success) {
-        return bookingId;
-    }
-    else {
-        return false;
-    }
+    const result = transaction(async () => {
+        const bookingObject = await mapBookingObject(bookingData);
+        const bookingId = createBookingId(bookingObject.name, bookingObject.house, bookingObject.checkInAt);
+        const addBookingSuccess = await bookingDao.add(bookingId, bookingObject, onError);
+        if(addBookingSuccess === false) {
+            throw new Error(`Couldn't update transaction`);   
+        }
+
+        // Todo: in progress. Might move this to firebase functions, to add them only the day before the event
+        //const addCheckInResult = await addCheckIn(bookingId, bookingObject, onError);
+        //const addCheckOutResult = await addCheckIn(bookingId, bookingObject, onError);
+
+        return true;
+    });
+
+    return result;
 }
 
 export async function update(bookingId, bookingUpdateData, onError) {
-    const bookingUpdate = await mapBookingObject(bookingUpdateData);
-    return await bookingDao.update(bookingId, bookingUpdate, onError);
+    const result = transaction(async () => {
+        const bookingUpdate = await mapBookingObject(bookingUpdateData);    
+        const updateBookingSuccess = await bookingDao.update(bookingId, bookingUpdate, onError);
+    });
+
+    return result;
 }
 
 /**
@@ -224,58 +279,4 @@ export function validate(data, onError) {
     }
 
     return true;
-}
-
-export async function testBooking() {
-    // const xx  = utils.to_ddMMM("20250101");
-    // const x2  = utils.to_ddMMM("250101");
-
-    //const signUpSuccess = userService.signUp("ericklaesson", "ericklaesson@gmail.com", "password");
-    //const signInSuccess = await userService.login("ericklaesson@gmail.com", "password");
-
-    const all = await get();
-
-    let booking = {
-        dietaryRestrictions: "sausage",
-        checkInAt: "2025-05-10",
-        checkOutAt: "2025-05-13",
-        country: "Norway",
-        guestCount: 4,
-        customerInfo: "none",
-        arrivalInfo: "ETA 13:00",
-        specialRequests: "none",
-        phoneNumber: "123456789",
-        email: "meil1@gmail.com",
-        promotions: "none",
-        roomRate: 10000000,
-        guestPaid: 1200000,
-        hostPayout: 800000,
-        source: "AirBnB",
-        status: "confirmed",
-        house: "Harmony Hill",
-        name: "Boerje Ingvar",              
-    };
-
-    const ref = await add(booking);
-
-    let bookingUpdate = {
-        dietaryRestrictions: "sausage",
-        country: "Norway",
-        guestCount: 4,
-        customerInfo: "updated",
-        arrivalInfo: "ETA 14:00",
-        phoneNumber: "11112222333",
-        email: "mail@meil.com",
-        specialRequests: "updated",
-        promotions: "updated",
-        source: "AirBnB",
-        status: "confirmed",
-        house: "Harmony Hill",      
-    }
-    
-    const updateSuccess = await update(ref, bookingUpdate);
-
-    //const deleteSuccess = await remove(ref);
-
-    let x = 1;
 }
