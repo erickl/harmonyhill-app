@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore";
+import { Timestamp as ClientTimestamp } from "firebase/firestore";
 import { DateTime } from 'luxon';
 
 export function toNumber(valueIn) {
@@ -53,24 +53,29 @@ export function isEmpty(value) {
  * @param {*} end end of the date range (a date (luxon datetime, firestore timestamp, JS Date))
  * @param {*} occupied JSON object, with month int as keys, and arrays with dates of months as values
  *                     e.g. occupied = {"1" : [1, 2, 4, ...], "2" : [5, 6, 30], ...}
- * @returns occupied, filled in with dates between the start and end dates
+ * @returns dates, filled in with dates between the start and end dates
  */
-export function getDatesBetween(start, end, occupied = {}) {
-    const startDt = toDateTime(start);
-    const endDt = toDateTime(end);
+export function getDatesBetween(start, end, dates = {}) {
+    try {
+        const startDt = toDateTime(start);
+        const endDt = toDateTime(end);
 
-    if(isEmpty(startDt) || isEmpty(endDt)) return occupied;
+        if(isEmpty(startDt) || isEmpty(endDt)) return dates;
 
-    let current = startDt.startOf('day');
-    while(current < endDt.startOf('day')) {
-        const month = `${current.month}`;
-        if(!exists(occupied, month)) {
-            occupied[month] = [];
+        let current = startDt.startOf('day');
+        while(current < endDt.startOf('day')) {
+            const month = `${current.month}`;
+            if(!exists(dates, month)) {
+                dates[month] = [];
+            }
+            dates[month].push(current.day);
+            current = current.plus({days: 1});
         }
-        occupied[month].push(current.day);
+    } catch(e) {
+        return dates;
     }
 
-    return occupied;
+    return dates;
 }
 
 export function isJsonObject(value) {
@@ -95,9 +100,13 @@ export function isDateTime(value) {
 }
 
 export function isDate(value) {
-    if(value instanceof Date || value instanceof Timestamp || isDateTime(value)) {
+    if(value instanceof Date || value instanceof ClientTimestamp || isDateTime(value)) {
         return true;
-    } else if(isString(value)) {
+    // Might be some Timestamp object from firebase admin SDK, which is also a "Timestamp", but not the same as the other Timestamp
+    } else if(value.toDate === "function") {
+        return true;
+    }
+    else if(isString(value)) {
         const hasDateFormat = /^\d{4}-\d{2}-\d{2}/.test(value); // starts with YYYY-MM-dd
         if(hasDateFormat) {
             const parsedDate = new Date(value);
@@ -171,12 +180,17 @@ function getData(inputDate) {
 function toLuxonDateTime(inputDate) {
     if (inputDate instanceof DateTime) {
         return inputDate;
-    } else if (inputDate instanceof Timestamp) {
+    } else if (inputDate instanceof ClientTimestamp) {
         const date = inputDate.toDate();
         return DateTime.fromJSDate(date, { zone: getHotelTimezone() });
     } else if (inputDate instanceof Date) {
         return DateTime.fromJSDate(inputDate, { zone: getHotelTimezone() });
-    } else if (typeof inputDate === "string") {
+    // Could be Timestamp from firebase admin SDK. It still has a toDate() function though
+    } else if(typeof inputDate.toDate === "function") {
+        const date = inputDate.toDate();
+        return DateTime.fromJSDate(date, { zone: getHotelTimezone() });
+    }
+    else if (typeof inputDate === "string") {
         const formats = generateDateFormats();
         for(const format of formats) {
             const luxonDateTime = DateTime.fromFormat(inputDate, format, { zone: getHotelTimezone() });
@@ -191,17 +205,19 @@ function toLuxonDateTime(inputDate) {
     }
 }
 
-function toJsDate(inputDate) {
+export function toJsDate(inputDate) {
     // Convert Luxon DateTime to JavaScript Date
     if (inputDate instanceof DateTime) {
         return inputDate.toJSDate(); 
     }
     // Convert Firestore Timestamp to JavaScript Date 
-    else if (inputDate instanceof Timestamp) {
+    else if (inputDate instanceof ClientTimestamp) {
         return inputDate.toDate();
     } else if (inputDate instanceof Date) {
         const luxonDateTime = DateTime.fromJSDate(inputDate, { zone: getHotelTimezone() });
         return luxonDateTime.toJSDate();
+    } else if(typeof inputDate.toDate === "function") {
+        return inputDate.toDate();
     } else if (typeof inputDate === "string") {
         let parsedDate = null;
         
@@ -252,7 +268,7 @@ export function toFireStoreTime(inputDate) {
     if(isEmpty(inputDate)) return null;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const jsDate = toJsDate(luxonDateTime);
-    return Timestamp.fromDate(jsDate);
+    return ClientTimestamp.fromDate(jsDate);
 }
 
 export function toDateTime(inputDate) {
@@ -263,7 +279,7 @@ export function toDateTime(inputDate) {
 export function isToday(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
     const todayDateTime = today(0, false);
-    return luxonDateTime.day === todayDateTime.day;
+    return luxonDateTime.day == todayDateTime.day;
 }
 
 export function isTomorrow(inputDate) {
