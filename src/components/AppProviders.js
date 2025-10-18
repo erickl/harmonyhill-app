@@ -1,11 +1,11 @@
 import React from "react";
-import { NotificationProvider } from "../context/NotificationContext";
-import { FilterProvider } from "../context/FilterContext";
-import { MenuProvider } from '../context/MenuContext';
-import { MarkDownProvider } from '../context/MarkDownContext';
-import { ItemsCounterProvider } from "../context/ItemsCounterContext";
-import { SuccessNotificationProvider } from "../context/SuccessContext";
-import { ConfirmationProvider } from "../context/ConfirmationContext";
+import { NotificationProvider } from "../context/NotificationContext.js";
+import { FilterProvider } from "../context/FilterContext.js";
+import { MenuProvider } from '../context/MenuContext.js';
+import { MarkDownProvider } from '../context/MarkDownContext.js';
+import { ItemsCounterProvider } from "../context/ItemsCounterContext.js";
+import { SuccessNotificationProvider } from "../context/SuccessContext.js";
+import { ConfirmationProvider } from "../context/ConfirmationContext.js";
 
 export function AppProviders({ children }) {
   return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
-import ActivityComponent from './ActivityComponent';
+import ActivityComponent from './ActivityComponent.js';
 import EditPurchaseScreen from './EditPurchaseScreen.js';
 import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";

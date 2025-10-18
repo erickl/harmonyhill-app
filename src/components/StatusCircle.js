@@ -1,8 +1,8 @@
 import "./StatusCircle.css";
-import { Status } from "../services/activityService";
-import StatusNoStaffAssignedIcon from "./StatusNoStaffAssignedIcon";
-import StatusStartedIcon from "./StatusStartedIcon";
-import * as utils from "../utils";
+import { Status } from "../services/activityService.js";
+import StatusNoStaffAssignedIcon from "./StatusNoStaffAssignedIcon.js";
+import StatusStartedIcon from "./StatusStartedIcon.js";
+import * as utils from "../utils.js";
 
 export default function StatusCircle({status, message, onClick}) {
     let symbol = "!";

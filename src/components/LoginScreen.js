@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 
-import "./RegistrationScreen";
 import './LoginScreen.css';
 import logo from '../assets/logowhitegreen.png';
-import RegistrationScreen from './RegistrationScreen';
+import RegistrationScreen from './RegistrationScreen.js';
 import { useNotification } from "../context/NotificationContext.js";
 
 function LoginScreen({ onLogin, onLoginSuccess }) {

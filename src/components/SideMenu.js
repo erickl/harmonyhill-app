@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
-import { useMenu } from '../context/MenuContext';
+import { useMenu } from '../context/MenuContext.js';
 import * as userService from "../services/userService.js";
 import { useNotification } from "../context/NotificationContext.js";
 import packageJson from '../../package.json';

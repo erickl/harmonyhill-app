@@ -6,7 +6,7 @@ import * as utils from '../utils.js';
 import ErrorNoticeModal from './ErrorNoticeModal.js';
 import './CustomersScreen.css';
 import '../App.css';
-import EditCustomerScreen from './EditCustomerScreen';
+import EditCustomerScreen from './EditCustomerScreen.js';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 import ConfirmModal from './ConfirmModal.js';
 import VeganHamburgerButton from './VeganHamburgerButton.js';

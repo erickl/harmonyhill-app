@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { uploadPurchaseInvoice } from "../services/invoiceService";
+import { uploadPurchaseInvoice } from "../services/invoiceService.js";
 
 export default function UploadReceiptScreen({ current, onUploadSuccess, resetTrigger }) {
     const [previewImage, setPreviewImage] = useState(current);

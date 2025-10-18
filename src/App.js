@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import CustomersScreen from './components/CustomersScreen';
-import ActivitiesScreen from './components/ActivitiesScreen';
-import AddExpensesScreen from './components/AddExpensesScreen';
-import AddIncomeScreen from './components/AddIncomeScreen';
-import LoginScreen from './components/LoginScreen';
-import AddCustomerScreen from './components/AddCustomerScreen';
+import CustomersScreen from './components/CustomersScreen.js';
+import ActivitiesScreen from './components/ActivitiesScreen.js';
+import AddExpensesScreen from './components/AddExpensesScreen.js';
+import AddIncomeScreen from './components/AddIncomeScreen.js';
+import LoginScreen from './components/LoginScreen.js';
+import AddCustomerScreen from './components/AddCustomerScreen.js';
 import BottomNavigation from './components/BottomNavigation.js';
 import AdminScreen from './components/AdminScreen.js';
 import ChangeLogsComponent from "./components/ChangeLogsComponent.js";
 import SideMenu from './components/SideMenu.js';
 import * as userService from './services/userService.js';
-import { auth } from "./firebase";
+import { auth } from "./firebase.js";
 import './App.css';
 
 function App() {

@@ -1,12 +1,12 @@
 // Collection names for Fire store
-exports.BOOKINGS       = "bookings";
-exports.ACTIVITIES     = "activities";
-exports.ACTIVITY_TYPES = "activityTypes";
-exports.PROMOTIONS     = "promotions";
-exports.DISHES         = "dishes";
-exports.PERSONNEL      = "personnel";
-exports.USER_LOGS      = "userLogs";
-exports.EXPENSES       = "expenses";
-exports.INCOME         = "income";
-exports.COMPANY        = "company";
-exports.MINIBAR        = "minibar";
+export const BOOKINGS       = "bookings";
+export const ACTIVITIES     = "activities";
+export const ACTIVITY_TYPES = "activityTypes";
+export const PROMOTIONS     = "promotions";
+export const DISHES         = "dishes";
+export const PERSONNEL      = "personnel";
+export const USER_LOGS      = "userLogs";
+export const EXPENSES       = "expenses";
+export const INCOME         = "income";
+export const COMPANY        = "company";
+export const MINIBAR        = "minibar";

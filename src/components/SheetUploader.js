@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useGoogleApi } from "../hooks/useGoogleApi";
+import { useGoogleApi } from "../hooks/useGoogleApi.js";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";

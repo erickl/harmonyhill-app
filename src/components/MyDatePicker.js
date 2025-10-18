@@ -3,7 +3,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 import { DateTime } from 'luxon';
-import * as utils from "../utils";
+import * as utils from "../utils.js";
 import "./MyDatePicker.css";
 import { MobileDateTimePicker } from '@mui/x-date-pickers/MobileDateTimePicker';
 import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
