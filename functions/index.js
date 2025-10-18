@@ -9,45 +9,13 @@
 
 // const logger = require("firebase-functions/logger");
 // const { onDocumentCreated } = require("firebase-functions/v2/firestore");
-import { setGlobalOptions } from "firebase-functions/v2";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onRequest } from "firebase-functions/v2/https"; 
-import admin from "firebase-admin";
 import { makeFirestoreAdapter } from "../shared/firestoreAdapter.js";
+import * as utils from "../shared/utils.js";
+import { db } from "./admin-firebase.js";
 
-// Initialize admin SDK once
-if (!admin.apps.length) {
-    admin.initializeApp();
-}
-
-// Only when running Firestore emulator
-if (process.env.FUNCTIONS_EMULATOR === "true") {
-    admin.firestore().settings({
-        host: "localhost:8080",
-        ssl: false,
-    });
-}
-
-// Only when running RTDB emulator locally
-if (process.env.FIREBASE_DATABASE_EMULATOR_HOST) {
-    const db = admin.database();
-    db.useEmulator("localhost", 9000); // 9000 is the default port
-}
-
-// To get more time for step debugging during development
-if (process.env.FUNCTIONS_EMULATOR === "true") {
-    setGlobalOptions({ timeoutSeconds: 300 });
-} else {
-    setGlobalOptions({ timeoutSeconds: 60 });
-}
-
-// Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
-
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
 
 // exports.onAnyActivityCreated = onDocumentCreated("bookings/{bookingId}/activities/{activityId}", (event) => {
 //     const doc = event.data;
@@ -72,9 +40,7 @@ export const hourlyWork = async() => {
     oneWeekFromNow.setDate(today.getDate() + 7);
     oneWeekFromNow.setHours(0, 0, 0, 0);
     
-    const db = admin.firestore();
     const adapter = await makeFirestoreAdapter(db);
-    
     const docs = await adapter.getCollectionGroup("activities", [
         ["startingAt", ">=", today],
         ["startingAt", "<=", oneWeekFromNow],
@@ -106,4 +72,61 @@ export const hourlyJob = onSchedule("every 60 minutes", async (event) => {
 export const hourlyJobDebug = onRequest(async (req, res) => {
     await runHourlyJob();
     res.send("Ran hourly job manually");
+});
+
+//http://localhost:5001/harmonyhill-1/us-central1/getOccupancy?house=harmony-hill
+export const getOccupancy = onRequest(async (req, res) => {
+    const allowedOrigins = [
+        "https://harmonyhillbali.com",
+        "https://www.harmonyhillbali.com",
+        "https://harmonyhill-1.web.app"
+    ];
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+        res.set("Access-Control-Allow-Origin", origin);
+    } else {
+        // optionally log or deny silently
+        res.set("Access-Control-Allow-Origin", "null");
+    }
+
+    //res.set("Access-Control-Allow-Origin", "*"); // Allow all origins (public API)
+    res.set("Access-Control-Allow-Methods", "GET");
+
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+        res.status(204).send("");
+        return;
+    }
+
+    const houseQuery = req.query.house.trim().toLowerCase();
+    if(houseQuery !== "harmony-hill" && house !== "the-jungle-nook") {
+        res.status(400).json({ 
+            error: `Invalid option ${houseQuery}. Available houses are 'harmony-hill' & 'the-jungle-nook'` 
+        });
+        return;
+    }
+
+    try {
+        const today = utils.today();
+
+        const adapter = await makeFirestoreAdapter(db);
+        
+        const house = houseQuery.replace(/-/g, " ");
+
+        const bookings = await adapter.get("bookings", [
+            ["checkOutAt", ">=", today],
+            ["house", "==", house],
+        ]);
+
+        let occupied = {};
+        for(const booking of bookings) {
+            occupied = utils.getDatesBetween(today, booking.checkOutAt, occupied);
+        }
+
+        res.status(200).json(occupied);
+    } catch (error) {
+        console.error("Error fetching availability:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
