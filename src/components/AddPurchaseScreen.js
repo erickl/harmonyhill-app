@@ -104,8 +104,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         formData.subCategory = selectedActivity.subCategory;
 
         if(selectedActivity.category === "meal") {
-            // todo: do some checks: check if there is already a dinner on this day. 
-            // Check if the dinner is on a day which the customer is not staying there
+            
             addActivityResult = await mealService.addMeal(customer.id, formData, onError);
         } else {
             addActivityResult = await activityService.add(customer.id, formData, onError);

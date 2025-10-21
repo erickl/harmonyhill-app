@@ -17,8 +17,9 @@ import { useItemsCounter } from "../context/ItemsCounterContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import MetaInfo from './MetaInfo.js';
 
-export default function ActivityComponent({ showCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
+export default function ActivityComponent({ inputCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
     const [customer,                setCustomer               ] = useState(null );
+    const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false);
     const [activityInfo,            setActivityInfo           ] = useState(null );
     const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false);
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
@@ -102,13 +103,15 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             setAlert(currentAlert);
         }
 
-        getActivityInfo();
-    }, []);
-
-    useEffect(() => {
         const setActivityCustomer = async() => {
-            const customer = await getParent(activity);
-            setCustomer(customer);
+            let activityCustomer = inputCustomer;
+            if(!activityCustomer) {
+                // This means, this component is used in the activity list for all customers. Thus each activity needs to display customer name
+                setShowCustomerInfo(true);
+                activityCustomer = await getParent(activity);
+            }
+            
+            setCustomer(activityCustomer);
         }
 
         const setUserRole = async() => {
@@ -116,10 +119,8 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             setIsManagerOrAdmin(userRole);
         }
 
-        if(showCustomer) {
-            setActivityCustomer();
-        }
-        
+        setActivityCustomer();
+        getActivityInfo();
         setUserRole();
     }, []);
 
@@ -163,7 +164,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                     {activity.provider}
                 </div>  
                 <div className="activity-header-guest">
-                    {showCustomer ? activity.name : ""}
+                    {showCustomerInfo === true ? activity.name : ""}
                 </div>  
             </div>
 
@@ -194,7 +195,12 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
             <Spinner />
         ) : expanded ? ( 
             <div className="activity-details">
-                {activity.dietaryRestrictions && (<p><span className="detail-label">Dietary restrictions: </span><span className="dietaryRestrictions">{activity.dietaryRestrictions}</span></p>)}
+                {activity.category === "meal" && customer && !utils.isEmpty(customer.dietaryRestrictions) && (
+                    <p>
+                        <span className="detail-label">Dietary restrictions: </span>
+                        <span className="important-badge">{customer.dietaryRestrictions}</span>
+                    </p>
+                )}
                 {activity.comments && (<p className="preserve-whitespaces"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
                 <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
                 { showProvider && (<>

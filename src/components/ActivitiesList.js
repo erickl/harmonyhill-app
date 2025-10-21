@@ -79,15 +79,12 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
         const getUsers = async() => {
             const allUsers = await userService.getUsers();
             setUsers(allUsers);
-        };
 
-        const getUser = async() => {
             const thisUser = await userService.getCurrentUser();
             setUser(thisUser);
-        }
+        };
 
         getUsers();
-        getUser();   
     }, []);
 
      useEffect(() => {
@@ -201,7 +198,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
                                         return (
                                             <React.Fragment key={activity.id}>   
                                                 <ActivityComponent 
-                                                    showCustomer={customer == null}
+                                                    inputCustomer={customer}
                                                     activity={activity}
                                                     handleEditActivity={handleEditActivity}
                                                     handleDeleteActivity={() => setActivityToDelete(activity)}
