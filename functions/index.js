@@ -74,16 +74,21 @@ export const hourlyJobDebug = onRequest(async (req, res) => {
     res.send("Ran hourly job manually");
 });
 
-//http://localhost:5001/harmonyhill-1/us-central1/getOccupancy?house=harmony-hill
+// http://localhost:5001/harmonyhill-1/us-central1/getOccupancy?house=harmony-hill
+// http://localhost:5001/harmonyhill-1/us-central1/getOccupancy?house=harmony-hill&year=2025&month=10
 export const getOccupancy = onRequest(async (req, res) => {
     const allowedOrigins = [
         "https://harmonyhillbali.com",
         "https://www.harmonyhillbali.com",
         "https://harmonyhill-1.web.app"
     ];
+
     const origin = req.headers.origin;
 
-    if (allowedOrigins.includes(origin)) {
+    // Allow all only in development
+    if (process.env.FUNCTIONS_EMULATOR === "true") {
+        res.set("Access-Control-Allow-Origin", "*");
+    } else if (allowedOrigins.includes(origin)) {
         res.set("Access-Control-Allow-Origin", origin);
     } else {
         // optionally log or deny silently
@@ -100,24 +105,36 @@ export const getOccupancy = onRequest(async (req, res) => {
     }
 
     const houseQuery = req.query.house.trim().toLowerCase();
-    if(houseQuery !== "harmony-hill" && house !== "the-jungle-nook") {
+    if(houseQuery !== "harmony-hill" && houseQuery !== "the-jungle-nook") {
         res.status(400).json({ 
             error: `Invalid option ${houseQuery}. Available houses are 'harmony-hill' & 'the-jungle-nook'` 
         });
         return;
     }
 
-    try {
-        const today = utils.today();
+    const year = req.query.year;
+    const month = req.query.month;
+    let untilDate = null;
+    if(!utils.isEmpty(year) && !utils.isEmpty(month)) {
+        untilDate = utils.monthEnd(`${year}-${month}-01`);  
+    }
 
+    try {
         const adapter = await makeFirestoreAdapter(db);
-        
+
+        const today = utils.today();
         const house = houseQuery.replace(/-/g, " ");
 
-        const bookings = await adapter.get("bookings", [
+        const filters = [
             ["checkOutAt", ">=", today],
             ["house", "==", house],
-        ]);
+        ];
+
+        if(!utils.isEmpty(untilDate)) {
+            filters.push(["checkInAt", "<=", untilDate]);
+        }
+
+        const bookings = await adapter.get("bookings", filters);
 
         let occupied = {};
         for(const booking of bookings) {
