@@ -43,7 +43,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         assignedTo    : '',
         isFree        : false,
         dishes        : [], // only not null when ordering meals, null for all other activities
-        status        : "pending guest confirmation",
+        status        : "guest confirmed",
 
         // Auxiliary data
         house         : customer.house,
