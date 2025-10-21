@@ -20,8 +20,6 @@ export async function makeFirestoreAdapter(db) {
                     
                     for(let [fieldName, comparator, value] of filters) {
                         value = utils.isDate(value) ? toTimestamp(value) : value;
-                        const isOfCorrectTimstampe = value instanceof admin.firestore.Timestamp
-                        const ctorName = value?.constructor?.name;
                         query = query.where(fieldName, comparator, value);
                     }
 

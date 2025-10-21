@@ -414,7 +414,17 @@ function generateDateFormats() {
             }
         }
     }
-    formats.push("yyyy/MM/dd", "yyyy-MM-dd");
+
+    //formats.push("yyyy/MM/dd", "yyyy-MM-dd");
+    for(const y of ["yyyy"]) {
+        for(const M of ["M", "MM"]) {
+            for(const d of ["d", "dd"]) {
+                for(const sep of ["-", "/"]) {
+                    formats.push(`${y}${sep}${M}${sep}${d}`);
+                } 
+            }
+        }
+    }
 
     return formats;
 }
