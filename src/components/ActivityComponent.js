@@ -244,19 +244,36 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         </div>
                     )}
 
-                    { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) && (
-                        <div className="activity-component-footer-icon">
-                            <ThumbsUp  
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAssigneeStatusChange(true);
-                                }}
-                            />
-                            <p>Accept task?</p>
-                        </div>
-                    )}
+                    { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (<>
+                        { status.category === activityService.Status.STAFF_NOT_CONFIRM && 
+                            (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
 
-                    { user && user.shortName === assignedUserShortName && activity.assigneeAccept && (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) &&  (
+                            <div className="activity-component-footer-icon">
+                                <ThumbsUp  
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAssigneeStatusChange(true);
+                                    }}
+                                />
+                                <p>Accept task?</p>
+                            </div>
+                        ) : (
+                            <div className="activity-component-footer-icon">
+                                <ThumbsUp  
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onError("Only available for the day before or the same day, and if all activity info is provided");
+                                    }}
+                                />
+                                <p>Not yet</p>
+                            </div>
+                        )}
+                    </>)}
+
+                    { user && user.shortName === assignedUserShortName && 
+                        activity.assigneeAccept && 
+                        (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) &&  (
+
                         <div className="activity-component-footer-icon">
                             <ThumbsDown  
                                 onClick={(e) => {
@@ -268,7 +285,7 @@ export default function ActivityComponent({ showCustomer, activity, handleEditAc
                         </div>
                     )}
 
-                    {activity.subCategory === "house-keeping" && utils.isToday(activity.startingAt) && (
+                    {false && /*todo: complete minibar func first*/ activity && activity.subCategory === "house-keeping" && utils.isToday(activity.startingAt) && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
