@@ -8,6 +8,7 @@ import * as mealService from "../services/mealService.js";
 import "./ActivityComponent.css";
 import ConfirmModal from './ConfirmModal.js';
 import { useNotification } from "../context/NotificationContext.js";
+import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import {getParent} from "../daos/dao.js";
 
 export default function ActivitiesList({onNavigate, customer, expandAllDates, triggerRerender}) {
@@ -28,6 +29,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
     };
 
     const { onError } = useNotification();
+    const { onConfirm } = useConfirmationModal();
 
     const handleEditActivity = async(activity) => {
         if(activity) {

@@ -15,7 +15,8 @@ export default function ButtonsFooter({onCancel, onSubmit, submitEnabled }) {
         }
     }
 
-    const disabled = !submitEnabled || loading;
+    const submitDisabled = !submitEnabled || loading;
+    const cancelDisabled = loading;
 
     return (
         <div className="buttons-footer">
@@ -23,15 +24,16 @@ export default function ButtonsFooter({onCancel, onSubmit, submitEnabled }) {
                 type="button" 
                 onClick={() => onCancel()} 
                 className="cancel-button"
+                disabled={ cancelDisabled }
             >
-                Back
+                Cancel
             </button>
             
             <button 
                 type="button" 
-                className={ disabled ? "mute-submit-button" : "submit-button" }
+                className={ submitDisabled ? "mute-submit-button" : "submit-button" }
                 onClick={ handleSubmit }
-                disabled={ disabled }
+                disabled={ submitDisabled }
             >
                 { loading ? "Processing..." : "Submit" }
             </button>
