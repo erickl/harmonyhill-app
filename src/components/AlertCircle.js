@@ -47,12 +47,10 @@ export default function AlertCircle({status, message, onClick}) {
         }
         case Alert.NONE: {
             symbol = "";
-            // specific = {
-            //     border: "none",
-            // }
+            break;
         }
         
-        default : {}
+        default : { break; }
     }
 
     const style = { ...common, ...specific };

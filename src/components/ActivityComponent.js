@@ -171,7 +171,6 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
             {status && (<div className="activity-header-status">
                 <StatusCircle 
                     status={status.category} 
-                    message={status.message}
                     onClick={(e) => {
                         e.stopPropagation();
                         handleActivityStatusChange(status);
@@ -207,7 +206,7 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
                     </p>
                 )}
                 {activity.comments && (<p className="preserve-whitespaces"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
-                <p><span className="detail-label">Status:</span> {utils.capitalizeWords(activity.status)}</p>
+                <p><span className="detail-label">Status:</span> {utils.capitalizeWords(status.message)}</p>
                 { showProvider && (<>
                     <p><span className="detail-label">Provider:</span> {activity.provider}</p>
                     { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
