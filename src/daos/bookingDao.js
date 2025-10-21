@@ -41,8 +41,8 @@ export async function get(filterOptions = {}, onError = null) {
     return await dao.get(path, queryFilter, ordering, -1, onError);
 }
 
-export async function remove(bookingId) {
-    return await dao.remove([dao.constant.BOOKINGS], bookingId);
+export async function remove(bookingId, onError) {
+    return await dao.remove([dao.constant.BOOKINGS], bookingId, onError);
 }
 
 export async function getPromotions() {

@@ -269,7 +269,7 @@ export async function remove(path, id, onError = null) {
         console.log(`Deleted document ${path}/${id}`);
         return true;
     } catch (e) {
-        console.error(`Error deleting document ${path}/${id}: `, e);
+        if(onError) onError(`Error deleting document ${path}/${id}: ${e.message}`);
         return false;
     }
 }

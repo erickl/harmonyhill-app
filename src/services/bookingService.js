@@ -3,6 +3,7 @@ import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 import {transaction} from "../daos/dao.js";
 import * as activityService from "./activityService.js";
+import * as mealService from "./mealService.js";
 
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
@@ -132,11 +133,31 @@ export async function update(bookingId, bookingUpdateData, onError) {
 /**
  * Only admin can delete bookings. It will be logged in the deleted collection
  */
-export async function remove(bookingId) {   
-    if(userService.isAdmin()) {
-        return await bookingDao.remove(bookingId);
-    }
-    return false;
+export async function remove(bookingId, onError) {   
+    if(!userService.isAdmin()) return false;
+
+    return transaction(async () => {
+        // To delete a booking, first delete all its activities, or they'll be dangling records (orphaned)
+        const activities = await activityService.get(bookingId);
+        for(const activity of activities) {
+            let deleteActivityResult = false;
+            
+            // Removing it as a meal, will also remove its dishes
+            if(activity.category === "meal") {
+                deleteActivityResult = await mealService.removeMeal(bookingId, activity.id, onError);
+            } else {
+                deleteActivityResult = await activityService.remove(bookingId, activity.id, onError);
+            }
+            
+            if(!deleteActivityResult) {
+                throw new Error(`Couldn't delete activity ${bookingId}/${activity.id}`);
+            }
+        }
+        const deleteBookingResult = await bookingDao.remove(bookingId, onError);
+        if(!deleteBookingResult) {
+            throw new Error(`Couldn't delete booking ${bookingId}`);
+        }
+    });   
 }
 
 export function createBookingId(guestName, house, checkInAt) {
