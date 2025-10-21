@@ -6,9 +6,11 @@ export default function AlertCircle({status, message, onClick}) {
 
     let symbol = "!";
 
+    const size = 2;
+
     const common = {
-        width           : "1.5rem",
-        height          : "1.5rem",
+        width           : `${size}rem`,
+        height          : `${size}rem`,
         borderRadius    : "50%",
         display         : "flex",
         alignItems      : "center",
@@ -58,7 +60,7 @@ export default function AlertCircle({status, message, onClick}) {
     return (
         <div className="alert-symbol" onClick={onClick}>
             <div style={style}>{symbol}</div>
-            <p className="alert-message">{utils.capitalizeWords(message)}</p>
+            {message && (<p className="alert-message">{utils.capitalizeWords(message)}</p>)}
         </div>
     );
 };

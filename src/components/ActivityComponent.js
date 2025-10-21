@@ -182,7 +182,6 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
             {alert && (<div className="activity-header-status">
                 <AlertCircle 
                     status={alert.category} 
-                    message={alert.message}
                 />
             </div>)}
 
@@ -195,6 +194,12 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
             <Spinner />
         ) : expanded ? ( 
             <div className="activity-details">
+                {alert && (
+                    <p>
+                        <span className="detail-label">Alert: </span>
+                        <span className="important-badge">{alert.message}</span> 
+                    </p>
+                )}
                 {activity.category === "meal" && customer && !utils.isEmpty(customer.dietaryRestrictions) && (
                     <p>
                         <span className="detail-label">Dietary restrictions: </span>
@@ -268,10 +273,10 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
                                 <ThumbsUp  
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onError("Only available for the day before or the same day, and if all activity info is provided");
+                                        onError("Only available from 1 day before, and if all activity info is provided");
                                     }}
                                 />
-                                <p>Not yet</p>
+                                <p>Unavailable</p>
                             </div>
                         )}
                     </>)}
