@@ -5,6 +5,7 @@ import StatusStartedIcon from "./StatusStartedIcon.js";
 import GenericStatusIcon from "./GenericStatusIcon.js";
 import InvoiceIcon from "./InvoiceIcon.js";
 import CommissionIcon from "./CommissionIcon.js";
+import ProviderIcon from "./ProviderIcon.js";
 import * as utils from "../utils.js";
 
 export default function StatusCircle({status, message, onClick}) {
@@ -19,10 +20,7 @@ export default function StatusCircle({status, message, onClick}) {
             break;
         }
         case Status.PLEASE_BOOK: {
-            icon = <GenericStatusIcon specific={{
-                border : `3px solid black`,
-                color : "black",
-            }} />;
+            icon = <ProviderIcon />;
             break;
         }
         case Status.ASSIGN_STAFF: {
