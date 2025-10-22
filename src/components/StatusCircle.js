@@ -6,6 +6,7 @@ import GenericStatusIcon from "./GenericStatusIcon.js";
 import InvoiceIcon from "./InvoiceIcon.js";
 import CommissionIcon from "./CommissionIcon.js";
 import ProviderIcon from "./ProviderIcon.js";
+import AwaitGuestConfirmIcon from "./AwaitGuestConfirmIcon.js";
 import * as utils from "../utils.js";
 
 export default function StatusCircle({status, message, onClick}) {
@@ -17,6 +18,7 @@ export default function StatusCircle({status, message, onClick}) {
                 border : `3px solid black`,
                 color : "black",
             }}/>
+            icon = <AwaitGuestConfirmIcon />;
             break;
         }
         case Status.PLEASE_BOOK: {

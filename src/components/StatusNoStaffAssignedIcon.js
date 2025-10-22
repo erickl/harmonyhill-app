@@ -31,7 +31,6 @@ export default function StatusNoStaffAssignedIcon({ size = 24, color = "gray" })
         <div style={style}>
             <User size={size} color={color} margins={0} />
             <p style={symbolStyle}>{"?"}</p>
-            <p style={textStyle}>{"Assign staff"}</p>
         </div>
     )
 };
