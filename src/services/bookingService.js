@@ -293,6 +293,8 @@ export function validate(data, onError) {
                 onError("Host payout should be equal to what guest paid total, for a direct booking");
                 return false;
             }
+        } else if(source === "booking.com") {
+            // todo: implement checks
         }
     } catch(e) {
         onError(`Unexpected booking validation error: ${e.message}`);

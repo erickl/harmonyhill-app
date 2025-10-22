@@ -203,9 +203,10 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
     // todo: put in database
     const paymentMethods = {
-        'Cash'        : {"name" : "Cash"    },
-        'Transfer'    : {"name" : "Transfer"},
-        'AirBnB'      : {"name" : "AirBnB"  },
+        'Cash'        : {"name" : "Cash"        },
+        'Transfer'    : {"name" : "Transfer"    },
+        'AirBnB'      : {"name" : "AirBnB"      },
+        'Booking.com' : {"name" : "Booking.com" },
     };
 
     return (

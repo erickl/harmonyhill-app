@@ -363,6 +363,20 @@ export default function BookingForm({ booking, onClose }) {
                             Direct
                         </label>
                     </div>
+                    <div className="flex items-center">
+                        <input
+                            type="radio"
+                            id="booking.com"
+                            name="source"
+                            value="Booking.com"
+                            checked={formData.source === 'booking.com'}
+                            onChange={() => handleInputChange('source', 'booking.com')}
+
+                        />
+                        <label htmlFor="booking.com">
+                            Booking.com
+                        </label>
+                    </div>
                 </div>
             </div>
 
