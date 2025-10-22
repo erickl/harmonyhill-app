@@ -1,6 +1,4 @@
-export default function GenericStatusIcon({specific, symbol }) {
-    symbol = symbol ? symbol : "!";
-
+export default function GenericStatusIcon({specific, symbol = "!" }) {
     const symbolStyle = { 
         display: "flex",
         flexDirection: "column",
