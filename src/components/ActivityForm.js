@@ -5,9 +5,9 @@ import Dropdown from "./Dropdown.js";
 import ProviderDropdown from "./ProviderDropdown.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
-import ErrorNoticeModal from './ErrorNoticeModal.js';
 import TextInput from './TextInput.js';
 import { useNotification } from "../context/NotificationContext.js";
+import { Checkbox, FormControlLabel } from '@mui/material';
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers,   setTeamMembers  ] = useState([]   );
@@ -127,12 +127,17 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 />
             </div>
 
-            <div className="purchase-form-group">
-                <Dropdown 
-                    current={formData.status} 
-                    label={"Status"} 
-                    options={statuses} 
-                    onSelect={onStatusSelect}
+             <div className="purchase-form-group">
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={formData["status"] === "guest confirmed"}
+                            onChange={(e) => {
+                                onStatusSelect(statuses[ e.target.checked ? "guest confirmed" : "pending guest confirmation"]);               
+                            }}
+                        />
+                    }
+                    label="Guest confirmed?"
                 />
             </div>
 

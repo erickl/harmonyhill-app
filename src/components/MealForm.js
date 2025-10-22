@@ -8,7 +8,7 @@ import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import MealFormDish from "./MealFormDish.js";
 import Dropdown from './Dropdown.js';
-import { TextField, Checkbox, FormControlLabel } from '@mui/material';
+import { Checkbox, FormControlLabel } from '@mui/material';
 
 export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
 
@@ -218,11 +218,16 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             </div>
 
             <div className="purchase-form-group">
-                <Dropdown 
-                    current={formData.status} 
-                    label={"Status"} 
-                    options={statuses} 
-                    onSelect={onStatusSelect}
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={formData["status"] === "guest confirmed"}
+                            onChange={(e) => {
+                                onStatusSelect(statuses[ e.target.checked ? "guest confirmed" : "pending guest confirmation"]);               
+                            }}
+                        />
+                    }
+                    label="Guest confirmed?"
                 />
             </div>
 
