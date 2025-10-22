@@ -193,7 +193,7 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
             <Spinner />
         ) : expanded ? ( 
             <div className="activity-details">
-                {alert && (
+                {alert && !utils.isEmpty(alert.message) && (
                     <p>
                         <span className="detail-label">Alert: </span>
                         <span className="important-badge">{alert.message}</span> 

@@ -82,7 +82,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                             +
                         </button> 
                     )}
-                    <p onClick={() => setShowInvoice(true)}>See invoice ({total} Rp)</p>
+                    <p onClick={() => setShowInvoice(true)}>See invoice ({utils.formatDisplayPrice(total)} Rp)</p>
                 </div>
             </div>
             
