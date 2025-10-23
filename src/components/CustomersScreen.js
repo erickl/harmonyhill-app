@@ -225,10 +225,9 @@ const CustomersScreen = ({ onNavigate }) => {
                                                 </div>
                                             </div>
                                         )}
+                                        <MetaInfo document={customer}/>
                                     </div>
-
-                                )}
-                                <MetaInfo document={customer}/>
+                                )}                             
                             </React.Fragment>
                         ))}
                         {(canSeeAllBookings && (customerTypeClass == "past-customer" || customerTypeClass == "future-customer") &&
