@@ -28,10 +28,17 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
         handleFormDataChange("assignedTo", name);
     }
 
-    const onStatusSelect = (status) => {
-        let name = status ? status.name : null;
-        name = utils.isString(name) ? name.toLowerCase() : null;
-        handleFormDataChange("status", name);
+    const onGuestConfirmed = (checked) => {
+        if(checked) {
+            if(formData.status === "pending guest confirmation") {
+                handleFormDataChange("status", "guest confirmed");
+            }
+        } else {
+            // If status is further along, e.g. "started" or "completed", no sense in letting it go back to "pending"
+            if(formData.status === "guest confirmed") {
+                handleFormDataChange("status", "pending guest confirmation");
+            }
+        }   
     }
 
     const handleAddCustomDish = (() => {
@@ -223,7 +230,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                         <Checkbox
                             checked={formData["status"] === "guest confirmed"}
                             onChange={(e) => {
-                                onStatusSelect(statuses[ e.target.checked ? "guest confirmed" : "pending guest confirmation"]);               
+                                onGuestConfirmed(e.target.checked);               
                             }}
                         />
                     }

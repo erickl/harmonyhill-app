@@ -17,8 +17,18 @@ import { useItemsCounter } from "../context/ItemsCounterContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import MetaInfo from './MetaInfo.js';
 
-export default function ActivityComponent({ inputCustomer, activity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
+const assigneeStyles = [
+    { backgroundColor: "#E12C2C", color: "white" },
+    { backgroundColor: "#FFA500", color: "black" },
+    { backgroundColor: "green", color: "white"     }
+];  
+
+export default function ActivityComponent({ inputCustomer, inputActivity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
+    const assignedUser = users && inputActivity ? users.find(user => user.name === inputActivity.assignedTo) : null;
+    const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
+    
     const [customer,                setCustomer               ] = useState(null );
+    const [activity,                setActivity               ] = useState(inputActivity);
     const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false);
     const [activityInfo,            setActivityInfo           ] = useState(null );
     const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false);
@@ -27,11 +37,25 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
     const [dishes,                  setDishes                 ] = useState([]   );
     const [status,                  setStatus                 ] = useState(null );
     const [alert,                   setAlert                  ] = useState(null );
+    const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0);
+    const [minuteTicker,            setMinuteTicker           ] = useState(0);       
 
     const { onError } = useNotification();
     const { onCountItems } = useItemsCounter();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
+
+    const getAssigneeStyleIndex = () => {
+        let newAssigneeStyleIndex = 0;
+        if(assignedUserShortName !== "?") {
+            newAssigneeStyleIndex = 1;
+            if(activity.assigneeAccept === true) {
+                newAssigneeStyleIndex = 2;
+            }
+        }
+
+        return newAssigneeStyleIndex;
+    };
 
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
@@ -39,28 +63,82 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
         setLoadingExpandedActivity(false);
     }
 
-    const handleActivityStatusChange = async (currentStatus) => {
-        let newStatus = null;
-        if(currentStatus.category === activityService.Status.GOOD_TO_GO) {
-            newStatus = activityService.Status.STARTED;
-        } else if(currentStatus.category === activityService.Status.STARTED) {
-            newStatus = activityService.Status.COMPLETED;
+    const canStartActivity = () => {
+        const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
+        if(!isGoodToGo) {
+            return false;
         }
-        if(newStatus !== null) {
-            onConfirm(`Is the activity ${newStatus}?`, async() => {
-                const success = await activityService.setActivityStatus(activity.bookingId, activity.id, newStatus);
-                if(success) {
-                    setStatus({ "category" : newStatus, "message" : newStatus}); // Shows the new status live without needing a rerender
-                    onSuccess();
-                }
-            }); 
+
+        const now = utils.now();
+        const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
+        if(minutesLeft < 10 && minutesLeft > -60) {
+            return true;
         }
+
+        return false;
+    }
+
+    const canCompleteActivity = () => {
+        const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
+        const isStarted = status && status.category === activityService.Status.STARTED;
+        const canStillStart = canStartActivity();
+
+        const now = utils.now();
+        const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
+        if(minutesLeft > 0) {
+            return false;
+        }
+
+        if(isStarted) {
+            return true;
+        } else if(!isStarted && canStillStart) {
+            return false;
+        } else if(isGoodToGo) {
+            return true;
+        }
+
+        return false;
+    }
+
+    const calculateActivityStatus = async(newStatus = null) => {
+        if(!activity) return;
+
+        let thisActivityInfo = activityInfo;
+        if(!thisActivityInfo) {
+            thisActivityInfo = await activityService.getActivityMenuItem(activity.category, activity.subCategory, activity.house);
+            setActivityInfo(thisActivityInfo);
+        }
+
+        if(!newStatus) {
+            newStatus = await activityService.getStatus(activity, onError);
+        }
+        setStatus(newStatus);
+
+        const currentAlert = await activityService.getAlert(activity, newStatus.category, thisActivityInfo, onError);
+        setAlert(currentAlert);
+    }
+
+    const handleActivityStatusChange = async (newStatus) => {
+        if(newStatus == null) return;
+        const newStatusName = newStatus.category;
+
+        onConfirm(`Set activity status to ${newStatusName}?`, async() => {
+            const success = await activityService.setActivityStatus(activity.bookingId, activity.id, newStatusName);
+            if(success) {
+                let updatedActivity = { ...(activity || {}) };
+                updatedActivity.status = newStatusName;
+                setActivity(updatedActivity);
+                onSuccess();
+            }
+        });
     }
 
     const handleAssigneeStatusChange = async (accept) => {
         const result = await activityService.changeAssigneeStatus(accept, activity.bookingId, activity.id, onError);
         if(result) {
-            if(triggerRerender) triggerRerender();
+            let updatedActivity = { ...(activity || {}) };
+            updatedActivity.assigneeAccept = accept;
+            setActivity(updatedActivity);
         }
     }
 
@@ -91,18 +169,27 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
         setExpanded(expand);
     };
 
+    // Function to increment the ticker state every minute, because activity status changes depends on it
+    // E.g. you can only press complete when the activity is past its due date
     useEffect(() => {
-        const getActivityInfo = async() => {
-            const activityInfo = await activityService.getActivityMenuItem(activity.category, activity.subCategory, activity.house);
-            setActivityInfo(activityInfo);
+        const tick = () => {
+            // Incrementing the ticker forces the component (and the other useEffect) to rerun
+            setMinuteTicker(prev => prev + 1); 
+        };
 
-            const currentStatus = await activityService.getStatus(activity, onError);
-            setStatus(currentStatus);
+        const intervalId = setInterval(tick, 60000); //60k ms = 1min
 
-            const currentAlert = await activityService.getAlert(activity, currentStatus.category, activityInfo, onError);
-            setAlert(currentAlert);
-        }
+        return () => clearInterval(intervalId);
+    }, []);
 
+    useEffect(() => {
+        calculateActivityStatus();
+
+        const newAssigneeStyleIndex = getAssigneeStyleIndex();
+        setAssigneeStyleIndex(newAssigneeStyleIndex);
+    }, [activity, minuteTicker]);
+
+    useEffect(() => {       
         const setActivityCustomer = async() => {
             let activityCustomer = inputCustomer;
             if(!activityCustomer) {
@@ -120,25 +207,34 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
         }
 
         setActivityCustomer();
-        getActivityInfo();
         setUserRole();
     }, []);
 
-    const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
-    
-    const assignedUser = users ? users.find(user => user.name === activity.assignedTo) : null;
-    const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
-    
-    let assignedUserStyle = { backgroundColor: "#E12C2C" }
-    if(assignedUserShortName !== "?") {
-        assignedUserStyle = { backgroundColor: "green" };
-        if(activity.assigneeAccept !== true) {
-            assignedUserStyle = { backgroundColor: "#FFA500", color: "black" };
+    useEffect(() => {
+        let timerId = null;
+
+        if(!utils.isEmpty(activity.changeDescription)) {
+            const toggleColor = () => {    
+                setAssigneeStyleIndex(prevIndex => prevIndex === 1 ? 2 : 1);
+            };
+
+            timerId = setInterval(toggleColor, 500);
         }
-    }
-    
-    const houseShortName = activity.house === "harmony hill" ? "HH" : "JN";
+
+        return () => {
+            if(timerId) clearInterval(timerId);
+        }
+    }, []);
+
+    const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
+    const houseShortName = inputActivity ? (inputActivity.house === "harmony hill" ? "HH" : "JN") : "?";
     const houseColor = houseShortName === "HH" ? "darkcyan" : "rgb(2, 65, 116)";
+
+    if(!activity) {
+        return <p>Loading...</p>;
+    }
+
+    const finalAssigneeStyle = assigneeStyles[assigneeStyleIndex];
 
     return (<>
         <div className="activity-header" onClick={(e) => {
@@ -149,13 +245,15 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
                 <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
                     {houseShortName}
                 </div>
-                <div className="activity-header-assignee" style={assignedUserStyle}>
+                <div className="activity-header-assignee" style={finalAssigneeStyle}>
                     {assignedUserShortName}
                 </div>
             </div>
+
             <div className="activity-header-time">
                 <span className="preserve-whitespaces">{activity.startingAt_HHmm}</span>
             </div>
+
             <div className="activity-header-right">
                 <div className="activity-header-name">
                     {activity.displayName}
@@ -168,25 +266,24 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
                 </div>  
             </div>
 
+            {/* Display ongoing status of the activity */}
             {status && (<div className="activity-header-status">
                 <StatusCircle 
                     status={status.category} 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        handleActivityStatusChange(status);
-                    }}
                 />
             </div>)}
             
+            {/* Display alert when something needs to be fixed urgently  */}
             {alert && (<div className="activity-header-status">
                 <AlertCircle 
                     status={alert.category} 
                 />
             </div>)}
 
-            {activity && activity.status === activityService.Status.COMPLETED && utils.isToday(activity.startingAt) && (
+            {/* Grey out the activity header to show it's completed */}
+            {/* {activity && activity.status === activityService.Status.COMPLETED && utils.isToday(activity.startingAt) && (
                 <div className="activity-overlay" />
-            )}
+            )} */}
         </div>
 
         {loadingExpandedActivity ? (
@@ -205,8 +302,16 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
                         <span className="important-badge">{customer.dietaryRestrictions}</span>
                     </p>
                 )}
-                {activity.comments && (<p className="preserve-whitespaces"><span className="detail-label">Comments:</span> {activity.comments}</p>)}
+
+                {activity.comments && (
+                    <p className="preserve-whitespaces">
+                        <span className="detail-label">Comments:</span> 
+                            {activity.comments}
+                    </p>
+                )}
+                
                 <p><span className="detail-label">Status:</span> {utils.capitalizeWords(status.message)}</p>
+                
                 { showProvider && (<>
                     <p><span className="detail-label">Provider:</span> {activity.provider}</p>
                     { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
@@ -282,7 +387,8 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
 
                     { user && user.shortName === assignedUserShortName && 
                         activity.assigneeAccept && 
-                        (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) &&  (
+                        activity.status !== "started" &&
+                        (!utils.isPast(activity.startingAt)) &&  (
 
                         <div className="activity-component-footer-icon">
                             <ThumbsDown  
@@ -292,6 +398,34 @@ export default function ActivityComponent({ inputCustomer, activity, handleEditA
                                 }}
                             />
                             <p>Decline task?</p>
+                        </div>
+                    )}
+
+                    {/* Mark activity started */}
+                    { canStartActivity() && (
+                        <div className="activity-component-footer-icon">
+                            <StatusCircle 
+                                status={activityService.Status.STARTED} 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleActivityStatusChange(activityService.status(activityService.Status.STARTED));
+                                }}
+                            />
+                            <p>Start it</p>
+                        </div>
+                    )}
+
+                    {/* Mark activity started */}
+                    { canCompleteActivity() && (
+                        <div className="activity-component-footer-icon">
+                            <StatusCircle 
+                                status={activityService.Status.COMPLETED} 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleActivityStatusChange(activityService.status(activityService.Status.COMPLETED));
+                                }}
+                            />
+                            <p>Complete it</p>
                         </div>
                     )}
 

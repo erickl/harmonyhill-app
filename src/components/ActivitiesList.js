@@ -188,7 +188,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
                                 onClick={() => handleSetExpandedDates(date) }
                                 ref={isTodaysHeader ? todaysHeader : null}
                             >
-                                {`${date}${(isTodaysHeader ? " (Today)" : "")}`}
+                                {`${date}${(isTodaysHeader ? ` (Today) | ${utils.to_HHmm()}` : "")}`}
                                 
                                 <span className="expand-icon">
                                     {expandedDates[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
@@ -201,7 +201,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
                                             <React.Fragment key={activity.id}>   
                                                 <ActivityComponent 
                                                     inputCustomer={customer}
-                                                    activity={activity}
+                                                    inputActivity={activity}
                                                     handleEditActivity={handleEditActivity}
                                                     handleDeleteActivity={() => setActivityToDelete(activity)}
                                                     users={users}

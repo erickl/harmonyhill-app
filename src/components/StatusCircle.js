@@ -14,10 +14,6 @@ export default function StatusCircle({status, message, onClick}) {
     
     switch(status) {
         case Status.PENDING_GUEST_CONFIRM : {
-            icon = <GenericStatusIcon specific={{
-                border : `3px solid black`,
-                color : "black",
-            }}/>
             icon = <AwaitGuestConfirmIcon />;
             break;
         }

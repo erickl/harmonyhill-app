@@ -4,7 +4,7 @@ export default function StatusStartedIcon({ size = 30, color = "green", onClick 
         width         : size, 
         height        : size, 
         margin        : "0",
-        top: -14
+        top: -2
         //display       : "flex", 
         //flexDirection : "column", 
         //alignItems    : "center" 
@@ -39,7 +39,7 @@ export default function StatusStartedIcon({ size = 30, color = "green", onClick 
                 {/* Check mark */}
                 <polyline points="9 12 11 14 15 10" stroke="black" strokeWidth="3" />
             </svg>
-            <p style={textStyle}>Started</p>
+            {/* <p style={textStyle}></p> */}
         </div>
     );
 };

@@ -393,9 +393,7 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
     const hoursLeft = Math.floor(timeLeft.hours);
     const urgent = !utils.isEmpty(activityUnit.deadline1) && hoursLeft <= activityUnit.deadline1;
     const emergency = !utils.isEmpty(activityUnit.deadline2) && hoursLeft <= activityUnit.deadline2;
-
-    const needsProvider = activity.needsProvider === true && utils.isEmpty(activity.provider);
-
+    
     if(currentStatus === Status.PENDING_GUEST_CONFIRM) {
         if(emergency) {
             return alert(Alert.EMERGENCY, "Confirm with guest immediately!");
@@ -406,6 +404,7 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
         }
     }
 
+    const needsProvider = activity.needsProvider === true && utils.isEmpty(activity.provider);
     if(needsProvider) {
         if(emergency) {
             return alert(Alert.EMERGENCY, "Book activity now!");
@@ -416,8 +415,19 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
         }
     }
 
-    if(hoursLeft < 0) {
-        if(currentStatus !== Status.STARTED && currentStatus !== Status.COMPLETED) {
+    const isTodayOrTomorrow = (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt));
+    if(isTodayOrTomorrow) {
+        if(utils.isEmpty(activity.assignedTo)) {
+            return alert(Alert.URGENT, "Assign task to someone");
+        }
+        const assignedNotYetAccepted = (!utils.exists(activity, "assigneeAccept") || activity.assigneeAccept === false);
+        if(currentStatus === Status.STAFF_NOT_CONFIRM && assignedNotYetAccepted) {
+            return alert(Alert.URGENT, "Accept the task");
+        }
+    }
+
+    if(!utils.isEmpty(activity.startingTime) && hoursLeft < 0) {
+        if(currentStatus === Status.GOOD_TO_GO) {
             return alert(Alert.URGENT, "Did it start?");
         }
     } 
@@ -425,11 +435,11 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
     return alert(Alert.NONE);
 }
 
-export async function getStatus(activity, onError) {
-    const status = (category = Status.NONE, message = "") => {
-        return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
-    };
+export function status(category = Status.NONE, message = "") {
+    return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
+};
 
+export async function getStatus(activity, onError) {
     if(activity == null) return status();
 
     if(activity.status === Status.PENDING_GUEST_CONFIRM) {
@@ -450,9 +460,10 @@ export async function getStatus(activity, onError) {
     if(activity.needsProvider === true && utils.isEmpty(activity.providerPrice)) {
         return status(Status.DETAILS_MISSING, "Provide provider price");
     }
-    if(activity.category === "meal" && utils.isEmpty(activity.dishes)) {
-        return status(Status.DETAILS_MISSING, "Dishes missing");
-    }
+    // Todo: for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded
+    // if(activity.category === "meal" && utils.isEmpty(activity.dishes)) {
+    //     return status(Status.DETAILS_MISSING, "Dishes missing");
+    // }
     if(activity.assigneeAccept !== true) {
         if(utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) {
             return status(Status.STAFF_NOT_CONFIRM);

@@ -37,10 +37,22 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
         handleFormDataChange("assignedTo", name);
     }
 
-    const onStatusSelect = (status) => {
-        let name = status ? status.name : null;
-        name = utils.isString(name) ? name.toLowerCase() : null;
-        handleFormDataChange("status", name);
+    const statuses = {
+        "pending guest confirmation" : {"name" : "Pending Guest Confirmation"},
+        "guest confirmed" : {"name" : "Guest Confirmed"},
+    };
+
+    const onGuestConfirmed = (checked) => {
+        if(checked) {
+            if(formData.status === "pending guest confirmation") {
+                handleFormDataChange("status", "guest confirmed");
+            }
+        } else {
+            // If status is further along, e.g. "started" or "completed", no sense in letting it go back to "pending"
+            if(formData.status === "guest confirmed") {
+                handleFormDataChange("status", "pending guest confirmation");
+            }
+        }   
     }
 
     // Transform object from {"Rena": 500000}  to  {"Rena - Rp 500000": {"name": Rena, "price": 500000}}
@@ -64,10 +76,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
         fetchTeamMembers();
     }, []);
 
-    const statuses = {
-        "pending guest confirmation" : {"name" : "Pending Guest Confirmation"},
-        "guest confirmed" : {"name" : "Guest Confirmed"},
-    };
+    
 
     return (
         <div className='card-content'>
@@ -131,9 +140,9 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 <FormControlLabel
                     control={
                         <Checkbox
-                            checked={formData["status"] === "guest confirmed"}
+                            checked={formData["status"] !== "pending guest confirmation"}
                             onChange={(e) => {
-                                onStatusSelect(statuses[ e.target.checked ? "guest confirmed" : "pending guest confirmation"]);               
+                                onGuestConfirmed(e.target.checked);               
                             }}
                         />
                     }

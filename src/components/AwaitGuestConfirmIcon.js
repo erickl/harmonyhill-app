@@ -18,8 +18,7 @@ export default function AwaitGuestConfirmIcon({}) {
         color: "#FFA500",
         fontSize: "3rem",
         opacity: "0.4",
-        filter: "blur(0.9px)",
-        
+        filter: "blur(0.9px)",   
     };
 
     return (
