@@ -1,6 +1,6 @@
-import { User } from "lucide-react";
+import { Clock } from "lucide-react";
     
-export default function StatusNoStaffAssignedIcon({ size = 24, color = "gray" }) {
+export default function StartingTimeMissingIcon({ size = 24, color = "gray" }) {
     const style = { 
         position      : "relative", 
         width         : size, 
@@ -29,7 +29,7 @@ export default function StatusNoStaffAssignedIcon({ size = 24, color = "gray" })
 
     return (
         <div style={style}>
-            <User size={size} color={color} margins={0} />
+            <Clock size={size} color={color} margins={0} />
             <p style={symbolStyle}>{"?"}</p>
         </div>
     )

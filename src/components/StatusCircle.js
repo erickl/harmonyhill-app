@@ -6,6 +6,7 @@ import GenericStatusIcon from "./GenericStatusIcon.js";
 import InvoiceIcon from "./InvoiceIcon.js";
 import CommissionIcon from "./CommissionIcon.js";
 import ProviderIcon from "./ProviderIcon.js";
+import StartingTimeMissingIcon from "./StartingTimeMissingIcon.js";
 import AwaitGuestConfirmIcon from "./AwaitGuestConfirmIcon.js";
 import * as utils from "../utils.js";
 
@@ -18,24 +19,18 @@ export default function StatusCircle({status, message, onClick}) {
             break;
         }
         case Status.PLEASE_BOOK: {
-            icon = <ProviderIcon />;
+            icon = <StatusNoStaffAssignedIcon />; // todo: maybe we need a different symbol for this. Used to be <ProviderIcon />, but it's not really clear
             break;
         }
         case Status.ASSIGN_STAFF: {
             return <StatusNoStaffAssignedIcon />;
         }
         case Status.STAFF_NOT_CONFIRM: {
-            icon = <GenericStatusIcon specific={{
-                border : `3px solid black`,
-                color : "black",
-            }} />;
+            icon = <StatusNoStaffAssignedIcon />; // todo: maybe we need a different symbol for this
             break;
         }
         case Status.DETAILS_MISSING: {
-            icon = <GenericStatusIcon specific={{
-                border : `3px solid black`,
-                color : "black",
-            }} />;
+            icon = null;  //<GenericStatusIcon specific={{border : `3px solid black`,color : "black",}} />;
             break;
         }
         case Status.GOOD_TO_GO : {

@@ -76,8 +76,6 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
         fetchTeamMembers();
     }, []);
 
-    
-
     return (
         <div className='card-content'>
             <h3>Confirm Purchase Details:</h3>

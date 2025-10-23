@@ -12,7 +12,7 @@ export const Status = Object.freeze({
     COMPLETED             : "completed",
     PENDING_GUEST_CONFIRM : "pending guest confirmation",
     GUEST_CONFIRMED       : "guest confirmed",
-    PLEASE_BOOK           : "please book",
+    PLEASE_BOOK           : "please book with provider",
     ASSIGN_STAFF          : "assign staff",
     STAFF_NOT_CONFIRM     : "staff not confirmed",
     DETAILS_MISSING       : "details missing",
@@ -415,7 +415,8 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
         }
     }
 
-    const isTodayOrTomorrow = (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt));
+    const isLaterToday = utils.isToday(activity.startingAt) && utils.isPast(activity.startingAt);
+    const isTodayOrTomorrow = utils.isTomorrow(activity.startingAt) || isLaterToday;
     if(isTodayOrTomorrow) {
         if(utils.isEmpty(activity.assignedTo)) {
             return alert(Alert.URGENT, "Assign task to someone");
@@ -426,11 +427,12 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
         }
     }
 
-    if(!utils.isEmpty(activity.startingTime) && hoursLeft < 0) {
-        if(currentStatus === Status.GOOD_TO_GO) {
-            return alert(Alert.URGENT, "Did it start?");
-        }
-    } 
+    // Todo: use started status, when we have the ability to ask for photos via the app
+    // if(!utils.isEmpty(activity.startingTime) && hoursLeft < 0) {
+    //     if(currentStatus === Status.GOOD_TO_GO) {
+    //         return alert(Alert.URGENT, "Did it start?");
+    //     }
+    // } 
 
     return alert(Alert.NONE);
 }
@@ -460,7 +462,7 @@ export async function getStatus(activity, onError) {
     if(activity.needsProvider === true && utils.isEmpty(activity.providerPrice)) {
         return status(Status.DETAILS_MISSING, "Provide provider price");
     }
-    // Todo: for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded
+    // Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded
     // if(activity.category === "meal" && utils.isEmpty(activity.dishes)) {
     //     return status(Status.DETAILS_MISSING, "Dishes missing");
     // }

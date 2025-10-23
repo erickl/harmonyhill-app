@@ -116,6 +116,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         const currentAlert = await activityService.getAlert(activity, newStatus.category, thisActivityInfo, onError);
         setAlert(currentAlert);
+
+        return {activityInfo: thisActivityInfo, status: newStatus, alert: currentAlert};
     }
 
     const handleActivityStatusChange = async (newStatus) => {
@@ -401,8 +403,9 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
+                    {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                     {/* Mark activity started */}
-                    { canStartActivity() && (
+                    { false && canStartActivity() && (
                         <div className="activity-component-footer-icon">
                             <StatusCircle 
                                 status={activityService.Status.STARTED} 
@@ -415,8 +418,9 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
+                    {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                     {/* Mark activity started */}
-                    { canCompleteActivity() && (
+                    { false && canCompleteActivity() && (
                         <div className="activity-component-footer-icon">
                             <StatusCircle 
                                 status={activityService.Status.COMPLETED} 
