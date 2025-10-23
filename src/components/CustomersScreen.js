@@ -10,6 +10,7 @@ import EditCustomerScreen from './EditCustomerScreen.js';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
 import ConfirmModal from './ConfirmModal.js';
 import VeganHamburgerButton from './VeganHamburgerButton.js';
+import MetaInfo from './MetaInfo.js';
 import { useNotification } from "../context/NotificationContext.js";
 
 const CustomersScreen = ({ onNavigate }) => {
@@ -227,6 +228,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                     </div>
 
                                 )}
+                                <MetaInfo document={customer}/>
                             </React.Fragment>
                         ))}
                         {(canSeeAllBookings && (customerTypeClass == "past-customer" || customerTypeClass == "future-customer") &&
@@ -242,6 +244,7 @@ const CustomersScreen = ({ onNavigate }) => {
                 ) : (
                     null
                 )}
+                
             </div>
         );
     };
