@@ -81,9 +81,9 @@ const getDishPrice = function(dish) {
 }
 
 const getDishName = function(dish) {
-    const course = utils.isString(dish.course) ? dish.course.trim().toLowerCase() : "";
-    const displayedCourse = course === "extra" || course === "custom" ? ` (${course})` : "";
-    const name = `${dish.quantity}x ${dish.name}${displayedCourse}`;
+    //const course = utils.isString(dish.course) ? dish.course.trim().toLowerCase() : "";
+    //const displayedCourse = course === "extra" || course === "custom" ? ` (${course})` : "";
+    const name = `${dish.quantity}x ${dish.name}`; //${displayedCourse}`;
     return `${utils.capitalizeWords(name)}`;
 }
 
