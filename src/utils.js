@@ -336,18 +336,20 @@ export function monthRange(monthInt = 0) {
 /**
  * get a Luxon date time object with time at midnight
  */
-export function today(addDays = 0, keepLocalTime = true) {
+export function today(addDays = 0, keepLocalTime = false) {
     return now(addDays, keepLocalTime).startOf('day');
 }
 
 /**
  * get a Luxon date time object with time at this moment
  */
-export function now(addDays = 0, keepLocalTime = true) {
-    return setZone(DateTime.now(), keepLocalTime).plus({days: addDays});
+export function now(addDays = 0, keepLocalTime = false) {
+    const now = DateTime.now();
+    const nowHotelTz = setZone(now, keepLocalTime);
+    return nowHotelTz.plus({days: addDays});
 }
 
-export function setZone(date, keepLocalTime = true) {
+export function setZone(date, keepLocalTime = false) {
     if(!date) return null;
     date = toDateTime(date);
     date = date.setZone(getHotelTimezone(), { keepLocalTime: keepLocalTime });
