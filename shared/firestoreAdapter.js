@@ -1,10 +1,12 @@
-import { admin } from "../functions/admin-firebase.js";
+
 import * as utils from "./utils.js";
 
 export async function makeFirestoreAdapter(db) {
     const isAdmin = !!db.collectionGroup; 
 
     if (isAdmin) {
+        const { admin } = await import("../functions/admin-firebase.js");
+
         const toTimestamp = (inputDate) => {
             if(utils.isEmpty(inputDate)) return null;
             const jsDate = utils.toJsDate(inputDate);
@@ -62,15 +64,24 @@ export async function makeFirestoreAdapter(db) {
         }
     } else {
         const { where, query, limit, collection, collectionGroup, getDocs, getDoc, setDoc, updateDoc, doc, deleteDoc, runTransaction} = await import("firebase/firestore");
+        const { Timestamp } = await import("firebase/firestore");
+
+        const toFireStoreTime = (value) => {
+            if(utils.isDate(value)) {
+                const jsDate = utils.toJsDate(value);
+                value = Timestamp.fromDate(jsDate);
+            }
+        }
         
         return {
+            toFireStoreTime,
             async get(path, filters = [], ordering = [], max = -1, onError = null) {
                 try {
                     const collectionRef = collection(db, ...path);
 
                     let queryFilters = [];
                     for(const [fieldName, comparator, value] of filters) {
-                        value = utils.isDate(value) ? utils.toFireStoreTime(value) : value;
+                        value = utils.isDate(value) ? toFireStoreTime(value) : value;
                         queryFilters.push(where(fieldName, comparator, value));
                     }
 
@@ -103,7 +114,7 @@ export async function makeFirestoreAdapter(db) {
 
                     let queryFilters = [];
                     for(const [fieldName, comparator, value] of filters) {
-                        value = utils.isDate(value) ? utils.toFireStoreTime(value) : value;
+                        value = utils.isDate(value) ? toFireStoreTime(value) : value;
                         queryFilters.push(where(fieldName, comparator, value));
                     }
 

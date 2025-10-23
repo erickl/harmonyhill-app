@@ -1,4 +1,3 @@
-import { Timestamp as ClientTimestamp } from "firebase/firestore";
 import { DateTime } from 'luxon';
 
 export function toNumber(valueIn) {
@@ -100,7 +99,7 @@ export function isDateTime(value) {
 }
 
 export function isDate(value) {
-    if(value instanceof Date || value instanceof ClientTimestamp || isDateTime(value)) {
+    if(value instanceof Date || typeof value.toDate === "function" || isDateTime(value)) {
         return true;
     // Might be some Timestamp object from firebase admin SDK, which is also a "Timestamp", but not the same as the other Timestamp
     } else if(value.toDate === "function") {
@@ -180,17 +179,13 @@ function getData(inputDate) {
 function toLuxonDateTime(inputDate) {
     if (inputDate instanceof DateTime) {
         return inputDate;
-    } else if (inputDate instanceof ClientTimestamp) {
-        const date = inputDate.toDate();
-        return DateTime.fromJSDate(date, { zone: getHotelTimezone() });
     } else if (inputDate instanceof Date) {
         return DateTime.fromJSDate(inputDate, { zone: getHotelTimezone() });
-    // Could be Timestamp from firebase admin SDK. It still has a toDate() function though
+    // Could be Timestamp from firebase admin SDK or Timestamp from client side firestore. Both have a toDate() function
     } else if(typeof inputDate.toDate === "function") {
         const date = inputDate.toDate();
         return DateTime.fromJSDate(date, { zone: getHotelTimezone() });
-    }
-    else if (typeof inputDate === "string") {
+    } else if (typeof inputDate === "string") {
         const formats = generateDateFormats();
         for(const format of formats) {
             const luxonDateTime = DateTime.fromFormat(inputDate, format, { zone: getHotelTimezone() });
@@ -210,8 +205,8 @@ export function toJsDate(inputDate) {
     if (inputDate instanceof DateTime) {
         return inputDate.toJSDate(); 
     }
-    // Convert Firestore Timestamp to JavaScript Date 
-    else if (inputDate instanceof ClientTimestamp) {
+    // Could be Timestamp from firebase admin SDK or Timestamp from client side firestore. Both have a toDate() function
+    else if (typeof inputDate.toDate === "function") {
         return inputDate.toDate();
     } else if (inputDate instanceof Date) {
         const luxonDateTime = DateTime.fromJSDate(inputDate, { zone: getHotelTimezone() });
@@ -262,13 +257,6 @@ export function to_ddMMM_HHmm(date = null) {
     date = date ? date : now();
     const data = getData(date);
     return `${data.day} ${data.monthName} ${data.hours}:${data.minutes}`;
-}
-
-export function toFireStoreTime(inputDate) {
-    if(isEmpty(inputDate)) return null;
-    const luxonDateTime = toLuxonDateTime(inputDate);
-    const jsDate = toJsDate(luxonDateTime);
-    return ClientTimestamp.fromDate(jsDate);
 }
 
 export function toDateTime(inputDate) {

@@ -11,8 +11,8 @@
 // const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onRequest } from "firebase-functions/v2/https"; 
-import { makeFirestoreAdapter } from "../shared/firestoreAdapter.js";
-import * as utils from "../shared/utils.js";
+import { makeFirestoreAdapter } from "@harmonyhill/shared/firestoreAdapter.js";
+import * as utils from "@harmonyhill/shared/utils.js";
 import { db } from "./admin-firebase.js";
 
 // https://firebase.google.com/docs/functions/get-started

@@ -1,0 +1,9 @@
+{
+  "name": "@harmonyhill/shared",
+  "version": "1.0.0",
+  "exports": {
+    "./utils.js": "./utils.js",
+    "./firestoreAdapter.js": "./firestoreAdapter.js"
+  },
+  "type": "module"
+}
