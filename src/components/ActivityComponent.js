@@ -362,8 +362,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     )}
 
                     { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (<>
-                        { status.category === activityService.Status.STAFF_NOT_CONFIRM && 
-                            (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
+                        { (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
 
                             <div className="activity-component-footer-icon">
                                 <ThumbsUp  
