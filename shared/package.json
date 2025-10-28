@@ -1,6 +1,6 @@
 {
   "name": "@harmonyhill/shared",
-  "version": "1.0.0",
+  "version": "1.0.8",
   "exports": {
     "./utils.js": "./utils.js",
     "./firestoreAdapter.js": "./firestoreAdapter.js"

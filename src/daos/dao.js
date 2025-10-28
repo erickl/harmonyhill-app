@@ -22,10 +22,7 @@ export async function getOne(path, id, onError = null) {
         const docRef = doc(db, ...path, id);
         const snapshot = await getDoc(docRef);
         if(snapshot.exists()) {
-            let data = snapshot.data();
-            data.id = snapshot.id;
-            data.ref = snapshot.ref;
-            return data;
+            return { ...snapshot.data(), id: snapshot.id, ref: snapshot.ref };
         }
         return null;
     } catch (e) {
