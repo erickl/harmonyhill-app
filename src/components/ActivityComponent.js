@@ -171,8 +171,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         setExpanded(expand);
     };
 
-    // Function to increment the ticker state every minute, because activity status changes depends on it
-    // E.g. you can only press complete when the activity is past its due date
+    // Function to increment the ticker state every minute, because activity status changes depends on time
+    // E.g. you can only press complete when the activity is past its due date (sometimes counted in minutes)
     useEffect(() => {
         const tick = () => {
             // Incrementing the ticker forces the component (and the other useEffect) to rerun
@@ -212,6 +212,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         setUserRole();
     }, []);
 
+    // Blinking effect on staff assign component, for when their attention is needed, as they need to re-confirm
     useEffect(() => {
         let timerId = null;
 
@@ -307,18 +308,56 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
                 {activity.comments && (
                     <p className="preserve-whitespaces">
-                        <span className="detail-label">Comments:</span> 
+                        <span className="detail-label">Comments: </span> 
                             {activity.comments}
                     </p>
                 )}
+
+                {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
+                {activity.specialRequests && (
+                    <p className="preserve-whitespaces">
+                        <span className="detail-label">Special Requests: </span> 
+                        <span className="important-badge">{activity.specialRequests}</span>
+                    </p>
+                )}
+
+                {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
+                {activity.promotions && (
+                    <p className="preserve-whitespaces">
+                        <span className="detail-label">Promotions: </span> 
+                        <span className="important-badge">{activity.promotions}</span>
+                    </p>
+                )}
+
+                {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
+                {activity.customerInfo && (
+                    <p className="preserve-whitespaces">
+                        <span className="detail-label">Customer Info: </span> 
+                            {activity.customerInfo}
+                    </p>
+                )}
+
+                {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
+                {activity.arrivalInfo && (
+                    <p className="preserve-whitespaces">
+                        <span className="detail-label">Arrival Info: </span> 
+                            {activity.arrivalInfo}
+                    </p>
+                )}
                 
-                <p><span className="detail-label">Status:</span> {utils.capitalizeWords(status.message)}</p>
+                <p><span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}</p>
                 
                 { showProvider && (<>
-                    <p><span className="detail-label">Provider:</span> {activity.provider}</p>
+                    <p><span className="detail-label">Provider: </span> {activity.provider}</p>
                     { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
                 </>)}
-                <p><span className="detail-label">Customer Price:</span> {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }</p>
+
+                {!activity.isFree && activity.customerPrice === 0 && (
+                    <p>
+                        <span className="detail-label">Customer Price:</span> 
+                        {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
+                    </p>
+                )}
 
                 {/* List dishes if the activity expanded is a meal */}
                 {activity.category === "meal" && (
@@ -432,7 +471,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    {false && /*todo: complete minibar func first*/ activity && activity.subCategory === "house-keeping" && utils.isToday(activity.startingAt) && (
+                    {false && /*todo: complete minibar func first*/ activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
