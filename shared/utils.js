@@ -274,9 +274,7 @@ export function isToday(inputDate, plusDays = 0) {
 }
 
 export function isTomorrow(inputDate) {
-    const luxonDateTime = toLuxonDateTime(inputDate);
-    const tomorrow = today(0, false).plus({days: 1});
-    return luxonDateTime.day === tomorrow.day;
+    return isToday(inputDate, 1);
 }
 
 export function isBeforeToday(inputDate) {
@@ -343,7 +341,7 @@ export function monthRange(monthInt = 0) {
 /**
  * get a Luxon date time object with time at midnight
  */
-export function today(addDays = 0, keepLocalTime = true) {
+export function today(addDays = 0, keepLocalTime = false) {
     return now(addDays, keepLocalTime).startOf('day');
 }
 
