@@ -99,7 +99,10 @@ export function isDateTime(value) {
 }
 
 export function isDate(value) {
-    if(value instanceof Date || typeof value.toDate === "function" || isDateTime(value)) {
+    if(isEmpty(value)) {
+        return false;
+    }
+    else if(value instanceof Date || typeof value.toDate === "function" || isDateTime(value)) {
         return true;
     // Might be some Timestamp object from firebase admin SDK, which is also a "Timestamp", but not the same as the other Timestamp
     } else if(value.toDate === "function") {
@@ -264,10 +267,10 @@ export function toDateTime(inputDate) {
     return toLuxonDateTime(inputDate);
 }
 
-export function isToday(inputDate) {
-    const luxonDateTime = toLuxonDateTime(inputDate);
-    const todayDateTime = today(0, false);
-    return luxonDateTime.day == todayDateTime.day;
+export function isToday(inputDate, plusDays = 0) {
+    const inputLuxonDateTime = toLuxonDateTime(inputDate);
+    const comparingDateTime = today(plusDays, false);
+    return inputLuxonDateTime.day == comparingDateTime.day;
 }
 
 export function isTomorrow(inputDate) {
