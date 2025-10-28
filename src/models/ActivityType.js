@@ -23,7 +23,7 @@ export default class ActivityType {
 
         this.id = this.id();
 
-        this.displayName = `${this.category.replace(/-/g, " ")}: ${this.subCategory.replace(/-/g, " ")}`;
+        this.displayName = `${this.subCategory.replace(/-/g, " ")}`;
         this.displayName = utils.capitalizeWords(this.displayName);
     }
 
