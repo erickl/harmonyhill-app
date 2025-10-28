@@ -1,16 +1,22 @@
-import admin from "firebase-admin";
+import { initializeApp, getApp } from 'firebase-admin/app';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import { setGlobalOptions } from "firebase-functions/v2";
 
-// Initialize admin SDK once
-if (!admin.apps.length) {
-    admin.initializeApp();
+let app;
+
+try {
+    app = getApp();
+} catch(e) {
+    app = initializeApp();
 }
 
-const db = admin.firestore();
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 // Only when running Firestore emulator
 if (process.env.FUNCTIONS_EMULATOR === "true") {
-    admin.firestore().settings({
+    db.settings({
         host: "localhost:8080",
         ssl: false,
     });
@@ -18,7 +24,6 @@ if (process.env.FUNCTIONS_EMULATOR === "true") {
 
 // Only when running RTDB emulator locally
 if (process.env.FIREBASE_DATABASE_EMULATOR_HOST) {
-    //const db = admin.database();
     db.useEmulator("localhost", 9000); // 9000 is the default port
 }
 
@@ -29,4 +34,8 @@ if (process.env.FUNCTIONS_EMULATOR === "true") {
     setGlobalOptions({ timeoutSeconds: 60 });
 }
 
-export { db, admin };
+export { 
+    db, 
+    auth,
+    Timestamp,
+};
