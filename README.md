@@ -67,7 +67,8 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 - export data: firebase emulators:export ./emulator-data
 
 - How to start debugging firebase functions
-    - node --inspect=9229 ./node_modules/.bin/firebase emulators:start --import=./emulator-data
+    - node --inspect=9229 ./node_modules/.bin/firebase emulators:start --import=./emulator-data 
+        - lately, that didn't work so well. An alternative is this: firebase emulators:start --inspect-functions --import=./emulator-data
 
 How to trigger scheduled functions
 - firebase functions:shell, then hourlyJob()
