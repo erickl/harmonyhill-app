@@ -1,22 +1,29 @@
 
 import * as utils from "./utils.js";
 
-export async function makeFirestoreAdapter(db) {
+function makeActivityId(activity) { 
+    const houseShort = activity.house.trim().toLowerCase() === "harmony hill" ? "hh" : "jn";
+    const startingAt = utils.to_YYMMdd(activity.startingAt);
+    const subCategory = activity.subCategory.trim().toLowerCase().replace(/ /g, '-');
+    return `${startingAt}-${houseShort}-${subCategory}-${Date.now()}`;
+}
+
+export async function makeFirestoreAdapter(db, adminTimestamp = null) {
     const isAdmin = !!db.collectionGroup; 
 
-    if (isAdmin) {
-        const { admin } = await import("../functions/admin-firebase.js");
+    let adapter = {};
 
+    if (isAdmin && adminTimestamp) {
         const toTimestamp = (inputDate) => {
             if(utils.isEmpty(inputDate)) return null;
             const jsDate = utils.toJsDate(inputDate);
-            return admin.firestore.Timestamp.fromDate(jsDate);
+            return adminTimestamp.fromDate(jsDate);
         }
         
-        return {
+        adapter = {
             toTimestamp,
 
-            async get(collectionName, filters = [], orderByField = null, onError = null) {
+            async get(collectionName, filters = [], orderByField = null) {
                 try {
                     let query = db.collection(collectionName);
                     
@@ -36,11 +43,12 @@ export async function makeFirestoreAdapter(db) {
                     const docs = snapshot.docs.map((doc) => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
                     return docs;
                 } catch(e) {
-                    if(onError) onError(`Couldn't get data from '${collectionName}': ${e.message}`);
+                    console.log(`Couldn't get data from '${collectionName}': ${e.message}`);
                     return [];
                 }
             },
-            async getCollectionGroup(collectionName, filters = [], orderByField = null, onError = null) {
+            
+            async getCollectionGroup(collectionName, filters = [], orderByField = null) {
                 try {
                     const collectionGroup = db.collectionGroup(collectionName);
                     let query = collectionGroup;
@@ -58,30 +66,60 @@ export async function makeFirestoreAdapter(db) {
                     const docs = snapshot.docs.map((doc) => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
                     return docs;
                 } catch(e) {
-                    if(onError) onError(`Couldn't get data from '${collectionName}': ${e.message}`);
+                    console.log(`Couldn't get data from '${collectionName}': ${e.message}`);
+                    return [];
+                }
+            },
+
+            async getOne(path, id) {
+                try {
+                    const docRef = db.collection(path).doc(id);
+                    const docSnapshot = await docRef.get();
+                    if (!docSnapshot.exists) return null;
+                    return { ...snapshot.data(), id: snapshot.id, ref: snapshot.ref };
+                } catch(e) {
+                    console.log(`Error getting one document ${path}/${id}: ${e.message}`);
+                    return null;
+                }
+            },
+
+            async add(path, id, data) {
+                try {
+                    for(const [key, value] of Object.entries(data)) {
+                        if(utils.isDate(value)) {
+                            data[key] = toTimestamp(value);
+                        }
+                    }
+                    const pathString = Array.isArray(path) ? fullPathArray.join('/') : path;
+                    const docRef = db.collection(pathString).doc(id);
+                    await docRef.set(data);
+                    return true;
+                } catch(e) {
+                    console.log(`Error adding document ${path}/${id}: ${e.message}`);
+                    return false;
                 }
             }
         }
     } else {
         const { where, query, limit, collection, collectionGroup, getDocs, getDoc, setDoc, updateDoc, doc, deleteDoc, runTransaction} = await import("firebase/firestore");
+        const {auth} = await import("../src/firebase.js");
         const { Timestamp } = await import("firebase/firestore");
 
-        const toFireStoreTime = (value) => {
-            if(utils.isDate(value)) {
-                const jsDate = utils.toJsDate(value);
-                value = Timestamp.fromDate(jsDate);
-            }
+        const toTimestamp = (value) => {
+            if(!utils.isDate(value)) return null;
+            const jsDate = utils.toJsDate(value);
+            return Timestamp.fromDate(jsDate);
         }
         
-        return {
-            toFireStoreTime,
+        adapter = {
+            toTimestamp,
             async get(path, filters = [], ordering = [], max = -1, onError = null) {
                 try {
                     const collectionRef = collection(db, ...path);
 
                     let queryFilters = [];
                     for(const [fieldName, comparator, value] of filters) {
-                        value = utils.isDate(value) ? toFireStoreTime(value) : value;
+                        value = utils.isDate(value) ? toTimestamp(value) : value;
                         queryFilters.push(where(fieldName, comparator, value));
                     }
 
@@ -108,13 +146,14 @@ export async function makeFirestoreAdapter(db) {
                     return []; 
                 }
             },
+
             async getCollectionGroup(collectionName, filters = [], orderByField = null, onError = null) {
                 try {
                     const collectionGroupRef = collectionGroup(db, collectionName);
 
                     let queryFilters = [];
                     for(const [fieldName, comparator, value] of filters) {
-                        value = utils.isDate(value) ? toFireStoreTime(value) : value;
+                        value = utils.isDate(value) ? toTimestamp(value) : value;
                         queryFilters.push(where(fieldName, comparator, value));
                     }
 
@@ -131,6 +170,19 @@ export async function makeFirestoreAdapter(db) {
                     return [];
                 }
             },
+
+            async getOne(path, id, onError = null) {
+                try {
+                    const docRef = doc(db, ...path, id);
+                    const snapshot = await getDoc(docRef);
+                    if(!snapshot.exists()) return null;
+                    return { ...snapshot.data(), id: snapshot.id, ref: snapshot.ref };  
+                } catch (e) {
+                    if(onError) onError(`Error getting one document ${path}/${id}: ${e.message}`);
+                    return null;
+                }
+            },
+
             async add(path, id, data, onError = null) {
                 try {
                     data.createdAt = new Date();
@@ -155,6 +207,10 @@ export async function makeFirestoreAdapter(db) {
                     return false;
                 }
             }
-        }
+        };
     }
+
+    adapter["makeActivityId"] =  makeActivityId;
+
+    return adapter;
 }
