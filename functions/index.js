@@ -178,7 +178,7 @@ const dailyActivitiesCreationWork = async() => {
                         name          : booking.name,
                         subCategory   : "red-envelope",
                         startingAt    : tomorrow,
-                        startingTime  : tomorrow.set({hour: 18}),
+                        startingTime  : tomorrow.set({hour: 10}),
                     };
 
                     const activityId = adapter.makeActivityId(redEnvelopeActivity);
