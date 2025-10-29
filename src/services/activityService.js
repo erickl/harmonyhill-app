@@ -451,7 +451,15 @@ export async function getStatus(activity, onError) {
         return status(Status.PLEASE_BOOK);
     }
     if(utils.isEmpty(activity.assignedTo)) {
-        return status(Status.ASSIGN_STAFF);
+        if(utils.isToday(activity.startingAt)) {
+            return status(Status.ASSIGN_STAFF);
+        }
+        else if(utils.isTomorrow(activity.startingAt)) {
+            const todayAtFivePm = utils.today().set({hour: 17});
+            if(utils.isPast(todayAtFivePm)) {
+                return status(Status.ASSIGN_STAFF);
+            }
+        }
     }
     if(utils.isEmpty(activity.startingTime)) {
         return status(Status.DETAILS_MISSING, "Set starting time");
