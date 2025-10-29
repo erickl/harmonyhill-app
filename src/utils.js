@@ -282,7 +282,8 @@ export function isBeforeToday(inputDate) {
 
 export function isPast(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
-    const diff = luxonDateTime.toMillis() - now(0, false).toMillis();
+    const nowTime = now(0, false);
+    const diff = luxonDateTime.toMillis() - nowTime.toMillis();
     return diff < 0;
 }   
 
