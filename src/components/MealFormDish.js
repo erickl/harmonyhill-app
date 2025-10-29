@@ -24,8 +24,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
         let updatedDishes = [ ...(formData.dishes || []) ];
 
         let existingDishIndex = updatedDishes.findIndex((dish) => {
-            //return dish.name === newDish.name && dish.course === newDish.course;
-            return dish.id === newDish.id;
+            return dish.id === newDish.id || dish.name === newDish.name;
         })
 
         if(existingDishIndex === -1) {
