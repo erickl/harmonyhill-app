@@ -119,7 +119,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
             
             const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
             setPettyCash(pettyCashSum);
-            const expenseSum = await ledgerService.getTotalExpenses(filter, onError);
+            const expenseSum = await ledgerService.getCurrentTotalExpenses(filter, onError);
             setExpenseSum(expenseSum);
 
             setLoading(false);

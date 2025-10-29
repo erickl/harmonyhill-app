@@ -3,7 +3,35 @@ import * as incomeService from "./incomeService.js";
 import * as expenseService from "./expenseService.js";
 import * as utils from "../utils.js";
 
+export async function getTotalIncomes(filter, onError) {
+    if(Object.hasOwn(filter, "monthInt")) {
+        const range = utils.monthRange(filter["monthInt"]);
+        filter = { ...range, ...filter};
+    }
+    const entries = await incomeService.get(filter, onError);
+    const sum = entries.reduce((sum, entry) => sum + entry.amount, 0);
+    
+    return {
+        sum : sum,
+        list : entries,
+    };
+}
+
 export async function getTotalExpenses(filter, onError) {
+    if(Object.hasOwn(filter, "monthInt")) {
+        const range = utils.monthRange(filter["monthInt"]);
+        filter = { ...range, ...filter};
+    }
+    const entries = await expenseService.get(filter, onError);
+    const sum = entries.reduce((sum, entry) => sum + entry.amount, 0);
+    
+    return {
+        sum : sum,
+        list : entries,
+    };
+}
+
+export async function getCurrentTotalExpenses(filter, onError) {
     const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(onError);
     if(lastClosedPettyCashAmount === false) {
         return false;
@@ -21,7 +49,7 @@ export async function getTotalExpenses(filter, onError) {
  * @param {*} onError 
  * @returns 
  */
-export async function getTotalIncomes(onError) {
+export async function getCurrentTotalIncomes(onError) {
     const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(onError);
     if(lastClosedPettyCashAmount === false) {
         return false;

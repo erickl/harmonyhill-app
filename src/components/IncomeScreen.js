@@ -92,7 +92,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
             const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
             setPettyCash(pettyCashSum);
             
-            const incomeSum = await ledgerService.getTotalIncomes(onError);
+            const incomeSum = await ledgerService.getCurrentTotalIncomes(onError);
             setIncomeSum(incomeSum);
         }
     
