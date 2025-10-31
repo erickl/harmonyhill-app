@@ -66,13 +66,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     };
 
     const onConfirmPhoto = async (photo) => {
-        const activityDate = utils.to_yyMMM(inputActivity.startingAt, "-");
-        const filename = `activities/${activityDate}/${inputActivity.id}/${Date.now()}`;
-        const options = {maxSize : 0.01};
-        const downloadUrl = await storageDao.upload(filename, photo, options, onError);
+        const downloadUrl = await activityService.uploadPhoto(activity, photo, onError);
         if(downloadUrl !== false) {
-            let newPhotos = [...photos];
-            newPhotos.push(downloadUrl);
+            const allPhotos = await activityService.getPhotos(activity, onError);
+            let newPhotos = [...photos, ...allPhotos];
             setPhotos(newPhotos);
             onSuccess();
         }
@@ -97,6 +94,11 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
 
         return false;
+    }
+
+    const canAddPhotos = () => {
+        const canComplete = canCompleteActivity();
+        return status.category === activityService.Status.STARTED || canComplete;
     }
 
     const canCompleteActivity = () => {
@@ -169,7 +171,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         const minibarList = await minibarService.getSelection(onError);
         onCountItems(minibarList, async (refill) => {
             const result = await minibarService.add(activity.bookingId, activity.id, "refill", refill, onError); 
-            if(result) {
+            if(result !== false) {
                 onSuccess();
             }
             return result;
@@ -190,9 +192,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             }
 
             // Check if photos already exist, and get their download URLs
-            const activityDate = utils.to_yyMMM(activity.startingAt, "-");
-            const activityImages = await storageDao.getPhotosInFolder(`activities/${activityDate}/${activity.id}`);
-            setPhotos(activityImages);
+            const activityPhotos = await activityService.getPhotos(activity, onError);
+            setPhotos(activityPhotos);
         }
         setExpanded(expand);
     };
@@ -378,9 +379,9 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
                 </>)}
 
-                {!activity.isFree && activity.customerPrice === 0 && (
+                {!activity.isFree && activity.customerPrice !== 0 && (
                     <p>
-                        <span className="detail-label">Customer Price:</span> 
+                        <span className="detail-label">Customer Price: </span> 
                         {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
                     </p>
                 )}
@@ -497,7 +498,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { useActivityStartedStatus && canCompleteActivity() && (
+                    { useActivityStartedStatus && canAddPhotos() && (
                         <div className="activity-component-footer-icon">
                             <Camera 
                                 onClick={(e) => {

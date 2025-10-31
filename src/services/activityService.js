@@ -6,6 +6,7 @@ import {getParent} from "../daos/dao.js";
 import {getMealDishes} from "./mealService.js";
 import {get as getIncome} from "../services/incomeService.js";
 import {get as getExpense} from "../services/expenseService.js";
+import * as storageDao from "../daos/storageDao.js";
 
 export const Status = Object.freeze({
     GOOD_TO_GO            : "good to go",
@@ -247,8 +248,67 @@ export async function update(bookingId, activityId, activityUpdateData, onError)
     return await activityDao.update(bookingId, activityId, activityUpdate, true, onError);
 }
 
-export async function remove(bookingId, activityId, onError) {
-    return await activityDao.remove(bookingId, activityId, onError);
+function getActivityPhotoFilePath(activity) {
+    if(!activity) return "";
+    const activityDate = utils.to_yyMMM(activity.startingAt, "-");
+    const filePath = `activities/photos/${activityDate}/${activity.id}`;
+    return filePath;
+}
+
+export async function getPhotos(activity, onError) {
+    return await activityDao.getPhotos(activity.bookingId, activity.id, onError);
+}
+
+export async function removePhoto(photo, onError) {
+    const removeFileResult = await storageDao.removeFile(photo.fileName, onError);
+    if(removeFileResult !== false) {
+        const activity = await getParent(photo);
+        if(!activity) return false;
+
+        const booking = await getParent(activity);
+        if(!booking) return false;
+
+        const removePhotoRecordResult = await activityDao.removePhoto(booking.id, activity.id, photo.id, onError);
+        return removePhotoRecordResult;
+    }
+    return false;
+}
+
+async function removePhotos(activity, onError) {
+    const photos = await getPhotos(activity, onError);
+    for(const photo of photos) {
+        const removePhotoResult = await removePhoto(photo, onError);
+        if(removePhotoResult === false) {
+            return false;
+        }
+    }
+    return true;
+}
+
+export async function uploadPhoto(activity, photo, onError) {
+    const filePath = getActivityPhotoFilePath(activity);
+    const filename = `${filePath}/${Date.now()}`;
+    const options = {maxSize : 0.05};
+    const downloadUrl = await storageDao.upload(filename, photo, options, onError);
+    if(downloadUrl === false) {
+        return;
+    }
+    const id = `activity-photo-${Date.now()}`;
+    const data = {
+        fileName   : filename,
+        url        : downloadUrl,
+        activityId : activity.id,
+    };
+    const addRecordResult = await activityDao.addPhoto(activity.bookingId, activity.id, id, data, onError);
+    return addRecordResult;
+}
+
+export async function remove(activity, onError) {
+    const removePhotosResult = await removePhotos(activity, onError);
+    if(removePhotosResult === false) {
+        return false;
+    }
+    return await activityDao.remove(activity.bookingId, activity.id, onError);
 }
 
 export function makeId(startingAt, house, subCategory) {

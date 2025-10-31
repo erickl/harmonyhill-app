@@ -52,19 +52,19 @@ export async function addMeal(bookingId, mealData, onError) {
     return addMealSuccess ? mealId : false;
 }
 
-export async function removeMeal(bookingId, mealId, onError) {
+export async function removeMeal(meal, onError) {
     const success = await activityDao.transaction(async () => {
-        const dishes = await getMealDishes(bookingId, mealId);
+        const dishes = await getMealDishes(meal.bookingId, meal.id);
         for(const dish of dishes) {
-            const deleteDishResult = await deleteDish(bookingId, mealId, dish.id, onError);
+            const deleteDishResult = await deleteDish(meal.bookingId, meal.id, dish.id, onError);
             if(deleteDishResult === false) {
                 throw new Error(`Unexpected error when deleting dish ${dish.id}`);
             }
         }
 
-        const success = await activityDao.remove(bookingId, mealId, onError);
+        const success = await activityService.remove(meal, onError);
         if(success === false) {
-            throw new Error(`Unexpected error when deleting meal ${mealId}`);
+            throw new Error(`Unexpected error when deleting meal ${meal.id}`);
         }
 
         return true;

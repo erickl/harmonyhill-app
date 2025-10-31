@@ -36,7 +36,8 @@ export function ImageCarouselProvider({ children }) {
     useEffect(() => {
         const getCurrentImage = async() => {
             if(images && images.length > currentIndex) {
-                const photoUrl = images[currentIndex];
+                const current = images[currentIndex];
+                const photoUrl = current.url;
                 const newCurrentImage = await getPhotoUrl(photoUrl);
                 setCurrentImage(newCurrentImage);
             }
@@ -51,10 +52,11 @@ export function ImageCarouselProvider({ children }) {
                 <div className="modal-overlay">
                     <div className="modal-box">
                         <h2>{"Browse Photos"}</h2>
-                        {images[currentIndex] && (<>
+                        {currentImage && (<>
+                            <p>Uploaded by {utils.capitalizeWords(currentImage.createdBy)}, {utils.to_ddMMM_HHmm(currentImage.createdAt)}</p>
                             <div className="carousel-image-box">
-                                {!utils.isEmpty(images[currentIndex]) ? (
-                                    <img src={currentImage} alt="activity-image" />
+                                {!utils.isEmpty(currentImage.url) ? (
+                                    <img src={currentImage.url} alt="activity-image" />
                                 ) : (
                                     <div className="image-placeholder" />
                                 )}

@@ -22,6 +22,21 @@ export async function updateDish(bookingId, mealId, dishId, dish, onError) {
     return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES], dishId, dish, true, onError);
 }
 
+export async function addPhoto(bookingId, activityId, id, data, onError) {
+    const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, activityId, "activity-photos"];
+    return await dao.add(path, id, data, onError);
+}
+
+export async function getPhotos(bookingId, activityId, onError) {
+    const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, activityId, "activity-photos"];
+    return await dao.get(path, [], [], -1, onError);
+}
+
+export async function removePhoto(bookingId, activityId, id, onError) {
+    const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, activityId, "activity-photos"];
+    return await dao.remove(path, id, onError);
+}
+
 export async function addMinibar(bookingId, activityId, minibar, onError) {
     const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, activityId, dao.constant.MINIBAR];
     // todo: put house?

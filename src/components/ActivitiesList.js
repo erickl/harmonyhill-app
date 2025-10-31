@@ -50,9 +50,9 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
 
         let deleteActivityResult = false;
         if(activityToDelete.category === "meal") {
-            deleteActivityResult = mealService.removeMeal(activityCustomer.id, activityToDelete.id, onError);
+            deleteActivityResult = mealService.removeMeal(activityToDelete, onError);
         } else {
-            deleteActivityResult = await activityService.remove(activityCustomer.id, activityToDelete.id, onError);
+            deleteActivityResult = await activityService.remove(activityToDelete, onError);
         }
         
         if(deleteActivityResult) {

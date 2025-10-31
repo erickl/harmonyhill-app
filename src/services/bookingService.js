@@ -144,9 +144,9 @@ export async function remove(bookingId, onError) {
             
             // Removing it as a meal, will also remove its dishes
             if(activity.category === "meal") {
-                deleteActivityResult = await mealService.removeMeal(bookingId, activity.id, onError);
+                deleteActivityResult = await mealService.removeMeal(activity, onError);
             } else {
-                deleteActivityResult = await activityService.remove(bookingId, activity.id, onError);
+                deleteActivityResult = await activityService.remove(activity, onError);
             }
             
             if(!deleteActivityResult) {
