@@ -68,7 +68,10 @@ export async function remove(id, onError) {
     const path = [dao.constant.EXPENSES];
     const existing = await getOne(id, onError);
     if(existing && existing.fileName) {
-        await storageDao.removeImage(existing.fileName);
+        const removeFileResult = await storageDao.removeFile(existing.fileName, onError);
+        if(removeFileResult === false) {
+            return false;
+        }
     }
     const result = await dao.remove(path, id, onError);
     return result;

@@ -55,7 +55,10 @@ export async function update(id, data, onError) {
 
         // If photo is updated, remove the old photo
         if(existing.photoUrl !== object.photoUrl) {
-            await storageDao.removeImage(existing.fileName);   
+            const removeOldFileResult = await storageDao.removeFile(existing.fileName, onError);   
+            if(removeOldFileResult === false) {
+                return false;
+            }
         }
 
         return true;
