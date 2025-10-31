@@ -54,7 +54,7 @@ export async function getPhotoUrl(filePath) {
     }
 }
 
-export async function getPhotosInFolder(folderPath) {
+export async function getFiles(folderPath) {
     const folderRef = ref(storage, folderPath);
 
     try {
@@ -81,9 +81,14 @@ export async function getPhotosInFolder(folderPath) {
     }
 }
 
-export async function removeImage(fileName) {
-    const fileRef = ref(storage, fileName);
-    await deleteObject(fileRef);
+export async function removeFile(fileName, onError) {
+    try {
+        const fileRef = ref(storage, fileName);
+        await deleteObject(fileRef);
+    } catch(e) {
+        if(onError) onError(`Couldn't remove file ${fileName}: ${e.message}`);
+        return false;
+    }
     return true;
 }
 
