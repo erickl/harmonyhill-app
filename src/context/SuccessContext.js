@@ -7,8 +7,7 @@ export function SuccessNotificationProvider({ children }) {
     const [message, setMessage] = useState(null);
 
     const onSuccess = (message) => {
-        //setMessage(`${message}`);
-        setMessage("placeholder");
+        setMessage(message);
     } 
     
     const hidePopup = () => {
@@ -19,7 +18,7 @@ export function SuccessNotificationProvider({ children }) {
         <SuccessNotificationContext.Provider value={{ onSuccess }}>
             {children}
             {message && (
-                <SuccessModal onClose={() => hidePopup()}/>
+                <SuccessModal message={message} onClose={() => hidePopup()}/>
             )}
         </SuccessNotificationContext.Provider>
     );
