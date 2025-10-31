@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { uploadPurchaseInvoice } from "../services/invoiceService.js";
 
-export default function UploadReceiptScreen({ current, onUploadSuccess, resetTrigger }) {
+export default function UploadPhotoScreen({ current, onUploadSuccess, resetTrigger, onClose }) {
     const [previewImage, setPreviewImage] = useState(current);
     const [previewImageFullScreen, setPreviewImageFullScreen] = useState(false);
 
@@ -135,11 +134,12 @@ export default function UploadReceiptScreen({ current, onUploadSuccess, resetTri
             videoStream.getTracks().forEach(track => track.stop());
             setVideoStream(null);
         }
+        if(onClose) onClose();
     };
 
     return (
         <div style={{ border: '1px solid #ccc', padding: '20px', margin: '20px' }}>
-            <h2>Upload Receipt</h2>
+            <h2>Upload Photo</h2>
 
             {/* Preview and Upload Captured Photo */}
             {previewImage && !videoStream && (

@@ -3,7 +3,7 @@ import * as expenseService from "../services/expenseService.js";
 import * as userService from "../services/userService.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
-import UploadReceiptScreen from './UploadReceiptScreen.js';
+import UploadPhotoScreen from './UploadPhotoScreen.js';
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
@@ -303,7 +303,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 </div>
             </div>
             <div className="card-content">
-                <UploadReceiptScreen 
+                <UploadPhotoScreen 
                     current={formData.photoUrl} 
                     onUploadSuccess={(photo) => handleChange("photo", photo)}
                     resetTrigger={imageResetTrigger}

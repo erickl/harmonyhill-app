@@ -6,6 +6,8 @@ import { MarkDownProvider } from '../context/MarkDownContext.js';
 import { ItemsCounterProvider } from "../context/ItemsCounterContext.js";
 import { SuccessNotificationProvider } from "../context/SuccessContext.js";
 import { ConfirmationProvider } from "../context/ConfirmationContext.js";
+import { CameraProvider } from "../context/CameraContext.js";
+import { ImageCarouselProvider } from "../context/ImageCarouselContext.js";
 
 export function AppProviders({ children }) {
   return (
@@ -16,7 +18,11 @@ export function AppProviders({ children }) {
     <MenuProvider>
     <MarkDownProvider>
     <ItemsCounterProvider>
+    <CameraProvider>
+    <ImageCarouselProvider>
       {children}
+    </ImageCarouselProvider>
+    </CameraProvider>
     </ItemsCounterProvider>
     </MarkDownProvider>
     </MenuProvider>

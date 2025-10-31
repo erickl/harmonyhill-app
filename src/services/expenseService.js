@@ -27,7 +27,7 @@ async function processReceipt(data, onError) {
         const fileDescription = data.description.trim().toLowerCase().replace(/ /g, "-");
         data.fileName = `${data.index}. ${fileDescription}-${fileDate}-${Date.now()}`;
         data.fileName = `expenses/${data.fileName}.jpg`;
-        data.photoUrl = await uploadReceipt(data.fileName, data.photo, {maxSize : 0.5}, onError);
+        data.photoUrl = await uploadReceipt(data.fileName, data.photo, {maxSize : 0.7}, onError);
         delete data['photo'];
     }
     
@@ -76,12 +76,8 @@ export async function downloadExpenseReceipts(toFilename, filters, onError) {
  * @param {*} filename 
  * @param {*} image 
  */
-export async function uploadReceipt(filename, file, compressionOptions, onError) {
-    if(!utils.isEmpty(compressionOptions)) {
-        file = await storageDao.compressImage(file, compressionOptions, onError);
-    }
-    const imageDataUrl = await storageDao.blobToBase64(file);
-    return await storageDao.upload(filename, imageDataUrl, onError);
+export async function uploadReceipt(filename, file, options, onError) {
+    return await storageDao.upload(filename, file, options, onError);
 }
 
 export async function get(filterOptions, onError) {

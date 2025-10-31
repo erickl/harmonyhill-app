@@ -1,24 +1,28 @@
 import { storage } from '../firebase.js';
-import { ref, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
+import { ref, uploadString, getDownloadURL, deleteObject, listAll } from "firebase/storage";
 import imageCompression from "browser-image-compression";
 import * as utils from "../utils.js";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-export async function upload(filename, dataURL, onError) {
+export async function upload(filename, blob, options = {}, onError = null) {
     try {
+        if(!utils.isEmpty(options)) {
+            blob = await compressImage(blob, options, onError);
+        }
+        const dataUrl = await blobToBase64(blob);
         const storageRef = ref(storage, filename);
 
-        const snapshot = await uploadString(storageRef, dataURL, 'data_url');
+        const snapshot = await uploadString(storageRef, dataUrl, 'data_url');
         if (!snapshot) {
-            onError(`Unknown file upload error! Result: ${snapshot}`);
+            if(onError) onError(`Unknown file upload error! Result: ${snapshot}`);
             return false;
         }
 
         const downloadURL = await getDownloadURL(snapshot.ref);
         return downloadURL;
     } catch (e) {
-        onError(`Unexpected file upload error: ${e.message}`);
+        if(onError) onError(`Unexpected file upload error: ${e.message}`);
         return false;
     }
 }
@@ -47,6 +51,33 @@ export async function getPhotoUrl(filePath) {
         return url;
     } catch(e) {
         return null
+    }
+}
+
+export async function getPhotosInFolder(folderPath) {
+    const folderRef = ref(storage, folderPath);
+
+    try {
+        // 1. Use listAll to get a list of all items (files) and prefixes (folders) in the path.
+        const res = await listAll(folderRef);
+
+        // 2. Iterate through each file reference (res.items)
+        // res.items contains the file references (StorageReference)
+        const urlPromises = res.items.map(async (itemRef) => {
+            // 3. For each file reference, get the public download URL
+            const url = await getDownloadURL(itemRef);
+            return url;
+        });
+
+        // Wait for all promises to resolve to get all URLs
+        const urls = await Promise.all(urlPromises);
+        
+        return urls;
+
+    } catch(e) {
+        console.error("Error listing photos in folder:", e);
+        // Return an empty array or handle the error as needed
+        return [];
     }
 }
 

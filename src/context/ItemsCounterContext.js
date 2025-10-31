@@ -36,7 +36,7 @@ export function ItemsCounterProvider({ children }) {
     }
 
     const onShowPrevious = () => {
-        setCurrentIndex((currentIndex - 1) % items.length);
+        setCurrentIndex((Math.abs(currentIndex - 1)) % items.length);
     }
 
     const onSubmitCount = async() => {

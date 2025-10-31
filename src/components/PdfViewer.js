@@ -32,11 +32,10 @@ export default function PdfViewer({customer, triggerRerender, onClose }) {
             if (!isMounted) return;
 
             //url = URL.createObjectURL(blob);
-            const dataUrl = await storageDao.blobToBase64(blob);
             const title = invoicePdfService.makeTitle(customer);
             setTitle(title);
             const filename = `invoices/${title}`;
-            const downloadUrl = await storageDao.upload(filename, dataUrl, onError);
+            const downloadUrl = await storageDao.upload(filename, blob, {}, onError);
             setPdfUrl(downloadUrl);
         };
         createPdfDoc();

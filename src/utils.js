@@ -139,6 +139,12 @@ export function to_ddMMYY(date = null, separator = '') {
     return `${data.day}${separator}${data.month}${separator}${data.yy}`;
 }
 
+export function to_yyMMM(date = null, separator = '') {
+    date = date ? date : now();
+    const data = getData(date);
+    return `${data.yy}${separator}${data.monthName}`;
+}
+
 function getData(inputDate) {
     if(isEmpty(inputDate)) {
         return {};

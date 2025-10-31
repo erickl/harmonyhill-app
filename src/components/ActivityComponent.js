@@ -7,7 +7,7 @@ import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy } from 'lucide-react';
+import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy, Camera, Image } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle from './StatusCircle.js';
 import AlertCircle from './AlertCircle.js';
@@ -15,7 +15,10 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useItemsCounter } from "../context/ItemsCounterContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
+import { useCameraModal } from '../context/CameraContext.js';
+import { useImageCarousel } from '../context/ImageCarouselContext.js';
 import MetaInfo from './MetaInfo.js';
+import * as storageDao from "../daos/storageDao.js";
 
 const assigneeStyles = [
     { backgroundColor: "#E12C2C", color: "white" },
@@ -24,6 +27,8 @@ const assigneeStyles = [
 ];  
 
 export default function ActivityComponent({ inputCustomer, inputActivity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
+    const useActivityStartedStatus = true;
+    
     const assignedUser = users && inputActivity ? users.find(user => user.name === inputActivity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
     
@@ -38,12 +43,15 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const [status,                  setStatus                 ] = useState(null );
     const [alert,                   setAlert                  ] = useState(null );
     const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0);
-    const [minuteTicker,            setMinuteTicker           ] = useState(0);       
+    const [minuteTicker,            setMinuteTicker           ] = useState(0);
+    const [photos,                  setPhotos                 ] = useState([]);     
 
     const { onError } = useNotification();
     const { onCountItems } = useItemsCounter();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
+    const { onOpenCamera } = useCameraModal();
+    const { onDisplayImages } = useImageCarousel();
 
     const getAssigneeStyleIndex = () => {
         let newAssigneeStyleIndex = 0;
@@ -56,6 +64,19 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         return newAssigneeStyleIndex;
     };
+
+    const onConfirmPhoto = async (photo) => {
+        const activityDate = utils.to_yyMMM(inputActivity.startingAt, "-");
+        const filename = `activities/${activityDate}/${inputActivity.id}/${Date.now()}`;
+        const options = {maxSize : 0.01};
+        const downloadUrl = await storageDao.upload(filename, photo, options, onError);
+        if(downloadUrl !== false) {
+            let newPhotos = [...photos];
+            newPhotos.push(downloadUrl);
+            setPhotos(newPhotos);
+            onSuccess();
+        }
+    }
 
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
@@ -167,6 +188,11 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                 const dishes = await mealService.getMealDishes(mealCustomer.id, activity.id);
                 setDishes(dishes);
             }
+
+            // Check if photos already exist, and get their download URLs
+            const activityDate = utils.to_yyMMM(activity.startingAt, "-");
+            const activityImages = await storageDao.getPhotosInFolder(`activities/${activityDate}/${activity.id}`);
+            setPhotos(activityImages);
         }
         setExpanded(expand);
     };
@@ -443,7 +469,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
                     {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                     {/* Mark activity started */}
-                    { false && canStartActivity() && (
+                    { useActivityStartedStatus && canStartActivity() && (
                         <div className="activity-component-footer-icon">
                             <StatusCircle 
                                 status={activityService.Status.STARTED} 
@@ -458,7 +484,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
                     {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                     {/* Mark activity started */}
-                    { false && canCompleteActivity() && (
+                    { useActivityStartedStatus && canCompleteActivity() && (
                         <div className="activity-component-footer-icon">
                             <StatusCircle 
                                 status={activityService.Status.COMPLETED} 
@@ -468,6 +494,29 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                                 }}
                             />
                             <p>Complete it</p>
+                        </div>
+                    )}
+
+                    { useActivityStartedStatus && canCompleteActivity() && (
+                        <div className="activity-component-footer-icon">
+                            <Camera 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenCamera(() => onConfirmPhoto);
+                                }}
+                            />
+                            <p>Take photo</p>
+                        </div>
+                    )}
+
+                    { photos.length > 0 && (
+                        <div className="activity-component-footer-icon">
+                            <Image 
+                                onClick={(e) => {
+                                e.stopPropagation();
+                                onDisplayImages(photos);
+                            }}/>
+                            <p>See photos</p>
                         </div>
                     )}
 

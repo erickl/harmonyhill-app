@@ -1,0 +1,38 @@
+.img-carousel-nav-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.img-carousel-nav-controls h2 {
+    /* Add space between the counter and the arrows */
+    margin: 0 1rem;
+    font-size: 1rem; /* Adjust size as needed */
+    font-weight: 500;
+}
+
+.carousel-image-box {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin: 0 auto;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.carousel-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-placeholder {
+    background-color: white;
+    border: 1px solid #ddd;
+}
