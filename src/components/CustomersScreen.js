@@ -172,7 +172,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                             }}
                                         />
                                     </div>
-                                    <div class="customer-sub-header">
+                                    <div className="customer-sub-header">
                                         <span class="small-text">{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</span>
                                         {utils.isToday(customer.checkInAt) && (<span class="small-text">Checking In Today</span>)}
                                         {utils.isToday(customer.checkOutAt) && (<span class="small-text">Checking Out Today</span>)}
