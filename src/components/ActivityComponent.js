@@ -66,12 +66,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     };
 
     const onConfirmPhoto = async (photo) => {
-        const downloadUrl = await activityService.uploadPhoto(activity, photo, onError);
-        if(downloadUrl !== false) {
-            // Todo: since we're gonna re-download them all again for now, don't need to set the list here
-            //const allPhotos = await activityService.getPhotos(activity, onError);
-            //let newPhotos = [...photos, ...allPhotos];
-            //setPhotos(newPhotos);
+        const photoRecord = await activityService.uploadPhoto(activity, photo, onError);
+        if(photoRecord !== false) {
+            let newPhotos = [...photos, photoRecord];
+            setPhotos(newPhotos);
             onSuccess();
         }
     }

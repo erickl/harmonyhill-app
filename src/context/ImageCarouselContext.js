@@ -37,9 +37,7 @@ export function ImageCarouselProvider({ children }) {
         const getCurrentImage = async() => {
             if(images && images.length > currentIndex) {
                 const current = images[currentIndex];
-                const photoUrl = current.url;
-                const newCurrentImage = await getPhotoUrl(photoUrl);
-                setCurrentImage(newCurrentImage);
+                setCurrentImage(current);
             }
         }
         getCurrentImage();
