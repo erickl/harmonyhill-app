@@ -98,7 +98,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     }
 
     const handleActivityPurchase = async () => {
-        let addActivityResult = null;
+        let addActivityResult = false;
 
         formData.category = selectedCategory;
         formData.subCategory = selectedActivity.subCategory;
@@ -110,7 +110,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             addActivityResult = await activityService.add(customer.id, formData, onError);
         }
         
-        if(addActivityResult) {
+        if(addActivityResult !== false) {
             onSuccess();
             handleCategorySelection(null);
             handleActivitySelection(null);

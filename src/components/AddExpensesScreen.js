@@ -248,7 +248,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 return;
             }
             
-            let result = null;
+            let result = false;
             
             if(expenseToEdit) {
                 result = await expenseService.update(expenseToEdit.id, formData, onError);
@@ -256,7 +256,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 result = await expenseService.add(formData, onError);
             }         
 
-            if(result) {
+            if(result !== false) {
                 if(expenseToEdit) onClose();
                 else resetForm();
                 onSuccess();

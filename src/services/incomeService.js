@@ -20,7 +20,7 @@ export async function add(data, onError) {
         if(addResult === false) {
             throw new Error(`Could not add income`);
         }
-        return true;
+        return addResult;
     });
     
     return addResult;

@@ -35,8 +35,7 @@ export class Provider extends BaseModel {
         const data = this.data();
 
         try {
-            const uploadSuccess = await dao.add([Provider.COLLECTION], this.id, data);
-            return uploadSuccess;
+            return await dao.add([Provider.COLLECTION], this.id, data);
         } catch(e) {
             onError(`Error on dish upload ${this.id}: ${e.message}`);
             return false;

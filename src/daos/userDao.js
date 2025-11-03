@@ -31,14 +31,8 @@ export async function get(options = {}) {
     }
 }
 
-export async function add(id, userData) {
-    try {
-        const success = await dao.add(['users'], id, userData);
-        return success;
-    } catch (error) {
-        console.error('Error adding user:', error);
-        return null;
-    }
+export async function add(id, userData, onError) {
+    return await dao.add(['users'], id, userData, onError);
 }
 
 export async function update(id, userData, onError) {

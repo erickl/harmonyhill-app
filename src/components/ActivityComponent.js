@@ -68,9 +68,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const onConfirmPhoto = async (photo) => {
         const downloadUrl = await activityService.uploadPhoto(activity, photo, onError);
         if(downloadUrl !== false) {
-            const allPhotos = await activityService.getPhotos(activity, onError);
-            let newPhotos = [...photos, ...allPhotos];
-            setPhotos(newPhotos);
+            // Todo: since we're gonna re-download them all again for now, don't need to set the list here
+            //const allPhotos = await activityService.getPhotos(activity, onError);
+            //let newPhotos = [...photos, ...allPhotos];
+            //setPhotos(newPhotos);
             onSuccess();
         }
     }
@@ -82,6 +83,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     }
 
     const canStartActivity = () => {
+        if(!useActivityStartedStatus) return false;
+
         const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
         if(!isGoodToGo) {
             return false;
@@ -102,6 +105,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     }
 
     const canCompleteActivity = () => {
+        if(!useActivityStartedStatus) return false;
+
         const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
         const isStarted = status && status.category === activityService.Status.STARTED;
         const canStillStart = canStartActivity();
@@ -470,7 +475,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
                     {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                     {/* Mark activity started */}
-                    { useActivityStartedStatus && canStartActivity() && (
+                    { canStartActivity() && (
                         <div className="activity-component-footer-icon">
                             <StatusCircle 
                                 status={activityService.Status.STARTED} 
@@ -485,7 +490,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
                     {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                     {/* Mark activity started */}
-                    { useActivityStartedStatus && canCompleteActivity() && (
+                    { canCompleteActivity() && (
                         <div className="activity-component-footer-icon">
                             <StatusCircle 
                                 status={activityService.Status.COMPLETED} 
@@ -498,7 +503,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { useActivityStartedStatus && canAddPhotos() && (
+                    { canAddPhotos() && (
                         <div className="activity-component-footer-icon">
                             <Camera 
                                 onClick={(e) => {
@@ -513,10 +518,11 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     { photos.length > 0 && (
                         <div className="activity-component-footer-icon">
                             <Image 
-                                onClick={(e) => {
-                                e.stopPropagation();
-                                onDisplayImages(photos);
-                            }}/>
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    onDisplayImages(photos);
+                                }}
+                            />
                             <p>See photos</p>
                         </div>
                     )}

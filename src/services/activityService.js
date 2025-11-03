@@ -178,8 +178,8 @@ export async function add(bookingId, activityData, onError) {
     activity.house = booking.house;
 
     const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
-    const success = await activityDao.add(bookingId, activityId, activity, onError);
-    return success ? activityId : false;
+    const result = await activityDao.add(bookingId, activityId, activity, onError);
+    return result !== false ? result : false;
 }
 
 /**
@@ -511,15 +511,16 @@ export async function getStatus(activity, onError) {
         return status(Status.PLEASE_BOOK);
     }
     if(utils.isEmpty(activity.assignedTo)) {
-        if(utils.isToday(activity.startingAt)) {
+        if(utils.isBeforeToday(activity.startingAt)) {
+            return status(Status.ASSIGN_STAFF, "Staff assignment overdue!");
+        } else if(utils.isToday(activity.startingAt)) {
             return status(Status.ASSIGN_STAFF);
-        }
-        else if(utils.isTomorrow(activity.startingAt)) {
+        } else if(utils.isTomorrow(activity.startingAt)) {
             const todayAtFivePm = utils.today().set({hour: 17});
             if(utils.isPast(todayAtFivePm)) {
                 return status(Status.ASSIGN_STAFF);
             }
-        }
+        } 
     }
     if(utils.isEmpty(activity.startingTime)) {
         return status(Status.DETAILS_MISSING, "Set starting time");

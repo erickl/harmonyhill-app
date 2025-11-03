@@ -24,7 +24,7 @@ export async function updatePettyCashBalance(amount, onError) {
         result = await dao.update(path, id, newDoc, false, onError);
     }
 
-    if(result) {
+    if(result !== false) {
         return newBalance;
     } else {
         return false;

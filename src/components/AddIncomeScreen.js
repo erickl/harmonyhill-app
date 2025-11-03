@@ -132,14 +132,14 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         try {
             if(!readyToSubmit) return;
 
-            let result = null;
+            let result = false;
             if(incomeToEdit) {
                 result = await incomeService.update(incomeToEdit.id, formData, onError);
             } else {
                 result = await incomeService.add(formData, onError);
             }
            
-            if(result) {
+            if(result !== false) {
                 if(incomeToEdit) onClose();
                 else resetForm();
                 onSuccess();

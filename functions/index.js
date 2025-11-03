@@ -78,7 +78,7 @@ const hourlyWork = async() => {
     // Update the activity providers notification document
     const result = await adapter.add("notifications", "activity-providers-needed", notification);
     //await db.collection("notifications").doc("activity-providers-needed").set(notification);
-    if(result) {
+    if(result !== false) {
         console.log("⏰ Hourly job done", new Date().toISOString());
     } else {
         console.log("Couldn't create activity-providers-needed notification", new Date().toISOString());
@@ -150,7 +150,7 @@ const dailyActivitiesCreationWork = async() => {
                 const checkInId = adapter.makeActivityId(checkIn);
                 const checkInCreateResult = await adapter.add(activitiesPath, checkInId, checkIn);
             
-                console.log(`⏰ Check in activity creation job for ${booking.id} ${checkInCreateResult ? "done" : "failed"}`, new Date().toISOString());
+                console.log(`⏰ Check in activity creation job for ${booking.id} ${checkInCreateResult !== false ? "done" : "failed"}`, new Date().toISOString());
 
                 // Create check out activity
                 const checkOut = {
@@ -184,7 +184,7 @@ const dailyActivitiesCreationWork = async() => {
                     const activityId = adapter.makeActivityId(redEnvelopeActivity);
                     const result = await adapter.add(activitiesPath, activityId, redEnvelopeActivity);
 
-                    console.log(`⏰ 🧧 Red envelope activity creation job for ${booking.id} ${result ? "done" : "failed"}`, new Date().toISOString()); 
+                    console.log(`⏰ 🧧 Red envelope activity creation job for ${booking.id} ${result !== false ? "done" : "failed"}`, new Date().toISOString()); 
                 }
 
                 const housekeepingActivity = {
@@ -197,7 +197,7 @@ const dailyActivitiesCreationWork = async() => {
                 const activityId = adapter.makeActivityId(housekeepingActivity);
                 const result = await adapter.add(activitiesPath, activityId, housekeepingActivity);
 
-                console.log(`⏰ 🧹 Housekeeping activity creation job for ${booking.id} ${result ? "done" : "failed"}`, new Date().toISOString());
+                console.log(`⏰ 🧹 Housekeeping activity creation job for ${booking.id} ${result !== false ? "done" : "failed"}`, new Date().toISOString());
             }   
         }
         console.log(`⏰ Activity creation for ${currentBookings.length} done`, new Date().toISOString());

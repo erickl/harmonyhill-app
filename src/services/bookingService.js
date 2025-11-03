@@ -78,7 +78,7 @@ async function addCheckIn(bookingId, booking, onError) {
         throw new Error(`Couldn't add check in data for booking ${bookingId}`);
     }
 
-    return true;
+    return addCheckInResult;
 }
 
 async function addCheckOut(bookingId, booking, onError) {
@@ -99,23 +99,19 @@ async function addCheckOut(bookingId, booking, onError) {
         throw new Error(`Couldn't add checkout data for booking ${bookingId}`);
     }
 
-    return true;
+    return addCheckOutResult;
 }
 
 export async function add(bookingData, onError) {
     const result = transaction(async () => {
         const bookingObject = await mapBookingObject(bookingData);
         const bookingId = createBookingId(bookingObject.name, bookingObject.house, bookingObject.checkInAt);
-        const addBookingSuccess = await bookingDao.add(bookingId, bookingObject, onError);
-        if(addBookingSuccess === false) {
+        const addBookingResult = await bookingDao.add(bookingId, bookingObject, onError);
+        if(addBookingResult === false) {
             throw new Error(`Couldn't update transaction`);   
         }
 
-        // Todo: in progress. Might move this to firebase functions, to add them only the day before the event
-        //const addCheckInResult = await addCheckIn(bookingId, bookingObject, onError);
-        //const addCheckOutResult = await addCheckIn(bookingId, bookingObject, onError);
-
-        return true;
+        return addBookingResult;
     });
 
     return result;
@@ -124,7 +120,8 @@ export async function add(bookingData, onError) {
 export async function update(bookingId, bookingUpdateData, onError) {
     const result = transaction(async () => {
         const bookingUpdate = await mapBookingObject(bookingUpdateData);    
-        const updateBookingSuccess = await bookingDao.update(bookingId, bookingUpdate, onError);
+        const updateBookingResult = await bookingDao.update(bookingId, bookingUpdate, onError);
+        return updateBookingResult;
     });
 
     return result;

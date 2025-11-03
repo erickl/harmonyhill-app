@@ -4,6 +4,8 @@ import * as userDao from "../daos/userDao.js";
 import * as utils from "../utils.js";
 
 export async function signUp(username, email, role, password, onError) {
+    let addUserDataSuccess = false;
+
     try {
         const existingUsers = await userDao.get({email: email});
         if (existingUsers && existingUsers.length > 0) {
@@ -17,27 +19,26 @@ export async function signUp(username, email, role, password, onError) {
             displayName: username,
         });
 
-        const addUserDataSuccess = await userDao.add(user.uid, {
+        addUserDataSuccess = await userDao.add(user.uid, {
             name: username,
             email: email,
             role: role,
             lastLoginAt: null,
             approved: false,
-        });
-
+        }, onError);
+    } catch (e) {
+        onError(`Error signing up: ${e.message}`);
+        return false;
+    } finally {
         // If we don't log them out here, they will be logged in right after registering. We need to approve them first
         await signOut(auth);
+    }
 
-        if (!addUserDataSuccess) {
-            console.error("Error adding user to database");
-            return false;
-        }
-
-        return true;
-    } catch (error) {
-        onError(`Error signing up: ${error.message}`);
+    if (addUserDataSuccess === false) {
         return false;
     }
+
+    return true;
 }
   
 /**

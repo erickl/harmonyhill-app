@@ -288,12 +288,11 @@ export async function getParent(child) {
     return null;
 }
 
-export async function transaction(inTransaction) {
+export async function transaction(inTransaction, onError = null) {
     try {
-        const transactionResult = await runTransaction(db, inTransaction);
-        return true;
+        return await runTransaction(db, inTransaction);
     } catch (e) {
-        console.error(`Error in DB transaction`, e);
+        if(onError) onError(`Error in DB transaction: ${e.message}`);
         return false;
     }
 }

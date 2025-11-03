@@ -89,7 +89,7 @@ export async function testPersonnel() {
     };
 
     const personnelId = await add(personnel);
-    if (personnelId) {
+    if (personnelId !== false) {
         console.log(`Personnel added with ID: ${personnelId}`);
     } else {
         console.error("Failed to add personnel");
