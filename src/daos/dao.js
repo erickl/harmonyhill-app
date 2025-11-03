@@ -185,7 +185,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
                 "action"    : "update" 
             };
             const updateLogRef = doc(db, ...["userLogs"], `u-${id}-${Date.now()}`);
-            const updateLogResult = await setDoc(updateLogRef, updateLog);
+            await setDoc(updateLogRef, updateLog);
         }
 
         updatedData.updatedAt = now;
@@ -193,7 +193,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 
         // Run the main update
         const ref = doc(db, ...path, id);
-        const updateResult = await updateDoc(ref, updatedData);
+        await updateDoc(ref, updatedData);
         return true;
     }
     catch (e) {
@@ -220,12 +220,12 @@ export async function add(path, id, data, onError = null) {
             "action"    : "create" 
         };
         const addLogRef = doc(db, ...["userLogs"], `c-${id}`);
-        const addLogResult = await setDoc(addLogRef, addLog);
+        await setDoc(addLogRef, addLog);
         
         // Create the data record in DB
         const ref = doc(db, ...path, id);
-        const addResult = await setDoc(ref, data);
-        return true;
+        await setDoc(ref, data);
+        return data;
     } catch (e) {
         if(onError) onError(`Error adding document ${path}/${id}: ${e.message}`);
         return false;
