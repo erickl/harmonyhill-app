@@ -8,27 +8,30 @@ import { SuccessNotificationProvider } from "../context/SuccessContext.js";
 import { ConfirmationProvider } from "../context/ConfirmationContext.js";
 import { CameraProvider } from "../context/CameraContext.js";
 import { ImageCarouselProvider } from "../context/ImageCarouselContext.js";
+import { ProgressProvider } from "../context/ProgressContext.js";
 
 export function AppProviders({ children }) {
-  return (
-    <SuccessNotificationProvider>
-    <NotificationProvider>
-    <ConfirmationProvider>
-    <FilterProvider>
-    <MenuProvider>
-    <MarkDownProvider>
-    <ItemsCounterProvider>
-    <CameraProvider>
-    <ImageCarouselProvider>
-      {children}
-    </ImageCarouselProvider>
-    </CameraProvider>
-    </ItemsCounterProvider>
-    </MarkDownProvider>
-    </MenuProvider>
-    </FilterProvider>
-    </ConfirmationProvider>
-    </NotificationProvider>
-    </SuccessNotificationProvider>
-  );
+    return (
+        <ProgressProvider>
+        <SuccessNotificationProvider>
+        <NotificationProvider>
+        <ConfirmationProvider>
+        <FilterProvider>
+        <MenuProvider>
+        <MarkDownProvider>
+        <ItemsCounterProvider>
+        <CameraProvider>
+        <ImageCarouselProvider>
+          {children}
+        </ImageCarouselProvider>
+        </CameraProvider>
+        </ItemsCounterProvider>
+        </MarkDownProvider>
+        </MenuProvider>
+        </FilterProvider>
+        </ConfirmationProvider>
+        </NotificationProvider>
+        </SuccessNotificationProvider>
+        </ProgressProvider>
+    );
 }
