@@ -57,7 +57,7 @@ export async function update(id, data, onError) {
         if(updateResult === false) {
             throw new Error(`Could not update income`);
         }
-        return true;
+        return updateResult;
     });
 
     return updateResult;

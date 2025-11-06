@@ -36,8 +36,8 @@ export async function addMeal(bookingId, mealData, onError) {
         meal.bookingId = bookingId;
 
         mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
-        const success = await activityDao.add(bookingId, mealId, meal, onError);
-        if(!success) {
+        const mealRecord = await activityDao.add(bookingId, mealId, meal, onError);
+        if(mealRecord === false) {
             throw new Error(`Could not add meal ${mealId}`)
         }
 
@@ -47,6 +47,8 @@ export async function addMeal(bookingId, mealData, onError) {
                 throw new Error(`Not all dishes were successfully uploaded for meal ${mealId}`)
             }
         }
+
+        return mealRecord;
     });
 
     return addMealSuccess ? mealId : false;
@@ -139,8 +141,8 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
 
         // Update meal data
         const mealUpdate = await mapMealObject(mealUpdateData);
-        const updateMealSuccess = await activityDao.update(bookingId, mealId, mealUpdate, true, onError);
-        if(!updateMealSuccess) {
+        const updateMealRecord = await activityDao.update(bookingId, mealId, mealUpdate, true, onError);
+        if(!updateMealRecord) {
             throw new Error(`Cannot update meal ${bookingId}/${mealId}`);
         }
         
@@ -170,6 +172,8 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
                 throw new Error(`Cannot update total meal price for meal with dish ${mealId}`);
             }
         }
+        
+        return updateMealRecord;
     });
 
     return updateMealSuccess;

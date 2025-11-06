@@ -15,6 +15,7 @@ import { Pencil, ShoppingCart, Trash2, ImageDown } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 import MetaInfo from './MetaInfo.js';
 import { useFilters } from "../context/FilterContext.js";
+import { useProgressCounter } from "../context/ProgressContext.js";
 
 export default function ExpensesScreen({ onNavigate, onClose }) {
 
@@ -31,8 +32,8 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [expenseSum,       setExpenseSum      ] = useState(null );
 
     const {onFilter} = useFilters();
-
     const { onError } = useNotification();
+    const { onProgress } = useProgressCounter();
 
     const filterHeaders = {
         "after"  : "date",
@@ -60,7 +61,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
 
     const handlePicturesDownload = async(filters) => {
         const filename = `receipts`;
-        const success = await expenseService.downloadExpenseReceipts(filename, filters, onError);
+        const success = await expenseService.downloadExpenseReceipts(filename, filters, onProgress, onError);
         const x = 1; // todo, if success = true, display onSuccess?
     }
 
