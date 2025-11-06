@@ -1,6 +1,6 @@
 [
   {
-    "origin": ["https://harmonyhill-1.web.app"],
+    "origin": ["https://harmonyhill-1.web.app", "http://localhost:3000"],
     "responseHeader": ["Content-Type", "Authorization"],
     "method": ["GET", "HEAD", "OPTIONS"],
     "maxAgeSeconds": 3600,
