@@ -194,7 +194,9 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
         // Run the main update
         const ref = doc(db, ...path, id);
         await updateDoc(ref, updatedData);
-        return true;
+        
+        const updatedDoc = await getOne(path, id, onError);
+        return updatedDoc;
     }
     catch (e) {
         if(onError) onError(`Error updating document ${path}/${id}: ${e.message}`);
