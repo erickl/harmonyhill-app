@@ -1,31 +1,31 @@
 
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5); /* dim background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999; /* make sure it's on top */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* dim background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* make sure it's on top */
 }
 
 .modal-box {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  max-width: 400px;
-  width: 90%;
-  text-align: center;
-  z-index: 10000;
-  max-height: 70vh;
-  overflow-y: auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    z-index: 10000;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .validation-error {
-  margin-left: 10px;
-  color: red;
+    margin-left: 10px;
+    color: red;
 }

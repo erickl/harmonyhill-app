@@ -5,12 +5,14 @@ import * as utils from "../utils.js";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-export async function upload(filename, blob, options = {}, onError = null) {
+export async function upload(filename, dataUrl, options = {}, onError = null) {
     try {
         if(!utils.isEmpty(options)) {
-            blob = await compressImage(blob, options, onError);
+            dataUrl = await compressImage(dataUrl, options, onError);
         }
-        const dataUrl = await blobToBase64(blob);
+
+        if(dataUrl === false) return false;
+        
         const storageRef = ref(storage, filename);
 
         const snapshot = await uploadString(storageRef, dataUrl, 'data_url');
@@ -27,7 +29,7 @@ export async function upload(filename, blob, options = {}, onError = null) {
     }
 }
 
-export async function compressImage(file, compressionOptions, onError) {
+export async function compressImage(dataUrl, compressionOptions, onError) {
     try {
         const maxSize = utils.isEmpty(compressionOptions.maxSize) ? 0.3 : compressionOptions.maxSize;
         const options = {
@@ -36,11 +38,14 @@ export async function compressImage(file, compressionOptions, onError) {
             useWebWorker: true
         };
 
+        const file = dataUrlToFile(dataUrl); 
         const compressedFile = await imageCompression(file, options);
+        const compressedDataUrl = await blobToBase64(compressedFile);
 
-        return compressedFile;
+        return compressedDataUrl;
     } catch (e) {
-        onError(`Error uploading mini picture: ${e.message}`);
+        onError(`Error compressing file: ${e.message}`);
+        return false;
     }
 }
 
@@ -101,11 +106,25 @@ export function blobToBase64(blob) {
     });
 }
 
-export async function downloadAllZipped(toFilename, paths, onError) {
+function dataUrlToFile(dataURL, filename) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+}
+
+export async function downloadAllZipped(toFilename, paths, onProgress, onError) {
     try {
         const zip = new JSZip();
 
-        for (const path of paths) {
+        const fileCount = paths.length;
+        for (let i = 0; i < fileCount; i++) {
+            const path = paths[i];
             const fileRef = ref(storage, path);
             const url = await getDownloadURL(fileRef);
             // For this to work, we have to set CORS restrictions: see cors.json
@@ -113,10 +132,13 @@ export async function downloadAllZipped(toFilename, paths, onError) {
             const filedata = await res.blob();
             const filename = path.split("/").pop();
             zip.file(filename, filedata);
+            onProgress(i/fileCount);
         }
 
         const content = await zip.generateAsync({ type: "blob" });
         saveAs(content, `${toFilename}.zip`);
+        
+        onProgress(100);
     } catch(e) {
         onError(`Could not download all files: ${e.message}`);
         return false;

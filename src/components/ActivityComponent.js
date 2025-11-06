@@ -18,7 +18,6 @@ import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useCameraModal } from '../context/CameraContext.js';
 import { useImageCarousel } from '../context/ImageCarouselContext.js';
 import MetaInfo from './MetaInfo.js';
-import * as storageDao from "../daos/storageDao.js";
 
 const assigneeStyles = [
     { backgroundColor: "#E12C2C", color: "white" },
@@ -506,7 +505,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                             <Camera 
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onOpenCamera(() => onConfirmPhoto);
+                                    onOpenCamera(true, false, () => onConfirmPhoto);
                                 }}
                             />
                             <p>Take photo</p>

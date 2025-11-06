@@ -1,10 +1,12 @@
 import React, { createContext, useState, useContext } from "react";
-import UploadPhotoScreen from "../components/UploadPhotoScreen.js";
+import CapturePhotoScreen from "../components/CapturePhotoScreen.js";
 
 const CameraContext = createContext();
 
 export function CameraProvider({ children }) {
     const [photo, setPhoto] = useState(null);
+    const [useCamera, setUseCamera] = useState(false);
+    const [useAlbum, setUseAlbum] = useState(false);
     const [open, setOpen] = useState(false);
     const [onConfirmPhoto, setOnConfirmPhoto] = useState(null);
 
@@ -16,7 +18,9 @@ export function CameraProvider({ children }) {
         setOpen(false);
     }
 
-    const onOpenCamera = (onConfirmPhoto) => {
+    const onOpenCamera = (useCamera, useAlbum, onConfirmPhoto) => {
+        setUseAlbum(useAlbum);
+        setUseCamera(useCamera);
         setOnConfirmPhoto(onConfirmPhoto);
         setOpen(true);
     }
@@ -27,19 +31,13 @@ export function CameraProvider({ children }) {
             {open && (
                 <div className="modal-overlay">
                     <div className="modal-box">
-                        <UploadPhotoScreen 
-                            current={photo} 
-                            onUploadSuccess={(photo) => handleChange(photo)}
-                            resetTrigger={null}
+                        <CapturePhotoScreen 
+                            useCamera={useCamera}
+                            useAlbum={useAlbum}
+                            onConfirmPhoto={onConfirmPhoto}
+                            onCaptureSuccess={(photo) => handleChange(photo)}
                             onClose={hidePopup}
                         />
-
-                        <button onClick={() => {
-                            if(onConfirmPhoto) onConfirmPhoto(photo);
-                            hidePopup();
-                        }}>
-                            Use Photo
-                        </button>
                     </div>
                 </div>
             )}

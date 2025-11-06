@@ -11,17 +11,17 @@
 }
 
 .bottom-navigation {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
-  height: 60px;              /* adjust as needed */
-  background: #fff;          /* or your theme color */
-  border-top: 1px solid #ccc;/* subtle divider */
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  z-index: 1100;             /* higher than fullscreen content */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 60px;              /* adjust as needed */
+    background: #fff;          /* or your theme color */
+    border-top: 1px solid #ccc;/* subtle divider */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1100;             /* higher than fullscreen content */
 }
 
 .nav-button {
@@ -36,19 +36,19 @@
 }
 
 .fullscreen {
-  position: fixed;   /* ignore parent, stick to viewport */
-  top: 0;
-  left: 0;
-  bottom: 60px;
-  width: 100vw;
- 
-  margin: 0;
-  border-radius: 0;
-  z-index: 1000;     /* make sure it’s above other content */
-  background-color: rgb(247, 243, 243); /* your existing style */
-  box-shadow: none;  /* usually modals don’t need shadows */
-  display: flex;
-  flex-direction: column;
+    position: fixed;   /* ignore parent, stick to viewport */
+    top: 0;
+    left: 0;
+    bottom: 60px;
+    width: 100vw;
+    
+    margin: 0;
+    border-radius: 0;
+    z-index: 1000;     /* make sure it’s above other content */
+    background-color: rgb(247, 243, 243); /* your existing style */
+    box-shadow: none;  /* usually modals don’t need shadows */
+    display: flex;
+    flex-direction: column;
 }
 
 .nav-button.active {
@@ -68,19 +68,19 @@
 }
 
 .card-header-right {
-  display: flex;
-  flex-direction: column;   /* stack top & bottom rows */
-   justify-content: space-between; /* push bottom row down */
-  width: auto;
+    display: flex;
+    flex-direction: column;   /* stack top & bottom rows */
+    justify-content: space-between; /* push bottom row down */
+    width: auto;
 }
 
 .card-header-right-top-row {
-  display: flex;
+    display: flex;
 }
 
 .card-header-right-bottom-row {
-  margin-top: auto;
-  text-align: right;
+    margin-top: auto;
+    text-align: right;
 }
 
 .card-header-left {

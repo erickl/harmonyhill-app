@@ -3,7 +3,6 @@ import * as expenseService from "../services/expenseService.js";
 import * as userService from "../services/userService.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
-import UploadPhotoScreen from './UploadPhotoScreen.js';
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
@@ -12,6 +11,7 @@ import "./AddExpenseScreen.css";
 import { useNotification } from "../context/NotificationContext.js";
 import ExpensesScreen from './ExpensesScreen.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import { useCameraModal } from "../context/CameraContext.js";
 
 export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
 
@@ -35,6 +35,8 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         comments      : expenseToEdit ? expenseToEdit.comments      : '',
     };
 
+    if(expenseToEdit) emptyForm.photo = emptyForm.photoUrl;
+
     const [bookings,          setBookings         ] = useState([]       );
     const [activities,        setActivities       ] = useState([]       );
     const [teamMembers,       setTeamMembers      ] = useState([]       );
@@ -45,12 +47,9 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const [imageResetTrigger, setImageResetTrigger] = useState(0        );
     const [isAdmin,           setIsAdmin          ] = useState(false    );
 
-    const onValidationError = (error) => {
-        setValidationError(error);
-    };
-
     const { onError } = useNotification();
-    const {onSuccess} = useSuccessNotification();
+    const { onSuccess } = useSuccessNotification();
+    const { onOpenCamera } = useCameraModal();
 
     // todo: put in database
     const categories = {
@@ -68,6 +67,14 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         'Guest Refunds'        : {"name" : "Guest Refunds"        },
         'Other'                : {"name" : "Other"                },
     };
+
+    const onValidationError = (error) => {
+        setValidationError(error);
+    };
+
+    const onConfirmPhoto = async (photo) => {
+        handleChange("photo", photo);
+    }
 
     const getBookingActivities = async(bookingId) => {
         const bookingActivities = await activityService.get(bookingId);
@@ -260,8 +267,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 if(expenseToEdit) onClose();
                 else resetForm();
                 onSuccess();
-            } else {
-                throw new Error("Receipt form data upload error");
             }
         } catch(e) {
             onError(`Submit error: ${e.message}`);
@@ -303,13 +308,18 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 </div>
             </div>
             <div className="card-content">
-                <UploadPhotoScreen 
-                    current={formData.photoUrl} 
-                    onUploadSuccess={(photo) => handleChange("photo", photo)}
-                    resetTrigger={imageResetTrigger}
-                />
+                {formData.photo ? (<>
+                    <div className="form-group">
+                        <img
+                            src={formData.photo} 
+                            alt="Preview" 
+                        />
+                    </div>
+                    
+                    <button onClick={() => onOpenCamera(true, true, () => onConfirmPhoto)}>
+                        Edit photo
+                    </button>
 
-                {(formData.photoUrl || formData.photo) && (<>
                     <div className="form-group">
                         <label htmlFor="amount">Amount (IDR):</label>
                         <div className="currency-input-wrapper">
@@ -411,7 +421,11 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                             className="input"
                         ></textarea>
                     </div>
-                </>)}
+                </>) : (  
+                    <button onClick={() => onOpenCamera(true, true, () => onConfirmPhoto)}>
+                        Add photo
+                    </button>
+                )}
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 

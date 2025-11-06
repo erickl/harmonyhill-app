@@ -7,14 +7,17 @@ import {getOne as getBooking} from "./bookingService.js";
 export async function add(data, onError) {
     const addResult = await expenseDao.transaction(async () => {
         data.index = await expenseDao.getNextSerialNumber(data.purchasedAt, onError);
+        
         data = await processReceipt(data, onError);
+        if(data === false) return false;
+
         const object = mapReceiptObject(data);
 
         const addResult = await expenseDao.add(object, onError);
         if(addResult === false) {
             throw new Error(`Could not add the receipt`);
         }
-        return true;
+        return addResult;
     });
     
     return addResult;
@@ -31,8 +34,8 @@ async function processReceipt(data, onError) {
         delete data['photo'];
     }
     
-    if(!data.photoUrl) {
-        throw new Error(`Unexpected error. Cannot find the photo URL`);
+    if(!data.photoUrl || data.photoUrl === false) {
+        return false;
     }
 
     return data;
@@ -46,6 +49,8 @@ export async function update(id, data, onError) {
         }
 
         data = await processReceipt(data, onError);
+        if(data === false) return false;
+
         const object = mapReceiptObject(data);
         
         const updateResult = await expenseDao.update(id, object, onError);
@@ -61,16 +66,16 @@ export async function update(id, data, onError) {
             }
         }
 
-        return true;
+        return updateResult;
     });
     
     return updateResult;
 }
 
-export async function downloadExpenseReceipts(toFilename, filters, onError) {
+export async function downloadExpenseReceipts(toFilename, filters, onProgress, onError) {
     const expenses = await get(filters, onError);
     const filePaths = expenses.map((expense) => expense.fileName);
-    const success = await storageDao.downloadAllZipped(toFilename, filePaths, onError);
+    const success = await storageDao.downloadAllZipped(toFilename, filePaths, onProgress, onError);
     return success;
 }
 
@@ -79,8 +84,8 @@ export async function downloadExpenseReceipts(toFilename, filters, onError) {
  * @param {*} filename 
  * @param {*} image 
  */
-export async function uploadReceipt(filename, file, options, onError) {
-    return await storageDao.upload(filename, file, options, onError);
+export async function uploadReceipt(filename, dataUrl, options, onError) {
+    return await storageDao.upload(filename, dataUrl, options, onError);
 }
 
 export async function get(filterOptions, onError) {
