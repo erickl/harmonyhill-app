@@ -121,21 +121,23 @@ export default function CapturePhotoScreen({ onCaptureSuccess, onConfirmPhoto, u
     };
 
     return (
-        <div style={{ position: "relative"}}>
-            <XIcon 
-                size={30}
-                style={{ position: "absolute", top:'0rem', left:'0rem', color:'#f44336'}}
-                onClick={handleCloseScreen}
-            />
-            
-
-            { videoStream == null && useCamera && (<>
-                <RefreshCw 
+        <div style={{ display:"flex", flexDirection:"column"}}>
+            <div style={{ display:"flex", flexDirection:"row", justifyContent: 'space-between', width: '100%'}}>
+                <XIcon 
                     size={30}
-                    style={{ position: "absolute", top:'0rem', right:'0rem' }}
-                    onClick={handleOpenCamera}
+                    style={{ color:'#f44336'}}
+                    onClick={handleCloseScreen}
                 />
-            </>)}
+                
+
+                { videoStream == null && useCamera && (<>
+                    <RefreshCw 
+                        size={30}
+                        style={{ }}
+                        onClick={handleOpenCamera}
+                    />
+                </>)}
+            </div>
 
             {/* Preview and Upload Captured Photo */}
             {previewImage && !videoStream && (
@@ -155,7 +157,7 @@ export default function CapturePhotoScreen({ onCaptureSuccess, onConfirmPhoto, u
             )}
 
             {/* Hidden canvas for drawing the video frame */}
-            {/* <canvas ref={canvasRef} style={{  marginTop: '2rem', display: 'none' }} /> */}
+            <canvas ref={canvasRef} style={{  marginTop: '2rem', display: 'none' }} />
             
             {videoStream && (
                 <video 
