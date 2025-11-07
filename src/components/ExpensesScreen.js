@@ -47,8 +47,8 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         setLoadingExpanded((prev) => ({...prev, [expense.id]: false}));
     }
 
-    const getDataForExport = async(filterValues) => {
-        const rows = await expenseService.toArrays(filterValues, onError);
+    const getDataForExport = async(filterValues, onProgress) => {
+        const rows = await expenseService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 
@@ -166,7 +166,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                     <div>
                         <div className="card-header-right-top-row">
                             {isAdmin && (<>
-                                <SheetUploader onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                                <SheetUploader label={"Expenses"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                                 <ImageDown style={{margin:"1rem"}} onClick={() => handleReceiptsDownloadFilter()} />
                             </>)}
                             <button className="add-button" onClick={() => onClose()}>

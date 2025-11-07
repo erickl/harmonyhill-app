@@ -385,14 +385,26 @@ async function mapDishObject(data) {
     return object;
 }
 
-export async function toArrays(filters, onError) {
+export async function toArrays(filters, onProgress, onError) {
+    onProgress(0);
+
     filters.category = "meal";
     const meals = await activityService.getAll(filters, onError);
+    onProgress(20);
 
     let rows = [["startingAt", "dish", "quantity", "course", "guestName", "house", "price", "mealFree", "dishFree", "assignedTo", "comments", "shouldBeFree"]];
-
-    for(const meal of meals) {
+    
+    const mealCount = meals.length;
+    const mealPercentagePoint = 0.8/mealCount;
+    let progress = 0.2;
+    
+    for(let i = 0; i < mealCount; i++) {
+        const meal = meals[i];
         const dishes = await getMealDishes(meal.bookingId, meal.id, filters);
+        
+        progress += mealPercentagePoint;
+        onProgress(progress);
+        
         for(const dish of dishes) {
             const x = meal.isFree && !dish.isFree ? "x" : "";
             //             startingAt, dish                                   guestName    house      price
@@ -402,6 +414,7 @@ export async function toArrays(filters, onError) {
             //console.log(JSON.stringify(row));
         }
     }
+    onProgress(100);
 
     return rows;
 }

@@ -6,6 +6,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js"; 
 import { Upload } from 'lucide-react';
 import { useFilters } from "../context/FilterContext.js";
+import { useProgressCounter } from "../context/ProgressContext.js";
 
 // https://console.cloud.google.com/auth/overview?project=harmonyhill-1
 
@@ -24,6 +25,7 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
     const {onError} = useNotification();
     const {onFilter} = useFilters();
     const {onSuccess} = useSuccessNotification();
+    const {onProgress} = useProgressCounter();
 
     const isTokenExpired = (token) => {
         try {
@@ -91,7 +93,7 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
     } 
 
     const handleUploadClick = async (filterValues) => {
-        const rows = await onExportRequest(filterValues);
+        const rows = await onExportRequest(filterValues, onProgress);
         const token = await auth();
         const result = await uploadData(rows, token);
         if(result) {

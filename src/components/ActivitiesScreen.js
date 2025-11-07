@@ -26,13 +26,13 @@ export default  function ActivitiesScreen({onNavigate}) {
     });
 
 
-    const getDataForExport = async(filterValues) => {
-        const rows = await activityService.toArrays(filterValues, onError);
+    const getDataForExport = async(filterValues, onProgress) => {
+        const rows = await activityService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 
-    const getMealDataForExport = async(filterValues) => {
-        const rows = await mealService.toArrays(filterValues, onError);
+    const getMealDataForExport = async(filterValues, onProgress) => {
+        const rows = await mealService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 

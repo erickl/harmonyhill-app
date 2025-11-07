@@ -151,7 +151,9 @@ export async function validate(data, onError) {
     return true;
 }
 
-export async function toArrays(filters, onError) {
+export async function toArrays(filters, onProgress, onError) {
+    onProgress(0);
+
     const documents = await get(filters, onError);
 
     const headers = [
@@ -171,7 +173,9 @@ export async function toArrays(filters, onError) {
 
     let rows = [headers];
 
-    for(const document of documents) {
+    const nDocs = documents.length;
+    for(let i = 0; i < nDocs; i++) {
+        const document = documents[i];
         if(utils.exists(document, "bookingId")) {
             const booking = await getBooking(document.bookingId);
             document.bookingName = booking.name;
@@ -189,7 +193,10 @@ export async function toArrays(filters, onError) {
         }
 
         rows.push(values);
+
+        onProgress(i/nDocs);
     }
 
+    onProgress(100);
     return rows;
 }

@@ -598,7 +598,7 @@ export function needsExpense(activity) {
     return needsExpenseNow;
 }
 
-export async function toArrays(filters, onError) {
+export async function toArrays(filters, onProgress, onError) {
     const documents = await getAll(filters, onError);
 
     const headers = [

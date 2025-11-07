@@ -74,8 +74,8 @@ export default function IncomeScreen({ onNavigate, onClose }) {
         }
     }
 
-    const getDataForExport = async(filterValues) => {
-        const rows = await incomeService.toArrays(filterValues, onError);
+    const getDataForExport = async(filterValues, onProgress) => {
+        const rows = await incomeService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 
@@ -140,7 +140,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                     <div>
                         <div className="card-header-right-top-row">
                             {isAdmin && (<>
-                                <SheetUploader onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                                <SheetUploader label={"Incomes"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
                             <button className="add-button" onClick={() => onClose()}>
                                 + 
