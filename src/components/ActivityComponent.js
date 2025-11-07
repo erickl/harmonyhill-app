@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, act } from 'react';
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
@@ -18,6 +18,8 @@ import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useCameraModal } from '../context/CameraContext.js';
 import { useImageCarousel } from '../context/ImageCarouselContext.js';
 import MetaInfo from './MetaInfo.js';
+
+import { motion } from "framer-motion";
 
 const assigneeStyles = [
     { backgroundColor: "#E12C2C", color: "white" },
@@ -45,6 +47,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const [minuteTicker,            setMinuteTicker           ] = useState(0);
     const [photos,                  setPhotos                 ] = useState([]);   
     const [photoUploading,          setPhotoUploading         ] = useState(false);  
+    const [requiredPhotosUploaded,  setRequiredPhotosUploaded ] = useState(false);
 
     const { onError } = useNotification();
     const { onCountItems } = useItemsCounter();
@@ -76,12 +79,6 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         setPhotoUploading(false);
     }
 
-    const handleActivityClick = async () => {
-        setLoadingExpandedActivity(true);
-        await loadActivityInfo();
-        setLoadingExpandedActivity(false);
-    }
-
     const canStartActivity = () => {
         if(!useActivityStartedStatus) return false;
 
@@ -100,8 +97,21 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     }
 
     const canAddPhotos = () => {
-        const canComplete = canCompleteActivity();
-        return status.category === activityService.Status.STARTED || canComplete;
+        const isCompleted = status && status.category === activityService.Status.COMPLETED;
+        if(isCompleted) return false;
+
+        const isStarted = status && status.category === activityService.Status.STARTED;
+        if(isStarted) return true;
+
+        const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
+        if(!isGoodToGo) return false;
+        
+        // If it's already past the 'Started' stage, we can go from 'Good To Go' to 'Completed', if required photos has been uploaded
+        const now = utils.now();
+        const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
+        const tooLateToStart = minutesLeft < -60;
+        
+        return tooLateToStart && isGoodToGo;
     }
 
     const canCompleteActivity = () => {
@@ -111,17 +121,19 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         const isStarted = status && status.category === activityService.Status.STARTED;
         const canStillStart = canStartActivity();
 
+        // Cannot Complete 15 minutes before the activity is scheduled to start
         const now = utils.now();
         const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
-        if(minutesLeft > 0) {
+        if(minutesLeft > 15) {
             return false;
         }
 
-        if(isStarted) {
+        // If photos are required, see that they've been uploaded
+        if(isStarted && requiredPhotosUploaded) {
             return true;
         } else if(!isStarted && canStillStart) {
             return false;
-        } else if(isGoodToGo) {
+        } else if(isGoodToGo && requiredPhotosUploaded) {
             return true;
         }
 
@@ -183,7 +195,13 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         });
     }
 
-    const loadActivityInfo = async () => {
+    const handleActivityClick = async () => {
+        setLoadingExpandedActivity(true);
+        await loadExpandedActivityInfo();
+        setLoadingExpandedActivity(false);
+    }
+
+    const loadExpandedActivityInfo = async () => {
         if(!activity) return;
 
         const expand = !expanded;
@@ -199,6 +217,9 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             // Check if photos already exist, and get their download URLs
             const activityPhotos = await activityService.getPhotos(activity, onError);
             setPhotos(activityPhotos);
+
+            const photosDone = activityInfo.photosRequired || photos.length > 0;
+            setRequiredPhotosUploaded(photosDone);
         }
         setExpanded(expand);
     };
@@ -505,12 +526,18 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
                     { canAddPhotos() && (
                         <div className="activity-component-footer-icon">
-                            <Camera 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onOpenCamera(true, false, () => onConfirmPhoto);
-                                }}
-                            />
+                            
+                            <motion.div
+                                animate={requiredPhotosUploaded ? { scale: [1, 1.05, 1], opacity: [1, 0.5, 1] } : {}}
+                                transition={requiredPhotosUploaded ? { duration: 1.5, ease: "easeInOut", repeat: Infinity } : {}}
+                            >
+                                <Camera 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onOpenCamera(true, false, () => onConfirmPhoto);
+                                    }}
+                                />
+                            </motion.div>
                             <p>Take photo</p>
                         </div>
                     )}
