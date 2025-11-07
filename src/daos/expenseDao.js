@@ -16,6 +16,14 @@ export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, 
     const path = [dao.constant.EXPENSES];
     let queryFilter = [];
 
+    if (utils.exists(filterOptions, "activityId")) {
+        queryFilter.push(where("activityId", "==", filterOptions.activityId));
+    }
+
+    if (utils.exists(filterOptions, "bookingId")) {
+        queryFilter.push(where("activityId", "==", filterOptions.bookingId));
+    }
+
     if (utils.exists(filterOptions, "category")) {
         const category = filterOptions.category.trim().toLowerCase();
         queryFilter.push(where("category", "==", category));
