@@ -22,7 +22,7 @@ import MetaInfo from './MetaInfo.js';
 const assigneeStyles = [
     { backgroundColor: "#E12C2C", color: "white" },
     { backgroundColor: "#FFA500", color: "black" },
-    { backgroundColor: "green", color: "white"     }
+    { backgroundColor: "green",     color: "white" }
 ];  
 
 export default function ActivityComponent({ inputCustomer, inputActivity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
@@ -43,7 +43,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const [alert,                   setAlert                  ] = useState(null );
     const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0);
     const [minuteTicker,            setMinuteTicker           ] = useState(0);
-    const [photos,                  setPhotos                 ] = useState([]);     
+    const [photos,                  setPhotos                 ] = useState([]);   
+    const [photoUploading,          setPhotoUploading         ] = useState(false);  
 
     const { onError } = useNotification();
     const { onCountItems } = useItemsCounter();
@@ -65,12 +66,14 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     };
 
     const onConfirmPhoto = async (photo) => {
+        setPhotoUploading(true);
         const photoRecord = await activityService.uploadPhoto(activity, photo, onError);
         if(photoRecord !== false) {
             let newPhotos = [...photos, photoRecord];
             setPhotos(newPhotos);
             onSuccess();
         }
+        setPhotoUploading(false);
     }
 
     const handleActivityClick = async () => {
@@ -512,7 +515,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { photos.length > 0 && (
+                    { !photoUploading && photos.length > 0 && (
                         <div className="activity-component-footer-icon">
                             <Image 
                                 onClick={async (e) => {
@@ -521,6 +524,13 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                                 }}
                             />
                             <p>See photos</p>
+                        </div>
+                    )}
+
+                    { photoUploading && (
+                        <div className="activity-component-footer-icon">
+                            <Spinner size={15}/>
+                            <p>Uploading...</p>
                         </div>
                     )}
 
