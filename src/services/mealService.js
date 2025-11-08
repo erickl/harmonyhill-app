@@ -359,7 +359,7 @@ async function mapMealObject(mealData) {
 
     if(utils.isBoolean(mealData?.isFree)) meal.isFree = mealData.isFree;
     
-    if(utils.isBoolean(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
+    if(utils.isAmount(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
 
     if(utils.exists(mealData, "changeDescription")) {
         meal.changeDescription = mealData.changeDescription;
