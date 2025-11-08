@@ -68,6 +68,18 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         return newAssigneeStyleIndex;
     };
 
+    const getAndSetActivityInfo = async() => {
+        if(!activity) return null;
+
+        let thisActivityInfo = activityInfo;
+        if(!thisActivityInfo) {
+            thisActivityInfo = await activityService.getActivityMenuItem(activity.category, activity.subCategory, activity.house);
+            setActivityInfo(thisActivityInfo);
+        }
+
+        return thisActivityInfo;
+    };
+
     const onConfirmPhoto = async (photo) => {
         setPhotoUploading(true);
         const photoRecord = await activityService.uploadPhoto(activity, photo, onError);
@@ -78,6 +90,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
         setPhotoUploading(false);
     }
+
+    // const onDeletePhoto = async (photo) => {
+    //     if(status.category ===)
+    // }
 
     const canStartActivity = () => {
         if(!useActivityStartedStatus) return false;
@@ -143,11 +159,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const calculateActivityStatus = async(newStatus = null) => {
         if(!activity) return;
 
-        let thisActivityInfo = activityInfo;
-        if(!thisActivityInfo) {
-            thisActivityInfo = await activityService.getActivityMenuItem(activity.category, activity.subCategory, activity.house);
-            setActivityInfo(thisActivityInfo);
-        }
+        let thisActivityInfo = getAndSetActivityInfo();
 
         if(!newStatus) {
             newStatus = await activityService.getStatus(activity, onError);
@@ -160,7 +172,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         return {activityInfo: thisActivityInfo, status: newStatus, alert: currentAlert};
     }
 
-    const handleActivityStatusChange = async (newStatus) => {
+    const handleSetActivityStatusManually = async (newStatus) => {
         if(newStatus == null) return;
         const newStatusName = newStatus.category;
 
@@ -217,16 +229,35 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             // Check if photos already exist, and get their download URLs
             const activityPhotos = await activityService.getPhotos(activity, onError);
             setPhotos(activityPhotos);
-
-            const photosDone = activityInfo.photosRequired || photos.length > 0;
-            setRequiredPhotosUploaded(photosDone);
         }
         setExpanded(expand);
     };
 
-    // Function to increment the ticker state every minute, because activity status changes depends on time
-    // E.g. you can only press complete when the activity is past its due date (sometimes counted in minutes)
     useEffect(() => {
+        calculateActivityStatus();
+
+        if(activityInfo && photos)  {
+            const photosDone = !activityInfo.photosRequired || photos.length > 0;
+            setRequiredPhotosUploaded(photosDone);
+        }
+
+        const newAssigneeStyleIndex = getAssigneeStyleIndex();
+        setAssigneeStyleIndex(newAssigneeStyleIndex);
+    }, [activity, activityInfo, photos, minuteTicker]);
+
+    useEffect(() => { 
+        // Blinking effect on staff assign component, for when their attention is needed, as they need to re-confirm
+        let timerId = null;
+        if(!utils.isEmpty(activity.changeDescription)) {
+            const toggleColor = () => {    
+                setAssigneeStyleIndex(prevIndex => prevIndex === 1 ? 2 : 1);
+            };
+
+            timerId = setInterval(toggleColor, 500);
+        }
+
+        // Function to increment the ticker state every minute, because activity status changes depends on time
+        // E.g. you can only press complete when the activity is past its due date (sometimes counted in minutes)
         const tick = () => {
             // Incrementing the ticker forces the component (and the other useEffect) to rerun
             setMinuteTicker(prev => prev + 1); 
@@ -234,17 +265,6 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         const intervalId = setInterval(tick, 60000); //60k ms = 1min
 
-        return () => clearInterval(intervalId);
-    }, []);
-
-    useEffect(() => {
-        calculateActivityStatus();
-
-        const newAssigneeStyleIndex = getAssigneeStyleIndex();
-        setAssigneeStyleIndex(newAssigneeStyleIndex);
-    }, [activity, minuteTicker]);
-
-    useEffect(() => {       
         const setActivityCustomer = async() => {
             let activityCustomer = inputCustomer;
             if(!activityCustomer) {
@@ -255,7 +275,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             
             setCustomer(activityCustomer);
         }
-
+        
         const setUserRole = async() => {
             const userRole = await userService.isManagerOrAdmin();
             setIsManagerOrAdmin(userRole);
@@ -263,22 +283,11 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         setActivityCustomer();
         setUserRole();
-    }, []);
-
-    // Blinking effect on staff assign component, for when their attention is needed, as they need to re-confirm
-    useEffect(() => {
-        let timerId = null;
-
-        if(!utils.isEmpty(activity.changeDescription)) {
-            const toggleColor = () => {    
-                setAssigneeStyleIndex(prevIndex => prevIndex === 1 ? 2 : 1);
-            };
-
-            timerId = setInterval(toggleColor, 500);
-        }
+        getAndSetActivityInfo();
 
         return () => {
             if(timerId) clearInterval(timerId);
+            clearInterval(intervalId);
         }
     }, []);
 
@@ -502,7 +511,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                                 status={activityService.Status.STARTED} 
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleActivityStatusChange(activityService.status(activityService.Status.STARTED));
+                                    handleSetActivityStatusManually(activityService.status(activityService.Status.STARTED));
                                 }}
                             />
                             <p>Start it</p>
@@ -517,7 +526,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                                 status={activityService.Status.COMPLETED} 
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleActivityStatusChange(activityService.status(activityService.Status.COMPLETED));
+                                    handleSetActivityStatusManually(activityService.status(activityService.Status.COMPLETED));
                                 }}
                             />
                             <p>Complete it</p>
@@ -528,8 +537,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         <div className="activity-component-footer-icon">
                             
                             <motion.div
-                                animate={requiredPhotosUploaded ? { scale: [1, 1.05, 1], opacity: [1, 0.5, 1] } : {}}
-                                transition={requiredPhotosUploaded ? { duration: 1.5, ease: "easeInOut", repeat: Infinity } : {}}
+                                animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
+                                transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
                             >
                                 <Camera 
                                     onClick={(e) => {
