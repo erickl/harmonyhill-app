@@ -13,9 +13,15 @@ export function ItemsCounterProvider({ children }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentPhotoUrl, setCurrentPhotoUrl] = useState(null);
     const [onSubmit, setOnSubmit] = useState(null);
+    const [includeZeroCounts, setIncludeZeroCounts] = useState(true);
 
-    const onCountItems = (items, onSubmit) => {
-        setItems(items); 
+    const onCountItems = (itemsInput, includeZeroCounts, onSubmit) => {
+        const newItems = itemsInput.map((item) => {
+            if(!utils.exists(item, "quantity")) item.quantity = 0;
+            return item;
+        });
+        setItems(newItems); 
+        setIncludeZeroCounts(includeZeroCounts);
         setOnSubmit(() => onSubmit);
     }
 
@@ -41,10 +47,16 @@ export function ItemsCounterProvider({ children }) {
 
     const onSubmitCount = async() => {
         if(!onSubmit) return;
-        const nonZeroItems = items.filter((item) => item && utils.exists(item, "quantity") && item.quantity > 0);
-        const result = await onSubmit(nonZeroItems);
+
+        let itemsToReturn = items;
+
+        if(!includeZeroCounts) {
+            itemsToReturn = itemsToReturn.filter((item) => item && utils.exists(item, "quantity") && item.quantity > 0);
+        }
         
-        if(result === true) {
+        const result = await onSubmit(itemsToReturn);
+        
+        if(result !== false) {
             hidePopup();
         }
     }
