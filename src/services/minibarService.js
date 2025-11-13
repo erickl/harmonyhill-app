@@ -1,15 +1,101 @@
-import * as activityService from "./activityService.js";
 import * as menuService from "./menuService.js";
-import * as activityDao from "../daos/activityDao.js";
+import * as inventoryService from "./inventoryService.js";
+import * as bookingDao from "../daos/bookingDao.js";
+import * as utils from "../utils.js";
+import {transaction} from "../daos/dao.js";
 
-export async function add(bookingId, activityId, type, minibar, onError) {
-    // refill a json object of key-value pairs: {name: quantity, etc}
-    // can we put it like that in the minibar doc?
-    minibar.type = type;
-    minibar.bookingId = bookingId;
-    const result = await activityDao.addMinibar(bookingId, activityId, minibar, onError);
+export async function add(booking, minibar, onError) {
+    const addResult = await bookingDao.addMinibar(booking, minibar, onError);
+    if(addResult === false) {
+        return false;
+    }
+
+    if(minibar.type === "end") {
+        const itemsSold = await calculateSale(booking, onError);
+        const minibarSale = {
+            type : "sale",
+            items : itemsSold,
+        };
+        const addSalesResult = await addSale(booking, minibarSale, onError)
+        return addSalesResult;
+    }
+
+    return addResult;
+}
+
+async function addSale(booking, minibarSale, onError) {
+    const result = transaction(async() => {
+        const addSalesResult = await bookingDao.addMinibar(booking, minibarSale, onError);
+        if(addSalesResult === false) {
+            throw new Error(`Couldn't add minibar sale for ${booking.id}`);
+        }
+
+        for(const [name, quantity] of Object.entries(minibarSale.items)) {
+            if(quantity > 0) {
+                const addInventorySaleResult = await inventoryService.addSale(booking, name, quantity, onError);
+                if(addInventorySaleResult === false) {
+                    throw new Error(`Couldn't add inventory sale for ${name} (booking ${booking.id})`);
+                }
+            }
+        }
+        
+        return addSalesResult;
+    });
+
     return result;
 }
+
+export async function calculateSale(booking, onError) {
+    const startCount = await getType(booking, "start", onError);
+    if(!startCount) onError("No start count found for this booking");
+
+    const totalRefills = await getTotalRefills(booking, onError);
+
+    const endCount = await getType(booking, "end", onError);
+    if(!endCount) onError("No end count found for this booking");
+    
+    const totalProvided = startCount.items;
+    Object.entries(totalRefills).forEach(([name, quantity]) => {
+        totalProvided[name] = utils.exists(totalProvided, name) ? totalProvided[name] + quantity : quantity;
+    });
+
+    const sales = {};
+    Object.entries(endCount.items).forEach(([name, quantity]) => {
+        sales[name] = totalProvided[name] - quantity;
+    });
+
+    return sales;
+}
+
+export async function getTotalRefills(booking, onError) {
+    const refills = await get(booking, {"type": "refill"}, onError);
+
+    const total = refills.reduce((map, refill) => {
+        Object.entries(refill.items).forEach(([name, quantity]) => {
+            map[name] = utils.exists(map, name) ? map[name] + quantity : quantity;  
+        });
+        return map;
+    }, {});
+
+    return total;
+}
+
+/**
+ * @param {*} booking the booking object
+ * @param {*} filters type=sale|end|start|refill, activityId, bookingId
+ * @param {*} onError 
+ * @returns 
+ */
+export async function get(booking, filters, onError) {
+    return await bookingDao.getMinibar(booking, filters, onError);
+}
+
+export default async function getType(booking, type, onError) {
+    const startCounts = await get(booking, {"type": type}, onError);
+    if(!startCounts || startCounts.length === 0) return null;
+    return startCounts[0];
+}
+
 
 export async function getSelection(onError) {
     const filter = { meal: "minibar" };

@@ -9,6 +9,7 @@ import { ConfirmationProvider } from "../context/ConfirmationContext.js";
 import { CameraProvider } from "../context/CameraContext.js";
 import { ImageCarouselProvider } from "../context/ImageCarouselContext.js";
 import { ProgressProvider } from "../context/ProgressContext.js";
+import { DataTableProvider } from "../context/DataTableContext.js";
 
 export function AppProviders({ children }) {
     return (
@@ -22,7 +23,9 @@ export function AppProviders({ children }) {
         <ItemsCounterProvider>
         <CameraProvider>
         <ImageCarouselProvider>
+        <DataTableProvider>
           {children}
+        </DataTableProvider>
         </ImageCarouselProvider>
         </CameraProvider>
         </ItemsCounterProvider>
