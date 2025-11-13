@@ -37,13 +37,6 @@ export async function removePhoto(bookingId, activityId, id, onError) {
     return await dao.remove(path, id, onError);
 }
 
-export async function addMinibar(bookingId, activityId, minibar, onError) {
-    const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, activityId, dao.constant.MINIBAR];
-    // todo: put house?
-    const id = `${minibar.type}-${bookingId}-${utils.to_YYMMdd()}-${Date.now()}`;
-    return await dao.add(path, id, minibar, onError);
-}
-
 export async function transaction(inTransaction) {
     return dao.transaction(inTransaction);
 }

@@ -105,8 +105,7 @@ async function addCheckOut(bookingId, booking, onError) {
 export async function add(bookingData, onError) {
     const result = transaction(async () => {
         const bookingObject = await mapBookingObject(bookingData);
-        const bookingId = createBookingId(bookingObject.name, bookingObject.house, bookingObject.checkInAt);
-        const addBookingResult = await bookingDao.add(bookingId, bookingObject, onError);
+        const addBookingResult = await bookingDao.add(bookingObject, onError);
         if(addBookingResult === false) {
             throw new Error(`Couldn't update transaction`);   
         }
@@ -155,13 +154,6 @@ export async function remove(bookingId, onError) {
             throw new Error(`Couldn't delete booking ${bookingId}`);
         }
     });   
-}
-
-export function createBookingId(guestName, house, checkInAt) {
-    const yyMMdd = utils.to_YYMMdd(checkInAt);
-    const houseShort = house.trim().toLowerCase() == "harmony hill" ? "hh" : "jn";
-    guestName = guestName.trim().toLowerCase().replace(/ /g, "-")
-    return `${yyMMdd}-${houseShort}-${guestName}-${Date.now()}`;
 }
 
 export async function mapBookingObject(data) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, act } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
@@ -7,7 +7,7 @@ import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy, Camera, Image } from 'lucide-react';
+import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy, Camera, Image, Table } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle from './StatusCircle.js';
 import AlertCircle from './AlertCircle.js';
@@ -17,6 +17,7 @@ import { useItemsCounter } from "../context/ItemsCounterContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useCameraModal } from '../context/CameraContext.js';
 import { useImageCarousel } from '../context/ImageCarouselContext.js';
+import { useDataTableModal } from '../context/DataTableContext.js';
 import MetaInfo from './MetaInfo.js';
 
 import { motion } from "framer-motion";
@@ -33,28 +34,30 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const assignedUser = users && inputActivity ? users.find(user => user.name === inputActivity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
     
-    const [customer,                setCustomer               ] = useState(null );
+    const [customer,                setCustomer               ] = useState(null         );
     const [activity,                setActivity               ] = useState(inputActivity);
-    const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false);
-    const [activityInfo,            setActivityInfo           ] = useState(null );
-    const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false);
-    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
-    const [expanded,                setExpanded               ] = useState(false);
-    const [dishes,                  setDishes                 ] = useState([]   );
-    const [status,                  setStatus                 ] = useState(null );
-    const [alert,                   setAlert                  ] = useState(null );
-    const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0);
-    const [minuteTicker,            setMinuteTicker           ] = useState(0);
-    const [photos,                  setPhotos                 ] = useState([]);   
-    const [photoUploading,          setPhotoUploading         ] = useState(false);  
-    const [requiredPhotosUploaded,  setRequiredPhotosUploaded ] = useState(false);
+    const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false        );
+    const [activityInfo,            setActivityInfo           ] = useState(null         );
+    const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false        );
+    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false        );
+    const [expanded,                setExpanded               ] = useState(false        );
+    const [dishes,                  setDishes                 ] = useState([]           );
+    const [status,                  setStatus                 ] = useState(null         );
+    const [alert,                   setAlert                  ] = useState(null         );
+    const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0            );
+    const [minuteTicker,            setMinuteTicker           ] = useState(0            );
+    const [photos,                  setPhotos                 ] = useState([]           );   
+    const [photoUploading,          setPhotoUploading         ] = useState(false        );  
+    const [requiredPhotosUploaded,  setRequiredPhotosUploaded ] = useState(false        );
+    const [minibarCount,            setMinibarCount           ] = useState(null         );
 
-    const { onError } = useNotification();
-    const { onCountItems } = useItemsCounter();
-    const { onSuccess } = useSuccessNotification();
-    const { onConfirm } = useConfirmationModal();
-    const { onOpenCamera } = useCameraModal();
-    const { onDisplayImages } = useImageCarousel();
+    const { onError            } = useNotification();
+    const { onCountItems       } = useItemsCounter();
+    const { onSuccess          } = useSuccessNotification();
+    const { onConfirm          } = useConfirmationModal();
+    const { onOpenCamera       } = useCameraModal();
+    const { onDisplayImages    } = useImageCarousel();
+    const { onDisplayDataTable } = useDataTableModal();
 
     const getAssigneeStyleIndex = () => {
         let newAssigneeStyleIndex = 0;
@@ -196,13 +199,25 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
     }
 
-    const handleMinibarRefill = async() => {
-        const minibarList = await minibarService.getSelection(onError);
-        onCountItems(minibarList, async (refill) => {
-            const result = await minibarService.add(activity.bookingId, activity.id, "refill", refill, onError); 
+    const handleMinibar = async(type) => {
+        const stockList = await minibarService.getSelection(onError);
+        onCountItems(stockList, true, async (stockCountList) => {
+            const inventory = {};
+            
+            inventory.items = stockCountList.reduce((map, item) => {
+                map[item.name] = item.quantity;
+                return map;
+            }, {});
+
+            inventory.type = type;
+            inventory.activityId = activity.id;
+
+            const result = await minibarService.add(customer, inventory, onError); 
             if(result !== false) {
+                setMinibarCount(inventory.items);
                 onSuccess();
             }
+
             return result;
         });
     }
@@ -256,8 +271,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             timerId = setInterval(toggleColor, 500);
         }
 
-        // Function to increment the ticker state every minute, because activity status changes depends on time
-        // E.g. you can only press complete when the activity is past its due date (sometimes counted in minutes)
+        // Increment the ticker state every minute. Activity statuses changes depends on time
+        // E.g. only possible to complete activity when it's past its deadline, counted in minutes
         const tick = () => {
             // Incrementing the ticker forces the component (and the other useEffect) to rerun
             setMinuteTicker(prev => prev + 1); 
@@ -265,15 +280,18 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         const intervalId = setInterval(tick, 60000); //60k ms = 1min
 
-        const setActivityCustomer = async() => {
+        const setInitialData = async() => {
             let activityCustomer = inputCustomer;
             if(!activityCustomer) {
                 // This means, this component is used in the activity list for all customers. Thus each activity needs to display customer name
                 setShowCustomerInfo(true);
                 activityCustomer = await getParent(activity);
             }
-            
+
             setCustomer(activityCustomer);
+
+            const existingMinibarCount = await minibarService.default(activityCustomer, {"activityId": activity.id}, onError);
+            setMinibarCount(existingMinibarCount && existingMinibarCount.length > 0 ? existingMinibarCount[0].items : null);
         }
         
         const setUserRole = async() => {
@@ -281,7 +299,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             setIsManagerOrAdmin(userRole);
         }
 
-        setActivityCustomer();
+
+        setInitialData();
         setUserRole();
         getAndSetActivityInfo();
 
@@ -490,7 +509,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     { user && user.shortName === assignedUserShortName && 
                         activity.assigneeAccept && 
                         activity.status !== "started" &&
-                        (!utils.isPast(activity.startingAt)) &&  (
+                        (!utils.isPast(activity.startingAt)) && (
 
                         <div className="activity-component-footer-icon">
                             <ThumbsDown  
@@ -570,15 +589,52 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    {false && /*todo: complete minibar func first*/ activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && (
+                    { activity && activity.subCategory === "checkin-prep" && utils.isToday(activity.startingAt) && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMinibarRefill();
+                                    handleMinibar("start");
+                                }}
+                            />
+                            <p>Count Minibar</p>
+                        </div>
+                    )}
+
+                    { activity && activity.subCategory === "checkout" && utils.isToday(activity.startingAt) && (
+                        <div className="activity-component-footer-icon">
+                            <Candy  
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMinibar("end");
+                                }}
+                            />
+                            <p>Count Minibar</p>
+                        </div>
+                    )}
+
+                    { activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && (
+                        <div className="activity-component-footer-icon">
+                            <Candy  
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMinibar("refill");
                                 }}
                             />
                             <p>Minibar Refill</p>
+                        </div>
+                    )}
+
+                    {/* Can be set for housekeeping, checkin prep and checkouts */}
+                    { minibarCount && (
+                        <div className="activity-component-footer-icon">
+                            <Table
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDisplayDataTable("Minibar Count", minibarCount);
+                                }}
+                            />
+                            <p>Minibar Data</p>
                         </div>
                     )}
                 </div> 

@@ -2,8 +2,9 @@ import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 
-export async function add(bookingRef, booking, onError) {
-    return await dao.add([dao.constant.BOOKINGS], bookingRef, booking, onError);
+export async function add(booking, onError) {
+    const bookingId = createBookingId(booking.name, booking.house, booking.checkInAt);
+    return await dao.add([dao.constant.BOOKINGS], bookingId, booking, onError);
 }
 
 export async function update(bookingId, bookingUpdate, onError) {
@@ -21,6 +22,7 @@ export async function get(filterOptions = {}, onError = null) {
     if (utils.exists(filterOptions, "house")) {
         queryFilter.push(where("house", "==", filterOptions.house));
     }
+    
     if (utils.exists(filterOptions, "date")) {
         const fireStoreDate = utils.toFireStoreTime(filterOptions.date);
         queryFilter.push(where("checkInAt", "<=", fireStoreDate));
@@ -47,4 +49,43 @@ export async function remove(bookingId, onError) {
 
 export async function getPromotions() {
     return await dao.get([dao.constant.PROMOTIONS], [], [], -1);
+}
+
+export async function addMinibar(booking, minibar, onError) {
+    minibar.bookingId = booking.id;
+    const path = [dao.constant.BOOKINGS, booking.id, dao.constant.MINIBAR];
+    const houseShort = getHouseShortName(booking.house);
+    const id = `minibar-${minibar.type}-${houseShort}-${utils.to_YYMMdd()}-${Date.now()}`;
+    return await dao.add(path, id, minibar, onError);
+}
+
+export async function getMinibar(booking, filterOptions, onError) {
+    let path = [dao.constant.BOOKINGS, booking.id, dao.constant.MINIBAR];
+    let queryFilter = [];
+
+    if (utils.exists(filterOptions, "type")) {
+        queryFilter.push(where("type", "==", filterOptions.type));
+    }
+
+    if (utils.exists(filterOptions, "bookingId")) {
+        queryFilter.push(where("bookingId", "==", filterOptions.bookingId));
+    }
+
+    if (utils.exists(filterOptions, "activityId")) {
+        queryFilter.push(where("activityId", "==", filterOptions.activityId));
+    }
+
+    return await dao.get(path, queryFilter, [], -1, onError);
+}
+
+export function createBookingId(guestName, house, checkInAt) {
+    const yyMMdd = utils.to_YYMMdd(checkInAt);
+    const houseShort = getHouseShortName(house);
+    guestName = guestName.trim().toLowerCase().replace(/ /g, "-")
+    return `${yyMMdd}-${houseShort}-${guestName}-${Date.now()}`;
+}
+
+export function getHouseShortName(houseName) {
+    const houseShort = houseName.trim().toLowerCase() === "harmony hill" ? "hh" : "jn";
+    return houseShort;
 }
