@@ -16,7 +16,7 @@ export default function ChangeLogsComponent({}) {
     const [logToDelete,  setLogToDelete ] = useState(null);
     const [expandedLogs, setExpandedLogs] = useState({});
     const { onError } = useNotification();
-    const {onDisplay} = useMarkDownModal();
+    const {onDisplayMarkdown} = useMarkDownModal();
 
     const handleSetExpanded = async(log) => {
         let updatedExpandedList = { ...(expandedLogs || {}) };
@@ -35,7 +35,7 @@ export default function ChangeLogsComponent({}) {
 
     const displayDocument = async(log) => {
         const document = await logsService.getDocument(log.document, onError);
-        onDisplay("Data", document);
+        onDisplayMarkdown("Data", document);
     }
 
     const handleDeleteLog = async() => {

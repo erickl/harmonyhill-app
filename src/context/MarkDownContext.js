@@ -8,7 +8,7 @@ export function MarkDownProvider({ children }) {
     const [header, setHeader] = useState(null);
     const [data, setData] = useState(null);
 
-    const onDisplay = (header, object) => {
+    const onDisplayMarkdown = (header, object) => {
         setHeader(header);
 
         let markDown = `\`\`\``;
@@ -36,7 +36,7 @@ export function MarkDownProvider({ children }) {
     }
 
     return (
-        <MarkDownContext.Provider value={{ onDisplay }}>
+        <MarkDownContext.Provider value={{ onDisplayMarkdown }}>
             {children}
             {data && (
                 <div className="modal-overlay" onClick={() => hidePopup()}>
