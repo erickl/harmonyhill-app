@@ -115,6 +115,14 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         return false;
     }
 
+    const requiresMinibarCount = () => {
+        if(minibarCount !== null) return false;
+        if(activity.subCategory === "checkin-prep") return true;
+        if(activity.subCategory === "housekeeping") return true;
+        if(activity.subCategory === "checkout") return true;
+        return false;
+    }
+
     const canAddPhotos = () => {
         const isCompleted = status && status.category === activityService.Status.COMPLETED;
         if(isCompleted) return false;
@@ -135,6 +143,11 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
     const canCompleteActivity = () => {
         if(!useActivityStartedStatus) return false;
+
+        const activityRequiresMinibarCount = requiresMinibarCount();
+        if(activityRequiresMinibarCount) {
+            return false;
+        }
 
         const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
         const isStarted = status && status.category === activityService.Status.STARTED;
@@ -601,7 +614,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "checkin-prep" && utils.isToday(activity.startingAt) && (
+                    { activity && activity.subCategory === "checkin-prep" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
@@ -613,7 +626,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "checkout" && utils.isToday(activity.startingAt) && (
+                    { activity && activity.subCategory === "checkout" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
@@ -625,7 +638,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && (
+                    { activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
