@@ -199,8 +199,19 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
     }
 
-    const handleMinibar = async(type) => {
+    const handleMinibarCount = async(type) => {
         const stockList = await minibarService.getSelection(onError);
+
+        // If there's already an existing minibar inventory, continue with that one
+        if(minibarCount) {
+            for(const [name, quantity] of Object.entries(minibarCount)) {
+                const stockListIndex = stockList.findIndex((item => item.name === name));
+                if(stockListIndex !== -1) {
+                    stockList[stockListIndex].quantity = quantity;
+                }
+            }
+        }
+
         onCountItems(stockList, true, async (stockCountList) => {
             const inventory = {};
             
@@ -211,8 +222,9 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
             inventory.type = type;
             inventory.activityId = activity.id;
+            inventory.bookingId = customer.id;
 
-            const result = await minibarService.add(customer, inventory, onError); 
+            const result = await minibarService.addOrEdit(customer, inventory, onError); 
             if(result !== false) {
                 setMinibarCount(inventory.items);
                 onSuccess();
@@ -290,7 +302,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
             setCustomer(activityCustomer);
 
-            const existingMinibarCount = await minibarService.default(activityCustomer, {"activityId": activity.id}, onError);
+            const existingMinibarCount = await minibarService.get(activityCustomer, {"activityId": activity.id}, onError);
             setMinibarCount(existingMinibarCount && existingMinibarCount.length > 0 ? existingMinibarCount[0].items : null);
         }
         
@@ -594,7 +606,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                             <Candy  
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMinibar("start");
+                                    handleMinibarCount("start");
                                 }}
                             />
                             <p>Count Minibar</p>
@@ -606,7 +618,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                             <Candy  
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMinibar("end");
+                                    handleMinibarCount("end");
                                 }}
                             />
                             <p>Count Minibar</p>
@@ -618,7 +630,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                             <Candy  
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMinibar("refill");
+                                    handleMinibarCount("refill");
                                 }}
                             />
                             <p>Minibar Refill</p>
