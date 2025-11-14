@@ -4,9 +4,21 @@ import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
 import {transaction} from "../daos/dao.js";
 
-export async function add(booking, minibar, onError) {
-    const addResult = await bookingDao.addMinibar(booking, minibar, onError);
-    if(addResult === false) {
+export async function addOrEdit(booking, minibar, onError) {
+    minibar.items = filterZeroCounts(minibar.items);
+
+    let result = false;
+
+    const existing = await bookingDao.getExistingMinibar(minibar, onError);
+
+    if(existing !== null) {
+        result = await bookingDao.updateMinibar(booking.id, existing.id, minibar, onError);
+    }
+    else {
+        result = await bookingDao.addMinibar(booking, minibar, onError);
+    }
+
+    if(result === false) {
         return false;
     }
 
@@ -20,14 +32,15 @@ export async function add(booking, minibar, onError) {
         return addSalesResult;
     }
 
-    return addResult;
+    return result;
 }
 
 async function addSale(booking, minibarSale, onError) {
     const result = transaction(async() => {
-        const addSalesResult = await bookingDao.addMinibar(booking, minibarSale, onError);
+        minibarSale.items = filterZeroCounts(minibarSale.items);
+        const addSalesResult = await addOrEdit(booking, minibarSale, onError);
         if(addSalesResult === false) {
-            throw new Error(`Couldn't add minibar sale for ${booking.id}`);
+            throw new Error(`Couldn't add/edit minibar sale for ${booking.id}`);
         }
 
         for(const [name, quantity] of Object.entries(minibarSale.items)) {
@@ -101,4 +114,13 @@ export async function getSelection(onError) {
     const filter = { meal: "minibar" };
     const minibarSelection = await menuService.get(filter, onError);
     return minibarSelection;
+}
+
+/**
+ * Filter out key-value pairs where the value is less than 1
+ * @param {*} items a json object (a map with key-value pairs, where the value is a number)
+ */
+function filterZeroCounts(items) {
+    const nonZeroItems = Object.entries(items).filter(([_, quantity]) => quantity > 0);
+    return Object.fromEntries(nonZeroItems);
 }
