@@ -299,10 +299,14 @@ export async function transaction(inTransaction, onError = null) {
     }
 }
 
-export async function jsonObjectDiffStr(obj1, obj2) {
+export async function jsonObjectDiffStr(obj1, obj2, level = 0) {
     let diff = "";
     
     try {
+        if(level > 20) {
+            throw new Error("Object is too nested. Can't resolve the difference");
+        }
+
         if(utils.isEmpty(obj1)) {
             throw new Error("Original object was null");
         }
@@ -335,6 +339,12 @@ export async function jsonObjectDiffStr(obj1, obj2) {
                         diff += ` ${key}: ${val1DateTime} -> ${val2DateTime}, `;
                     }
                 }
+                else if(utils.isJsonObject(val2)) {
+                    const internalDiff = await jsonObjectDiffStr(val1, val2, level+1);
+                    if(!utils.isEmpty(internalDiff)) {
+                        diff += ` ${key}: ${internalDiff}`;
+                    }
+                }
                 else if (val2 !== val1) {
                     const val2_ = utils.isEmpty(val2) ? "[empty]" : val2;
                     diff += ` ${key}: ${val1} -> ${val2_}, `;
@@ -342,6 +352,10 @@ export async function jsonObjectDiffStr(obj1, obj2) {
             } catch(e) {
                 diff += `Failed comparing field ${key}: ${e.message}, `;
             }
+        }
+
+        if(level > 0) {
+            return diff;
         }
 
         // add prefix with user info & remove the last comma and space
