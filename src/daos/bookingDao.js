@@ -52,15 +52,29 @@ export async function getPromotions() {
 }
 
 export async function addMinibar(booking, minibar, onError) {
-    minibar.bookingId = booking.id;
     const path = [dao.constant.BOOKINGS, booking.id, dao.constant.MINIBAR];
     const houseShort = getHouseShortName(booking.house);
     const id = `minibar-${minibar.type}-${houseShort}-${utils.to_YYMMdd()}-${Date.now()}`;
     return await dao.add(path, id, minibar, onError);
 }
 
+export async function updateMinibar(bookingId, minibarId, updatedData, onError) {
+    const path = [dao.constant.BOOKINGS, bookingId, "minibar"];
+    return await dao.update(path, minibarId, updatedData, true, onError);
+}
+
+export async function getExistingMinibar(minibar, onError) {
+    const path = [dao.constant.BOOKINGS, minibar.bookingId, dao.constant.MINIBAR];
+    const queryFilter = [where("activityId", "==", minibar.activityId)];
+    const existingResults = await dao.get(path, queryFilter, [], -1, onError);
+    if(!existingResults || existingResults.length < 1) {
+        return null;
+    }
+    return existingResults[0];
+}
+
 export async function getMinibar(booking, filterOptions, onError) {
-    let path = [dao.constant.BOOKINGS, booking.id, dao.constant.MINIBAR];
+    const path = [dao.constant.BOOKINGS, booking.id, dao.constant.MINIBAR];
     let queryFilter = [];
 
     if (utils.exists(filterOptions, "type")) {
