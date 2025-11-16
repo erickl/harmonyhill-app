@@ -5,26 +5,28 @@ import * as utils from "../utils.js";
 import {transaction} from "../daos/dao.js";
 
 export async function addOrEdit(booking, minibar, onError) {
-    minibar.items = filterZeroCounts(minibar.items);
+    const filteredItems = filterZeroCounts(minibar.items);
+    const minibar_ = {...minibar, items: filteredItems};
 
     let result = false;
 
-    const existing = await bookingDao.getExistingMinibar(minibar, onError);
+    const existing = await bookingDao.getExistingMinibar(minibar_, onError);
 
     if(existing !== null) {
-        result = await bookingDao.updateMinibar(booking.id, existing.id, minibar, onError);
+        result = await bookingDao.updateMinibar(booking.id, existing.id, minibar_, onError);
     }
     else {
-        result = await bookingDao.addMinibar(booking, minibar, onError);
+        result = await bookingDao.addMinibar(booking, minibar_, onError);
     }
 
     if(result === false) {
         return false;
     }
 
-    if(minibar.type === "end") {
+    if(minibar_.type === "end") {
         const itemsSold = await calculateSale(booking, onError);
         const minibarSale = {
+            ...minibar_,
             type : "sale",
             items : itemsSold,
         };
@@ -36,7 +38,7 @@ export async function addOrEdit(booking, minibar, onError) {
 }
 
 async function addSale(booking, minibarSale, onError) {
-    const result = transaction(async() => {
+    const result = await transaction(async() => {
         minibarSale.items = filterZeroCounts(minibarSale.items);
         const addSalesResult = await addOrEdit(booking, minibarSale, onError);
         if(addSalesResult === false) {
@@ -72,7 +74,7 @@ export async function calculateSale(booking, onError) {
         totalProvided[name] = utils.exists(totalProvided, name) ? totalProvided[name] + quantity : quantity;
     });
 
-    const sales = {};
+    const sales = totalProvided;
     Object.entries(endCount.items).forEach(([name, quantity]) => {
         sales[name] = totalProvided[name] - quantity;
     });
