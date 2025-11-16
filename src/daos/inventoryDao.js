@@ -1,10 +1,26 @@
+import { where, orderBy } from 'firebase/firestore';
 import * as utils from "../utils.js";
 import * as dao from "../daos/dao.js";
 
 export async function getOne(nameOrId, onError) {
-    const id = nameOrId.startsWith("inv-") ? nameOrId : makeInventoryItemId(name);
+    const id = nameOrId.startsWith("inv-") ? nameOrId : makeInventoryItemId(nameOrId);
     const path = ["inventory"];
     return await dao.getOne(path, id, onError);
+}
+
+export async function get(filterOptions, onError) {
+    const path = ["inventory"];
+    const queryFilter = [];
+
+    if (utils.exists(filterOptions, "name")) {
+        queryFilter.push(where("name", "==", filterOptions.name));
+    }
+
+    if (utils.exists(filterOptions, "type")) {
+        queryFilter.push(where("type", "==", filterOptions.type));
+    }
+
+    return await dao.get(path, queryFilter, [], -1, onError);
 }
 
 export async function add(object, onError) {
@@ -14,15 +30,13 @@ export async function add(object, onError) {
     return await dao.add(path, docId, object, onError);
 }
 
-export async function getInventoryChanges(name, filterOptions) {
-    const invItem = getOne(name, onError);
+export async function getInventoryChanges(name, filterOptions, onError) {
+    const invItem = await getOne(name, onError);
     if(!invItem) return [];
 
-    const queryFilter = [];
+    const path = ["inventory", invItem.id, "stock"];
 
-    if (utils.exists(filterOptions, "type")) {
-        queryFilter.push(where("type", "==", filterOptions.type));
-    }
+    const queryFilter = [];
 
     if (utils.exists(filterOptions, "after")) {
         const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
@@ -32,6 +46,10 @@ export async function getInventoryChanges(name, filterOptions) {
     if (utils.exists(filterOptions, "before")) {
         const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
         queryFilter.push(where("createdAt", "<=", beforeDateFireStore));
+    }
+
+    if (utils.exists(filterOptions, "type")) {
+        queryFilter.push(where("type", "==", filterOptions.type));
     }
 
     let ordering = [ orderBy("createdAt", "asc") ];
@@ -65,7 +83,7 @@ export async function addClosedRecord(name, data, onError) {
 
 export function makeId(type, inventoryItemId) {
     const date = utils.to_YYMMdd();
-    return `stock-${inventoryItemId}-${type}-${date}-${Date.now()}`;
+    return `${inventoryItemId}-${type}-${date}-${Date.now()}`;
 }
 
 export function makeInventoryItemId(name) {

@@ -1,6 +1,11 @@
 import * as inventoryDao from "../daos/inventoryDao.js";
 import * as utils from "../utils.js";
 
+export async function get(filters = {}, onError) {
+    const inventory = await inventoryDao.get(filters, onError);
+    return inventory;
+}
+
 export async function addSale(booking, itemName, quantity, onError) {
     const sale = {
         bookingId : booking.id,
@@ -51,10 +56,13 @@ export async function getRefills(name, filters, onError) {
  * @returns the amount of remaining stock of the named inventory item
  */
 export async function getQuantity(name, filter, onError) {
+    let startQuantity = 0;
+
     if(!utils.exists(filter, "after")) {
         const lastClosedRecord = await getLastClosedRecord(name, onError);
         if(lastClosedRecord) {
             filter.after = lastClosedRecord.closedAt;
+            startQuantity = lastClosedRecord.quantity;
         }
     }  
 
@@ -64,7 +72,7 @@ export async function getQuantity(name, filter, onError) {
     const refills = await getRefills(name, filter, onError);
     const totalRefills = refills.reduce((sum, refill) => sum + refill.quantity, 0);
 
-    const currentCount = lastClosedRecord.count + totalRefills - totalSales;
+    const currentCount = startQuantity + totalRefills - totalSales;
     return currentCount;
 }
 
@@ -77,7 +85,7 @@ export async function closeMonthForItem(name, onError) {
     const totalMonthCount = await getQuantity(name, {"before" : newClosedAt}, onError);
 
     const newLastClosedRecord = {
-        "count" : totalMonthCount,
+        "quantity" : totalMonthCount,
         "closedAt" : newClosedAt,
     };
 
