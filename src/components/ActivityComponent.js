@@ -626,7 +626,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "checkout" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED (
+                    { activity && activity.subCategory === "checkout" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
@@ -638,7 +638,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED (
+                    { activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
