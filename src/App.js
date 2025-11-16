@@ -6,6 +6,7 @@ import AddExpensesScreen from './components/AddExpensesScreen.js';
 import AddIncomeScreen from './components/AddIncomeScreen.js';
 import LoginScreen from './components/LoginScreen.js';
 import AddCustomerScreen from './components/AddCustomerScreen.js';
+import InventoryScreen from './components/InventoryScreen.js';
 import BottomNavigation from './components/BottomNavigation.js';
 import AdminScreen from './components/AdminScreen.js';
 import ChangeLogsComponent from "./components/ChangeLogsComponent.js";
@@ -70,6 +71,8 @@ function App() {
         screenToDisplay = <AdminScreen onNavigate={navigate} />;
     } else if (currentScreen === 'userLogs') {
         screenToDisplay = <ChangeLogsComponent onNavigate={navigate} />;
+    } else if(currentScreen === "inventory") {
+        screenToDisplay = <InventoryScreen onNavigate={navigate} />;
     }
 
     return (

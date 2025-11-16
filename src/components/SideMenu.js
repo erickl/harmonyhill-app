@@ -45,7 +45,6 @@ export default function SideMenu({onNavigate}) {
                 position: 'fixed',
                 top: 0,
                 transform: open ? 'translateX(0)' : 'translateX(-100%)',
-                height: '100%',
                 backgroundColor: '#333',
                 color: 'white',
                 transition: 'left 0.3s ease-in-out',
@@ -62,6 +61,13 @@ export default function SideMenu({onNavigate}) {
                             close();
                         }} 
                         style={{ color: 'white' }}>Admin</p>
+                    </li>
+
+                    <li><p onClick={() => {
+                            onNavigate('inventory');
+                            close();
+                        }} 
+                        style={{ color: 'white' }}>Inventory</p>
                     </li>
 
                     <li><p onClick={() => {
