@@ -65,7 +65,10 @@ export async function updateMinibar(bookingId, minibarId, updatedData, onError) 
 
 export async function getExistingMinibar(minibar, onError) {
     const path = [dao.constant.BOOKINGS, minibar.bookingId, dao.constant.MINIBAR];
-    const queryFilter = [where("activityId", "==", minibar.activityId)];
+    const queryFilter = [
+        where("activityId", "==", minibar.activityId),
+        where("type", "==", minibar.type)
+    ];
     const existingResults = await dao.get(path, queryFilter, [], -1, onError);
     if(!existingResults || existingResults.length < 1) {
         return null;
