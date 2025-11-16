@@ -103,7 +103,7 @@ async function addCheckOut(bookingId, booking, onError) {
 }
 
 export async function add(bookingData, onError) {
-    const result = transaction(async () => {
+    const result = await transaction(async () => {
         const bookingObject = await mapBookingObject(bookingData);
         const addBookingResult = await bookingDao.add(bookingObject, onError);
         if(addBookingResult === false) {
@@ -117,7 +117,7 @@ export async function add(bookingData, onError) {
 }
 
 export async function update(bookingId, bookingUpdateData, onError) {
-    const result = transaction(async () => {
+    const result = await transaction(async () => {
         const bookingUpdate = await mapBookingObject(bookingUpdateData);    
         const updateBookingResult = await bookingDao.update(bookingId, bookingUpdate, onError);
         return updateBookingResult;
