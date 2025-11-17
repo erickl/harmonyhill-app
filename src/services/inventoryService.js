@@ -6,25 +6,29 @@ export async function get(filters = {}, onError) {
     return inventory;
 }
 
-export async function addSale(booking, itemName, quantity, onError) {
-    const sale = {
-        bookingId : booking.id,
-        house     : booking.house,
+export async function subtract(booking, type, itemName, quantity, onError) {
+    const stock = {
+        bookingId : booking ? booking.id : null,
+        house     : booking ? booking.house : null,
         name      : itemName,
         quantity  : quantity,
-        type      : "sale",
+        type      : type,
     };
-    const result = await inventoryDao.add(sale, onError);
+    const result = await inventoryDao.add(stock, onError);
     return result;
+}
+
+export async function addSale(booking, itemName, quantity, onError) {
+    return await subtract(booking, "sale", itemName, quantity, onError);
 }
 
 export async function refill(expense, itemName, quantity, onError) {
     const refill = {
-        expense  : expense.id,
-        name     : itemName,
-        quantity : quantity,
-        seller   : utils.isEmpty(expense.seller) ? "" : expense.seller,
-        type     : "refill",
+        expenseId : expense.id,
+        name      : itemName,
+        quantity  : quantity,
+        seller    : utils.isEmpty(expense.seller) ? "" : expense.seller,
+        type      : "refill",
     };
     
     const result = await inventoryDao.add(refill, onError);
@@ -91,4 +95,37 @@ export async function closeMonthForItem(name, onError) {
 
     const result = await inventoryDao.addClosedRecord(name, newLastClosedRecord, onError);
     return result;
+}
+
+export async function validateRefill(data, onValidationError) {
+    if(utils.isEmpty(data.quantity) || data.quantity == 0) {
+        onValidationError("Fill a quantity more than zero");
+        return false;
+    }
+
+    if(data.expense === null) {
+        onValidationError("Choose an expense");
+        return false;
+    }
+
+    return true;
+}
+
+export async function validateSubtraction(data, onValidationError) {
+    if(utils.isEmpty(data.quantity) || data.quantity == 0) {
+        onValidationError("Fill a quantity more than zero");
+        return false;
+    }
+
+    if(data.booking === null) {
+        onValidationError("Choose a booking");
+        return false;
+    }
+
+     if(utils.isEmpty(data.type)) {
+        onValidationError("Choose a type");
+        return false;
+    }
+
+    return true;
 }
