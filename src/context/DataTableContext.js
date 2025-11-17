@@ -4,17 +4,20 @@ import * as utils from "../utils.js";
 const DataTableContext = createContext();
 
 export function DataTableProvider({ children }) {
-    const [header, setHeader] = useState(null);
-    const [data, setData] = useState(null);
+    const [title, setTitle] = useState(null);
+    const [headers, setHeaders] = useState(null);
+    const [rows, setRows] = useState(null);
 
-    const onDisplayDataTable = (header, data) => {
-        setHeader(header);
-        setData(data);
+    const onDisplayDataTable = (title, headers, rows) => {
+        setTitle(title);
+        setHeaders(headers);
+        setRows(rows);
     }
     
     const hidePopup = () => {
-        setHeader(null);
-        setData(null);
+        setTitle(null);
+        setHeaders(null);
+        setRows(null);
     }
 
     const tableStyle = { 
@@ -38,16 +41,36 @@ export function DataTableProvider({ children }) {
     return (
         <DataTableContext.Provider value={{ onDisplayDataTable }}>
             {children}
-            {data && (
+            {title && (
                 <div className="modal-overlay" onClick={() => hidePopup()}>
                     <div className="modal-box">
-                        <h2>{header}</h2>
+                        <h2>{title}</h2>
                         <table style={tableStyle}>
+                            <thead>
+                                <tr>
+                                    {headers.map((header) => (
+                                        <td style={keyColumnStyle}>
+                                            {header}
+                                        </td>
+                                    ))}
+                                </tr>
+                            </thead>
                             <tbody>
-                                {Object.entries(data).map(([key, value]) => (
-                                    <tr key={`${key}-row`}>
-                                        <td style={keyColumnStyle} key={`${key}-key`}>{key}</td>
-                                        <td style={valueColumnStyle} key={`${key}-value`}>{value}</td>
+                                {rows.map((row, r) => (
+                                    <tr key={`${r}-row`}>
+                                        {row.map((value, c) => {
+                                            const isLink = utils.isLink(value);
+                                            return (
+                                                <td style={valueColumnStyle} key={`${c}-value`}>
+                                                    {isLink ? (
+                                                        <a href={value}>Receipt</a>
+                                                    ) : (
+                                                        value
+                                                    )}
+                                                   
+                                                </td>
+                                            );
+                                        })}
                                     </tr>
                                 ))}
                             </tbody>
