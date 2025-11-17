@@ -7,6 +7,8 @@ import AddIncomeScreen from './components/AddIncomeScreen.js';
 import LoginScreen from './components/LoginScreen.js';
 import AddCustomerScreen from './components/AddCustomerScreen.js';
 import InventoryScreen from './components/InventoryScreen.js';
+import AddInventoryScreen from './components/AddInventoryScreen.js';
+import SubtractInventoryScreen from './components/SubtractInventoryScreen.js';
 import BottomNavigation from './components/BottomNavigation.js';
 import AdminScreen from './components/AdminScreen.js';
 import ChangeLogsComponent from "./components/ChangeLogsComponent.js";
@@ -16,10 +18,11 @@ import { auth } from "./firebase.js";
 import './App.css';
 
 function App() {
-    const [isLoggedIn,    setIsLoggedIn]    = useState(false);
-    const [loading,       setLoading]       = useState(true);
-    const [activeTab,     setActiveTab]     = useState('customers');
-    const [currentScreen, setCurrentScreen] = useState('customers');
+    const [isLoggedIn,          setIsLoggedIn         ] = useState(false      );
+    const [loading,             setLoading            ] = useState(true       );
+    const [activeTab,           setActiveTab          ] = useState('customers');
+    const [currentScreen,       setCurrentScreen      ] = useState('customers');
+    const [currentScreenParams, setCurrentScreenParams] = useState(null       );
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -44,8 +47,9 @@ function App() {
         setCurrentScreen(tab);
     };
 
-    const navigate = (screen) => { // For navigation within a tab
+    const navigate = (screen, params = null) => { 
         setCurrentScreen(screen);
+        setCurrentScreenParams(params);
     };
 
     if(loading) {
@@ -73,6 +77,10 @@ function App() {
         screenToDisplay = <ChangeLogsComponent onNavigate={navigate} />;
     } else if(currentScreen === "inventory") {
         screenToDisplay = <InventoryScreen onNavigate={navigate} />;
+    } else if(currentScreen === "addInventory") {
+        screenToDisplay = <AddInventoryScreen onNavigate={navigate} onClose={() => navigate("inventory")} {...currentScreenParams} />;
+    } else if(currentScreen === "subtractInventory") {
+        screenToDisplay = <SubtractInventoryScreen onNavigate={navigate} onClose={() => navigate("inventory")} {...currentScreenParams} />;
     }
 
     return (
