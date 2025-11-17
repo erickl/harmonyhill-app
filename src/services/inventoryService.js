@@ -7,6 +7,12 @@ export async function get(filters = {}, onError) {
 }
 
 export async function subtract(booking, type, itemName, quantity, onError) {
+    const currentQuantity = await getCurrentQuantity(itemName, onError);
+    if(currentQuantity < quantity) {
+        onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
+        return false;
+    }
+
     const stock = {
         bookingId : booking ? booking.id : null,
         house     : booking ? booking.house : null,
@@ -78,6 +84,10 @@ export async function getQuantity(name, filter, onError) {
 
     const currentCount = startQuantity + totalRefills - totalSales;
     return currentCount;
+}
+
+export async function getCurrentQuantity(name, onError) {
+    return await getQuantity(name, {}, onError);
 }
 
 export async function closeMonthForItem(name, onError) {

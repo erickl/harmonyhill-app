@@ -93,7 +93,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
             const sales_ = await inventoryService.getSales(item.name, {}, onError);
             setSales(sales_);
 
-            const totalQuantity = await inventoryService.getQuantity(item.name, {}, onError);
+            const totalQuantity = await inventoryService.getCurrentQuantity(item.name, onError);
             setQuantity(totalQuantity);
 
             updatedExpandedList[item.id] = item;
@@ -171,15 +171,17 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                         )}
                                     
                                         <div className="inv-item-body-footer">
-                                            <div className="inv-item-body-footer-icon">
-                                                <MinusCircle   
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onSubtractStock(item);
-                                                    }}
-                                                />
-                                                <p>Subtract</p>
-                                            </div>
+                                            {quantity !== null && quantity > 0 && (
+                                                <div className="inv-item-body-footer-icon">
+                                                    <MinusCircle   
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onSubtractStock(item);
+                                                        }}
+                                                    />
+                                                    <p>Subtract</p>
+                                                </div>
+                                            )}
 
                                             <div className="inv-item-body-footer-icon">
                                                 <Receipt   
