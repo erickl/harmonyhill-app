@@ -83,7 +83,7 @@ export function isJsonObject(value) {
 }
 
 export function isString(value) {
-    return  typeof value === "string";
+    return typeof value === "string";
 }
 
 export function getCurrency() {
@@ -367,6 +367,16 @@ export function setZone(date, keepLocalTime = false) {
 
 export function getHotelTimezone() {
     return 'Asia/Singapore';
+}
+
+export function isLink(value) {
+    if(!isString(value)) return false;
+    if(value.includes("https://")) {
+        return true;
+    } else if(value.includes("http://")) {
+        return true;
+    }
+    return false;
 }
 
 export function getHouseColor(house) {

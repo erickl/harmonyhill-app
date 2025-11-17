@@ -27,6 +27,16 @@ export function isNumber(value) {
     return typeof value === "number" && !isNaN(value);
 }
 
+export function isLink(value) {
+    if(!isString(value)) return false;
+    if(value.includes("https://")) {
+        return true;
+    } else if(value.includes("http://")) {
+        return true;
+    }
+    return false;
+}
+
 export function isEmpty(value) {
     value = isString(value) ? value.trim() : value;
     if(value === "" || value === undefined || value === null) {
