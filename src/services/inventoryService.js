@@ -117,13 +117,13 @@ export async function validateSubtraction(data, onValidationError) {
         return false;
     }
 
-    if(data.booking === null) {
-        onValidationError("Choose a booking");
+    if(utils.isEmpty(data.type)) {
+        onValidationError("Choose a type");
         return false;
     }
 
-     if(utils.isEmpty(data.type)) {
-        onValidationError("Choose a type");
+    if(data.type === "sale" && data.booking === null) {
+        onValidationError("Choose a booking");
         return false;
     }
 

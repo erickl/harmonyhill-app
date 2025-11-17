@@ -128,19 +128,19 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
 
                 <div>
                     <Dropdown 
-                        label={"Booking"}
-                        current={form.booking ? form.booking.name : null}
-                        options={bookings}
-                        onSelect={onBookingSelect}
+                        label={"Type"}
+                        current={form.type}
+                        options={types}
+                        onSelect={onTypeSelect}
                     />
                 </div>
 
                 <div>
                     <Dropdown 
-                        label={"Type"}
-                        current={form.type}
-                        options={types}
-                        onSelect={onTypeSelect}
+                        label={"Booking"}
+                        current={form.booking ? form.booking.name : null}
+                        options={bookings}
+                        onSelect={onBookingSelect}
                     />
                 </div>
             </div>
