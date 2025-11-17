@@ -98,6 +98,10 @@ export async function get(filterOptions, onError) {
     return formattedExpenses;
 }
 
+export async function getOne(id, onError) {
+    return await expenseDao.getOne(id, onError);
+}
+
 export async function remove(id, onError) {
     const deleteResult = await expenseDao.transaction(async () => {
         const existing = await expenseDao.getOne(id, onError);
