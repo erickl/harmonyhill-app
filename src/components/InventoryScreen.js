@@ -15,6 +15,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
     const [inventory,        setInventory       ] = useState([]   );
     const [refills,          setRefills         ] = useState([]   );
     const [sales,            setSales           ] = useState([]   );
+    const [quantity,         setQuantity        ] = useState(null );
     const [isLoading,        setIsLoading       ] = useState(true );
     const [expandedItems,    setExpandedItems   ] = useState({}   );
     const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
@@ -92,6 +93,9 @@ export default function InventoryScreen({onNavigate, onClose}) {
             const sales_ = await inventoryService.getSales(item.name, {}, onError);
             setSales(sales_);
 
+            const totalQuantity = await inventoryService.getQuantity(item.name, {}, onError);
+            setQuantity(totalQuantity);
+
             updatedExpandedList[item.id] = item;
         } else {
             updatedExpandedList[item.id] = null;
@@ -160,9 +164,11 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                     <Spinner />
                                 ) : expandedItems?.[item.id] ? (
                                     <div className="inv-item-body">
-                                        <div>
-                                            Placeholder 3
-                                        </div>
+                                        {quantity !== null && (
+                                            <div>
+                                                Quantity: {quantity}
+                                            </div>
+                                        )}
                                     
                                         <div className="inv-item-body-footer">
                                             <div className="inv-item-body-footer-icon">
