@@ -3,8 +3,11 @@ import "./TextInput.css";
 
 export default function TextInput({type, name, label, value, onChange}) {
     let baseType = "text";
-    let formattedValue = value; 
-    let formattedLabel = label;
+    let formattedValue = value;
+    if(utils.isEmpty(name) && !utils.isEmpty(label)) {
+        name = label.trim().toLowerString();
+    }
+    let formattedLabel = label ? label : utils.capitalizeWords(name);
 
     if(type === "amount") {
         baseType = "text";
