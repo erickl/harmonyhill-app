@@ -212,6 +212,12 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
     }
 
+    const onDisplayMinibarCount = () => {
+        const headers = ["Name", "Quantity"];
+        const values = Object.entries(minibarCount);
+        onDisplayDataTable("Minibar Count", headers, values);
+    }
+
     const handleMinibarCount = async(type) => {
         const stockList = await minibarService.getSelection(onError);
 
@@ -656,10 +662,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                             <Table
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onDisplayDataTable("Minibar Count", minibarCount);
+                                    onDisplayMinibarCount();
                                 }}
                             />
-                            <p>Minibar Data</p>
+                            <p>Minibar Count</p>
                         </div>
                     )}
                 </div> 
