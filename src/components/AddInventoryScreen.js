@@ -117,7 +117,7 @@ export default function AddInventoryScreen({onNavigate, item, onClose}) {
                 <div>
                     <Dropdown 
                         label={"Expense"}
-                        current={form.expense.description}
+                        current={form.expense ? form.expense.description : null}
                         options={expenses}
                         onSelect={onExpenseSelect}
                     />
