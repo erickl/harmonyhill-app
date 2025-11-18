@@ -6,7 +6,7 @@ export async function get(filters = {}, onError) {
     return inventory;
 }
 
-export async function subtract(booking, type, itemName, quantity, onError) {
+export async function subtract(activity, type, itemName, quantity, onError) {
     const currentQuantity = await getCurrentQuantity(itemName, onError);
     if(currentQuantity < quantity) {
         onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
@@ -14,18 +14,34 @@ export async function subtract(booking, type, itemName, quantity, onError) {
     }
 
     const stock = {
-        bookingId : booking ? booking.id : null,
-        house     : booking ? booking.house : null,
-        name      : itemName,
-        quantity  : quantity,
-        type      : type,
+        bookingId  : activity ? activity.bookingId : null,
+        house      : activity ? activity.house : null,
+        activityId : activity ? activity.id : null,
+        name       : itemName,
+        quantity   : quantity,
+        type       : type,
     };
     const result = await inventoryDao.add(stock, onError);
     return result;
 }
 
-export async function addSale(booking, itemName, quantity, onError) {
-    return await subtract(booking, "sale", itemName, quantity, onError);
+export async function addSale(activity, itemName, quantity, onError) {
+    return await subtract(activity, "sale", itemName, quantity, onError);
+}
+
+export async function updateSale(activity, itemName, quantity, onError) {
+    const stockChangeFilter = {
+        activityId : activity.id,
+        type : "sale",
+    };
+    const existingSales = await inventoryDao.getInventoryChanges(itemName, stockChangeFilter, onError);
+    if(!existingSales || existingSales.length < 1) {
+        return false;
+    }
+    const existingSale = existingSales[0];
+
+    const updateStockResult = await inventoryDao.update(existingSale.id, itemName, {quantity : quantity}, onError);
+    return updateStockResult;
 }
 
 export async function refill(expense, itemName, quantity, onError) {
@@ -56,6 +72,10 @@ export async function getRefills(name, filters, onError) {
     filters.type = "refill";
     const purchases = await inventoryDao.getInventoryChanges(name, filters, onError);
     return purchases;
+}
+
+export async function removeStockChange(invItemId, stockChangeId, onError) {
+    await inventoryDao.removeStockChange(invItemId, stockChangeId, onError);
 }
 
 /**
