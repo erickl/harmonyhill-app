@@ -290,9 +290,9 @@ export async function getParent(child) {
     return null;
 }
 
-export async function transaction(inTransaction, onError = null) {
+export async function transaction(onTransaction, onError = null) {
     try {
-        return await runTransaction(db, inTransaction);
+        return await runTransaction(db, onTransaction);
     } catch (e) {
         if(onError) onError(`Error in DB transaction: ${e.message}`);
         return false;

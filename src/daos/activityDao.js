@@ -37,10 +37,6 @@ export async function removePhoto(bookingId, activityId, id, onError) {
     return await dao.remove(path, id, onError);
 }
 
-export async function transaction(inTransaction) {
-    return dao.transaction(inTransaction);
-}
-
 export async function getProviders(category, subCategory) {
     let filters = [
         where("category",    category   ),

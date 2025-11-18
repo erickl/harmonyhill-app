@@ -1,6 +1,7 @@
 import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
+import * as inventoryDao from "./inventoryDao.js";
 
 export async function add(booking, onError) {
     const bookingId = createBookingId(booking.name, booking.house, booking.checkInAt);
@@ -51,9 +52,9 @@ export async function getPromotions() {
     return await dao.get([dao.constant.PROMOTIONS], [], [], -1);
 }
 
-export async function addMinibar(booking, minibar, onError) {
-    const path = [dao.constant.BOOKINGS, booking.id, dao.constant.MINIBAR];
-    const houseShort = getHouseShortName(booking.house);
+export async function addMinibar(activity, minibar, onError) {
+    const path = [dao.constant.BOOKINGS, activity.bookingId, dao.constant.MINIBAR];
+    const houseShort = getHouseShortName(activity.house);
     const id = `minibar-${minibar.type}-${houseShort}-${utils.to_YYMMdd()}-${Date.now()}`;
     return await dao.add(path, id, minibar, onError);
 }
@@ -61,6 +62,38 @@ export async function addMinibar(booking, minibar, onError) {
 export async function updateMinibar(bookingId, minibarId, updatedData, onError) {
     const path = [dao.constant.BOOKINGS, bookingId, "minibar"];
     return await dao.update(path, minibarId, updatedData, true, onError);
+}
+
+export async function removeMinibar(activity, onError) {
+    const minibarEntries = await getMinibar(activity, {activityId : activity.id}, onError);
+    if(!minibarEntries || minibarEntries.length < 1) {
+        return true;
+    }
+
+    const minibarPath = [dao.constant.BOOKINGS, activity.bookingId, "minibar"];
+
+    for(const minibar of minibarEntries) {
+        for(const [itemName, quantity] of Object.entries(minibar.items)) {
+            const stockChangeFilter = {
+                quantity   : quantity,
+                name       : itemName,
+                activityId : activity.id,
+            };
+            const stockChanges = await inventoryDao.getInventoryChanges(stockChangeFilter, onError);
+            if(!stockChanges || stockChanges.length < 1) {
+                continue;
+            }
+
+            const stockChange = stockChanges[0];
+            
+            const invItem = await inventoryDao.getOne(itemName);
+            if(!invItem) continue;
+            const result = await inventoryDao.removeStockChange(invItem.id, stockChange.id, onError);
+        }
+        const result = await dao.remove(minibarPath, minibar.id, onError);
+    }
+    
+    return true;
 }
 
 export async function getExistingMinibar(minibar, onError) {
@@ -76,8 +109,8 @@ export async function getExistingMinibar(minibar, onError) {
     return existingResults[0];
 }
 
-export async function getMinibar(booking, filterOptions, onError) {
-    const path = [dao.constant.BOOKINGS, booking.id, dao.constant.MINIBAR];
+export async function getMinibar(activity, filterOptions, onError) {
+    const path = [dao.constant.BOOKINGS, activity.bookingId, dao.constant.MINIBAR];
     let queryFilter = [];
 
     if (utils.exists(filterOptions, "type")) {

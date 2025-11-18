@@ -3,10 +3,6 @@ import * as storageDao from "./storageDao.js";
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 
-export async function transaction(inTransaction) {
-    return dao.transaction(inTransaction);
-}
-
 export async function getOne(id, onError) {
     const path = [dao.constant.EXPENSES];
     return await dao.getOne(path, id, onError);
