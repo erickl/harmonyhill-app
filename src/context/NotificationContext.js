@@ -9,6 +9,7 @@ export function NotificationProvider({ children }) {
     const onError = (message) => {
         setHeader("Something happened...");
         setMessage(`${message}`);
+        return false;
     } 
 
     const onWarning = (message) => {
