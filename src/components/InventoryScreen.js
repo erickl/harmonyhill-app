@@ -40,7 +40,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onDisplaySalesData = async() => {    
-        const headers = ["", "date", "quantity", "booking", "villa", "soldBy"];  
+        const headers = ["#", "Date", "Quantity", "Booking", "Villa", "Sale Created By"];  
         const enhancedSales = [];
 
         for(let i = 0; i < sales.length; i++) {
@@ -53,7 +53,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                 sale.quantity,
                 booking.name,
                 booking.house.trim().toLowerCase() === "harmony hill" ? "HH" : "JN",
-                sale.createdBy,
+                utils.to_ddMMM(sale.createdBy),
             ];
             
             enhancedSales.push(enhancedSale);
@@ -62,7 +62,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onDisplayRefillsData = async() => {
-        const headers = ["", "date", "quantity", "expense", "Receipt" ];  
+        const headers = ["#", "date", "quantity", "expense", "Receipt", "Refill Created By" ];  
         const enhancedRefills = [];
 
         for(let i = 0; i < refills.length; i++) {
@@ -75,6 +75,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                 refill.quantity,
                 expense.description,
                 expense.photoUrl,
+                utils.to_ddMMM(refill.createdAt),
             ];
             
             enhancedRefills.push(enhancedRefill);
@@ -148,7 +149,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                     </div>
                                     <div className="inv-item-header-right">
                                         <div>
-                                            {"right header placeholder"}
+                                            {""}
                                         </div>
                                         <div className="expand-icon">
                                             {expandedItems[item.id] ? '▼' : '▶'}
