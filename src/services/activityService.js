@@ -1,7 +1,6 @@
 import * as activityDao from '../daos/activityDao.js';
 import * as bookingService from './bookingService.js';
 import * as utils from "../utils.js";
-import * as userService from "./userService.js";
 import {getParent} from "../daos/dao.js";
 import {getMealDishes} from "./mealService.js";
 import {get as getIncome} from "../services/incomeService.js";
@@ -37,13 +36,36 @@ export const Alert = Object.freeze({
  * @param {*} filterOptions = {category=transport|yoga|etc.., house=harmony hill|the jungle nook}
  * @returns list of all kinds of activities available (categories and subcategories)
  */
-export async function getActivityMenu(filterOptions = {}) {
+export async function getActivityTypes(filterOptions = {}) {
     return await activityDao.getTypes(filterOptions);
 }
 
-export async function getActivityMenuItem(category, subCategory, house) {
-    const menuItems = await getActivityMenu({"category" : category, "subCategory" : subCategory, "house" : house});
+export async function getActivityType(category, subCategory, house) {
+    const filter = {};
+    if(category) filter.category = category;
+    if(subCategory) filter.subCategory = subCategory;
+    if(house) filter.house = house;
+    const menuItems = await getActivityTypes(filter);
     return menuItems.length > 0 ? menuItems[0] : null;
+}
+
+export function getInitialActivityData(activityType) {
+    //const activityType = await getActivityType(category, subCategory, house);
+    const activity = {
+        category      : activityType.category,
+        subCategory   : activityType.subCategory,
+        displayName   : activityType.displayName,
+        customerPrice : activityType.customerPrice,
+        custom        : activityType.custom,
+        internal      : activityType.internal,
+        needsProvider : activityType.needsProvider || activityType.internal === false,
+        assignedTo    : null,
+        startingAt    : null,
+        startingTime  : null,
+        status        : "guest confirmed",
+    };
+
+    return activity;
 }
 
 /**

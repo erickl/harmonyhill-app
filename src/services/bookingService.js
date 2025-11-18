@@ -1,9 +1,9 @@
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
-import {transaction} from "../daos/dao.js";
 import * as activityService from "./activityService.js";
 import * as mealService from "./mealService.js";
+import * as minibarService from "./minibarService.js";
 
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
@@ -103,27 +103,15 @@ async function addCheckOut(bookingId, booking, onError) {
 }
 
 export async function add(bookingData, onError) {
-    const result = await transaction(async () => {
-        const bookingObject = await mapBookingObject(bookingData);
-        const addBookingResult = await bookingDao.add(bookingObject, onError);
-        if(addBookingResult === false) {
-            throw new Error(`Couldn't update transaction`);   
-        }
-
-        return addBookingResult;
-    });
-
-    return result;
+    const bookingObject = await mapBookingObject(bookingData);
+    const addBookingResult = await bookingDao.add(bookingObject, onError);
+    return addBookingResult;
 }
 
 export async function update(bookingId, bookingUpdateData, onError) {
-    const result = await transaction(async () => {
-        const bookingUpdate = await mapBookingObject(bookingUpdateData);    
-        const updateBookingResult = await bookingDao.update(bookingId, bookingUpdate, onError);
-        return updateBookingResult;
-    });
-
-    return result;
+    const bookingUpdate = await mapBookingObject(bookingUpdateData);    
+    const updateBookingResult = await bookingDao.update(bookingId, bookingUpdate, onError);
+    return updateBookingResult;
 }
 
 /**
@@ -132,28 +120,28 @@ export async function update(bookingId, bookingUpdateData, onError) {
 export async function remove(bookingId, onError) {   
     if(!userService.isAdmin()) return false;
 
-    return transaction(async () => {
-        // To delete a booking, first delete all its activities, or they'll be dangling records (orphaned)
-        const activities = await activityService.get(bookingId);
-        for(const activity of activities) {
-            let deleteActivityResult = false;
-            
-            // Removing it as a meal, will also remove its dishes
-            if(activity.category === "meal") {
-                deleteActivityResult = await mealService.removeMeal(activity, onError);
-            } else {
-                deleteActivityResult = await activityService.remove(activity, onError);
-            }
-            
-            if(!deleteActivityResult) {
-                throw new Error(`Couldn't delete activity ${bookingId}/${activity.id}`);
-            }
+    // To delete a booking, first delete all its activities, or they'll be dangling records (orphaned)
+    const activities = await activityService.get(bookingId);
+    for(const activity of activities) {
+        let deleteActivityResult = false;
+        
+        // Removing it as a meal, will also remove its dishes
+        if(activity.category === "meal") {
+            deleteActivityResult = await mealService.removeMeal(activity, onError);
+        } else {
+            const removeMinibarResult = await minibarService.remove(activity, onError);
+            deleteActivityResult = await activityService.remove(activity, onError);
         }
-        const deleteBookingResult = await bookingDao.remove(bookingId, onError);
-        if(!deleteBookingResult) {
-            throw new Error(`Couldn't delete booking ${bookingId}`);
+        
+        if(!deleteActivityResult) {
+            return false;
         }
-    });   
+    }
+
+    const deleteBookingResult = await bookingDao.remove(bookingId, onError);
+    if(!deleteBookingResult) {
+        return false;
+    }
 }
 
 export async function mapBookingObject(data) {

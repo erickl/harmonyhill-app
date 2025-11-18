@@ -1,6 +1,7 @@
 import * as activityDao from "../daos/activityDao.js";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as activityService from "./activityService.js";
+import * as inventoryService from "./inventoryService.js";
 import * as utils from "../utils.js";
 
 export async function getMealCategories() {
@@ -21,58 +22,61 @@ export function groupByCourse(dishes) {
 }
 
 export async function addMeal(bookingId, mealData, onError) {
-    let mealId = false;
+    const booking = await bookingDao.getOne(bookingId);
+    if(!booking) {
+        onError(`Booking ${bookingId} not found`)
+        return false;
+    }
 
-    // Atomic transaction: either all DB adds/updates happen, or none does
-    const addMealSuccess = await activityDao.transaction(async () => {
-        const booking = await bookingDao.getOne(bookingId);
-        if(!booking) {
-            throw new Error(`Booking ${bookingId} not found`)
+    const meal = await mapMealObject(mealData);
+    meal.house = booking.house;
+    meal.name = booking.name
+    meal.bookingId = bookingId;
+
+    const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
+    const mealRecord = await activityDao.add(bookingId, mealId, meal, onError);
+    if(mealRecord === false) {
+        return false;
+    }
+
+    if(!utils.isEmpty(mealData.dishes)) {
+        const returnedDishIds = await addDishes(bookingId, mealId, Object.values(mealData.dishes), onError);
+        if(returnedDishIds.length !== Object.keys(mealData.dishes).length) {
+            return false;
         }
+    }
 
-        const meal = await mapMealObject(mealData);
-        meal.house = booking.house;
-        meal.name = booking.name
-        meal.bookingId = bookingId;
-
-        mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
-        const mealRecord = await activityDao.add(bookingId, mealId, meal, onError);
-        if(mealRecord === false) {
-            throw new Error(`Could not add meal ${mealId}`)
-        }
-
-        if(!utils.isEmpty(mealData.dishes)) {
-            const returnedDishIds = await addDishes(bookingId, mealId, Object.values(mealData.dishes), onError);
-            if(returnedDishIds.length !== Object.keys(mealData.dishes).length) {
-                throw new Error(`Not all dishes were successfully uploaded for meal ${mealId}`)
-            }
-        }
-
-        return mealRecord;
-    });
-
-    return addMealSuccess ? mealId : false;
+    return mealRecord;
 }
 
 export async function removeMeal(meal, onError) {
-    const success = await activityDao.transaction(async () => {
-        const dishes = await getMealDishes(meal.bookingId, meal.id);
-        for(const dish of dishes) {
-            const deleteDishResult = await deleteDish(meal.bookingId, meal.id, dish.id, onError);
-            if(deleteDishResult === false) {
-                throw new Error(`Unexpected error when deleting dish ${dish.id}`);
-            }
+    const dishes = await getMealDishes(meal.bookingId, meal.id);
+    for(const dish of dishes) {
+        // Check for any dessert, cookies, etc, and see if any inventory stock exists for the item, in which case remove it
+        const invItem = await inventoryService.getOne(dish.name);
+        if(invItem) {
+            const stockChangesFilter = {bookingId : meal.bookingId, activityId : meal.id, quantity : dish.quantity};
+            const stockChanges = await inventoryService.getSales(invItem.name, stockChangesFilter, onError);
+            if(stockChanges && stockChanges.length > 0) {
+                const stockChange = stockChanges[0];
+                const removeStockChangeResult = await inventoryService.removeStockChange(invItem.id, stockChange.id, onError);
+                if(removeStockChangeResult === false) {
+                    return false; 
+                }
+            } 
         }
-
-        const success = await activityService.remove(meal, onError);
-        if(success === false) {
-            throw new Error(`Unexpected error when deleting meal ${meal.id}`);
+        const deleteDishResult = await deleteDish(meal.bookingId, meal.id, dish.id, onError);
+        if(deleteDishResult === false) {
+            return false;
         }
+    }
 
-        return true;
-    });
+    const success = await activityService.remove(meal, onError);
+    if(success === false) {
+        return false;
+    }
 
-    return success;
+    return true;
 }
 
 // Example result: 250530-hh-breakfast-178492929
@@ -108,7 +112,7 @@ async function addDishes(bookingId, mealId, dishesData, onError) {
         // Add meal item to the meal
         const addDishSuccess = await activityDao.addDish(bookingId, mealId, dishId, dish, onError);
         if(!addDishSuccess) {
-            throw new Error(`Cannot add dish ${dishId}`);
+            return false;
         }
 
         // Update the total meal customerPrice
@@ -116,7 +120,7 @@ async function addDishes(bookingId, mealId, dishesData, onError) {
             runningTotalMealPrice += dish.isFree ? 0 : dish.customerPrice * dish.quantity;
             const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: runningTotalMealPrice }, false, onError);
             if(!updateMealPriceSuccess) {
-                throw new Error(`Cannot update total meal price for meal with dish ${dishId}`);
+                return false;
             }
         }
        
@@ -128,55 +132,52 @@ async function addDishes(bookingId, mealId, dishesData, onError) {
 }
 
 export async function update(bookingId, mealId, mealUpdateData, onError) {
-    const updateMealSuccess = await activityDao.transaction(async () => {
-        const existing = await getMeal(bookingId, mealId);
-        if(!existing) {
-            throw new Error(`Cannot find meal ${bookingId}/${mealId}`);
-        } 
+    const existing = await getMeal(bookingId, mealId);
+    if(!existing) {
+        onError(`Cannot find meal ${bookingId}/${mealId}`);
+        return false;
+    } 
 
-        // When changing assignee 
-        if(utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && existing.assignedTo !== mealUpdateData.assignedTo) {
-            mealUpdateData.assigneeAccept = false;
-        }
+    // When changing assignee 
+    if(utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && existing.assignedTo !== mealUpdateData.assignedTo) {
+        mealUpdateData.assigneeAccept = false;
+    }
 
-        // Update meal data
-        const mealUpdate = await mapMealObject(mealUpdateData);
-        const updateMealRecord = await activityDao.update(bookingId, mealId, mealUpdate, true, onError);
-        if(!updateMealRecord) {
-            throw new Error(`Cannot update meal ${bookingId}/${mealId}`);
-        }
+    // Update meal data
+    const mealUpdate = await mapMealObject(mealUpdateData);
+    const updateMealRecord = await activityDao.update(bookingId, mealId, mealUpdate, true, onError);
+    if(!updateMealRecord) {
+        return false;
+    }
+    
+    let updateDishesSuccess = false;
+
+    // Update dishes data, if there are any updates to them
+    if(!utils.isEmpty(mealUpdateData.dishes)) {
+        const dishesData = Object.values(mealUpdateData.dishes);
+        updateDishesSuccess = await updateDishes(bookingId, mealId, dishesData, onError);
+    }
+
+    if(!updateDishesSuccess) {
+        return false;
+    }
+
+    // Update total meal price
+    if(updateDishesSuccess !== false) {
+        const updatedDishes = await getMealDishes(bookingId, mealId);
+
+        const customerMealTotalPrice = mealUpdateData["isFree"] ? 0 : Object.values(updatedDishes).reduce((sum, dish) => {
+            return sum + (dish.isFree ? 0 : dish.quantity * parseInt(dish.customerPrice));
+        }, 0);
         
-        let updateDishesSuccess = false;
-
-        // Update dishes data, if there are any updates to them
-        if(!utils.isEmpty(mealUpdateData.dishes)) {
-            const dishesData = Object.values(mealUpdateData.dishes);
-            updateDishesSuccess = await updateDishes(bookingId, mealId, dishesData, onError);
-        }
-
-        if(!updateDishesSuccess) {
-            throw new Error(`Cannot update dishes for ${bookingId}/${mealId}`);
-        }
-
-        // Update total meal price
-        if(updateDishesSuccess !== false) {
-            const updatedDishes = await getMealDishes(bookingId, mealId);
-
-            const customerMealTotalPrice = mealUpdateData["isFree"] ? 0 : Object.values(updatedDishes).reduce((sum, dish) => {
-                return sum + (dish.isFree ? 0 : dish.quantity * parseInt(dish.customerPrice));
-            }, 0);
-            
-            const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: customerMealTotalPrice }, true, onError);
-            
-            if(!updateMealPriceSuccess) {
-                throw new Error(`Cannot update total meal price for meal with dish ${mealId}`);
-            }
-        }
+        const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: customerMealTotalPrice }, true, onError);
         
-        return updateMealRecord;
-    });
-
-    return updateMealSuccess;
+        if(!updateMealPriceSuccess) {
+            return false;
+        }
+    }
+    
+    return updateMealRecord;
 }
 
 async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
@@ -196,7 +197,6 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
         if(!dishUpdate) {
             const deleteDishResult = await deleteDish(bookingId, mealId, existingDish.id);
             if(deleteDishResult === false) {
-                onError(`Unexpected error when deleting dish ${existingDish.id}. Contact admin, please`);
                 return false;
             }
             dishesUpdated.push(`Deleted: ${existingDish.id}`);
@@ -217,14 +217,14 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
             if(addNewDishResult !== false) {
                 dishesUpdated.push(newDishId);
             } else {
-                throw new Error(`Cannot add new dish ${newDishId} to meal ${bookingId}/${mealId}`);
+                return false;
             }
         } else {
             const updateExistingDishResult = await activityDao.updateDish(bookingId, mealId, existingDish.id, dishUpdate, onError);
             if(updateExistingDishResult !== false) {
                 dishesUpdated.push(existingDish.id);
             } else {
-                throw new Error(`Cannot update existing dish ${existingDish.id} to meal ${bookingId}/${mealId}`);
+                return false;
             }
         }
     }

@@ -14,53 +14,27 @@ export async function get(filterOptions, onError) {
 
 export async function add(data, onError) {
     const object = await mapIncomeObject(data);
-
-    const addResult = await incomeDao.transaction(async () => {
-        const addResult = await incomeDao.add(object, onError);
-        if(addResult === false) {
-            throw new Error(`Could not add income`);
-        }
-        return addResult;
-    });
-    
-    return addResult;
+    return await incomeDao.add(object, onError);
 }
 
-export async function remove(id, onError) {
-    const deleteResult = await incomeDao.transaction(async () => {
-        const existing = await incomeDao.getOne(id, onError);
-        if(!existing) {
-            throw new Error(`Could not find income record ${id}`);
-        }
+export async function remove(id, onError) {   
+    const existing = await incomeDao.getOne(id, onError);
+    if(!existing) {
+        return onError(`Could not find income record ${id}`);
+    }
 
-        const deleteRecordResult = await incomeDao.remove(id, onError);
-        if(!deleteRecordResult) {
-            throw new Error(`Could not delete income record ${id}`);
-        }
-
-        return true; 
-    });
-
-    return deleteResult;
+    return await incomeDao.remove(id, onError);     
 }
 
 export async function update(id, data, onError) {
     const object = await mapIncomeObject(data);
 
-    const updateResult = await incomeDao.transaction(async () => {
-        const existing = await incomeDao.getOne(id);
-        if(!existing) {
-            throw new Error(`Could not find existing income ${id}`);
-        }
-        
-        const updateResult = await incomeDao.update(id, object, onError);
-        if(updateResult === false) {
-            throw new Error(`Could not update income`);
-        }
-        return updateResult;
-    });
-
-    return updateResult;
+    const existing = await incomeDao.getOne(id);
+    if(!existing) {
+        return onError(`Could not find existing income ${id}`);
+    }
+    
+    return await incomeDao.update(id, object, onError);
 }
 
 async function mapIncomeObject(data) {
@@ -118,21 +92,17 @@ export async function validate(data, onError) {
             }
             else if(category === "commission") {
                 if(utils.isEmpty(data.bookingId)) {
-                    onError(`For category 'Commission', select which booking it pertains to`);
-                    return false;
+                    return onError(`For category 'Commission', select which booking it pertains to`);
                 }
                 if(utils.isEmpty(data.activityId)) {
-                    onError(`For category 'Commission', select which activity it pertains to`);
-                    return false;
+                    return onError(`For category 'Commission', select which activity it pertains to`);
                 }
                 if(utils.isEmpty(data.comments)) {
-                    onError(`For category 'Commission', please give provider name in the comments`);
-                    return false;
+                    return onError(`For category 'Commission', please give provider name in the comments`);
                 }
             }
             else if(category === "other" && utils.isEmpty(data.comments)) {
-                onError(`For category 'Other', add some comments`);
-                return false;
+                return onError(`For category 'Other', add some comments`);
             }
         }
         

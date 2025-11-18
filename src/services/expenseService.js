@@ -5,21 +5,18 @@ import { getOne as getActivity } from "./activityService.js";
 import {getOne as getBooking} from "./bookingService.js";
 
 export async function add(data, onError) {
-    const addResult = await expenseDao.transaction(async () => {
-        data.index = await expenseDao.getNextSerialNumber(data.purchasedAt, onError);
-        
-        data = await processReceipt(data, onError);
-        if(data === false) return false;
-
-        const object = mapReceiptObject(data);
-
-        const addResult = await expenseDao.add(object, onError);
-        if(addResult === false) {
-            throw new Error(`Could not add the receipt`);
-        }
-        return addResult;
-    });
+    data.index = await expenseDao.getNextSerialNumber(data.purchasedAt, onError);
     
+    data = await processReceipt(data, onError);
+    if(data === false) return false;
+
+    const object = mapReceiptObject(data);
+
+    const addResult = await expenseDao.add(object, onError);
+    if(addResult === false) {
+        onError(`Could not add the receipt`);
+        return false;
+    }
     return addResult;
 }
 
@@ -42,33 +39,32 @@ async function processReceipt(data, onError) {
 }
 
 export async function update(id, data, onError) {
-    const updateResult = await expenseDao.transaction(async () => {
-        const existing = await expenseDao.getOne(id);
-        if(!existing) {
-            throw new Error(`Could not find existing income ${id}`);
-        }
+    const existing = await expenseDao.getOne(id);
+    if(!existing) {
+        onError(`Could not find existing income ${id}`);
+        return false;
+    }
 
-        data = await processReceipt(data, onError);
-        if(data === false) return false;
+    data = await processReceipt(data, onError);
+    if(data === false) {
+        return false;
+    }
 
-        const object = mapReceiptObject(data);
-        
-        const updateResult = await expenseDao.update(id, object, onError);
-        if(updateResult === false) {
-            throw new Error(`Could not update the receipt data record`);
-        }
-
-        // If photo is updated, remove the old photo
-        if(existing.photoUrl !== object.photoUrl) {
-            const removeOldFileResult = await storageDao.removeFile(existing.fileName, onError);   
-            if(removeOldFileResult === false) {
-                return false;
-            }
-        }
-
-        return updateResult;
-    });
+    const object = mapReceiptObject(data);
     
+    const updateResult = await expenseDao.update(id, object, onError);
+    if(updateResult === false) {
+        return false;
+    }
+
+    // If photo is updated, remove the old photo
+    if(existing.photoUrl !== object.photoUrl) {
+        const removeOldFileResult = await storageDao.removeFile(existing.fileName, onError);   
+        if(removeOldFileResult === false) {
+            return false;
+        }
+    }
+
     return updateResult;
 }
 
@@ -103,21 +99,13 @@ export async function getOne(id, onError) {
 }
 
 export async function remove(id, onError) {
-    const deleteResult = await expenseDao.transaction(async () => {
-        const existing = await expenseDao.getOne(id, onError);
-        if(!existing) {
-            throw new Error(`Could not find expense record ${id}`);
-        }
+    const existing = await expenseDao.getOne(id, onError);
+    if(!existing) {
+        onError(`Could not find expense record ${id}`);
+        return false;
+    }
 
-        const deleteRecordResult = await expenseDao.remove(id, onError);
-        if(!deleteRecordResult) {
-            throw new Error(`Could not delete expense record ${id}`);
-        }
-
-        return true; 
-    });
-    
-    return deleteResult;
+    return await expenseDao.remove(id, onError);
 }
 
 export async function validate(data, onError) {
