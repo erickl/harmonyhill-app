@@ -73,28 +73,24 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         } 
     }
 
-    const handleActivitySelection = async (activity) => {
-        setSelectedActivity(activity);
+    const handleActivitySelection = async (activityType) => {
+        setSelectedActivity(activityType);
 
         const formResetData = {...(initialForm || {})};
         
-        if(activity == null) {
+        if(activityType == null) {
             setSelectedCategory(null);
             setFormData(formResetData);
             return;
         }
 
         if(selectedCategory == null) {
-            onError(`Error: subCategory ${activity.subCategory} selected without a category`);
+            onError(`Error: subCategory ${activityType.subCategory} selected without a category`);
         }
 
-        handleFormDataChange("_batch", {
-            "displayName"   : activity.displayName,
-            "customerPrice" : activity.customerPrice,
-            "custom"        : activity.custom,
-            "internal"      : activity.internal,
-            "needsProvider" : activity.needsProvider || activity.internal === false,
-        });
+        const initialActivityData = await activityService.getInitialActivityData(activityType);
+
+        handleFormDataChange("_batch", initialActivityData);
     }
 
     const handleActivityPurchase = async () => {
@@ -179,9 +175,9 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             setLoadingMenu(true); // Set loading to true before fetching
 
             try {
-                const activityMenuData = await activityService.getActivityMenu({"house": customer.house});
+                const activityMenuData = await activityService.getActivityTypes({"house": customer.house});
                 let categories = activityMenuData.map(item => item.category);
-                // getActivityMenu() gets all sub categories (e.g. lunch, dinner), so a category (e.g. meal) can occur multiple times
+                // getActivityTypes() gets all sub categories (e.g. lunch, dinner), so a category (e.g. meal) can occur multiple times
                 categories = Array.from(new Set(categories));
                 
                 setCategories(categories);

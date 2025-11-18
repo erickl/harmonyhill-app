@@ -135,7 +135,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
         setLoading(true);
 
         const fetchActivityMenuItemData = async () => {
-            const menuItem = await activityService.getActivityMenuItem(activityToEdit.category, activityToEdit.subCategory, customer.house);
+            const menuItem = await activityService.getActivityType(activityToEdit.category, activityToEdit.subCategory, customer.house);
             setActivityMenuItem(menuItem);
             setLoading(false);
             if(!menuItem) {

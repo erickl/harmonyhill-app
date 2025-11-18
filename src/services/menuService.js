@@ -17,6 +17,14 @@ export async function get(options = {}, onError) {
     return menu;
 }
 
+export async function getOneByNameAndCourse(name, course) {
+    const dishes = await get({name: name, course: course});
+    if(!dishes === dishes.length === 0) {
+        return null;
+    }
+    return dishes[0];
+}
+
 export async function getOne(id) {
     const dish = await menuDao.getOne(id);
     return dish;
