@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ButtonsFooter from "./ButtonsFooter.js";
 import TextInput from "./TextInput.js";
 import Dropdown from "./Dropdown.js";
-import * as bookingService from "../services/bookingService.js";
+import * as activityService from "../services/activityService.js";
 import * as inventoryService from "../services/inventoryService.js"
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
@@ -11,7 +11,7 @@ import { useSuccessNotification } from "../context/SuccessContext.js";
 export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
     const initialForm = {
         quantity : 0,
-        booking  : null,
+        activity : null,
         type     : null,
     }
 
@@ -23,7 +23,7 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
     };
 
     const [form,            setForm           ] = useState(initialForm);
-    const [bookings,        setBookings       ] = useState([]);
+    const [activities,      setActivities     ] = useState([]);
     const [validated,       setValidated      ] = useState(false);
     const [validationError, setValidationError] = useState(null);
 
@@ -69,7 +69,7 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
                 return;
             }
             
-            const result = await inventoryService.subtract(form.booking, form.type, item.name, form.quantity, onError);
+            const result = await inventoryService.subtract(form.activity, form.type, item.name, form.quantity, onError);
    
             if(result !== false) {
                 setForm(initialForm);
@@ -81,8 +81,8 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
         }        
     };
 
-    const onBookingSelect = (booking) => {
-        handleInputChange("booking", booking);
+    const onActivitySelect = (activity) => {
+        handleInputChange("activity", activity);
     }
 
     const onTypeSelect = (type) => {
@@ -91,18 +91,18 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
     }
 
     useEffect(() => {
-        const getBookings = async() => {
+        const getActivities = async() => {
             const filter = { after: utils.today(-7) };
-            const bookings_ = await bookingService.get(filter);
-            const formattedBookings = bookings_.reduce((m, booking) => {
-                const date = utils.to_ddMMM(booking.checkInAt);
-                m[`${date}: ${booking.name}`] = booking;
+            const activities_ = await activityService.getAll(filter, onError);
+            const formattedActivities = activities_.reduce((m, activity) => {
+                const date = utils.to_ddMMM(activity.startingAt);
+                m[`${date}, ${activity.name}, ${activity.displayName}`] = activity;
                 return m;
             }, {})
-            setBookings(formattedBookings);
+            setActivities(formattedActivities);
         };
 
-        getBookings();
+        getActivities();
 
         validateFormData(initialForm);
     }, []);
@@ -138,9 +138,9 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
                 <div>
                     <Dropdown 
                         label={"Booking"}
-                        current={form.booking ? form.booking.name : null}
-                        options={bookings}
-                        onSelect={onBookingSelect}
+                        current={form.activity ? form.activity.name : null}
+                        options={activities}
+                        onSelect={onActivitySelect}
                     />
                 </div>
             </div>
