@@ -63,7 +63,7 @@ export function DataTableProvider({ children }) {
                                             return (
                                                 <td style={valueColumnStyle} key={`${c}-value`}>
                                                     {isLink ? (
-                                                        <a href={value}>Receipt</a>
+                                                        <a href={value} style={{textDecoration:"none"}}>🔗</a>
                                                     ) : (
                                                         value
                                                     )}
