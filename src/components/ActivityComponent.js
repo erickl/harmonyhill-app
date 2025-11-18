@@ -76,7 +76,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         let thisActivityInfo = activityInfo;
         if(!thisActivityInfo) {
-            thisActivityInfo = await activityService.getActivityMenuItem(activity.category, activity.subCategory, activity.house);
+            thisActivityInfo = await activityService.getActivityType(activity.category, activity.subCategory, activity.house);
             setActivityInfo(thisActivityInfo);
         }
 
@@ -243,7 +243,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             inventory.activityId = activity.id;
             inventory.bookingId = customer.id;
 
-            const result = await minibarService.addOrEdit(customer, inventory, onError); 
+            const result = await minibarService.addOrEdit(activity, inventory, onError); 
             if(result !== false) {
                 setMinibarCount(inventory.items);
                 onSuccess();
@@ -321,7 +321,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
             setCustomer(activityCustomer);
 
-            const existingMinibarCount = await minibarService.get(activityCustomer, {"activityId": activity.id}, onError);
+            const existingMinibarCount = await minibarService.get(activity, {"activityId": activity.id}, onError);
             setMinibarCount(existingMinibarCount && existingMinibarCount.length > 0 ? existingMinibarCount[0].items : null);
         }
         
