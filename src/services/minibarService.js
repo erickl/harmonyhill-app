@@ -1,10 +1,12 @@
 import * as menuService from "./menuService.js";
 import * as inventoryService from "./inventoryService.js";
+import * as activityService from "./activityService.js";
+import * as mealService from "./mealService.js";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
 import {transaction} from "../daos/dao.js";
 
-export async function addOrEdit(booking, minibar, onError) {
+export async function addOrEdit(activity, minibar, onError) {
     const filteredItems = filterZeroCounts(minibar.items);
     const minibar_ = {...minibar, items: filteredItems};
 
@@ -13,61 +15,87 @@ export async function addOrEdit(booking, minibar, onError) {
     const existing = await bookingDao.getExistingMinibar(minibar_, onError);
 
     if(existing !== null) {
-        result = await bookingDao.updateMinibar(booking.id, existing.id, minibar_, onError);
-    }
-    else {
-        result = await bookingDao.addMinibar(booking, minibar_, onError);
+        result = await bookingDao.updateMinibar(activity.bookingId, existing.id, minibar_, onError);
+    } else {
+        result = await bookingDao.addMinibar(activity, minibar_, onError);
     }
 
     if(result === false) {
         return false;
     }
 
-    if(minibar_.type === "end") {
-        const itemsSold = await calculateSale(booking, onError);
-        const minibarSale = {
-            ...minibar_,
-            type : "sale",
-            items : itemsSold,
-        };
-        const addSalesResult = await addSale(booking, minibarSale, onError)
-        return addSalesResult;
+    if(minibar_.type === "end") { 
+        if(existing !== null) {
+            result = await editSale(activity, onError);
+        } else {
+            result = await addSale(activity, onError);
+        }   
+        
+        return salesResult;
     }
 
     return result;
 }
 
-async function addSale(booking, minibarSale, onError) {
-    const result = await transaction(async() => {
-        minibarSale.items = filterZeroCounts(minibarSale.items);
-        const addSalesResult = await addOrEdit(booking, minibarSale, onError);
-        if(addSalesResult === false) {
-            throw new Error(`Couldn't add/edit minibar sale for ${booking.id}`);
-        }
+async function addSale(activity, onError) {
+    const itemsSold = await calculateSale(activity, onError);
+    if(itemsSold === false) {
+        return false;
+    }
 
-        for(const [name, quantity] of Object.entries(minibarSale.items)) {
-            if(quantity > 0) {
-                const addInventorySaleResult = await inventoryService.addSale(booking, name, quantity, onError);
-                if(addInventorySaleResult === false) {
-                    throw new Error(`Couldn't add inventory sale for ${name} (booking ${booking.id})`);
-                }
+    const dishes = [];
+
+    // Take each minibar item from inventory
+    for(const [name, quantity] of Object.entries(itemsSold)) {
+        if(quantity > 0) {
+            const addInventorySaleResult = await inventoryService.addSale(activity, name, quantity, onError);
+            if(addInventorySaleResult === false) {
+                return false;
+            }
+
+            const dish = await menuService.getOneByNameAndCourse(name, "minibar");
+            if(dish) {
+                dishes.push(dish);
             }
         }
-        
-        return addSalesResult;
-    });
+    }
 
-    return result;
+    const minibarTypeInfo = await activityService.getActivityType("meal", "minibar");
+    const minibarActivity = activityService.getInitialActivityData(minibarTypeInfo);
+    minibarActivity.dishes = dishes;
+
+    const addMinibarMealResult = await mealService.addMeal(activity.bookingId, minibarActivity, onError);
+    return addMinibarMealResult;
 }
 
-export async function calculateSale(booking, onError) {
-    const startCount = await getType(booking, "start", onError);
-    if(!startCount) onError("No start count found for this booking");
+async function editSale(activity, onError) {
+    const itemsSold = await calculateSale(activity, onError);
+    if(itemsSold === false) {
+        return false;
+    } 
 
-    const totalRefills = await getTotalRefills(booking, onError);
+    for(const [name, quantity] of Object.entries(itemsSold)) {
+        const updateInventorySaleResult = await inventoryService.updateSale(activity, name, quantity, onError);
+        if(updateInventorySaleResult === false) {
+            return false;
+        }
+    }
+    
+    return true;
+}
 
-    const endCount = await getType(booking, "end", onError);
-    if(!endCount) onError("No end count found for this booking");
+export async function calculateSale(activity, onError) {
+    const startCount = await getType(activity, "start", onError);
+    if(!startCount) {
+        return onError(`No start count found for booking ${activity.bookingId}`);
+    }
+
+    const totalRefills = await getTotalRefills(activity, onError);
+
+    const endCount = await getType(activity, "end", onError);
+    if(!endCount) {
+        return onError(`No end count found for booking ${activity.bookingId}`);
+    }
     
     const totalProvided = startCount.items;
     Object.entries(totalRefills).forEach(([name, quantity]) => {
@@ -82,8 +110,8 @@ export async function calculateSale(booking, onError) {
     return sales;
 }
 
-export async function getTotalRefills(booking, onError) {
-    const refills = await get(booking, {"type": "refill"}, onError);
+export async function getTotalRefills(activity, onError) {
+    const refills = await get(activity, {"type": "refill"}, onError);
 
     const total = refills.reduce((map, refill) => {
         Object.entries(refill.items).forEach(([name, quantity]) => {
@@ -96,21 +124,24 @@ export async function getTotalRefills(booking, onError) {
 }
 
 /**
- * @param {*} booking the booking object
+ * @param {*} 
  * @param {*} filters type=sale|end|start|refill, activityId, bookingId
  * @param {*} onError 
  * @returns 
  */
-export async function get(booking, filters, onError) {
-    return await bookingDao.getMinibar(booking, filters, onError);
+export async function get(activity, filters, onError) {
+    return await bookingDao.getMinibar(activity, filters, onError);
 }
 
-export default async function getType(booking, type, onError) {
-    const startCounts = await get(booking, {"type": type}, onError);
+export default async function getType(activity, type, onError) {
+    const startCounts = await get(activity, {"type": type}, onError);
     if(!startCounts || startCounts.length === 0) return null;
     return startCounts[0];
 }
 
+export async function remove(activity, onError) {
+    return await bookingDao.removeMinibar(activity, onError);
+}
 
 export async function getSelection(onError) {
     const filter = { meal: "minibar" };
