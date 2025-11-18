@@ -20,7 +20,16 @@ export async function get(filterOptions, onError) {
         queryFilter.push(where("type", "==", filterOptions.type));
     }
 
+    if (utils.exists(filterOptions, "type")) {
+        queryFilter.push(where("type", "==", filterOptions.type));
+    }
+
     return await dao.get(path, queryFilter, [], -1, onError);
+}
+
+export async function removeStockChange(invItemId, stockChangeId, onError) {
+    const path = ["inventory", invItemId, "stock"];
+    return await dao.remove(path, stockChangeId, onError);
 }
 
 export async function add(object, onError) {
@@ -28,6 +37,12 @@ export async function add(object, onError) {
     const docId = makeId(object.type, inventoryItemId);
     const path = ["inventory", inventoryItemId, "stock"];
     return await dao.add(path, docId, object, onError);
+}
+
+export async function updateStock(stockChangeId, invItemName, object, onError) {
+    const inventoryItemId = makeInventoryItemId(invItemName);
+    const path = ["inventory", inventoryItemId, "stock"];
+    return await dao.update(path, stockChangeId, object, true, onError);
 }
 
 export async function getInventoryChanges(name, filterOptions, onError) {
@@ -50,6 +65,22 @@ export async function getInventoryChanges(name, filterOptions, onError) {
 
     if (utils.exists(filterOptions, "type")) {
         queryFilter.push(where("type", "==", filterOptions.type));
+    }
+
+    if (utils.exists(filterOptions, "bookingId")) {
+        queryFilter.push(where("bookingId", "==", filterOptions.bookingId));
+    }
+
+    if (utils.exists(filterOptions, "activityId")) {
+        queryFilter.push(where("activityId", "==", filterOptions.activityId));
+    }
+
+    if (utils.exists(filterOptions, "house")) {
+        queryFilter.push(where("house", "==", filterOptions.house));
+    }
+
+    if (utils.exists(filterOptions, "quantity")) {
+        queryFilter.push(where("quantity", "==", filterOptions.quantity));
     }
 
     let ordering = [ orderBy("createdAt", "asc") ];
