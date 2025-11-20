@@ -90,7 +90,7 @@ export async function makeFirestoreAdapter(db, adminTimestamp = null) {
                             data[key] = toTimestamp(value);
                         }
                     }
-                    const pathString = Array.isArray(path) ? fullPathArray.join('/') : path;
+                    const pathString = Array.isArray(path) ? path.join('/') : path;
                     const docRef = db.collection(pathString).doc(id);
                     await docRef.set(data);
                     return true;
