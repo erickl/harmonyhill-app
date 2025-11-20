@@ -1,6 +1,7 @@
 import * as personnelDao from "../daos/personnelDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
+import {commitTx} from "../daos/dao.js";
 
 /**
  * @param {*} filterOptions = { name|activity=transport|yoga|etc...|location=Maniktawang|outside}
@@ -15,36 +16,33 @@ export async function get(filterOptions = {}) {
  * @param {*} personnelData = {name, activity=yoga|transport|etc..., location=maniktawang|other, price, whatsapp}
  * @returns personnelId if added successfully, otherwise false
  */
-export async function add(personnelData) {
+export async function add(personnelData, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const personnel = await mapPersonnelObject(personnelData);
     const personnelId = makePersonnelId(personnel);
-    const success = await personnelDao.add(personnelId, personnel);
-    if(success) {
-        return personnelId;
+    const result = await personnelDao.add(personnelId, personnel, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
     }
 
-    return false;
+    return result;
 }
 
-/**
- * 
- * @param {*} personnelId 
- * @param {*} priceData 
- */
-export async function addPrice(personnelId, priceData) {
-    const personnel = await personnelDao.getOne(personnelId);
-    if(!personnel) {
-        console.error(`Personnel with ID ${personnelId} not found.`);
-        return false;
-    }
+export async function update(personnelId, personnelUpdateData, onError, writes = []) {
+    const commit = writes.length === 0;
 
-    const price = mapPriceObject(priceData); 
-    // todo: in progress...
-}
-
-export async function update(personnelId, personnelUpdateData) {
     const updatedPersonnel = await mapPersonnelObject(personnelUpdateData, true);
-    return await personnelDao.update(personnelId, updatedPersonnel);
+    const result = await personnelDao.update(personnelId, updatedPersonnel, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 function makePersonnelId(personnel) {
@@ -79,34 +77,4 @@ async function mapPersonnelObject(data, isUpdate = false) {
     }
 
     return object;
-}
-
-export async function testPersonnel() {
-    const personnel = {
-        name: "John Doe",
-        activity: "Yoga",
-        price: 100
-    };
-
-    const personnelId = await add(personnel);
-    if (personnelId !== false) {
-        console.log(`Personnel added with ID: ${personnelId}`);
-    } else {
-        console.error("Failed to add personnel");
-    }
-
-    const updatedPersonnel = await update(personnelId, { price: 120 });
-    if (updatedPersonnel) {
-        console.log(`Personnel updated successfully`);
-    } else {
-        console.error("Failed to update personnel");
-    }
-
-    const personnelList = await get({ activity: "Yoga" });
-    if (personnelList && personnelList.length > 0) {
-        console.log(`Found ${personnelList.length} personnel for Yoga activity`);
-    } else {
-        console.error("No personnel found for Yoga activity");
-    }
-    return personnelList;
 }

@@ -38,7 +38,7 @@ export async function getDocument(path, id,  onError) {
     return await dao.getOne(path, id, onError);
 }
 
-export async function remove(id, onError) {
+export async function remove(id, onError, writes) {
     const path = [dao.constant.USER_LOGS];
-    return await dao.remove([path], id, onError);
+    return await dao.remove([path], id, onError, writes);
 }

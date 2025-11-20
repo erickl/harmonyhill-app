@@ -4,6 +4,7 @@ import * as userService from "./userService.js";
 import * as activityService from "./activityService.js";
 import * as mealService from "./mealService.js";
 import * as minibarService from "./minibarService.js";
+import {commitTx} from "../daos/dao.js";
 
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
@@ -60,65 +61,37 @@ export function calculateNightsStayed(checkInAtInput, checkOutAtInput) {
     return diffInDays.days;
 }
 
-async function addCheckIn(bookingId, booking, onError) {
-     const checkInData = {
-        category      : "service",
-        subCategory   : "checkin",
-        isFree        : true,
-        customerPrice : 0,
-        status        : booking.checkInTime ? activityService.Status.GUEST_CONFIRMED : activityService.Status.PENDING_GUEST_CONFIRM,
-        needsProvider : false,
-        startingAt    : booking.checkInAt,
-        startingTime  : booking.checkInTime,
-
-    }
-
-    const addCheckInResult = await activityService.add(bookingId, checkInData, onError);
-    if(addCheckInResult === false) {
-        throw new Error(`Couldn't add check in data for booking ${bookingId}`);
-    }
-
-    return addCheckInResult;
-}
-
-async function addCheckOut(bookingId, booking, onError) {
-     const checkOutData = {
-        category      : "service",
-        subCategory   : "checkout",
-        isFree        : true,
-        customerPrice : 0,
-        status        : booking.checkOutTime ? activityService.Status.GUEST_CONFIRMED : activityService.Status.PENDING_GUEST_CONFIRM,
-        needsProvider : false,
-        startingAt    : booking.checkOutAt,
-        startingTime  : booking.checkOutTime,
-
-    }
-
-    const addCheckOutResult = await activityService.add(bookingId, checkOutData, onError);
-    if(addCheckOutResult === false) {
-        throw new Error(`Couldn't add checkout data for booking ${bookingId}`);
-    }
-
-    return addCheckOutResult;
-}
-
-export async function add(bookingData, onError) {
+export async function add(bookingData, onError, writes = []) {
+    const commit = writes.length === 0;
     const bookingObject = await mapBookingObject(bookingData);
-    const addBookingResult = await bookingDao.add(bookingObject, onError);
-    return addBookingResult;
+    const result = await bookingDao.add(bookingObject, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+    return result;
 }
 
-export async function update(bookingId, bookingUpdateData, onError) {
+export async function update(bookingId, bookingUpdateData, onError, writes = []) {
+    const commit = writes.length === 0;
+    
     const bookingUpdate = await mapBookingObject(bookingUpdateData);    
-    const updateBookingResult = await bookingDao.update(bookingId, bookingUpdate, onError);
-    return updateBookingResult;
+    const result = await bookingDao.update(bookingId, bookingUpdate, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+    return result;
 }
 
 /**
  * Only admin can delete bookings. It will be logged in the deleted collection
  */
-export async function remove(bookingId, onError) {   
+export async function remove(bookingId, onError, writes = []) {   
     if(!userService.isAdmin()) return false;
+    const commit = writes.length === 0;
 
     // To delete a booking, first delete all its activities, or they'll be dangling records (orphaned)
     const activities = await activityService.get(bookingId);
@@ -127,10 +100,13 @@ export async function remove(bookingId, onError) {
         
         // Removing it as a meal, will also remove its dishes
         if(activity.category === "meal") {
-            deleteActivityResult = await mealService.removeMeal(activity, onError);
+            deleteActivityResult = await mealService.removeMeal(activity, onError, writes);
         } else {
-            const removeMinibarResult = await minibarService.remove(activity, onError);
-            deleteActivityResult = await activityService.remove(activity, onError);
+            const removeMinibarResult = await minibarService.remove(activity, onError, writes);
+            if(removeMinibarResult === false) {
+                return false;
+            }
+            deleteActivityResult = await activityService.remove(activity, onError, writes);
         }
         
         if(!deleteActivityResult) {
@@ -138,10 +114,14 @@ export async function remove(bookingId, onError) {
         }
     }
 
-    const deleteBookingResult = await bookingDao.remove(bookingId, onError);
-    if(!deleteBookingResult) {
-        return false;
+    const result = await bookingDao.remove(bookingId, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
     }
+    
+    return result;
 }
 
 export async function mapBookingObject(data) {

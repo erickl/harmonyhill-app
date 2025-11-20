@@ -2,8 +2,11 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, up
 import { auth } from "../firebase.js";
 import * as userDao from "../daos/userDao.js";
 import * as utils from "../utils.js";
+import {commitTx} from "../daos/dao.js";
 
-export async function signUp(username, email, role, password, onError) {
+export async function signUp(username, email, role, password, onError, writes = []) {
+    const commit = writes.length === 0;
+
     let addUserDataSuccess = false;
 
     try {
@@ -19,23 +22,26 @@ export async function signUp(username, email, role, password, onError) {
             displayName: username,
         });
 
-        addUserDataSuccess = await userDao.add(user.uid, {
+        const userData = {
             name: username,
             email: email,
             role: role,
             lastLoginAt: null,
             approved: false,
-        }, onError);
+        };
+
+        addUserDataSuccess = await userDao.add(user.uid, userData, onError, writes);
+
+        if(commit) {
+            if((await commitTx(writes)) === false) {
+                throw new Error(`Unexpected error`);
+            }
+        }
     } catch (e) {
         onError(`Error signing up: ${e.message}`);
-        return false;
     } finally {
         // If we don't log them out here, they will be logged in right after registering. We need to approve them first
         await signOut(auth);
-    }
-
-    if (addUserDataSuccess === false) {
-        return false;
     }
 
     return true;
@@ -47,7 +53,9 @@ export async function signUp(username, email, role, password, onError) {
  * @param {*} onError is a callback, called with an error message if something goes wrong
  * @returns true if log in successful, otherwise false
  */
-export async function login(username, password, onError) {
+export async function login(username, password, onError, writes = []) {
+    const commit = writes.length === 0;
+
     if(!utils.isString(username) || !utils.isString(password)) {
         onError(`Username or password ${username} is incorrect (1)`);
         return false;
@@ -71,7 +79,13 @@ export async function login(username, password, onError) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
     
-        const success = await userDao.updateLastLoggedIn(firebaseUser.uid);
+        const success = await userDao.updateLastLoggedIn(firebaseUser.uid, writes);
+        if(success === false) return false;
+     
+        if(commit) {
+            if((await commitTx(writes)) === false) return false;
+        }
+     
         return success;
     } catch (error) {
         onError(`Username or password is incorrect (4)`);
@@ -89,14 +103,22 @@ export function isLoggedIn() {
     return true;
 }
 
-export async function logLastActive(onError) {
+export async function logLastActive(onError, writes = []) {
+    const commit = writes.length === 0;
+
     try {
         const fbUser = getFirebaseUser();
         if (!fbUser) {
             return null;
         }
 
-        const result = await userDao.update(fbUser.uid, {"lastActiveAt": utils.toFireStoreTime(utils.now())}, onError);
+        const result = await userDao.update(fbUser.uid, {"lastActiveAt": utils.toFireStoreTime(utils.now())}, onError, writes);
+        if(result === false) return false;
+
+        if(commit) {
+            if((await commitTx(writes)) === false) return false;
+        }
+
         return result;
     } catch(e) {
         return false;
@@ -161,26 +183,29 @@ export async function getCurrentUserName() {
 
 export async function isAdmin() {
     const user = await getCurrentUser();
-    if (!user) {
-        return false;
-    }
-    
+    if (!user) return false;
     return user.role === "admin";
 }
 
-export async function approve(email) {
-    if(isAdmin()) {
-        const users = await userDao.get({email: email});
-        if (!users || users.length === 0) {
-            console.error(`User ${email} not found`);
-            return false;
-        }
-        const user = users[0];
-        const success = await userDao.update(user.id, {approved: true});
-        return success;
-    }
+export async function approve(email, writes = []) {
+    const commit = writes.length === 0;
     
-    return false;
+    if(!isAdmin()) return false;
+
+    const users = await userDao.get({email: email});
+    if (!users || users.length === 0) {
+        console.error(`User ${email} not found`);
+        return false;
+    }
+    const user = users[0];
+    const result = await userDao.update(user.id, {approved: true}, writes);
+    if(result === false) return false;
+    
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 async function getUser(username) {
@@ -211,33 +236,4 @@ export async function getUsers() {
 export async function isUserApproved(username) {
     const user = await getUser(username);
     return user && user.approved;
-}
-
-export async function testLogin() {
-    const email = process.env.REACT_APP_TEST_USER_EMAIL;
-    const password = process.env.REACT_APP_TEST_USER_PASSWORD;
-
-    const signUpSuccess = await signUp("Eric Klaesson", email, "admin", password);
-
-    const isApproved = await isUserApproved(email);
-    if(!isApproved) {
-        const approveSuccess = await approve(email);
-    }
-    
-    const isLoggedIn1 = await isLoggedIn();
-    if(isLoggedIn1) {
-        await logout();
-    }
-
-    const signInSuccess = await login(email, password);
-
-    const isLoggedIn2 = await isLoggedIn();
-
-    try {
-        const user = auth.currentUser
-        //await deleteUser(user);
-        console.log('Current user deleted successfully.');
-    } catch (error) {
-        console.error('Error deleting current user:', error);
-    }
 }

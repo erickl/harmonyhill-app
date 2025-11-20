@@ -31,26 +31,14 @@ export async function get(options = {}) {
     }
 }
 
-export async function add(id, userData, onError) {
-    return await dao.add(['users'], id, userData, onError);
+export async function add(id, userData, onError, writes) {
+    return await dao.add(['users'], id, userData, onError, writes);
 }
 
-export async function update(id, userData, onError) {
-    try {
-        const success = await dao.update(['users'], id, userData, false, onError);
-        return success;
-    } catch (error) {
-        onError(`Error updating user: ${error.message}`);
-        return false;
-    }
+export async function update(id, userData, onError, writes) {
+    return await dao.update(['users'], id, userData, false, onError, writes);
 }
 
-export async function updateLastLoggedIn(id) {
-    try {
-        const success = await update(id, { lastLoginAt: new Date()});
-        return success;
-    } catch (error) {
-        console.error('Error updating last login:', error);
-        return false;
-    }
+export async function updateLastLoggedIn(id, writes) {
+    return await update(id, { lastLoginAt: new Date()}, writes);
 }

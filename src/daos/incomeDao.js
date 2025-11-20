@@ -47,23 +47,23 @@ export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, 
     return incomes;
 }
 
-export async function add(data, onError) {
+export async function add(data, onError, writes) {
     const receivedAt = utils.to_YYMMdd(data.receivedAt);
     const category = data.category.replace(/ /g, "-");
     const id = `${category}-${receivedAt}-${Date.now()}`;
     const path = [dao.constant.INCOME];
     data.index = await getNextSerialNumber(data.receivedAt, onError);
-    return await dao.add(path, id, data, onError);
+    return await dao.add(path, id, data, onError, writes);
 }
 
-export async function update(id, data, onError) {
+export async function update(id, data, onError, writes) {
     const path = [dao.constant.INCOME];
-    return await dao.update(path, id, data, true, onError);
+    return await dao.update(path, id, data, true, onError, writes);
 }
 
-export async function remove(id, onError) {
+export async function remove(id, onError, writes) {
     const path = [dao.constant.INCOME];
-    return await dao.remove(path, id, onError);
+    return await dao.remove(path, id, onError, writes);
 }
 
 export async function getNextSerialNumber(date, onError) {

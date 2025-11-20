@@ -54,30 +54,30 @@ export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, 
     return expenses;
 }
 
-export async function add(data, onError) {
+export async function add(data, onError, writes) {
     const purchasedAt = utils.to_YYMMdd(data.purchasedAt);
     const purchasedBy = data.purchasedBy.replace(/ /g, "-");
     const category = data.category.replace(/ /g, "-");
     const id = `${data.index}-${category}-${purchasedBy}-${purchasedAt}-${Date.now()}`;
     const path = [dao.constant.EXPENSES];
-    return await dao.add(path, id, data, onError);
+    return await dao.add(path, id, data, onError, writes);
 }
 
-export async function update(id, data, onError) {
+export async function update(id, data, onError, writes) {
     const path = [dao.constant.EXPENSES];
-    return await dao.update(path, id, data, true, onError);
+    return await dao.update(path, id, data, true, onError, writes);
 }
 
-export async function remove(id, onError) {
+export async function remove(id, onError, writes) {
     const path = [dao.constant.EXPENSES];
     const existing = await getOne(id, onError);
     if(existing && existing.fileName) {
-        const removeFileResult = await storageDao.removeFile(existing.fileName, onError);
+        const removeFileResult = await storageDao.removeFile(existing.fileName, onError, writes);
         if(removeFileResult === false) {
             return false;
         }
     }
-    const result = await dao.remove(path, id, onError);
+    const result = await dao.remove(path, id, onError, writes);
     return result;
 }
 

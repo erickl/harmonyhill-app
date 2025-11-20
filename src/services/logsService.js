@@ -1,4 +1,5 @@
 import * as logsDao from "../daos/logsDao.js";
+import {commitTx} from "../daos/dao.js";
 
 export async function get(filters, onError) {
     const logs = await logsDao.get(filters, onError);
@@ -12,6 +13,15 @@ export async function getDocument(path, onError) {
     return document;
 }
 
-export async function remove(id, onError) {
-    return await logsDao.remove(id, onError);
+export async function remove(id, onError, writes = []) {
+    const commit = writes.length === 0;
+
+    const result = await logsDao.remove(id, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }

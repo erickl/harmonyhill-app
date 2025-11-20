@@ -3,13 +3,13 @@ import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 import * as inventoryDao from "./inventoryDao.js";
 
-export async function add(booking, onError) {
+export async function add(booking, onError, writes) {
     const bookingId = createBookingId(booking.name, booking.house, booking.checkInAt);
-    return await dao.add([dao.constant.BOOKINGS], bookingId, booking, onError);
+    return await dao.add([dao.constant.BOOKINGS], bookingId, booking, onError, writes);
 }
 
-export async function update(bookingId, bookingUpdate, onError) {
-    return await dao.update([dao.constant.BOOKINGS], bookingId, bookingUpdate, true, onError);
+export async function update(bookingId, bookingUpdate, onError, writes) {
+    return await dao.update([dao.constant.BOOKINGS], bookingId, bookingUpdate, true, onError, writes);
 }
 
 export async function getOne(id) {
@@ -44,28 +44,28 @@ export async function get(filterOptions = {}, onError = null) {
     return await dao.get(path, queryFilter, ordering, -1, onError);
 }
 
-export async function remove(bookingId, onError) {
-    return await dao.remove([dao.constant.BOOKINGS], bookingId, onError);
+export async function remove(bookingId, onError, writes) {
+    return await dao.remove([dao.constant.BOOKINGS], bookingId, onError, writes);
 }
 
 export async function getPromotions() {
     return await dao.get([dao.constant.PROMOTIONS], [], [], -1);
 }
 
-export async function addMinibar(activity, minibar, onError) {
+export async function addMinibar(activity, minibar, onError, writes) {
     const path = [dao.constant.BOOKINGS, activity.bookingId, dao.constant.MINIBAR];
     const houseShort = getHouseShortName(activity.house);
     const id = `minibar-${minibar.type}-${houseShort}-${utils.to_YYMMdd()}-${Date.now()}`;
-    return await dao.add(path, id, minibar, onError);
+    return await dao.add(path, id, minibar, onError, writes);
 }
 
-export async function updateMinibar(bookingId, minibarId, updatedData, onError) {
+export async function updateMinibar(bookingId, minibarId, updatedData, onError, writes) {
     const path = [dao.constant.BOOKINGS, bookingId, "minibar"];
-    return await dao.update(path, minibarId, updatedData, true, onError);
+    return await dao.update(path, minibarId, updatedData, true, onError, writes);
 }
 
-export async function removeMinibar(activity, onError) {
-    const minibarEntries = await getMinibar(activity, {activityId : activity.id}, onError);
+export async function removeMinibar(activity, onError, writes) {
+    const minibarEntries = await getMinibar(activity, {activityId : activity.id}, onError, writes);
     if(!minibarEntries || minibarEntries.length < 1) {
         return true;
     }
@@ -88,9 +88,10 @@ export async function removeMinibar(activity, onError) {
             
             const invItem = await inventoryDao.getOne(itemName);
             if(!invItem) continue;
-            const result = await inventoryDao.removeStockChange(invItem.id, stockChange.id, onError);
+            const result = await inventoryDao.removeStockChange(invItem.id, stockChange.id, onError, writes);
         }
-        const result = await dao.remove(minibarPath, minibar.id, onError);
+        const result = await dao.remove(minibarPath, minibar.id, onError, writes);
+        if(result === false) return false;
     }
     
     return true;

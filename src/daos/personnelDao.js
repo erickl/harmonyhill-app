@@ -30,10 +30,10 @@ export async function getOne(personnelId) {
     return await dao.getOne([dao.constant.PERSONNEL], personnelId);
 }
 
-export async function add(personnelId, personnel) {
-    return await dao.add([dao.constant.PERSONNEL], personnelId, personnel);
+export async function add(personnelId, personnel, onError, writes) {
+    return await dao.add([dao.constant.PERSONNEL], personnelId, personnel, onError, writes);
 }
 
-export async function update(personnelId, updatedPersonnel) {
-    return await dao.update([dao.constant.PERSONNEL], personnelId, updatedPersonnel, true);
+export async function update(personnelId, updatedPersonnel, onError, writes) {
+    return await dao.update([dao.constant.PERSONNEL], personnelId, updatedPersonnel, true, onError, writes);
 }

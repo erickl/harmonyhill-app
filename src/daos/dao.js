@@ -1,13 +1,9 @@
 import { 
-    where, 
-    query, 
-    limit,
+    where, query, limit,
     collection, collectionGroup,  
-    getDocs, getDoc, 
-    setDoc, updateDoc, 
-    doc, 
-    deleteDoc,
-    runTransaction
+    doc,getDocs, getDoc, 
+    runTransaction,
+    setDoc, updateDoc, deleteDoc,
 } from 'firebase/firestore';
 import { db, auth } from "../firebase.js";
 import * as constant from "./daoConst.js";
@@ -117,31 +113,16 @@ export async function getSubCollections(collectionName, filters = [], ordering =
     }
 }
 
-// export async function getOneFromSubCollections(collectionName, id, onError) {
-//     try {
-//         const collectionGroupQuery = collectionGroup(db, collectionName);
-//         const queryFilter =  where('__name__', '==', id); // __name__ needs full path. YOu may be able to search on a field name though
-//         const q = query(collectionGroupQuery, queryFilter);
-//         const querySnapshot = await getDocs(q);
-//         const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
-//         //querySnapshot.forEach((doc) => {console.log(doc.id, doc.data());});
-//         return docs;
-//     } catch(e) {
-//         if(onError) onError(`Error fetching ${id} from ${collectionName}: ${e.message}`);
-//         return false;
-//     }
-// }
-
 /**
  * Creates and includes a change logs string in the new booking object.
  * Cannot update createdAt or createdBy
  */
-export async function update(path, id, updatedData, updateLogs, onError = null) { 
+export async function update(path, id, updatedData, updateLogs, onError = null, writes = []) { 
     try {
         const originalData = await getOne(path, id);
 
         if(!originalData) {
-            throw new Error(`Document ${path}/${id} doesn't exist. Can't be updated`);
+            return onError(`Document ${path}/${id} doesn't exist (yet). Can't be updated`);
         }
 
         const currentUsername = await getCurrentUsername();
@@ -185,7 +166,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
                 "action"    : "update" 
             };
             const updateLogRef = doc(db, ...["userLogs"], `u-${id}-${Date.now()}`);
-            await setDoc(updateLogRef, updateLog);
+            writes.push((tx) => tx.set(updateLogRef, updateLog));
         }
 
         updatedData.updatedAt = now;
@@ -193,7 +174,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null) 
 
         // Run the main update
         const ref = doc(db, ...path, id);
-        await updateDoc(ref, updatedData);
+        writes.push((tx) => tx.updateDoc(ref, updatedData));
         
         const updatedDoc = await getOne(path, id, onError);
         return updatedDoc;
@@ -209,7 +190,7 @@ async function getCurrentUsername() {
     return user ? user.name : null;
 }
 
-export async function add(path, id, data, onError = null) {
+export async function add(path, id, data, onError = null, writes = []) {
     try {
         data.createdAt = new Date();
         data.createdBy = await getCurrentUsername();
@@ -222,11 +203,11 @@ export async function add(path, id, data, onError = null) {
             "action"    : "create" 
         };
         const addLogRef = doc(db, ...["userLogs"], `c-${id}`);
-        await setDoc(addLogRef, addLog);
+        writes.push((tx) => tx.set(addLogRef, addLog));
         
         // Create the data record in DB
         const ref = doc(db, ...path, id);
-        await setDoc(ref, data);
+        writes.push((tx) => tx.set(ref, data));
         return data;
     } catch (e) {
         if(onError) onError(`Error adding document ${path}/${id}: ${e.message}`);
@@ -234,7 +215,7 @@ export async function add(path, id, data, onError = null) {
     }
 }
 
-export async function remove(path, id, onError = null) {
+export async function remove(path, id, onError = null, writes = []) {
     try {
         const docIdToDelete = `${path.join("/")}/${id}`;
 
@@ -257,15 +238,14 @@ export async function remove(path, id, onError = null) {
             "action"    : "delete" 
         };
         const delLogRef = doc(db, ...["userLogs"], `d-${id}`);
-        const delLogResult = await setDoc(delLogRef, delLog);
+        writes.push((tx) => tx.set(delLogRef, delLog));
         
         // Store deleted document in separate collection as safety measure
-        const deletedRef = await add(["deleted"], `d-${id}`, dataToDelete);
+        await add(["deleted"], `d-${id}`, dataToDelete, writes);
         
         // Delete document
         const ref = doc(db, ...path, id);
-        const deleteResult = await deleteDoc(ref);
-        console.log(`Deleted document ${path}/${id}`);
+        writes.push((tx) => tx.delete(ref));
         return true;
     } catch (e) {
         if(onError) onError(`Error deleting document ${path}/${id}: ${e.message}`);
@@ -290,13 +270,21 @@ export async function getParent(child) {
     return null;
 }
 
-export async function transaction(onTransaction, onError = null) {
-    try {
-        return await runTransaction(db, onTransaction);
-    } catch (e) {
-        if(onError) onError(`Error in DB transaction: ${e.message}`);
-        return false;
-    }
+export async function commitTx(writes = [], onError = null) {
+    const result = await runTransaction(db, async (transaction) => {
+        for(const write of writes) {
+            if(!write) continue;
+            try {
+                write(transaction);
+            } catch(e) {
+                if(onError) onError(`Error: ${e.message}`);
+                return false;//Promise.reject(`Error: ${e.message}`);
+            }
+        }
+        return true;
+    });
+
+    return result;
 }
 
 export async function jsonObjectDiffStr(obj1, obj2, level = 0) {

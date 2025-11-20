@@ -27,22 +27,22 @@ export async function get(filterOptions, onError) {
     return await dao.get(path, queryFilter, [], -1, onError);
 }
 
-export async function removeStockChange(invItemId, stockChangeId, onError) {
+export async function removeStockChange(invItemId, stockChangeId, onError, writes) {
     const path = ["inventory", invItemId, "stock"];
-    return await dao.remove(path, stockChangeId, onError);
+    return await dao.remove(path, stockChangeId, onError, writes);
 }
 
-export async function add(object, onError) {
+export async function add(object, onError, writes) {
     const inventoryItemId = makeInventoryItemId(object.name);
     const docId = makeId(object.type, inventoryItemId);
     const path = ["inventory", inventoryItemId, "stock"];
-    return await dao.add(path, docId, object, onError);
+    return await dao.add(path, docId, object, onError, writes);
 }
 
-export async function updateStock(stockChangeId, invItemName, object, onError) {
+export async function updateStock(stockChangeId, invItemName, object, onError, writes) {
     const inventoryItemId = makeInventoryItemId(invItemName);
     const path = ["inventory", inventoryItemId, "stock"];
-    return await dao.update(path, stockChangeId, object, true, onError);
+    return await dao.update(path, stockChangeId, object, true, onError, writes);
 }
 
 export async function getInventoryChanges(name, filterOptions, onError) {
@@ -101,7 +101,7 @@ export async function getLastClosedRecord(name, onError) {
     return lastClosedRecord;
 }
 
-export async function addClosedRecord(name, data, onError) {
+export async function addClosedRecord(name, data, onError, writes) {
     const invItemId = makeInventoryItemId(name);
 
     const previousMonthShort = data.closedAt.monthShort.toLowerCase();
@@ -109,7 +109,7 @@ export async function addClosedRecord(name, data, onError) {
     const id = `${invItemId}-closed-${previousMonthShort}-${yearYY}`;
     const path = ["inventory", invItemId, "inv-closed"];
     
-    return await dao.add(path, id, data, onError);
+    return await dao.add(path, id, data, onError, writes);
 }
 
 export function makeId(type, inventoryItemId) {

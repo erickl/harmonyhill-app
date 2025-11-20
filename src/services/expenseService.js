@@ -3,31 +3,35 @@ import * as storageDao from "../daos/storageDao.js";
 import * as utils from "../utils.js";
 import { getOne as getActivity } from "./activityService.js";
 import {getOne as getBooking} from "./bookingService.js";
+import {commitTx} from "../daos/dao.js";
 
-export async function add(data, onError) {
+export async function add(data, onError, writes = []) {
+    const commit = writes.length === 0;
     data.index = await expenseDao.getNextSerialNumber(data.purchasedAt, onError);
     
-    data = await processReceipt(data, onError);
+    data = await processReceipt(data, onError, writes);
     if(data === false) return false;
 
     const object = mapReceiptObject(data);
 
-    const addResult = await expenseDao.add(object, onError);
-    if(addResult === false) {
-        onError(`Could not add the receipt`);
-        return false;
+    const result = await expenseDao.add(object, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
     }
-    return addResult;
+
+    return result;
 }
 
-async function processReceipt(data, onError) {
+async function processReceipt(data, onError, writes) {
      // If just editing the expense, the user might not have taken a new photo
     if(data.photo) {
         const fileDate = utils.to_YYMMdd(data.purchasedAt);
         const fileDescription = data.description.trim().toLowerCase().replace(/ /g, "-");
         data.fileName = `${data.index}. ${fileDescription}-${fileDate}-${Date.now()}`;
         data.fileName = `expenses/${data.fileName}.jpg`;
-        data.photoUrl = await uploadReceipt(data.fileName, data.photo, {maxSize : 0.7}, onError);
+        data.photoUrl = await uploadReceipt(data.fileName, data.photo, {maxSize : 0.7}, onError, writes);
         delete data['photo'];
     }
     
@@ -38,31 +42,31 @@ async function processReceipt(data, onError) {
     return data;
 }
 
-export async function update(id, data, onError) {
+export async function update(id, data, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const existing = await expenseDao.getOne(id);
     if(!existing) {
         onError(`Could not find existing income ${id}`);
         return false;
     }
 
-    data = await processReceipt(data, onError);
-    if(data === false) {
-        return false;
-    }
+    data = await processReceipt(data, onError, writes);
+    if(data === false) return false;
 
     const object = mapReceiptObject(data);
     
-    const updateResult = await expenseDao.update(id, object, onError);
-    if(updateResult === false) {
-        return false;
-    }
+    const updateResult = await expenseDao.update(id, object, onError, writes);
+    if(updateResult === false) return false;
 
     // If photo is updated, remove the old photo
     if(existing.photoUrl !== object.photoUrl) {
-        const removeOldFileResult = await storageDao.removeFile(existing.fileName, onError);   
-        if(removeOldFileResult === false) {
-            return false;
-        }
+        const removeOldFileResult = await storageDao.removeFile(existing.fileName, onError, writes);   
+        if(removeOldFileResult === false) return false;
+    }
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
     }
 
     return updateResult;
@@ -80,8 +84,16 @@ export async function downloadExpenseReceipts(toFilename, filters, onProgress, o
  * @param {*} filename 
  * @param {*} image 
  */
-export async function uploadReceipt(filename, dataUrl, options, onError) {
-    return await storageDao.upload(filename, dataUrl, options, onError);
+export async function uploadReceipt(filename, dataUrl, options, onError, writes = []) {
+    const commit = writes.length === 0;
+    const result = await storageDao.upload(filename, dataUrl, options, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 export async function get(filterOptions, onError) {
@@ -98,14 +110,23 @@ export async function getOne(id, onError) {
     return await expenseDao.getOne(id, onError);
 }
 
-export async function remove(id, onError) {
+export async function remove(id, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const existing = await expenseDao.getOne(id, onError);
     if(!existing) {
         onError(`Could not find expense record ${id}`);
         return false;
     }
 
-    return await expenseDao.remove(id, onError);
+    const result = await expenseDao.remove(id, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 export async function validate(data, onError) {

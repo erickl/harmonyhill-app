@@ -4,9 +4,11 @@ import * as activityService from "./activityService.js";
 import * as mealService from "./mealService.js";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
-import {transaction} from "../daos/dao.js";
+import {commitTx} from "../daos/dao.js";
 
-export async function addOrEdit(activity, minibar, onError) {
+export async function addOrEdit(activity, minibar, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const filteredItems = filterZeroCounts(minibar.items);
     const minibar_ = {...minibar, items: filteredItems};
 
@@ -15,43 +17,43 @@ export async function addOrEdit(activity, minibar, onError) {
     const existing = await bookingDao.getExistingMinibar(minibar_, onError);
 
     if(existing !== null) {
-        result = await bookingDao.updateMinibar(activity.bookingId, existing.id, minibar_, onError);
+        result = await bookingDao.updateMinibar(activity.bookingId, existing.id, minibar_, onError, writes);
     } else {
-        result = await bookingDao.addMinibar(activity, minibar_, onError);
+        result = await bookingDao.addMinibar(activity, minibar_, onError, writes);
     }
 
-    if(result === false) {
-        return false;
-    }
+    if(result === false) return false;
 
     if(minibar_.type === "end") { 
         if(existing !== null) {
-            result = await editSale(activity, onError);
+            result = await editSale(activity, onError, writes);
         } else {
-            result = await addSale(activity, onError);
-        }   
-        
-        return salesResult;
+            result = await addSale(activity, onError, writes);
+        }
+    }
+
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
     }
 
     return result;
 }
 
-async function addSale(activity, onError) {
+async function addSale(activity, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const itemsSold = await calculateSale(activity, onError);
-    if(itemsSold === false) {
-        return false;
-    }
+    if(itemsSold === false) return false;
 
     const dishes = [];
 
     // Take each minibar item from inventory
     for(const [name, quantity] of Object.entries(itemsSold)) {
         if(quantity > 0) {
-            const addInventorySaleResult = await inventoryService.addSale(activity, name, quantity, onError);
-            if(addInventorySaleResult === false) {
-                return false;
-            }
+            const addInventorySaleResult = await inventoryService.addSale(activity, name, quantity, onError, writes);
+            if(addInventorySaleResult === false) return false;
 
             const dish = await menuService.getOneByNameAndCourse(name, "minibar");
             if(dish) {
@@ -64,21 +66,31 @@ async function addSale(activity, onError) {
     const minibarActivity = activityService.getInitialActivityData(minibarTypeInfo);
     minibarActivity.dishes = dishes;
 
-    const addMinibarMealResult = await mealService.addMeal(activity.bookingId, minibarActivity, onError);
-    return addMinibarMealResult;
+    const result = await mealService.addMeal(activity.bookingId, minibarActivity, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
-async function editSale(activity, onError) {
+async function editSale(activity, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const itemsSold = await calculateSale(activity, onError);
     if(itemsSold === false) {
         return false;
     } 
 
     for(const [name, quantity] of Object.entries(itemsSold)) {
-        const updateInventorySaleResult = await inventoryService.updateSale(activity, name, quantity, onError);
-        if(updateInventorySaleResult === false) {
-            return false;
-        }
+        const updateInventorySaleResult = await inventoryService.updateSale(activity, name, quantity, onError, writes);
+        if(updateInventorySaleResult === false) return false;
+    }
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
     }
     
     return true;
@@ -139,8 +151,17 @@ export default async function getType(activity, type, onError) {
     return startCounts[0];
 }
 
-export async function remove(activity, onError) {
-    return await bookingDao.removeMinibar(activity, onError);
+export async function remove(activity, onError, writes = []) {
+    const commit = writes.length === 0;
+    
+    const result = await bookingDao.removeMinibar(activity, onError);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 export async function getSelection(onError) {

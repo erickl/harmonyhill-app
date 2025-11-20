@@ -6,6 +6,7 @@ import {getMealDishes} from "./mealService.js";
 import {get as getIncome} from "../services/incomeService.js";
 import {get as getExpense} from "../services/expenseService.js";
 import * as storageDao from "../daos/storageDao.js";
+import {commitTx} from "../daos/dao.js";
 
 export const Status = Object.freeze({
     GOOD_TO_GO            : "good to go",
@@ -185,7 +186,9 @@ export async function getOne(bookingId, activityId) {
  *  }
  * @returns activityId if successful, otherwise false
  */
-export async function add(bookingId, activityData, onError) {
+export async function add(bookingId, activityData, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const booking = await bookingService.getOne(bookingId);
     if(!booking) {
         console.error(`Booking with ID ${bookingId} does not exist.`);
@@ -201,6 +204,12 @@ export async function add(bookingId, activityData, onError) {
 
     const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
     const result = await activityDao.add(bookingId, activityId, activity, onError);
+    if(result === false) return false;
+    
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+    
     return result !== false ? result : false;
 }
 
@@ -211,10 +220,18 @@ export async function add(bookingId, activityData, onError) {
  * @param {*} personnelId ID from the personnel collection
  * @returns true if update successful, otherwise false
  */
-export async function assignProvider(bookingId, activityId, personnelId, onError) {
-    return await update(bookingId, activityId, { 
-        provider : personnelId,
-    }, onError);
+export async function assignProvider(bookingId, activityId, personnelId, onError, writes = []) {
+    const commit = writes.length === 0;
+
+    const dataUpdate = { provider : personnelId };
+    const result = await update(bookingId, activityId, dataUpdate, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 export async function getProviders(category, subCategory) {
@@ -222,10 +239,17 @@ export async function getProviders(category, subCategory) {
     return providers;
 }
 
-export async function setActivityStatus(bookingId, id, status, onError) {
-    return await update(bookingId, id, { 
-        status : status,
-    }, onError);
+export async function setActivityStatus(bookingId, id, status, onError, writes = []) {
+    const commit = writes.length === 0;
+
+    const result = await update(bookingId, id, { status : status }, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 /**
@@ -235,21 +259,41 @@ export async function setActivityStatus(bookingId, id, status, onError) {
  * @param {*} userId ID of the staff (i.e. app users)
  * @returns true if update successful, otherwise false
  */
-export async function assignStaff(bookingId, activityId, userId, onError) {
-    return await update(bookingId, activityId, { 
-        assignTo          : userId,
-        changeDescription : null,
-    }, onError);
+export async function assignStaff(bookingId, activityId, userId, onError, writes = []) {
+    const commit = writes.length === 0;
+
+    const dataUpdate = { assignTo : userId, changeDescription : null };
+    const result = await update(bookingId, activityId, dataUpdate, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
-export async function changeAssigneeStatus(accept, bookingId, activityId, onError) {
-    return await update(bookingId, activityId, { 
+export async function changeAssigneeStatus(accept, bookingId, activityId, onError, writes = []) {
+    const commit = writes.length === 0;
+
+    const dataUpdate = { 
         assigneeAccept  : accept,
         changeDescription : null,
-    }, onError);
+    }
+
+    const result = await update(bookingId, activityId, dataUpdate, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
-export async function update(bookingId, activityId, activityUpdateData, onError) {
+export async function update(bookingId, activityId, activityUpdateData, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const existing = await getOne(bookingId, activityId);
 
     let activityUpdate = await mapObject(activityUpdateData, true);
@@ -267,7 +311,14 @@ export async function update(bookingId, activityId, activityUpdateData, onError)
         delete activityUpdate.house;
     }
 
-    return await activityDao.update(bookingId, activityId, activityUpdate, true, onError);
+    const result = await activityDao.update(bookingId, activityId, activityUpdate, true, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 function getActivityPhotoFilePath(activity) {
@@ -281,37 +332,51 @@ export async function getPhotos(activity, onError) {
     return await activityDao.getPhotos(activity.bookingId, activity.id, onError);
 }
 
-export async function removePhoto(photo, onError) {
+export async function removePhoto(photo, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const removeFileResult = await storageDao.removeFile(photo.fileName, onError);
-    if(removeFileResult !== false) {
-        const activity = await getParent(photo);
-        if(!activity) return false;
+    if(removeFileResult === false) return false;
+    
+    const activity = await getParent(photo);
+    if(!activity) return false;
 
-        const booking = await getParent(activity);
-        if(!booking) return false;
+    const booking = await getParent(activity);
+    if(!booking) return false;
 
-        const removePhotoRecordResult = await activityDao.removePhoto(booking.id, activity.id, photo.id, onError);
-        return removePhotoRecordResult;
+    const result = await activityDao.removePhoto(booking.id, activity.id, photo.id, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
     }
-    return false;
+
+    return result;
 }
 
-async function removePhotos(activity, onError) {
+async function removePhotos(activity, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const photos = await getPhotos(activity, onError);
     for(const photo of photos) {
-        const removePhotoResult = await removePhoto(photo, onError);
-        if(removePhotoResult === false) {
-            return false;
-        }
+        const removePhotoResult = await removePhoto(photo, onError, writes);
+        if(removePhotoResult === false) return false;
     }
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+    
     return true;
 }
 
-export async function uploadPhoto(activity, photo, onError) {
+export async function uploadPhoto(activity, photo, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const filePath = getActivityPhotoFilePath(activity);
     const filename = `${filePath}/${Date.now()}`;
     const options = {maxSize : 0.05};
-    const downloadUrl = await storageDao.upload(filename, photo, options, onError);
+    const downloadUrl = await storageDao.upload(filename, photo, options, onError, writes);
     if(downloadUrl === false) {
         return;
     }
@@ -321,16 +386,32 @@ export async function uploadPhoto(activity, photo, onError) {
         url        : downloadUrl,
         activityId : activity.id,
     };
-    const addRecordResult = await activityDao.addPhoto(activity.bookingId, activity.id, id, data, onError);
-    return addRecordResult;
+    const result = await activityDao.addPhoto(activity.bookingId, activity.id, id, data, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
-export async function remove(activity, onError) {
-    const removePhotosResult = await removePhotos(activity, onError);
+export async function remove(activity, onError, writes = []) {
+    const commit = writes.length === 0;
+
+    const removePhotosResult = await removePhotos(activity, onError, writes);
     if(removePhotosResult === false) {
         return false;
     }
-    return await activityDao.remove(activity.bookingId, activity.id, onError);
+
+    const result = await activityDao.remove(activity.bookingId, activity.id, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 export function makeId(startingAt, house, subCategory) {

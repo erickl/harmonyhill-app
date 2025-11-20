@@ -1,30 +1,43 @@
-import { where, orderBy, getDoc, collectionGroup } from 'firebase/firestore';
+import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js"
 import * as utils from "../utils.js";
 
-export async function add(bookingId, activityId, activity, onError) {
-    return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activity, onError);
+const getActivitiesPath = (bookingId) => {
+    return [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];;
 }
 
-export async function update(bookingId, activityId, activityData, updateLogs = true, onError = null) {
-    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, activityData, updateLogs, onError);
+const getDishesPath = (bookingId, mealId) => {
+    return [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, "dishes"];
 }
 
-export async function addDish(bookingId, mealId, dishId, dish, onError) { 
-    return await dao.add([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES], dishId, dish, onError);
+export async function add(bookingId, activityId, activity, onError, writes = []) {
+    const path = getActivitiesPath(bookingId);
+    return await dao.add(path, activityId, activity, onError, writes);
 }
 
-export async function deleteDish(bookingId, mealId, dishId, onError) { 
-    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES], dishId, onError);
+export async function update(bookingId, activityId, activityData, updateLogs = true, onError = null, writes = []) {
+    const path = getActivitiesPath(bookingId);
+    return await dao.update(path, activityId, activityData, updateLogs, onError, writes);
 }
 
-export async function updateDish(bookingId, mealId, dishId, dish, onError) {
-    return await dao.update([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES], dishId, dish, true, onError);
+export async function addDish(bookingId, mealId, dishId, dish, onError, writes = []) { 
+    const path = getDishesPath(bookingId, mealId);
+    return await dao.add(path, dishId, dish, onError, writes);
 }
 
-export async function addPhoto(bookingId, activityId, id, data, onError) {
+export async function deleteDish(bookingId, mealId, dishId, onError, writes = []) { 
+    const path = getDishesPath(bookingId, mealId);
+    return await dao.remove(path, dishId, onError, writes);
+}
+
+export async function updateDish(bookingId, mealId, dishId, dish, onError, writes = []) {
+    const path = getDishesPath(bookingId, mealId);
+    return await dao.update(path, dishId, dish, true, onError, writes);
+}
+
+export async function addPhoto(bookingId, activityId, id, data, onError, writes = []) {
     const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, activityId, "activity-photos"];
-    return await dao.add(path, id, data, onError);
+    return await dao.add(path, id, data, onError, writes);
 }
 
 export async function getPhotos(bookingId, activityId, onError) {
@@ -32,9 +45,9 @@ export async function getPhotos(bookingId, activityId, onError) {
     return await dao.get(path, [], [], -1, onError);
 }
 
-export async function removePhoto(bookingId, activityId, id, onError) {
+export async function removePhoto(bookingId, activityId, id, onError, writes = []) {
     const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, activityId, "activity-photos"];
-    return await dao.remove(path, id, onError);
+    return await dao.remove(path, id, onError, writes);
 }
 
 export async function getProviders(category, subCategory) {
@@ -149,8 +162,8 @@ export async function getAllActivities(options = {}, onError) {
     return sortedActivities;
 }
 
-export async function remove(bookingId, activityId, onError) {
-    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, onError);
+export async function remove(bookingId, activityId, onError, writes = []) {
+    return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, onError, writes);
 }
 
 export async function getMealDishes(bookingId, mealId, filterOptions = {}) {

@@ -5,7 +5,7 @@ import * as utils from "../utils.js";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-export async function upload(filename, dataUrl, options = {}, onError = null) {
+export async function upload(filename, dataUrl, options = {}, onError = null, writes = []) {
     try {
         if(!utils.isEmpty(options)) {
             dataUrl = await compressImage(dataUrl, options, onError);
@@ -86,7 +86,7 @@ export async function getFiles(folderPath) {
     }
 }
 
-export async function removeFile(fileName, onError) {
+export async function removeFile(fileName, onError, writes) {
     try {
         const fileRef = ref(storage, fileName);
         await deleteObject(fileRef);

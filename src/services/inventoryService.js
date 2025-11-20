@@ -1,12 +1,19 @@
 import * as inventoryDao from "../daos/inventoryDao.js";
 import * as utils from "../utils.js";
+import {commitTx} from "../daos/dao.js";
 
 export async function get(filters = {}, onError) {
     const inventory = await inventoryDao.get(filters, onError);
     return inventory;
 }
 
-export async function subtract(activity, type, itemName, quantity, onError) {
+export async function getOne(nameOrId, onError) {
+    return await inventoryDao.getOne(nameOrId, onError);
+}
+
+export async function subtract(activity, type, itemName, quantity, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const currentQuantity = await getCurrentQuantity(itemName, onError);
     if(currentQuantity < quantity) {
         onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
@@ -21,15 +28,33 @@ export async function subtract(activity, type, itemName, quantity, onError) {
         quantity   : quantity,
         type       : type,
     };
-    const result = await inventoryDao.add(stock, onError);
+
+    const result = await inventoryDao.add(stock, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
     return result;
 }
 
-export async function addSale(activity, itemName, quantity, onError) {
-    return await subtract(activity, "sale", itemName, quantity, onError);
+export async function addSale(activity, itemName, quantity, onError, writes = []) {
+    const commit = writes.length === 0;
+
+    const result = await subtract(activity, "sale", itemName, quantity, onError);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
-export async function updateSale(activity, itemName, quantity, onError) {
+export async function updateSale(activity, itemName, quantity, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const stockChangeFilter = {
         activityId : activity.id,
         type : "sale",
@@ -40,11 +65,19 @@ export async function updateSale(activity, itemName, quantity, onError) {
     }
     const existingSale = existingSales[0];
 
-    const updateStockResult = await inventoryDao.update(existingSale.id, itemName, {quantity : quantity}, onError);
-    return updateStockResult;
+    const result = await inventoryDao.updateStock(existingSale.id, itemName, {quantity : quantity}, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
-export async function refill(expense, itemName, quantity, onError) {
+export async function refill(expense, itemName, quantity, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const refill = {
         expenseId : expense.id,
         name      : itemName,
@@ -53,7 +86,13 @@ export async function refill(expense, itemName, quantity, onError) {
         type      : "refill",
     };
     
-    const result = await inventoryDao.add(refill, onError);
+    const result = await inventoryDao.add(refill, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
     return result;
 }
 
@@ -74,8 +113,13 @@ export async function getRefills(name, filters, onError) {
     return purchases;
 }
 
-export async function removeStockChange(invItemId, stockChangeId, onError) {
-    await inventoryDao.removeStockChange(invItemId, stockChangeId, onError);
+export async function removeStockChange(invItemId, stockChangeId, onError, writes = []) {
+    const commit = writes.length === 0;
+
+    const result = await inventoryDao.removeStockChange(invItemId, stockChangeId, onError, writes);
+    if(result === false) return false;
+    if(commit) return await commitTx(writes, onError);
+    return true;
 }
 
 /**
@@ -110,7 +154,9 @@ export async function getCurrentQuantity(name, onError) {
     return await getQuantity(name, {}, onError);
 }
 
-export async function closeMonthForItem(name, onError) {
+export async function closeMonthForItem(name, onError, writes = []) {
+    const commit = writes.length === 0;
+    
     const lastClosedRecord = await getLastClosedRecord(name, onError);
     if(!lastClosedRecord) return false;
 
@@ -123,7 +169,13 @@ export async function closeMonthForItem(name, onError) {
         "closedAt" : newClosedAt,
     };
 
-    const result = await inventoryDao.addClosedRecord(name, newLastClosedRecord, onError);
+    const result = await inventoryDao.addClosedRecord(name, newLastClosedRecord, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
     return result;
 }
 

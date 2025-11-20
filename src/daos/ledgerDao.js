@@ -2,7 +2,7 @@ import * as dao from "./dao.js";
 import { where, orderBy } from 'firebase/firestore';
 import * as utils from "../utils.js";
 
-export async function updatePettyCashBalance(amount, onError) {
+export async function updatePettyCashBalance(amount, onError, writes) {
     const path = [dao.constant.COMPANY];
     const id = "petty-cash";
     
@@ -21,7 +21,7 @@ export async function updatePettyCashBalance(amount, onError) {
             ...(existing || {}),
             "balance" : newBalance
         };
-        result = await dao.update(path, id, newDoc, false, onError);
+        result = await dao.update(path, id, newDoc, false, onError, writes);
     }
 
     if(result !== false) {
@@ -56,7 +56,7 @@ export async function getLastClosedPettyCashRecord(onError) {
     return pettyCashRecord;
 }
 
-export async function addCloseRecord(balance, onError) {
+export async function addCloseRecord(balance, onError, writes) {
     const monthStart = utils.monthStart();
     //const previousMonth = utils.monthStart(-1);
     const previousMonth = monthStart.plus({seconds: -1});
@@ -69,5 +69,5 @@ export async function addCloseRecord(balance, onError) {
         closedAt: utils.toFireStoreTime(previousMonth),
     };
 
-    return await dao.add(path, `closed-${previousMonthShort}-${yearYY}`, record, onError);
+    return await dao.add(path, `closed-${previousMonthShort}-${yearYY}`, record, onError, writes);
 }

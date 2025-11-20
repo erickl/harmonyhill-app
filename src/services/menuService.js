@@ -61,16 +61,3 @@ export async function getByBookingId(bookingId, options = {}) {
     const menuItems = await get(bookingId, options);
     return menuItems;
 }
-
-export async function testGetMenuItems() {
-    let options1 = {mealCategory: "lunch", house: "harmony hill", allergens: ["nuts"]};
-    const lunchMenuItemsWithoutNuts = await get(options1);
-    console.log(JSON.stringify(lunchMenuItemsWithoutNuts, null, 2));
-    let options2 = {mealCategory: "lunch", house: "jungle nook", allergens: []};
-    const lunchMenuItems = await get(options2);
-
-    const bookingId = "Eric-Klaesson-hh-251110";
-    const menuItemsAvailableByBooking = await getByBookingId(bookingId, {mealCategory: "lunch"});
-
-    let x = 1;
-}

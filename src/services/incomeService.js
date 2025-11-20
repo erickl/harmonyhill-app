@@ -2,6 +2,7 @@ import * as utils from "../utils.js";
 import * as incomeDao from "../daos/incomeDao.js";
 import {getOne as getBooking} from "./bookingService.js";
 import {getOne as getActivity} from "./activityService.js";
+import {commitTx} from "../daos/dao.js";
 
 export async function get(filterOptions, onError) {
     const incomes = await incomeDao.get(filterOptions, {"receivedAt":"desc"}, -1, onError);
@@ -12,21 +13,41 @@ export async function get(filterOptions, onError) {
     return formattedIncomes;
 }
 
-export async function add(data, onError) {
+export async function add(data, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const object = await mapIncomeObject(data);
-    return await incomeDao.add(object, onError);
+    const result = await incomeDao.add(object, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
-export async function remove(id, onError) {   
+export async function remove(id, onError, writes = []) {  
+    const commit = writes.length === 0; 
+
     const existing = await incomeDao.getOne(id, onError);
     if(!existing) {
         return onError(`Could not find income record ${id}`);
     }
 
-    return await incomeDao.remove(id, onError);     
+    const result = await incomeDao.remove(id, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
-export async function update(id, data, onError) {
+export async function update(id, data, onError, writes = []) {
+    const commit = writes.length === 0;
+
     const object = await mapIncomeObject(data);
 
     const existing = await incomeDao.getOne(id);
@@ -34,7 +55,14 @@ export async function update(id, data, onError) {
         return onError(`Could not find existing income ${id}`);
     }
     
-    return await incomeDao.update(id, object, onError);
+    const result = await incomeDao.update(id, object, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes)) === false) return false;
+    }
+
+    return result;
 }
 
 async function mapIncomeObject(data) {
