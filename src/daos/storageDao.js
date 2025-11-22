@@ -86,10 +86,10 @@ export async function getFiles(folderPath) {
     }
 }
 
-export async function removeFile(fileName, onError, writes) {
+export async function removeFile(fileName, onError, writes = []) {
     try {
         const fileRef = ref(storage, fileName);
-        await deleteObject(fileRef);
+        writes.push(async () => await deleteObject(fileRef));
     } catch(e) {
         if(onError) onError(`Couldn't remove file ${fileName}: ${e.message}`);
         return false;

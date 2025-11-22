@@ -3,6 +3,11 @@ import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { setGlobalOptions } from "firebase-functions/v2";
 
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  // Use the default host and port for the Firestore emulator
+  process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"; 
+}
+
 let app;
 
 try {

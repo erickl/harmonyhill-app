@@ -1,6 +1,6 @@
 import * as utils from "../utils.js";
-import { setDoc, doc } from 'firebase/firestore';
-import { db } from "../firebase.js";
+import {makeFirestoreAdapter} from "../../shared/firestoreAdapter.js";
+import {db, Timestamp} from "../../functions/admin-firebase.js";
 
 export default class ActivityType {
     static COLLECTION = "activityTypes";
@@ -53,23 +53,23 @@ export default class ActivityType {
         }
     }
 
-    async upload(onError) {
-        if(utils.isEmpty(this.id)) {
-            onError("ID is empty");
-            return false;
-        }
+    // async upload(onError) {
+    //     if(utils.isEmpty(this.id)) {
+    //         onError("ID is empty");
+    //         return false;
+    //     }
 
-        const data = this.data();
+    //     const data = this.data();
 
-        try {
-            const ref = doc(db, ...[ActivityType.COLLECTION], this.id);
-            const addResult = await setDoc(ref, data);
-            return addResult;
-        } catch(e) {
-            onError(`Error on dish upload ${this.id}: ${e.message}`);
-            return false;
-        }
-    } 
+    //     try {
+    //         const ref = doc(db, ...[ActivityType.COLLECTION], this.id);
+    //         const addResult = await setDoc(ref, data);
+    //         return addResult;
+    //     } catch(e) {
+    //         onError(`Error on dish upload ${this.id}: ${e.message}`);
+    //         return false;
+    //     }
+    // } 
 
     static async seed() {
         //                    subCategory                        category   priority price    providerPrices                            House availability                    Description                                                                         Instructions                                                                             custom?  internal   photos required     photo instructions                                    deadline1  deadline2
@@ -166,15 +166,13 @@ export default class ActivityType {
             new ActivityType("custom",                            "custom",     999, 0,       {                                       }, ["harmony hill", "the jungle nook"], "",                                                                                  ""                                                                                     , true ,   false,       false,           "",                                                       0,      0  ),
         ];
 
+        const adapter = await makeFirestoreAdapter(db, Timestamp);
+
         let errorCount = 0;
         const nActivityTypes = activityTypes.length;
         for(let i = 0; i < nActivityTypes; i++) {
             const activityType = activityTypes[i];
-            const res = await activityType.upload((e) => {
-                console.log(`Upload error for ${i}, ${activityType.id}: ${e.message}`);
-                errorCount++;
-            });
-
+            await adapter.add([ActivityType.COLLECTION], activityType.id, activityType.data());
             console.log(`Uploaded ${i+1}/${nActivityTypes}: ${activityType.id}`);
         }
 

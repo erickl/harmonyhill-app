@@ -376,16 +376,17 @@ export async function uploadPhoto(activity, photo, onError, writes = []) {
     const filePath = getActivityPhotoFilePath(activity);
     const filename = `${filePath}/${Date.now()}`;
     const options = {maxSize : 0.05};
+
     const downloadUrl = await storageDao.upload(filename, photo, options, onError, writes);
-    if(downloadUrl === false) {
-        return;
-    }
+    if(downloadUrl === false) return;
+    
     const id = `activity-photo-${Date.now()}`;
     const data = {
         fileName   : filename,
         url        : downloadUrl,
         activityId : activity.id,
     };
+
     const result = await activityDao.addPhoto(activity.bookingId, activity.id, id, data, onError, writes);
     if(result === false) return false;
 
@@ -400,9 +401,7 @@ export async function remove(activity, onError, writes = []) {
     const commit = writes.length === 0;
 
     const removePhotosResult = await removePhotos(activity, onError, writes);
-    if(removePhotosResult === false) {
-        return false;
-    }
+    if(removePhotosResult === false) return false;
 
     const result = await activityDao.remove(activity.bookingId, activity.id, onError, writes);
     if(result === false) return false;

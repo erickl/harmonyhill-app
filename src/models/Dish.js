@@ -1,6 +1,6 @@
-import * as utils from "../utils.js";
-import { setDoc, doc } from 'firebase/firestore';
-import { db } from "../firebase.js";
+import * as utils from "../../shared/utils.js";
+import {makeFirestoreAdapter} from "../../shared/firestoreAdapter.js";
+import {db, Timestamp} from "../../functions/admin-firebase.js";
 
 export default class Dish {
     static COLLECTION = "menu";
@@ -60,22 +60,22 @@ export default class Dish {
         return `${name}-${mealsJoined}`.replace(/ /g, "-");
     }
 
-    async upload(onError) {
-        if(utils.isEmpty(this.id)) {
-            onError("ID is empty");
-            return false;
-        }
+    // async upload(onError) {
+    //     if(utils.isEmpty(this.id)) {
+    //         onError("ID is empty");
+    //         return false;
+    //     }
 
-        const data = this.data();
-        try {
-            const ref = doc(db, ...[Dish.COLLECTION], this.id);
-            const addResult = await setDoc(ref, data);
-            return addResult;
-        } catch(e) {
-            onError(`Error on dish upload ${this.id}: ${e.message}`);
-            return false;
-        }
-    } 
+    //     const data = this.data();
+    //     try {
+    //         const ref = doc(db, ...[Dish.COLLECTION], this.id);
+    //         const addResult = await setDoc(ref, data);
+    //         return addResult;
+    //     } catch(e) {
+    //         onError(`Error on dish upload ${this.id}: ${e.message}`);
+    //         return false;
+    //     }
+    // } 
 
     static async seed() {
         // todo: might need wingko and "i love bali toast" twice. Extra breakfast items are 80k. But wingko as dessert is 60k
@@ -167,16 +167,14 @@ export default class Dish {
             new Dish("Coke Zero",                                   [""],                 ["harmony hill", "the jungle nook"], ["minibar",                                                       ], "minibar",  600,             25000,  "",               ""                                                                                                                                                                     , null), 
             new Dish("Schweppes",                                   [""],                 ["harmony hill", "the jungle nook"], ["minibar",                                                       ], "minibar",  600,             25000,  "",               ""                                                                                                                                                                     , null), 
         ];
+
+        const adapter = await makeFirestoreAdapter(db, Timestamp);
         
         let errorCount = 0;
         const nDishes = dishes.length;
         for(let i = 0; i < nDishes; i++) {
             const dish = dishes[i];
-            const res = await dish.upload((e) => {
-                console.log(`Upload error for ${dish.id}`, e);
-                errorCount++; 
-            });
-     
+            await adapter.add([Dish.COLLECTION], dish.id, dish.data());
             console.log(`Uploaded ${(i+1)}/${nDishes} ${dish.id}`);
         }
         console.log(`Dishes upload complete. Errors: ${errorCount}`);

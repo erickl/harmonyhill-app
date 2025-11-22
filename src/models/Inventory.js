@@ -71,16 +71,14 @@ export default class Inventory {
             new Inventory("Schweppes",                "minibar",           25000,    0,               [],                null), 
             new Inventory("Candle",                   "minibar",           0,        0,               [],                null), 
         ];
+
+        const adapter = await makeFirestoreAdapter(db, Timestamp);
         
         let errorCount = 0;
         const count = inventoryItems.length;
         for(let i = 0; i < count; i++) {
             const inventoryItem = inventoryItems[i];
-            const res = await inventoryItem.upload((e) => {
-                console.log(`Upload error for ${inventoryItem.id}`, e);
-                errorCount++; 
-            });
-     
+            await adapter.add([Inventory.COLLECTION], inventoryItem.id, inventoryItem.data());
             console.log(`Uploaded ${(i+1)}/${count} ${inventoryItem.id}`);
         }
         console.log(`Inventory upload complete. Errors: ${errorCount}`);

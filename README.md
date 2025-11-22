@@ -73,7 +73,9 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 How to trigger scheduled functions
 - firebase functions:shell, then hourlyJob()
 
-
+# Database seeding
+- run ```node src/scripts/seeder.mjs```
+- if you are getting an authentication problem, run ```gcloud auth application-default login```
 
 
 ### Code Splitting

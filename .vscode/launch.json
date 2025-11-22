@@ -15,7 +15,8 @@
         "env": {
           "NODE_ENV": "development"
         },
-        "skipFiles": ["<node_internals>/**"]
+        "skipFiles": ["<node_internals>/**"],
+        "runtimeExecutable": "/Users/Smexmachine_1/.nvm/versions/node/v20.19.1/bin/node"
       },{ // Debugging the event based fireabse functions
         "type": "node",
         "request": "attach",
