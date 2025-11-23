@@ -105,7 +105,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         const now = utils.now();
         const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
-        if(minutesLeft < 10 && minutesLeft > -60) {
+        if(minutesLeft < 60 && minutesLeft > -60) {
             return true;
         }
 
@@ -466,13 +466,21 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         { (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
 
                             <div className="activity-component-footer-icon">
-                                <ThumbsUp  
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAssigneeStatusChange(true);
-                                    }}
-                                />
+                                <motion.div
+                                    // className='activity-component-footer-icon-center-content'
+                                    animate={{ scale: [1, 1.2, 1], opacity: [1, 0.5, 1] }}
+                                    transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                >
+                                    <ThumbsUp  
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAssigneeStatusChange(true);
+                                        }}
+                                    />
+                                </motion.div>
+                                
                                 <p>Accept task?</p>
+                                
                             </div>
                         ) : (
                             <div className="activity-component-footer-icon">
@@ -507,13 +515,19 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     {/* Mark activity started */}
                     { canStartActivity() && (
                         <div className="activity-component-footer-icon">
-                            <StatusCircle 
-                                status={activityService.Status.STARTED} 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSetActivityStatusManually(activityService.status(activityService.Status.STARTED));
-                                }}
-                            />
+                            <motion.div
+                                // className='activity-component-footer-icon-center-content'
+                                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                                transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                            >
+                                <StatusCircle 
+                                    status={activityService.Status.STARTED} 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSetActivityStatusManually(activityService.status(activityService.Status.STARTED));
+                                    }}
+                                />
+                            </motion.div>
                             <p>Start it</p>
                         </div>
                     )}
@@ -522,13 +536,19 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     {/* Mark activity started */}
                     { canCompleteActivity() && (
                         <div className="activity-component-footer-icon">
-                            <StatusCircle 
-                                status={activityService.Status.COMPLETED} 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSetActivityStatusManually(activityService.status(activityService.Status.COMPLETED));
-                                }}
-                            />
+                            <motion.div
+                                // className='activity-component-footer-icon-center-content'
+                                animate={{ scale: [1, 1.2, 1], opacity: [1, 0.5, 1] }}
+                                transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                            >
+                                <StatusCircle 
+                                    status={activityService.Status.COMPLETED} 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSetActivityStatusManually(activityService.status(activityService.Status.COMPLETED));
+                                    }}
+                                />
+                            </motion.div>
                             <p>Complete it</p>
                         </div>
                     )}
@@ -537,13 +557,13 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         <div className="activity-component-footer-icon">
                             
                             <motion.div
-                                animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
+                                animate={requiredPhotosUploaded ? {} : { scale: [1, 1.2, 1], opacity: [1, 0.5, 1] }}
                                 transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
                             >
                                 <Camera 
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onOpenCamera(true, false, () => onConfirmPhoto);
+                                        onOpenCamera(activityInfo.photoInstructions, true, false, () => onConfirmPhoto);
                                     }}
                                 />
                             </motion.div>
