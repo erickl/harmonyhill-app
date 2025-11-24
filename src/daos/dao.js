@@ -117,8 +117,10 @@ export async function getSubCollections(collectionName, filters = [], ordering =
  * Creates and includes a change logs string in the new booking object.
  * Cannot update createdAt or createdBy
  */
-export async function update(path, id, updatedData, updateLogs, onError = null, writes = []) { 
+export async function update(path, id, update, updateLogs, onError = null, writes = []) { 
     try {
+        const update_ = JSON.parse(JSON.stringify(update));
+
         const originalData = await getOne(path, id);
 
         if(!originalData) {
@@ -129,24 +131,24 @@ export async function update(path, id, updatedData, updateLogs, onError = null, 
         const now = new Date();
 
         // Remove any field which should not be updated
-        if(utils.exists(updatedData, "createdAt")) {
-            delete updatedData.createdAt;
+        if(utils.exists(update_, "createdAt")) {
+            delete update_.createdAt;
         }
-        if(utils.exists(updatedData, "createdBy")) {
-            delete updatedData.createdBy;
+        if(utils.exists(update_, "createdBy")) {
+            delete update_.createdBy;
         }
 
-        if(utils.exists(updatedData, "id")) {
-            delete updatedData.id;
+        if(utils.exists(update_, "id")) {
+            delete update_.id;
         }
-        if(utils.exists(updatedData, "ref")) {
-            delete updatedData.ref;
+        if(utils.exists(update_, "ref")) {
+            delete update_.ref;
         }
 
         // Add change to the update logs
         let diffStr = "";
         if(updateLogs) {
-            diffStr = await jsonObjectDiffStr(originalData, updatedData);
+            diffStr = await jsonObjectDiffStr(originalData, update_);
         
             // todo: should the user be notified whether or not the update wasn't necessary?
             if(diffStr.length === 0) {
@@ -154,8 +156,8 @@ export async function update(path, id, updatedData, updateLogs, onError = null, 
                 return true;
             }
                 
-            updatedData.updateLogs = utils.exists(originalData, "updateLogs") ? originalData.updateLogs : [];
-            updatedData.updateLogs.push(diffStr);
+            update_.updateLogs = utils.exists(originalData, "updateLogs") ? originalData.updateLogs : [];
+            update_.updateLogs.push(diffStr);
 
             // Log user activity
             const updateLog = {
@@ -169,14 +171,14 @@ export async function update(path, id, updatedData, updateLogs, onError = null, 
             writes.push((tx) => tx.set(updateLogRef, updateLog));
         }
 
-        updatedData.updatedAt = now;
-        updatedData.updatedBy = currentUsername;
+        update_.updatedAt = now;
+        update_.updatedBy = currentUsername;
 
         // Run the main update
         const ref = doc(db, ...path, id);
-        writes.push((tx) => tx.update(ref, updatedData));
+        writes.push((tx) => tx.update(ref, update_));
         
-        const updatedDoc = await getOne(path, id, onError);
+        const updatedDoc = {...originalData, ...update_};
         return updatedDoc;
     }
     catch (e) {
@@ -192,14 +194,20 @@ async function getCurrentUsername() {
 
 export async function add(path, id, data, onError = null, writes = []) {
     try {
-        data.createdAt = new Date();
-        data.createdBy = await getCurrentUsername();
+        const data_ = JSON.parse(JSON.stringify(data));
+
+        data_.createdAt = new Date();
+        data_.createdBy = await getCurrentUsername();
+
+        if(utils.exists(data_, "id")) {
+            delete data_.id;
+        }
 
         // Log user activity
         const addLog = {
             "document"  : `${path.join("/")}/${id}`,
-            "createdBy" : data.createdBy,
-            "createdAt" : data.createdAt,
+            "createdBy" : data_.createdBy,
+            "createdAt" : data_.createdAt,
             "action"    : "create" 
         };
         const addLogRef = doc(db, ...["userLogs"], `c-${id}`);
@@ -207,8 +215,8 @@ export async function add(path, id, data, onError = null, writes = []) {
         
         // Create the data record in DB
         const ref = doc(db, ...path, id);
-        writes.push((tx) => tx.set(ref, data));
-        return data;
+        writes.push((tx) => tx.set(ref, data_));
+        return data_;
     } catch (e) {
         if(onError) onError(`Error adding document ${path}/${id}: ${e.message}`);
         return false;
@@ -272,7 +280,11 @@ export async function getParent(child) {
 
 export function decideCommit(writes) {
     const commit = writes && Array.isArray(writes) && writes.length === 0;
-    writes.push(null); // Just so 'writes' won't be empty again
+    if(utils.isEmpty(writes)) {
+        // Just so 'writes' won't be empty again, and commit at other places than the 1st 'level'
+        writes = [null];
+    }
+    
     return commit;
 }
 
