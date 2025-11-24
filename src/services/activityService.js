@@ -288,7 +288,7 @@ async function removePhotos(activity, onError) {
 export async function uploadPhoto(activity, photo, onError) {
     const filePath = getActivityPhotoFilePath(activity);
     const filename = `${filePath}/${Date.now()}`;
-    const options = {maxSize : 0.05};
+    const options = {maxSize : 0.15};
     const downloadUrl = await storageDao.upload(filename, photo, options, onError);
     if(downloadUrl === false) {
         return;
