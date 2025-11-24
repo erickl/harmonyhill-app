@@ -46,14 +46,16 @@ export default function InventoryScreen({onNavigate, onClose}) {
         for(let i = 0; i < sales.length; i++) {
             const sale = sales[i];
             const booking = await bookingService.getOne(sale.bookingId);
+            const bookingName = booking ? booking.name : "-";
+            const bookingHouse = booking ? (booking.house.trim().toLowerCase() === "harmony hill" ? "HH" : "JN") : "-";
             
             const enhancedSale = [
                 i+1,
                 utils.to_ddMMM(sale.createdAt),
                 sale.quantity,
-                booking.name,
-                booking.house.trim().toLowerCase() === "harmony hill" ? "HH" : "JN",
-                utils.to_ddMMM(sale.createdBy),
+                bookingName,
+                bookingHouse,
+                sale.createdBy,
             ];
             
             enhancedSales.push(enhancedSale);

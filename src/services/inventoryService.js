@@ -181,13 +181,11 @@ export async function closeMonthForItem(name, onError, writes = []) {
 
 export async function validateRefill(data, onValidationError) {
     if(utils.isEmpty(data.quantity) || data.quantity == 0) {
-        onValidationError("Fill a quantity more than zero");
-        return false;
+        return onValidationError("Fill a quantity more than zero");
     }
 
-    if(data.expense === null) {
-        onValidationError("Choose an expense");
-        return false;
+    if(utils.isEmpty(data.expense)) {
+        return onValidationError("Choose an expense");
     }
 
     return true;
@@ -195,18 +193,15 @@ export async function validateRefill(data, onValidationError) {
 
 export async function validateSubtraction(data, onValidationError) {
     if(utils.isEmpty(data.quantity) || data.quantity == 0) {
-        onValidationError("Fill a quantity more than zero");
-        return false;
+        return onValidationError("Fill a quantity more than zero");
     }
 
     if(utils.isEmpty(data.type)) {
-        onValidationError("Choose a type");
-        return false;
+        return onValidationError("Choose a type");
     }
 
-    if(data.type === "sale" && data.booking === null) {
-        onValidationError("Choose a booking");
-        return false;
+    if(data.type === "sale" && utils.isEmpty(data.booking)) {
+        return onValidationError("Choose a booking");
     }
 
     return true;

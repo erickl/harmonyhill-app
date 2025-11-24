@@ -24,6 +24,7 @@ export default function AddInventoryScreen({onNavigate, item, onClose}) {
 
     const onValidationError = (error) => {
         setValidationError(error);
+        return false;
     };
 
     const handleInputChange = (name, value, type) => {
