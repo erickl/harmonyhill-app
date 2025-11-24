@@ -29,7 +29,7 @@ export async function upload(filename, dataUrl, options = {}, onError = null, wr
     }
 }
 
-export async function compressImage(dataUrl, compressionOptions, onError) {
+export async function compressImage(fileData, compressionOptions, onError) {
     try {
         const maxSize = utils.isEmpty(compressionOptions.maxSize) ? 0.3 : compressionOptions.maxSize;
         const options = {
@@ -38,7 +38,19 @@ export async function compressImage(dataUrl, compressionOptions, onError) {
             useWebWorker: true
         };
 
-        const file = dataUrlToFile(dataUrl); 
+        let file = null;
+        const type = determineUrlType(fileData);
+        
+        if(type === "data-url") {
+            file = dataUrlToFile(fileData);
+        } else if(type === "http-url") {
+            file = await urlToFile(fileData); 
+        }
+
+        if(file === "unknown") {
+            throw new Error(`Unknown file type: ${fileData}`);
+        }
+
         const compressedFile = await imageCompression(file, options);
         const compressedDataUrl = await blobToBase64(compressedFile);
 
@@ -106,6 +118,7 @@ export function blobToBase64(blob) {
     });
 }
 
+// dataURL should be a base64 encoded string, like 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBg...'
 function dataUrlToFile(dataURL, filename) {
     const arr = dataURL.split(',');
     const mime = arr[0].match(/:(.*?);/)[1];
@@ -116,6 +129,27 @@ function dataUrlToFile(dataURL, filename) {
         u8arr[n] = bstr.charCodeAt(n);
     }
     return new File([u8arr], filename, { type: mime });
+}
+
+/**
+ * Fetches remote content from a URL and converts it into a File object.
+ * @param {string} url The remote HTTP URL of the file (e.g., Firebase Storage link).
+ * @param {string} filename The desired name for the resulting File object.
+ * @returns {Promise<File>} A Promise that resolves to the new File object.
+ */
+async function urlToFile(url, filename) {
+    // 1. Fetch the remote resource
+    const response = await fetch(url);
+    
+    // 2. Get the content as a binary Blob
+    const blob = await response.blob();
+    
+    // 3. Extract the correct MIME type from the response headers
+    const mime = response.headers.get('content-type');
+    
+    // 4. Create the File object from the Blob
+    // The File constructor is: new File([Blob|BufferSource|string], filename, [options])
+    return new File([blob], filename, { type: mime });
 }
 
 export async function downloadAllZipped(toFilename, paths, onProgress, onError) {
@@ -144,4 +178,42 @@ export async function downloadAllZipped(toFilename, paths, onProgress, onError) 
         return false;
     }
     return true;
+}
+
+/**
+ * Determines if a string is a standard HTTP/HTTPS URL or a Base64 Data URL.
+ * * @param {string} inputString The string to check.
+ * @returns {'data-url' | 'http-url' | 'unknown'} The type of the string.
+ */
+function determineUrlType(inputString) {
+    if (!inputString || typeof inputString !== 'string') {
+        return 'unknown';
+    }
+
+    // 1. Check for Base64 Data URL signature
+    // Data URLs start with 'data:'
+    if (inputString.startsWith('data:')) {
+        // A simple check to ensure it roughly matches the structure:
+        // data:MIME_TYPE[;BASE64],DATA
+        const dataUrlRegex = /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9]+);base64,([a-zA-Z0-9+/=]+)$/;
+        if (dataUrlRegex.test(inputString)) {
+            return 'data-url';
+        }
+    }
+
+    // 2. Check for standard HTTP/HTTPS URL
+    // Standard URLs start with 'http://' or 'https://'
+    if (inputString.startsWith('http://') || inputString.startsWith('https://')) {
+        // Optional: Use the URL constructor for a more rigorous check
+        try {
+            new URL(inputString);
+            return 'http-url';
+        } catch (e) {
+            // If the URL constructor throws an error, it's not a valid URL format
+            return 'unknown';
+        }
+    }
+
+    // 3. Fallback
+    return 'unknown';
 }
