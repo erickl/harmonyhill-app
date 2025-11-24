@@ -24,6 +24,7 @@ export function groupByCourse(dishes) {
 
 export async function addMeal(bookingId, mealData, onError, writes = []) {
     const commit = decideCommit(writes);
+
     const booking = await bookingDao.getOne(bookingId);
     if(!booking) {
         onError(`Booking ${bookingId} not found`)
@@ -38,6 +39,7 @@ export async function addMeal(bookingId, mealData, onError, writes = []) {
     const dishes = Object.values(mealData.dishes);
 
     const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
+    meal.id = mealId; //  needed by inventory sales
     meal.customerPrice = meal.isFree ? 0 : dishes.reduce((sum , dish) => sum + (dish.isFree ? 0 : dish.customerPrice), 0);
     const mealRecord = await activityDao.add(bookingId, mealId, meal, onError, writes);
     if(mealRecord === false) return false;
@@ -119,6 +121,12 @@ async function addDishes(meal, mealId, dishesData, onError, writes) {
         if(!addDishSuccess) {
             return false;
         }
+
+        const inventoryItem = await inventoryService.getOne(dish.name, onError);
+        if(inventoryItem) {
+            const invItemSale = await inventoryService.addSale(meal, dish.name, dish.quantity, onError, writes);
+            if(invItemSale === false) return false;
+        }
        
         if(addDishSuccess) {
             dishes.push(addDishSuccess);
@@ -162,7 +170,9 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
         return false;
     }
 
-    if(commit) return await commitTx(writes, onError);
+    if(commit) {
+        return await commitTx(writes, onError);
+    }
     
     return updateMealRecord;
 }
