@@ -422,7 +422,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                         ></textarea>
                     </div>
                 </>) : (  
-                    <button onClick={() => onOpenCamera(true, true, () => onConfirmPhoto)}>
+                    <button onClick={() => onOpenCamera(null, true, true, () => onConfirmPhoto)}>
                         Add photo
                     </button>
                 )}
