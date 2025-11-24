@@ -3,7 +3,7 @@ import * as bookingDao from "../daos/bookingDao.js";
 import * as activityService from "./activityService.js";
 import * as inventoryService from "./inventoryService.js";
 import * as utils from "../utils.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 export async function getMealCategories() {
     return await activityDao.getTypes({"category" : "meal"});
@@ -23,7 +23,7 @@ export function groupByCourse(dishes) {
 }
 
 export async function addMeal(bookingId, mealData, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     const booking = await bookingDao.getOne(bookingId);
     if(!booking) {
         onError(`Booking ${bookingId} not found`)
@@ -62,7 +62,7 @@ export async function addMeal(bookingId, mealData, onError, writes = []) {
 }
 
 export async function removeMeal(meal, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     
     const dishes = await getMealDishes(meal.bookingId, meal.id);
     for(const dish of dishes) {
@@ -85,7 +85,7 @@ export async function removeMeal(meal, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -129,7 +129,7 @@ async function addDishes(meal, mealId, dishesData, onError, writes) {
 }
 
 export async function update(bookingId, mealId, mealUpdateData, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const existing = await getMeal(bookingId, mealId);
     if(!existing) {
@@ -257,7 +257,7 @@ export async function getDishes(filterOptions, onError) {
 }
 
 export async function deleteDish(bookingId, mealId, dishId, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     const result = await activityDao.deleteDish(bookingId, mealId, dishId, onError, writes);
     if(result === false) return false;
     if(commit) return await commitTx(writes, onError);

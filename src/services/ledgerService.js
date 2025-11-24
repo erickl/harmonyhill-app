@@ -2,7 +2,7 @@ import * as ledgerDao from "../daos/ledgerDao.js";
 import * as incomeService from "./incomeService.js";
 import * as expenseService from "./expenseService.js";
 import * as utils from "../utils.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 export async function getTotalIncomes(filter, onError) {
     if(Object.hasOwn(filter, "monthInt")) {
@@ -97,7 +97,7 @@ export async function getPettyCashBalance(untilDate, onError) {
 }
 
 export async function closeMonth(onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const monthEnd = utils.monthStart().plus({seconds: -1});
     const balance = await getPettyCashBalance(monthEnd, onError);
@@ -105,7 +105,7 @@ export async function closeMonth(onError, writes = []) {
     if(result === false) return false;
     
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;

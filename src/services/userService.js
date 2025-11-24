@@ -2,10 +2,10 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, up
 import { auth } from "../firebase.js";
 import * as userDao from "../daos/userDao.js";
 import * as utils from "../utils.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 export async function signUp(username, email, role, password, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     let addUserDataSuccess = false;
 
@@ -33,7 +33,7 @@ export async function signUp(username, email, role, password, onError, writes = 
         addUserDataSuccess = await userDao.add(user.uid, userData, onError, writes);
 
         if(commit) {
-            if((await commitTx(writes)) === false) {
+            if((await commitTx(writes, onError)) === false) {
                 throw new Error(`Unexpected error`);
             }
         }
@@ -54,7 +54,7 @@ export async function signUp(username, email, role, password, onError, writes = 
  * @returns true if log in successful, otherwise false
  */
 export async function login(username, password, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     if(!utils.isString(username) || !utils.isString(password)) {
         onError(`Username or password ${username} is incorrect (1)`);
@@ -83,7 +83,7 @@ export async function login(username, password, onError, writes = []) {
         if(success === false) return false;
      
         if(commit) {
-            if((await commitTx(writes)) === false) return false;
+            if((await commitTx(writes, onError)) === false) return false;
         }
      
         return success;
@@ -104,7 +104,7 @@ export function isLoggedIn() {
 }
 
 export async function logLastActive(onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     try {
         const fbUser = getFirebaseUser();
@@ -116,7 +116,7 @@ export async function logLastActive(onError, writes = []) {
         if(result === false) return false;
 
         if(commit) {
-            if((await commitTx(writes)) === false) return false;
+            if((await commitTx(writes, onError)) === false) return false;
         }
 
         return result;
@@ -188,7 +188,7 @@ export async function isAdmin() {
 }
 
 export async function approve(email, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     
     if(!isAdmin()) return false;
 
@@ -202,7 +202,7 @@ export async function approve(email, writes = []) {
     if(result === false) return false;
     
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;

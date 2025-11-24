@@ -2,7 +2,7 @@ import * as utils from "../utils.js";
 import * as incomeDao from "../daos/incomeDao.js";
 import {getOne as getBooking} from "./bookingService.js";
 import {getOne as getActivity} from "./activityService.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 export async function get(filterOptions, onError) {
     const incomes = await incomeDao.get(filterOptions, {"receivedAt":"desc"}, -1, onError);
@@ -14,21 +14,21 @@ export async function get(filterOptions, onError) {
 }
 
 export async function add(data, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const object = await mapIncomeObject(data);
     const result = await incomeDao.add(object, onError, writes);
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 export async function remove(id, onError, writes = []) {  
-    const commit = writes.length === 0; 
+    const commit = decideCommit(writes); 
 
     const existing = await incomeDao.getOne(id, onError);
     if(!existing) {
@@ -39,14 +39,14 @@ export async function remove(id, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 export async function update(id, data, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const object = await mapIncomeObject(data);
 
@@ -59,7 +59,7 @@ export async function update(id, data, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;

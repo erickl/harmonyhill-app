@@ -4,10 +4,10 @@ import * as activityService from "./activityService.js";
 import * as mealService from "./mealService.js";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 export async function addOrEdit(activity, minibar, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const filteredItems = filterZeroCounts(minibar.items);
     const minibar_ = {...minibar, items: filteredItems};
@@ -35,14 +35,14 @@ export async function addOrEdit(activity, minibar, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 async function addSale(activity, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const itemsSold = await calculateSale(activity, onError);
     if(itemsSold === false) return false;
@@ -70,14 +70,14 @@ async function addSale(activity, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 async function editSale(activity, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const itemsSold = await calculateSale(activity, onError);
     if(itemsSold === false) {
@@ -90,7 +90,7 @@ async function editSale(activity, onError, writes = []) {
     }
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
     
     return true;
@@ -152,13 +152,13 @@ export default async function getType(activity, type, onError) {
 }
 
 export async function remove(activity, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     
     const result = await bookingDao.removeMinibar(activity, onError);
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;

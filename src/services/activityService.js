@@ -6,7 +6,7 @@ import {getMealDishes} from "./mealService.js";
 import {get as getIncome} from "../services/incomeService.js";
 import {get as getExpense} from "../services/expenseService.js";
 import * as storageDao from "../daos/storageDao.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 export const Status = Object.freeze({
     GOOD_TO_GO            : "good to go",
@@ -187,7 +187,7 @@ export async function getOne(bookingId, activityId) {
  * @returns activityId if successful, otherwise false
  */
 export async function add(bookingId, activityData, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const booking = await bookingService.getOne(bookingId);
     if(!booking) {
@@ -207,7 +207,7 @@ export async function add(bookingId, activityData, onError, writes = []) {
     if(result === false) return false;
     
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
     
     return result !== false ? result : false;
@@ -221,14 +221,14 @@ export async function add(bookingId, activityData, onError, writes = []) {
  * @returns true if update successful, otherwise false
  */
 export async function assignProvider(bookingId, activityId, personnelId, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const dataUpdate = { provider : personnelId };
     const result = await update(bookingId, activityId, dataUpdate, onError, writes);
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -240,13 +240,13 @@ export async function getProviders(category, subCategory) {
 }
 
 export async function setActivityStatus(bookingId, id, status, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const result = await update(bookingId, id, { status : status }, onError, writes);
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -260,21 +260,21 @@ export async function setActivityStatus(bookingId, id, status, onError, writes =
  * @returns true if update successful, otherwise false
  */
 export async function assignStaff(bookingId, activityId, userId, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const dataUpdate = { assignTo : userId, changeDescription : null };
     const result = await update(bookingId, activityId, dataUpdate, onError, writes);
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 export async function changeAssigneeStatus(accept, bookingId, activityId, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const dataUpdate = { 
         assigneeAccept  : accept,
@@ -285,14 +285,14 @@ export async function changeAssigneeStatus(accept, bookingId, activityId, onErro
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 export async function update(bookingId, activityId, activityUpdateData, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const existing = await getOne(bookingId, activityId);
 
@@ -315,7 +315,7 @@ export async function update(bookingId, activityId, activityUpdateData, onError,
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -333,7 +333,7 @@ export async function getPhotos(activity, onError) {
 }
 
 export async function removePhoto(photo, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const removeFileResult = await storageDao.removeFile(photo.fileName, onError);
     if(removeFileResult === false) return false;
@@ -348,14 +348,14 @@ export async function removePhoto(photo, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 async function removePhotos(activity, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const photos = await getPhotos(activity, onError);
     for(const photo of photos) {
@@ -364,14 +364,14 @@ async function removePhotos(activity, onError, writes = []) {
     }
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
     
     return true;
 }
 
 export async function uploadPhoto(activity, photo, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const filePath = getActivityPhotoFilePath(activity);
     const filename = `${filePath}/${Date.now()}`;
@@ -391,14 +391,14 @@ export async function uploadPhoto(activity, photo, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 export async function remove(activity, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const removePhotosResult = await removePhotos(activity, onError, writes);
     if(removePhotosResult === false) return false;
@@ -407,7 +407,7 @@ export async function remove(activity, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;

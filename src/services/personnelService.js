@@ -1,7 +1,7 @@
 import * as personnelDao from "../daos/personnelDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 /**
  * @param {*} filterOptions = { name|activity=transport|yoga|etc...|location=Maniktawang|outside}
@@ -17,7 +17,7 @@ export async function get(filterOptions = {}) {
  * @returns personnelId if added successfully, otherwise false
  */
 export async function add(personnelData, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const personnel = await mapPersonnelObject(personnelData);
     const personnelId = makePersonnelId(personnel);
@@ -25,21 +25,21 @@ export async function add(personnelData, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
 }
 
 export async function update(personnelId, personnelUpdateData, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const updatedPersonnel = await mapPersonnelObject(personnelUpdateData, true);
     const result = await personnelDao.update(personnelId, updatedPersonnel, onError, writes);
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;

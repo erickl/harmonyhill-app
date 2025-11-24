@@ -3,10 +3,10 @@ import * as storageDao from "../daos/storageDao.js";
 import * as utils from "../utils.js";
 import { getOne as getActivity } from "./activityService.js";
 import {getOne as getBooking} from "./bookingService.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 export async function add(data, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     data.index = await expenseDao.getNextSerialNumber(data.purchasedAt, onError);
     
     data = await processReceipt(data, onError, writes);
@@ -26,7 +26,7 @@ export async function add(data, onError, writes = []) {
 
 async function processReceipt(data, onError, writes) {
      // If just editing the expense, the user might not have taken a new photo
-    if(data.photo) {
+    if(data.photo && data.photo !== data.photoUrl) {
         const fileDate = utils.to_YYMMdd(data.purchasedAt);
         const fileDescription = data.description.trim().toLowerCase().replace(/ /g, "-");
         data.fileName = `${data.index}. ${fileDescription}-${fileDate}-${Date.now()}`;
@@ -43,7 +43,7 @@ async function processReceipt(data, onError, writes) {
 }
 
 export async function update(id, data, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const existing = await expenseDao.getOne(id);
     if(!existing) {
@@ -66,7 +66,7 @@ export async function update(id, data, onError, writes = []) {
     }
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return updateResult;
@@ -85,12 +85,12 @@ export async function downloadExpenseReceipts(toFilename, filters, onProgress, o
  * @param {*} image 
  */
 export async function uploadReceipt(filename, dataUrl, options, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     const result = await storageDao.upload(filename, dataUrl, options, onError, writes);
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -111,7 +111,7 @@ export async function getOne(id, onError) {
 }
 
 export async function remove(id, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     const existing = await expenseDao.getOne(id, onError);
     if(!existing) {
@@ -123,7 +123,7 @@ export async function remove(id, onError, writes = []) {
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;

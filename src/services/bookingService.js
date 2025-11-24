@@ -4,7 +4,7 @@ import * as userService from "./userService.js";
 import * as activityService from "./activityService.js";
 import * as mealService from "./mealService.js";
 import * as minibarService from "./minibarService.js";
-import {commitTx} from "../daos/dao.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
@@ -62,19 +62,19 @@ export function calculateNightsStayed(checkInAtInput, checkOutAtInput) {
 }
 
 export async function add(bookingData, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     const bookingObject = await mapBookingObject(bookingData);
     const result = await bookingDao.add(bookingObject, onError, writes);
     if(result === false) return false;
 
     if(commit) {
-        if((await commitTx(writes)) === false) return false;
+        if((await commitTx(writes, onError)) === false) return false;
     }
     return result;
 }
 
 export async function update(bookingId, bookingUpdateData, onError, writes = []) {
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
     
     const bookingUpdate = await mapBookingObject(bookingUpdateData);    
     const result = await bookingDao.update(bookingId, bookingUpdate, onError, writes);
@@ -91,7 +91,7 @@ export async function update(bookingId, bookingUpdateData, onError, writes = [])
  */
 export async function remove(bookingId, onError, writes = []) {   
     if(!userService.isAdmin()) return false;
-    const commit = writes.length === 0;
+    const commit = decideCommit(writes);
 
     // To delete a booking, first delete all its activities, or they'll be dangling records (orphaned)
     const activities = await activityService.get(bookingId);

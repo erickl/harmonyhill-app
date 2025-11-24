@@ -270,6 +270,12 @@ export async function getParent(child) {
     return null;
 }
 
+export function decideCommit(writes) {
+    const commit = writes && Array.isArray(writes) && writes.length === 0;
+    writes.push(null); // Just so 'writes' won't be empty again
+    return commit;
+}
+
 export async function commitTx(writes = [], onError = null) {
     const result = await runTransaction(db, async (transaction) => {
         for(const write of writes) {
