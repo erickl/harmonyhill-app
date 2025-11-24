@@ -202,7 +202,7 @@ export async function approve(email, writes = []) {
     if(result === false) return false;
     
     if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+        if((await commitTx(writes)) === false) return false;
     }
 
     return result;
