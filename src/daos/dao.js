@@ -174,7 +174,7 @@ export async function update(path, id, updatedData, updateLogs, onError = null, 
 
         // Run the main update
         const ref = doc(db, ...path, id);
-        writes.push((tx) => tx.updateDoc(ref, updatedData));
+        writes.push((tx) => tx.update(ref, updatedData));
         
         const updatedDoc = await getOne(path, id, onError);
         return updatedDoc;
