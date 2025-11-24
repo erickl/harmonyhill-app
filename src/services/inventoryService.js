@@ -42,7 +42,7 @@ export async function subtract(activity, type, itemName, quantity, onError, writ
 export async function addSale(activity, itemName, quantity, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await subtract(activity, "sale", itemName, quantity, onError);
+    const result = await subtract(activity, "sale", itemName, quantity, onError, writes);
     if(result === false) return false;
 
     if(commit) {
