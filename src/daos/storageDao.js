@@ -7,6 +7,10 @@ import { saveAs } from "file-saver";
 
 export async function upload(filename, dataUrl, options = {}, onError = null) {
     try {
+        if(dataUrl instanceof Blob) {
+            dataUrl = await blobToBase64(dataUrl);
+        }
+
         if(!utils.isEmpty(options)) {
             dataUrl = await compressImage(dataUrl, options, onError);
         }
