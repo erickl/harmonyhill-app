@@ -5,6 +5,7 @@ import * as mealService from "./mealService.js";
 import * as bookingDao from "../daos/bookingDao.js";
 import * as utils from "../utils.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
+import { activeAnimations } from "framer-motion";
 
 export async function addOrEdit(activity, minibar, onError, writes = []) {
     const commit = decideCommit(writes);
@@ -26,9 +27,9 @@ export async function addOrEdit(activity, minibar, onError, writes = []) {
 
     if(minibar_.type === "end") { 
         if(existing !== null) {
-            result = await editSale(activity, onError, writes);
+            result = await updateMinibarMeal(activity, onError, writes);
         } else {
-            result = await addSale(activity, onError, writes);
+            result = await addMinibarMeal(activity, onError, writes);
         }
     }
 
@@ -41,9 +42,7 @@ export async function addOrEdit(activity, minibar, onError, writes = []) {
     return result;
 }
 
-async function addSale(activity, onError, writes = []) {
-    const commit = decideCommit(writes);
-
+async function addMinibarMeal(activity, onError, writes = []) {
     const itemsSold = await calculateSale(activity, onError);
     if(itemsSold === false) return false;
 
@@ -52,13 +51,13 @@ async function addSale(activity, onError, writes = []) {
     // Take each minibar item from inventory
     for(const [name, quantity] of Object.entries(itemsSold)) {
         if(quantity > 0) {
-            const addInventorySaleResult = await inventoryService.addSale(activity, name, quantity, onError, writes);
-            if(addInventorySaleResult === false) return false;
-
             const dish = await menuService.getOneByNameAndCourse(name, "minibar");
-            if(dish) {
-                dishes.push(dish);
+            if(!dish) {
+                return onError(`Minibar item ${name} doesn't exist in our records. Contact admin, please`);
             }
+           
+            dish.quantity = quantity;
+            dishes.push(dish);
         }
     }
 
@@ -69,29 +68,31 @@ async function addSale(activity, onError, writes = []) {
     const result = await mealService.addMeal(activity.bookingId, minibarActivity, onError, writes);
     if(result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
-    }
-
     return result;
 }
 
-async function editSale(activity, onError, writes = []) {
-    const commit = decideCommit(writes);
-
+async function updateMinibarMeal(activity, onError, writes = []) {
     const itemsSold = await calculateSale(activity, onError);
-    if(itemsSold === false) {
-        return false;
-    } 
+    if(itemsSold === false) return false;
 
+    const dishes = [];
+
+    // Take each minibar item from inventory
     for(const [name, quantity] of Object.entries(itemsSold)) {
-        const updateInventorySaleResult = await inventoryService.updateSale(activity, name, quantity, onError, writes);
-        if(updateInventorySaleResult === false) return false;
+        if(quantity > 0) {
+            const dish = await menuService.getOneByNameAndCourse(name, "minibar");
+            if(!dish) {
+                return onError(`Minibar item ${name} doesn't exist in our records. Contact admin, please`);
+            }
+           
+            dish.quantity = quantity;
+            dishes.push(dish);
+        }
     }
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
-    }
+    activity.dishes = dishes;
+    const updateMealResult = await mealService.update(activity.bookingId, activity.id, activity, onError, writes);
+    if(updateMealResult === false) return false;
     
     return true;
 }
@@ -156,6 +157,12 @@ export async function remove(activity, onError, writes = []) {
     
     const result = await bookingDao.removeMinibar(activity, onError);
     if(result === false) return false;
+
+    const minibarMeal = await mealService.getMeal(activity.bookingId, activity.id, onError);
+    if(minibarMeal) {
+        const removeMinibarMealResult = await mealService.removeMeal(activity, onError, writes);
+        if(removeMinibarMealResult === false) return false;
+    }
 
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;

@@ -256,8 +256,8 @@ export async function getMeals(options) {
     return meals;
 }
 
-export async function getMeal(bookingId, mealId) {
-    const meal = await activityDao.getOne(bookingId, mealId);
+export async function getMeal(bookingId, mealId, onError) {
+    const meal = await activityDao.getOne(bookingId, mealId, onError);
     const enhancedMeal = await activityService.enhanceActivities(meal); 
     return enhancedMeal;
 }
