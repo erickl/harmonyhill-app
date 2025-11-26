@@ -249,7 +249,8 @@ export async function remove(path, id, onError = null, writes = []) {
         writes.push((tx) => tx.set(delLogRef, delLog));
         
         // Store deleted document in separate collection as safety measure
-        await add(["deleted"], `d-${id}`, dataToDelete, writes);
+        const addDeleteLogRecord = await add(["deleted"], `d-${id}`, dataToDelete, onError, writes);
+        if(addDeleteLogRecord === false) return false;
         
         // Delete document
         const ref = doc(db, ...path, id);
@@ -279,10 +280,14 @@ export async function getParent(child) {
 }
 
 export function decideCommit(writes) {
-    const commit = writes && Array.isArray(writes) && writes.length === 0;
-    if(utils.isEmpty(writes)) {
+    if(!writes || !Array.isArray(writes)) {
+        return false;
+    }
+
+    const commit = writes.length === 0;
+    if(commit) {
         // Just so 'writes' won't be empty again, and commit at other places than the 1st 'level'
-        writes = [null];
+        writes.push(null);
     }
     
     return commit;
