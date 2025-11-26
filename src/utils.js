@@ -432,3 +432,35 @@ export function groupBy(elements, createKey) {
         return map;
     }, {});
 }
+
+export function deepCopy(obj) {
+    if (isEmpty(obj)) return obj;
+    if(!isJsonObject(obj)) return obj;
+        
+    if (obj.constructor.name === 'Timestamp' && typeof obj.toDate === 'function') {
+        return obj;
+    }
+
+    // Handle Date objects (standard practice for deep copy)
+    if (obj instanceof Date) {
+        return new Date(obj.getTime());
+    }
+    
+    if (Array.isArray(obj)) {
+        const copy = [];
+        for (const item of obj) {
+            copy.push(deepCopy(item));
+        }
+        return copy;
+    }
+
+    // Handle Object
+    const copy = {};
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            copy[key] = deepCopy(obj[key]);
+        }
+    }
+
+    return copy;
+}
