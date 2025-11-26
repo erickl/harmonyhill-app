@@ -39,6 +39,10 @@ export async function subtract(activity, type, itemName, quantity, onError, writ
     return result;
 }
 
+export async function getSale(itemName, activityId, onError) {
+    return await inventoryDao.getInventoryChange(itemName, "sale", activityId, onError);
+}
+
 export async function addSale(activity, itemName, quantity, onError, writes = []) {
     const commit = decideCommit(writes);
 
@@ -111,6 +115,19 @@ export async function getRefills(name, filters, onError) {
     filters.type = "refill";
     const purchases = await inventoryDao.getInventoryChanges(name, filters, onError);
     return purchases;
+}
+
+export async function removeSaleIfExists(name, activityId, onError, writes) {
+    const invItem = await getOne(name, onError);
+    if(invItem) {
+        const invItemSale = await inventoryService.getSale(name, activityId, onError);
+        if(invItemSale) {
+            const removeSaleResult = await inventoryService.removeStockChange(invItem.id, invItemSale.id, onError, writes);
+            if(removeSaleResult === false) return false;
+        }
+    }
+
+    return true;
 }
 
 export async function removeStockChange(invItemId, stockChangeId, onError, writes = []) {

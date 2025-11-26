@@ -79,7 +79,7 @@ export async function removeMeal(meal, onError, writes = []) {
                 if(removeStockChangeResult === false) return false; 
             } 
         }
-        const deleteDishResult = await deleteDish(meal.bookingId, meal.id, dish.id, onError, writes);
+        const deleteDishResult = await deleteDish(meal.bookingId, meal.id, dish, onError, writes);
         if(deleteDishResult === false) return false;
     }
 
@@ -113,20 +113,7 @@ async function addDishes(meal, mealId, dishesData, onError, writes) {
     // Add each meal item to DB
     let dishes = [];   
     for(const dishData of dishesData) {
-        const dish = await mapDishObject(dishData);
-        const dishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dish.name);
-             
-        // Add meal item to the meal
-        const addDishSuccess = await activityDao.addDish(meal.bookingId, mealId, dishId, dish, onError, writes);
-        if(!addDishSuccess) {
-            return false;
-        }
-
-        const inventoryItem = await inventoryService.getOne(dish.name, onError);
-        if(inventoryItem) {
-            const invItemSale = await inventoryService.addSale(meal, dish.name, dish.quantity, onError, writes);
-            if(invItemSale === false) return false;
-        }
+        const addDishSuccess = await addDish(meal, mealId, dishData, onError, writes);
        
         if(addDishSuccess) {
             dishes.push(addDishSuccess);
@@ -186,7 +173,7 @@ async function updateDishes(meal, mealId, dishesUpdateData, onError, writes) {
     for(const existingDish of Object.values(existingDishes)) {
         const dishUpdate = dishesUpdateData.find((dish) => dish.name === existingDish.name);
         if(!dishUpdate) {
-            const deleteDishResult = await deleteDish(meal.bookingId, mealId, existingDish.id, onError, writes, false);
+            const deleteDishResult = await deleteDish(meal.bookingId, mealId, existingDish, onError, writes);
             if(deleteDishResult === false) {
                 return false;
             }
@@ -195,32 +182,58 @@ async function updateDishes(meal, mealId, dishesUpdateData, onError, writes) {
     }
     
     for(const dishUpdateData of dishesUpdateData) {
-        if(utils.isEmpty(dishUpdateData.name)) {// || dishUpdateData.quantity === 0) {
-            continue;
-        }
+        if(utils.isEmpty(dishUpdateData.name)) continue;
 
-        const dishUpdate = await mapDishObject(dishUpdateData);
-        const existingDish = existingDishes.find((dish) => dish.name === dishUpdate.name);
+        const existingDish = existingDishes.find((dish) => dish.name === dishUpdateData.name);
         
         if(!existingDish) {
-            const newDishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dishUpdate.name);
-            const addNewDishResult = await activityDao.addDish(meal.bookingId, mealId, newDishId, dishUpdate, onError, writes);
-            if(addNewDishResult !== false) {
-                dishesUpdated.push(newDishId);
-            } else {
-                return false;
-            }
+            const addDishSuccess = await addDish(meal, mealId, dishData, onError, writes);
+            if(addDishSuccess === false) return false;
+            dishesUpdated.push(addDishSuccess);
         } else {
-            const updateExistingDishResult = await activityDao.updateDish(meal.bookingId, mealId, existingDish.id, dishUpdate, onError, writes);
-            if(updateExistingDishResult !== false) {
-                dishesUpdated.push(existingDish.id);
-            } else {
-                return false;
-            }
+            const updateExistingDishResult = await updateDish(meal, existingDish, dishUpdateData, onError, writes);
+            if(updateExistingDishResult === false) return false;
+            dishesUpdated.push(updateExistingDishResult);
         }
     }
 
     return dishesUpdated;
+}
+
+async function updateDish(meal, existingDish, dishUpdateData, onError, writes) {
+    const dishUpdate = await mapDishObject(dishUpdateData);
+    const updateExistingDishResult = await activityDao.updateDish(meal.bookingId, meal.id, existingDish.id, dishUpdate, onError, writes);
+    if(updateExistingDishResult === false) return false;
+
+    // Check if inventory sale needs changing, only if dish quantity changed
+    if(utils.exists(dishUpdate, "quantity")) {
+        const sale = await inventoryService.getSale(existingDish.name, mealId, onError);
+        if(sale) {
+            const saleUpdate = await inventoryService.updateSale(meal, existingDish.name, dishUpdate.quantity, onError, writes);
+            if(saleUpdate === false) return false;
+        }   
+    }
+
+    return updateExistingDishResult;
+}
+
+async function addDish(meal, mealId, dishData, onError, writes) {
+    const dish = await mapDishObject(dishData);
+    const dishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dish.name);
+            
+    // Add meal item to the meal
+    const addDishSuccess = await activityDao.addDish(meal.bookingId, mealId, dishId, dish, onError, writes);
+    if(!addDishSuccess) {
+        return false;
+    }
+
+    const inventoryItem = await inventoryService.getOne(dish.name, onError);
+    if(inventoryItem) {
+        const invItemSale = await inventoryService.addSale(meal, dish.name, dish.quantity, onError, writes);
+        if(invItemSale === false) return false;
+    }
+
+    return addDishSuccess;
 }
 
 /**
@@ -266,11 +279,17 @@ export async function getDishes(filterOptions, onError) {
     return await activityDao.getDishes(filterOptions, onError);
 }
 
-export async function deleteDish(bookingId, mealId, dishId, onError, writes = []) {
+async function deleteDish(bookingId, mealId, dish, onError, writes = []) {
     const commit = decideCommit(writes);
-    const result = await activityDao.deleteDish(bookingId, mealId, dishId, onError, writes);
-    if(result === false) return false;
+
+    const result1 = await activityDao.deleteDish(bookingId, mealId, dish.id, onError, writes);
+    if(result1 === false) return false;
+
+    const removeSaleResult = await inventoryService.removeSaleIfExists(dish.name, mealId, onError, writes);
+    if(removeSaleResult === false) return false;
+    
     if(commit) return await commitTx(writes, onError);
+
     return true;
 }
 

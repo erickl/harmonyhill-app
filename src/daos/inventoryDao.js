@@ -45,6 +45,16 @@ export async function updateStock(stockChangeId, invItemName, object, onError, w
     return await dao.update(path, stockChangeId, object, true, onError, writes);
 }
 
+export async function getInventoryChange(name, type, activityId, onError) {
+    const filter = {type: type, activityId: activityId};
+    const inventoryChanges = await getInventoryChanges(name, filter, onError);
+    if(!inventoryChanges || inventoryChanges.length === 0) {
+        return null;
+    }
+    
+    return inventoryChanges[0];
+}
+
 export async function getInventoryChanges(name, filterOptions, onError) {
     const invItem = await getOne(name, onError);
     if(!invItem) return [];
