@@ -120,9 +120,9 @@ export async function getRefills(name, filters, onError) {
 export async function removeSaleIfExists(name, activityId, onError, writes) {
     const invItem = await getOne(name, onError);
     if(invItem) {
-        const invItemSale = await inventoryService.getSale(name, activityId, onError);
+        const invItemSale = await getSale(name, activityId, onError);
         if(invItemSale) {
-            const removeSaleResult = await inventoryService.removeStockChange(invItem.id, invItemSale.id, onError, writes);
+            const removeSaleResult = await removeStockChange(invItem.id, invItemSale.id, onError, writes);
             if(removeSaleResult === false) return false;
         }
     }

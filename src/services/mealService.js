@@ -187,7 +187,7 @@ async function updateDishes(meal, mealId, dishesUpdateData, onError, writes) {
         const existingDish = existingDishes.find((dish) => dish.name === dishUpdateData.name);
         
         if(!existingDish) {
-            const addDishSuccess = await addDish(meal, mealId, dishData, onError, writes);
+            const addDishSuccess = await addDish(meal, mealId, dishUpdateData, onError, writes);
             if(addDishSuccess === false) return false;
             dishesUpdated.push(addDishSuccess);
         } else {
@@ -206,8 +206,8 @@ async function updateDish(meal, existingDish, dishUpdateData, onError, writes) {
     if(updateExistingDishResult === false) return false;
 
     // Check if inventory sale needs changing, only if dish quantity changed
-    if(utils.exists(dishUpdate, "quantity")) {
-        const sale = await inventoryService.getSale(existingDish.name, mealId, onError);
+    if(utils.exists(dishUpdate, "quantity") && dishUpdate.quantity !== existingDish.quantity) {
+        const sale = await inventoryService.getSale(existingDish.name, meal.id, onError);
         if(sale) {
             const saleUpdate = await inventoryService.updateSale(meal, existingDish.name, dishUpdate.quantity, onError, writes);
             if(saleUpdate === false) return false;
