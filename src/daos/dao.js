@@ -119,7 +119,7 @@ export async function getSubCollections(collectionName, filters = [], ordering =
  */
 export async function update(path, id, update, updateLogs, onError = null, writes = []) { 
     try {
-        const update_ = JSON.parse(JSON.stringify(update));
+        const update_ = utils.deepCopy(update);
 
         const originalData = await getOne(path, id);
 
@@ -194,7 +194,7 @@ async function getCurrentUsername() {
 
 export async function add(path, id, data, onError = null, writes = []) {
     try {
-        const data_ = JSON.parse(JSON.stringify(data));
+        const data_ = utils.deepCopy(data);
 
         data_.createdAt = new Date();
         data_.createdBy = await getCurrentUsername();
