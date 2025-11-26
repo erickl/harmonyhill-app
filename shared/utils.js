@@ -454,6 +454,11 @@ export function deepCopy(obj) {
         return obj;
     }
 
+    // Firestore DocumentReference, a hugely complex object, which should not be deep copied
+    if(obj instanceof DocumentReference) {
+        return obj;
+    }
+
     // Handle Date objects (standard practice for deep copy)
     if (obj instanceof Date) {
         return new Date(obj.getTime());

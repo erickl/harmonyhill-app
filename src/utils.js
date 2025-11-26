@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore";
+import { DocumentReference, Timestamp } from "firebase/firestore";
 import { DateTime } from 'luxon';
 
 export function toNumber(valueIn) {
@@ -438,6 +438,11 @@ export function deepCopy(obj) {
     if(!isJsonObject(obj)) return obj;
         
     if (obj.constructor.name === 'Timestamp' && typeof obj.toDate === 'function') {
+        return obj;
+    }
+
+    // Firestore DocumentReference, a hugely complex object, which should not be deep copied
+    if(obj instanceof DocumentReference) {
         return obj;
     }
 
