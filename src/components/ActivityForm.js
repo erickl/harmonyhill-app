@@ -11,7 +11,6 @@ import { Checkbox, FormControlLabel } from '@mui/material';
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers,   setTeamMembers  ] = useState([]   );
-    const [errorMessage,  setErrorMessage ] = useState(null );
     const [needsProvider, setNeedsProvider] = useState(formData?.needsProvider || selectedActivity.internal === false);
 
     const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;

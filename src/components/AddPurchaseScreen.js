@@ -35,7 +35,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         startingTime  : null,
         comments      : '',
         customerPrice : 0,
-        displayName   : "",
+        displayName   : selectedActivity ? selectedActivity.displayName : "",
         custom        : false,
         provider      : '',
         providerPrice : 0,
@@ -212,7 +212,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             <div className="fullscreen">
                 <div className="card-header">
                     <h3 className="card-title">
-                        <span className="ml-2">Add Purchase: {selectedActivity.displayName}</span>
+                        <span className="ml-2">Add Purchase: {formData.displayName}</span>
                     </h3>
                     <h4>{customer.name}, in {utils.capitalizeWords(customer.house)}</h4>
                 </div>
