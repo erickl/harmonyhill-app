@@ -18,15 +18,21 @@ export default function MyDatePicker({ name, date, time, onChange, useTime }) {
     const [startingDate, setDate] = useState(date);
 
     const handleTimeChange = (newTime) => {
-        const newTimeCopy = newTime ? newTime.setZone(utils.getHotelTimezone(), { keepLocalTime: true }) : null;
+        let newTimeCopy = newTime ? newTime.setZone(utils.getHotelTimezone(), { keepLocalTime: true }) : null;
         let newStartingDate = startingDate;
 
         if (newTimeCopy && newStartingDate) {
             newStartingDate = newStartingDate.set({
-                hour: newTimeCopy.hour,
-                minute: newTimeCopy.minute,
-                second: newTimeCopy.second,
-                millisecond: newTimeCopy.millisecond,
+                hour        : newTimeCopy.hour,
+                minute      : newTimeCopy.minute,
+                second      : newTimeCopy.second,
+                millisecond : newTimeCopy.millisecond,
+            });
+
+            newTimeCopy = newTimeCopy.set({
+                year  : newStartingDate.year,
+                month : newStartingDate.month,
+                day   : newStartingDate.day,
             });
         }
 
