@@ -64,37 +64,9 @@ export async function updateMinibar(bookingId, minibarId, updatedData, onError, 
     return await dao.update(path, minibarId, updatedData, true, onError, writes);
 }
 
-export async function removeMinibar(activity, onError, writes) {
-    const minibarEntries = await getMinibar(activity, {activityId : activity.id}, onError, writes);
-    if(!minibarEntries || minibarEntries.length < 1) {
-        return true;
-    }
-
-    const minibarPath = [dao.constant.BOOKINGS, activity.bookingId, "minibar"];
-
-    for(const minibar of minibarEntries) {
-        for(const [itemName, quantity] of Object.entries(minibar.items)) {
-            const stockChangeFilter = {
-                quantity   : quantity,
-                name       : itemName,
-                activityId : activity.id,
-            };
-            const stockChanges = await inventoryDao.getInventoryChanges(stockChangeFilter, onError);
-            if(!stockChanges || stockChanges.length < 1) {
-                continue;
-            }
-
-            const stockChange = stockChanges[0];
-            
-            const invItem = await inventoryDao.getOne(itemName);
-            if(!invItem) continue;
-            const result = await inventoryDao.removeStockChange(invItem.id, stockChange.id, onError, writes);
-        }
-        const result = await dao.remove(minibarPath, minibar.id, onError, writes);
-        if(result === false) return false;
-    }
-    
-    return true;
+export async function removeMinibarCount(bookingId, minibarId, onError, writes) {
+    const path = [dao.constant.BOOKINGS, bookingId, "minibar"];
+    return await dao.remove(path, minibarId, onError, writes);
 }
 
 export async function getExistingMinibar(minibar, onError) {
@@ -110,16 +82,12 @@ export async function getExistingMinibar(minibar, onError) {
     return existingResults[0];
 }
 
-export async function getMinibar(activity, filterOptions, onError) {
-    const path = [dao.constant.BOOKINGS, activity.bookingId, dao.constant.MINIBAR];
+export async function getMinibarCounts(bookingId, filterOptions, onError) {
+    const path = [dao.constant.BOOKINGS, bookingId, dao.constant.MINIBAR];
     let queryFilter = [];
 
     if (utils.exists(filterOptions, "type")) {
         queryFilter.push(where("type", "==", filterOptions.type));
-    }
-
-    if (utils.exists(filterOptions, "bookingId")) {
-        queryFilter.push(where("bookingId", "==", filterOptions.bookingId));
     }
 
     if (utils.exists(filterOptions, "activityId")) {

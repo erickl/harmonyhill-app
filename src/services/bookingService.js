@@ -52,6 +52,11 @@ export async function get(filterOptions = {}, onError = null) {
     return formattedBookings;
 }
 
+export async function getCurrent(filterOptions = {}, onError = null) {
+    filterOptions.date = utils.today();
+    return await bookingDao.get(filterOptions, onError);
+}
+
 export function calculateNightsStayed(checkInAtInput, checkOutAtInput) {
     let checkInAt = utils.toDateTime(checkInAtInput);
     let checkOutAt = utils.toDateTime(checkOutAtInput);
@@ -90,7 +95,9 @@ export async function update(bookingId, bookingUpdateData, onError, writes = [])
  * Only admin can delete bookings. It will be logged in the deleted collection
  */
 export async function remove(bookingId, onError, writes = []) {   
-    if(!userService.isAdmin()) return false;
+    const isAdmin = await userService.isAdmin();
+    if(isAdmin === false) return false;
+
     const commit = decideCommit(writes);
 
     // To delete a booking, first delete all its activities, or they'll be dangling records (orphaned)
@@ -102,17 +109,15 @@ export async function remove(bookingId, onError, writes = []) {
         if(activity.category === "meal") {
             deleteActivityResult = await mealService.removeMeal(activity, onError, writes);
         } else {
-            const removeMinibarResult = await minibarService.remove(activity, onError, writes);
-            if(removeMinibarResult === false) {
-                return false;
-            }
             deleteActivityResult = await activityService.remove(activity, onError, writes);
         }
         
-        if(!deleteActivityResult) {
-            return false;
-        }
+        if(deleteActivityResult === false) return false;
     }
+
+    // NOTE: Each booking will have a start count, maybe refills and end count of the minibar
+    // These counts will be removed by the removal of the activity which was their origin 
+    // (e.g. check in prep for start count, housekeeping for refill count, etc...)
 
     const result = await bookingDao.remove(bookingId, onError, writes);
     if(result === false) return false;

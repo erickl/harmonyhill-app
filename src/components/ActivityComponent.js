@@ -321,7 +321,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
             setCustomer(activityCustomer);
 
-            const existingMinibarCount = await minibarService.get(activity, {"activityId": activity.id}, onError);
+            const existingMinibarCount = await minibarService.get(activityCustomer, {"activityId": activity.id}, onError);
             setMinibarCount(existingMinibarCount && existingMinibarCount.length > 0 ? existingMinibarCount[0].items : null);
         }
         

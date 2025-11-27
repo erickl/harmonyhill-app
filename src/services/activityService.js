@@ -7,6 +7,7 @@ import {get as getIncome} from "../services/incomeService.js";
 import {get as getExpense} from "../services/expenseService.js";
 import * as storageDao from "../daos/storageDao.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
+import {removeCounts as removeMinibarCounts} from "./minibarService.js";
 
 export const Status = Object.freeze({
     GOOD_TO_GO            : "good to go",
@@ -92,8 +93,8 @@ export async function getCategories() {
  * }
  * @returns activities array, ordered by date (oldest first)
  */
-export async function get(bookingId, filterOptions = {}) {
-    const activities = await activityDao.getBookingActivities(bookingId, filterOptions);
+export async function get(bookingId, filterOptions = {}, onError = null) {
+    const activities = await activityDao.getBookingActivities(bookingId, filterOptions, onError);
     const enhancedActivities = await enhanceActivities(activities);
     return enhancedActivities; 
 }
@@ -191,11 +192,10 @@ export async function add(bookingId, activityData, onError, writes = []) {
 
     const booking = await bookingService.getOne(bookingId);
     if(!booking) {
-        console.error(`Booking with ID ${bookingId} does not exist.`);
-        return false;
+        return onError(`Booking with ID ${bookingId} does not exist.`);
     }
 
-    let activity = await mapObject(activityData);
+    const activity = await mapObject(activityData);
     activity.assigneeAccept = false;
 
     activity.bookingId = bookingId;
@@ -203,14 +203,14 @@ export async function add(bookingId, activityData, onError, writes = []) {
     activity.house = booking.house;
 
     const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
-    const result = await activityDao.add(bookingId, activityId, activity, onError);
+    const result = await activityDao.add(bookingId, activityId, activity, onError, writes);
     if(result === false) return false;
     
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;
     }
     
-    return result !== false ? result : false;
+    return result;
 }
 
 /**
@@ -402,6 +402,10 @@ export async function remove(activity, onError, writes = []) {
 
     const removePhotosResult = await removePhotos(activity, onError, writes);
     if(removePhotosResult === false) return false;
+
+    // If activity is checkin-prep, housekeeping or checkout, if will have resulted minibar counts
+    const removeMinibarCountsResult = await removeMinibarCounts(activity, onError, writes);
+    if(removeMinibarCountsResult === false) return false;
 
     const result = await activityDao.remove(activity.bookingId, activity.id, onError, writes);
     if(result === false) return false;

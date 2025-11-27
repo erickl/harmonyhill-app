@@ -88,7 +88,7 @@ export async function getMeals(bookingId, options = {}) {
     return sortedMeals;
 }
 
-export async function getBookingActivities(bookingId, options = {}) { 
+export async function getBookingActivities(bookingId, options = {}, onError = null) { 
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
 
     let filters = [];
@@ -117,7 +117,7 @@ export async function getBookingActivities(bookingId, options = {}) {
         filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
     }
 
-    const activities = await dao.get(path, filters, [], -1);
+    const activities = await dao.get(path, filters, [], -1, onError);
     const sortedActivities = dao.sort(activities, "startingAt");
 
     return sortedActivities;
