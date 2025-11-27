@@ -13,9 +13,6 @@ import { useDataTableModal } from '../context/DataTableContext.js';
 
 export default function InventoryScreen({onNavigate, onClose}) {
     const [inventory,        setInventory       ] = useState([]   );
-    const [refills,          setRefills         ] = useState([]   );
-    const [sales,            setSales           ] = useState([]   );
-    const [quantity,         setQuantity        ] = useState(null );
     const [isLoading,        setIsLoading       ] = useState(true );
     const [expandedItems,    setExpandedItems   ] = useState({}   );
     const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
@@ -39,12 +36,12 @@ export default function InventoryScreen({onNavigate, onClose}) {
         onNavigate("subtractInventory", {item});
     }
 
-    const onDisplaySalesData = async() => {    
+    const onDisplaySalesData = async(item) => {    
         const headers = ["#", "Date", "Quantity", "Booking", "Villa", "Sale Created By"];  
         const enhancedSales = [];
 
-        for(let i = 0; i < sales.length; i++) {
-            const sale = sales[i];
+        for(let i = 0; i < item.sales.length; i++) {
+            const sale = item.sales[i];
             const booking = await bookingService.getOne(sale.bookingId);
             const bookingName = booking ? booking.name : "-";
             const bookingHouse = booking ? (booking.house.trim().toLowerCase() === "harmony hill" ? "HH" : "JN") : "-";
@@ -63,12 +60,12 @@ export default function InventoryScreen({onNavigate, onClose}) {
         onDisplayDataTable("Sales", headers, enhancedSales);
     }
 
-    const onDisplayRefillsData = async() => {
+    const onDisplayRefillsData = async(item) => {
         const headers = ["#", "date", "quantity", "expense", "Receipt", "Refill Created By" ];  
         const enhancedRefills = [];
 
-        for(let i = 0; i < refills.length; i++) {
-            const refill = refills[i];
+        for(let i = 0; i < item.refills.length; i++) {
+            const refill = item.refills[i];
             const expense = await expenseService.getOne(refill.expenseId);
             
             const enhancedRefill = [
@@ -77,7 +74,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                 refill.quantity,
                 expense.description,
                 expense.photoUrl,
-                utils.to_ddMMM(refill.createdAt),
+                refill.createdBy,
             ];
             
             enhancedRefills.push(enhancedRefill);
@@ -90,15 +87,9 @@ export default function InventoryScreen({onNavigate, onClose}) {
         
         const expand = utils.isEmpty(updatedExpandedList[item.id]);
         if(expand) {
-            const refills_ = await inventoryService.getRefills(item.name, {}, onError);
-            setRefills(refills_);
-
-            const sales_ = await inventoryService.getSales(item.name, {}, onError);
-            setSales(sales_);
-
-            const totalQuantity = await inventoryService.getCurrentQuantity(item.name, onError);
-            setQuantity(totalQuantity);
-
+            item.refills = await inventoryService.getRefills(item.name, {}, onError);
+            item.sales = await inventoryService.getSales(item.name, {}, onError);
+            item.quantity = await inventoryService.getCurrentQuantity(item.name, onError);
             updatedExpandedList[item.id] = item;
         } else {
             updatedExpandedList[item.id] = null;
@@ -167,14 +158,14 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                     <Spinner />
                                 ) : expandedItems?.[item.id] ? (
                                     <div className="inv-item-body">
-                                        {quantity !== null && (
+                                        {utils.exists(item, "quantity") && (
                                             <div>
-                                                Quantity: {quantity}
+                                                Quantity: {item.quantity}
                                             </div>
                                         )}
                                     
                                         <div className="inv-item-body-footer">
-                                            {quantity !== null && quantity > 0 && (
+                                            {utils.exists(item, "quantity") && item.quantity > 0 && (
                                                 <div className="inv-item-body-footer-icon">
                                                     <MinusCircle   
                                                         onClick={(e) => {
@@ -190,7 +181,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                                 <Receipt   
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        onDisplaySalesData();
+                                                        onDisplaySalesData(item);
                                                     }}
                                                 />
                                                 <p>Sales</p>
@@ -210,7 +201,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                                 <ShoppingCart   
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        onDisplayRefillsData();
+                                                        onDisplayRefillsData(item);
                                                     }}
                                                 />
                                                 <p>Refills</p>
