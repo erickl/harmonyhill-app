@@ -67,6 +67,8 @@ async function addOrEditMinibarSale(booking, onError, writes = []) {
         const minibarActivity = activityService.getInitialActivityData(minibarTypeInfo);
         minibarActivity.dishes = dishes;
         result = await mealService.addMeal(booking.id, minibarActivity, onError, writes);
+    } else if(existingMinibarMeals.length > 1) {
+        return onError(`Booking ${booking.id} has ${existingMinibarMeals.length}/1 minibar meals`);
     } else {
         const existingMinibarMeal = existingMinibarMeals[0];
         existingMinibarMeal.dishes = dishes;
@@ -104,17 +106,31 @@ export async function calculateSale(booking, onError) {
 }
 
 /**
- * Return the number of reserved stock of the given inventory item name.
- * Reserved here means that the item is currently in the fridge of one of the villas
+ * Return the number of reserved stock for each item.
+ * 'Reserved' here means that the item is currently in the fridge of one of the villas
  * @param {*} name 
  * @param {*} onError 
  */
-export async function getReservedStock(name, onError) {
+export async function getReservedStock(onError) {
+    let reservedStock = {};
     const bookings = await getCurrentBookings({}, onError);
-    // get current bookings
-    // for each booking, get the initial count + any refill
-    // get current total inventory
-    // see what's left
+    for(const booking of bookings) {
+        const minibarCounts = await bookingDao.getMinibarCounts(booking.id, {}, onError);
+        for(const minibarCount of minibarCounts) {
+            // For current bookings, there should only be 'start' count and 'refill' counts (I.e. no 'end' counts)
+            if(minibarCount.type !== "start" && minibarCount.type !== "refill") {
+                return onError(`Found minibar count type ${minibarCount.type} in booking ${booking.id}`);
+            }
+            if(!minibarCount || !minibarCount.items || !utils.isJsonObject(minibarCount.items)) {
+                continue;
+            }
+            for(const [name, quantity] of Object.entries(minibarCount.items)) {
+                if(!utils.exists(reservedStock, name)) reservedStock[name] = 0;
+                reservedStock[name] += quantity;
+            }
+        }
+    }
+    return reservedStock;
 }
 
 export async function getTotalRefills(booking, onError) {

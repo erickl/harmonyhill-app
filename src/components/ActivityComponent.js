@@ -220,6 +220,9 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
     const handleMinibarCount = async(type) => {
         const stockList = await minibarService.getSelection(onError);
+        
+        const reservedStock = await minibarService.getReservedStock(onError);
+        if(reservedStock === false) return false;
 
         // If there's already an existing minibar inventory, continue with that one
         if(minibarCount) {
@@ -231,7 +234,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             }
         }
 
-        onCountItems(stockList, true, async (stockCountList) => {
+        onCountItems(stockList, reservedStock, true, async (stockCountList) => {
             const inventory = {};
             
             inventory.items = stockCountList.reduce((map, item) => {
