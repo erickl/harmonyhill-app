@@ -55,7 +55,7 @@ export function ItemsCounterProvider({ children }) {
         const counts = await getItemCount(currentItem);
         let updatedQuantityText = `${currentItem.quantity}/${counts.available}`;
         if(counts.available < counts.total) {
-            updatedQuantityText += ` (used ${counts.total})`;
+            updatedQuantityText += ` (used ${counts.reserved})`;
         }
         setQuantityText(updatedQuantityText);
     }
