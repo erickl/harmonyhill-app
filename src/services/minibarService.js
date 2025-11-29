@@ -1,34 +1,39 @@
 import * as menuService from "./menuService.js";
 import * as activityService from "./activityService.js";
 import * as mealService from "./mealService.js";
+import * as userService from "./userService.js";
 import * as bookingDao from "../daos/bookingDao.js";
 import {getCurrent as getCurrentBookings} from "./bookingService.js";
 import * as utils from "../utils.js";
 import {commitTx, decideCommit, getParent} from "../daos/dao.js";
 
-export async function addOrEdit(activity, minibar, onError, writes = []) {
+export async function addOrEdit(activity, newMinibarEntry, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const filteredItems = filterZeroCounts(minibar.items);
-    const minibar_ = {...minibar, items: filteredItems};
+    const existing = await bookingDao.getExistingMinibar(newMinibarEntry, onError);
+
+    const nonZeroItems = Object.entries(newMinibarEntry.items).filter(([name, quantity]) => {
+        return (existing && existing.items[name] > 0) || quantity > 0;
+    });
+    const filteredItems = Object.fromEntries(nonZeroItems);
+
+    const updatedMinibarEntry = {...newMinibarEntry, items: filteredItems};
 
     let result = false;
 
-    const existing = await bookingDao.getExistingMinibar(minibar_, onError);
-
     if(existing !== null) {
-        result = await bookingDao.updateMinibar(activity.bookingId, existing.id, minibar_, onError, writes);
+        result = await bookingDao.updateMinibar(activity.bookingId, existing.id, updatedMinibarEntry, onError, writes);
     } else {
-        result = await bookingDao.addMinibar(activity, minibar_, onError, writes);
+        result = await bookingDao.addMinibar(activity, updatedMinibarEntry, onError, writes);
     }
 
     if(result === false) return false;
 
     // If this is the end count, create a "minibar meal" activity, which will count as a final minibar sale 
-    if(minibar_.type === "end") { 
+    if(updatedMinibarEntry.type === "end") { 
         const booking = await getParent(activity);
         if(!booking) return false;
-        result = await addOrEditMinibarSale(booking, onError, writes);
+        result = await addOrEditMinibarSale(result, booking, onError, writes);
         if(result === false) return false;
     }
 
@@ -39,8 +44,8 @@ export async function addOrEdit(activity, minibar, onError, writes = []) {
     return result;
 }
 
-async function addOrEditMinibarSale(booking, onError, writes = []) {
-    const itemsSold = await calculateSale(booking, onError);
+async function addOrEditMinibarSale(endCountEntry, booking, onError, writes = []) {
+    const itemsSold = await calculateSale(endCountEntry, booking, onError);
     if(itemsSold === false) return false;
 
     const dishes = [];
@@ -65,6 +70,11 @@ async function addOrEditMinibarSale(booking, onError, writes = []) {
     if(existingMinibarMeals === false || !existingMinibarMeals || existingMinibarMeals.length === 0) {
         const minibarTypeInfo = await activityService.getActivityType("meal", "minibar");
         const minibarActivity = activityService.getInitialActivityData(minibarTypeInfo);
+        minibarActivity.startedAt = utils.now();
+        minibarActivity.startedTime = utils.now();
+        minibarActivity.assignedTo = await userService.getCurrentUserName();
+        minibarActivity.assigneeAccept = true;
+        minibarActivity.status = "completed";
         minibarActivity.dishes = dishes;
         result = await mealService.addMeal(booking.id, minibarActivity, onError, writes);
     } else if(existingMinibarMeals.length > 1) {
@@ -79,18 +89,13 @@ async function addOrEditMinibarSale(booking, onError, writes = []) {
     return result;
 }
 
-export async function calculateSale(booking, onError) {
+export async function calculateSale(endCount, booking, onError) {
     const startCount = await getCount(booking, "start", onError);
     if(!startCount) {
         return onError(`No start count found for booking ${booking.id}`);
     }
 
     const totalRefills = await getTotalRefills(booking, onError);
-
-    const endCount = await getCount(booking, "end", onError);
-    if(!endCount) {
-        return onError(`No end count found for booking ${booking.id}`);
-    }
     
     const totalProvided = startCount.items;
     Object.entries(totalRefills).forEach(([name, quantity]) => {
@@ -111,15 +116,19 @@ export async function calculateSale(booking, onError) {
  * @param {*} name 
  * @param {*} onError 
  */
-export async function getReservedStock(onError) {
+export async function getReservedStock(filter, onError) {
+    const exceptActivityId = utils.exists(filter, "exceptActivityId") ? filter.exceptActivityId : "";
     let reservedStock = {};
-    const bookings = await getCurrentBookings({}, onError);
+    const bookings = await getCurrentBookings(filter, onError);
     for(const booking of bookings) {
         const minibarCounts = await bookingDao.getMinibarCounts(booking.id, {}, onError);
         for(const minibarCount of minibarCounts) {
             // For current bookings, there should only be 'start' count and 'refill' counts (I.e. no 'end' counts)
             if(minibarCount.type !== "start" && minibarCount.type !== "refill") {
-                return onError(`Found minibar count type ${minibarCount.type} in booking ${booking.id}`);
+                continue;
+            }
+            if(minibarCount.activityId === exceptActivityId) {
+                continue;
             }
             if(!minibarCount || !minibarCount.items || !utils.isJsonObject(minibarCount.items)) {
                 continue;
@@ -156,10 +165,10 @@ export async function get(booking, filters, onError) {
     return await bookingDao.getMinibarCounts(booking.id, filters, onError);
 }
 
-export default async function getCount(booking, type, onError) {
-    const startCounts = await get(booking, {"type": type}, onError);
-    if(!startCounts || startCounts.length === 0) return null;
-    return startCounts[0];
+export async function getCount(booking, type, onError) {
+    const counts = await get(booking, {"type": type}, onError);
+    if(!counts || counts.length === 0) return null;
+    return counts[0];
 }
 
 export async function removeCounts(activity, onError, writes = []) {

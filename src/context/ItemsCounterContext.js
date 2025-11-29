@@ -5,42 +5,87 @@ import ButtonsFooter from "../components/ButtonsFooter.js";
 import * as utils from "../utils.js";
 import {getPhotoUrl} from "../daos/storageDao.js";
 import * as inventoryService from "../services/inventoryService.js";
+import * as minibarService from "../services/minibarService.js";
 import { useNotification } from "./NotificationContext.js";
+import { update } from "../daos/userDao.js";
+import Spinner from "../components/Spinner.js";
 
 const ItemsCounterContext = createContext();
 
 export function ItemsCounterProvider({ children }) {
+    const [initState, setInitState] = useState({
+        items             : [],
+        type              : "",
+        reservedStock     : {},
+        includeZeroCounts : true,
+    });
 
-    const [items, setItems] = useState([]);
-    const [reservedStock, setReservedStock] = useState({});
-    const [totalStock, setTotalStock] = useState({});
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [quantityText, setQuantityText] = useState("");
-    const [currentPhotoUrl, setCurrentPhotoUrl] = useState(null);
-    const [onSubmit, setOnSubmit] = useState(null);
-    const [includeZeroCounts, setIncludeZeroCounts] = useState(true);
+    const [counts,            setCount            ] = useState({});
+    const [totalStock,        setTotalStock       ] = useState({});
+    const [currentIndex,      setCurrentIndex     ] = useState(0);
+    const [quantityText,      setQuantityText     ] = useState("");
+    const [currentPhotoUrl,   setCurrentPhotoUrl  ] = useState(null);
+    const [onSubmit,          setOnSubmit         ] = useState(null);
+    const [showCounter,       setShowCounter      ] = useState(false);
+    const [loading,           setLoading          ] = useState(true);
 
     const {onError} = useNotification();
 
+    // Update the current displayed quantity to the user and the possible capacity for more increments
     useEffect(() => {
-        const currentItem = items.length > currentIndex ? items[currentIndex] : null;
+        const currentItem = initState.items && Array.isArray(initState.items) && initState.items.length > currentIndex ? initState.items[currentIndex] : null;
         generateItemCountText(currentItem);
-    }, [currentIndex, reservedStock, items]);
+    }, [currentIndex, initState, counts]);
 
-    const onCountItems = (itemsInput, reservedStock, includeZeroCounts, onSubmit) => {
-        const newItems = itemsInput.map((item) => {
-            if(!utils.exists(item, "quantity")) item.quantity = 0;
-            return item;
+    useEffect(() => {
+        const getCurrentPhotoUrl = async() => {
+            if(initState.items && Array.isArray(initState.items) && initState.items.length > currentIndex) {
+                const photoUrl = initState.items[currentIndex].photoUrl;
+                const currentPhotoUrl = await getPhotoUrl(photoUrl);
+                setCurrentPhotoUrl(currentPhotoUrl);
+            }
+        }
+        getCurrentPhotoUrl();
+    }, [currentIndex]);
+
+    const onCountItems = async (type, activity, existingCount, includeZeroCounts, onSubmit) => {
+        setShowCounter(true);
+
+        const stockList = await minibarService.getSelection(onError);
+        if(stockList === false) return false;
+                
+        // When doing 'end' count, it's only important to see how many items has already been provided 
+        // to that booking, because the end count can't be higher than that amount.
+        // But when counting 'start' and 'refill', it's important to see how many items have been provided 
+        // elsewhere in total, to see how many is still available to refill from storage
+        const filter = {exceptActivityId : activity.id};
+        if(type === "end") filter["house"] = activity.house;
+        const reservedStock = await minibarService.getReservedStock(filter, onError);
+        if(reservedStock === false) return false;
+
+        // If there's already an existing minibar inventory count, continue with that one
+        const updatedCount = {};
+        if(existingCount) {
+            for(const [name, quantity] of Object.entries(existingCount)) {
+                updatedCount[name] = quantity;
+            }
+        }
+
+        setCount(updatedCount);
+
+        setInitState({
+            type              : type,
+            reservedStock     : reservedStock, 
+            items             : stockList,
+            includeZeroCounts : includeZeroCounts
         });
 
-        setItems(newItems); 
-        setReservedStock(reservedStock);
-        setIncludeZeroCounts(includeZeroCounts);
         setOnSubmit(() => onSubmit);
+        setLoading(false);
     }
 
-    const getItemCount = async(item) => {
-        const itemReservedStock = utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0;
+    const getItemStock = async(item) => {
+        const itemReservedStock = utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0;
         const itemTotalStock = await getTotalStock(item.name);
         const availableStock = itemTotalStock - itemReservedStock;
         return {
@@ -52,29 +97,55 @@ export function ItemsCounterProvider({ children }) {
 
     const generateItemCountText = async (currentItem) => {
         if(!currentItem) return;
-        const counts = await getItemCount(currentItem);
-        let updatedQuantityText = `${currentItem.quantity}/${counts.available}`;
-        if(counts.available < counts.total) {
-            updatedQuantityText += ` (used ${counts.reserved})`;
+        const itemStock = await getItemStock(currentItem);
+
+        let updatedQuantityText = "";
+
+        const currentQuantity = utils.exists(counts, currentItem.name) ? counts[currentItem.name] : 0;
+
+        // If 'end' count, count how many the guest took, from the already reserved count of that booking
+        // If 'start' count, count how many we can take from storage (available)
+        if(initState.type === "end") {
+            updatedQuantityText = `${currentQuantity}/${itemStock.reserved}`;
+        } else { // type = 'start' || 'housekeeping'
+            updatedQuantityText = `${currentQuantity}/${itemStock.available}`;
+
+            // Show user how many items have already been put elsewhere
+            if(itemStock.available < itemStock.total) {
+                updatedQuantityText += ` (used ${itemStock.reserved})`;
+            }
         }
+
         setQuantityText(updatedQuantityText);
     }
 
     const onChangeCount = async (newQuantity) => {
-        let newItems = [ ...(items || []) ];
-        const counts = await getItemCount(currentItem);
-        if(newQuantity <= counts.available) {
-            newItems[currentIndex].quantity = utils.cleanNumeric(newQuantity);
-            setItems(newItems);
+        let updatedCount = { ...(counts || {}) };
+        
+        const currentItem = initState.items[currentIndex];
+        const itemStock = await getItemStock(currentItem);
+
+        // If 'end' count, count how many the guest took, from the reserved count of that booking
+        // If 'start' count, count how many we can take from storage (available)
+        let maxCount = initState.type === "end" ? itemStock.reserved : itemStock.available;
+
+        if(newQuantity <= maxCount) {
+            updatedCount[currentItem.name] = utils.cleanNumeric(newQuantity);
+            setCount(updatedCount);
         }
     }
-    
+
     const hidePopup = () => {
-       setItems([]);
+        setShowCounter(false); 
+    }
+    
+    const cleanState = () => {
+       setInitState({});
+       setCount({});
        setCurrentPhotoUrl(null);
        setCurrentIndex(0);
-       setTotalStock({});
-       setReservedStock({});
+       setTotalStock({}); 
+       hidePopup();
     }
 
     const getTotalStock = async(name) => {
@@ -89,56 +160,45 @@ export function ItemsCounterProvider({ children }) {
     }
 
     const onShowNext = async () => {
-        const newCurrentIndex = (currentIndex + 1) % items.length;
+        const newCurrentIndex = (currentIndex + 1) % initState.items.length;
         setCurrentIndex(newCurrentIndex);
     }
 
     const onShowPrevious = () => {
-        const newCurrentIndex = (Math.abs(currentIndex - 1)) % items.length;
+        const newCurrentIndex = (Math.abs(currentIndex - 1)) % initState.items.length;
         setCurrentIndex(newCurrentIndex);
     }
 
     const onSubmitCount = async() => {
         if(!onSubmit) return;
 
-        let itemsToReturn = items;
+        let updatedItems = initState.items.map((item) => {
+            item.quantity = utils.exists(counts, item.name) ? counts[item.name] : 0;
+            return item;
+        });
 
-        if(!includeZeroCounts) {
-            itemsToReturn = itemsToReturn.filter((item) => item && utils.exists(item, "quantity") && item.quantity > 0);
+        if(initState.includeZeroCounts === false) {
+            updatedItems = updatedItems.filter((item) => item && utils.exists(item, "quantity") && item.quantity > 0);
         }
-        
-        const result = await onSubmit(itemsToReturn);
+
+        const result = await onSubmit(updatedItems);
         
         if(result !== false) {
-            hidePopup();
+            cleanState();
         }
     }
 
-    useEffect(() => {
-        const getCurrentPhotoUrl = async() => {
-            if(items && items.length > currentIndex) {
-                const photoUrl = items[currentIndex].photoUrl;
-                const currentPhotoUrl = await getPhotoUrl(photoUrl);
-                setCurrentPhotoUrl(currentPhotoUrl);
-            }
-        }
-        getCurrentPhotoUrl();
-    });
-
-    let currentQuantity = 0;
-    if(items && items.length > currentIndex && utils.exists(items[currentIndex], "quantity")) {
-        currentQuantity = items[currentIndex].quantity;
-    }
-
-    const currentItem = items && Array.isArray(items) && items.length > 0 ? items[currentIndex] : null;
+    const currentItem = initState.items && Array.isArray(initState.items) && initState.items.length > currentIndex ? initState.items[currentIndex] : null;
+    const currentQuantity = currentItem && utils.exists(counts, currentItem.name) ? counts[currentItem.name] : 0;
     
     return (
         <ItemsCounterContext.Provider value={{ onCountItems }}>
             {children}
-            {currentItem && (
+            {showCounter && (
                 <div className="modal-overlay">
                     <div className="modal-box">
-                        <h2>{"Count Items"}</h2>
+                        {!loading && currentItem ? (<>
+                            <h2>{"Count Items"}</h2>
                             <div className="image-box">
                                 {!utils.isEmpty(currentItem.image) ? (
                                     <img src={currentPhotoUrl} alt="minibar-image" />
@@ -170,7 +230,10 @@ export function ItemsCounterProvider({ children }) {
                                     onChangeCount(e.target.value)}
                                 }
                             />
-                        <ButtonsFooter onCancel={hidePopup} onSubmit={() => onSubmitCount()} submitEnabled={true} />
+                            <ButtonsFooter onCancel={hidePopup} onSubmit={() => onSubmitCount()} submitEnabled={true} />
+                        </>) : (
+                            <Spinner/>
+                        )}
                     </div>
                 </div>
             )}

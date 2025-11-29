@@ -142,7 +142,6 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
 
     // Update meal data
     const mealUpdate = await mapMealObject(mealUpdateData);
-    mealUpdate.customerPrice = mealUpdate.isFree ? 0 : mealUpdate.dishes.reduce((sum , dish) => sum + (dish.isFree ? 0 : dish.customerPrice), 0);
     const updateMealRecord = await activityDao.update(bookingId, mealId, mealUpdate, true, onError, writes);
     if(!updateMealRecord) {
         return false;
@@ -360,10 +359,16 @@ async function mapMealObject(mealData) {
 
     if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
 
-    if(utils.isBoolean(mealData?.isFree)) meal.isFree = mealData.isFree;
-    
-    if(utils.isAmount(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
+    if(utils.isBoolean(mealData?.isFree)) {
+        meal.isFree = mealData.isFree;
+    }
 
+    if(mealData.isFree) {
+        meal.customerPrice = 0;
+    } else if(utils.exists(mealData, "dishes")) {
+        meal.customerPrice = mealData.dishes.reduce((sum , dish) => sum + (dish.isFree ? 0 : dish.customerPrice), 0);
+    }
+    
     if(utils.exists(mealData, "changeDescription")) {
         meal.changeDescription = mealData.changeDescription;
     }

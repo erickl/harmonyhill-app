@@ -212,29 +212,27 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
     }
 
-    const onDisplayMinibarCount = () => {
+    const onDisplayMinibarCount = async () => {
+        const stockList = await minibarService.getSelection(onError);
+        if(stockList === false) return false;
+        
+        const stockListItems = stockList.reduce((map, stockListItem) => {
+            map[stockListItem.name] = 0;
+            return map;
+        }, {});
+
+        const completeMinibarCount = {
+            ...stockListItems,
+            ...minibarCount,
+        }
+
         const headers = ["Name", "Quantity"];
-        const values = Object.entries(minibarCount);
+        const values = Object.entries(completeMinibarCount);
         onDisplayDataTable("Minibar Count", headers, values);
     }
 
-    const handleMinibarCount = async(type) => {
-        const stockList = await minibarService.getSelection(onError);
-        
-        const reservedStock = await minibarService.getReservedStock(onError);
-        if(reservedStock === false) return false;
-
-        // If there's already an existing minibar inventory, continue with that one
-        if(minibarCount) {
-            for(const [name, quantity] of Object.entries(minibarCount)) {
-                const stockListIndex = stockList.findIndex((item => item.name === name));
-                if(stockListIndex !== -1) {
-                    stockList[stockListIndex].quantity = quantity;
-                }
-            }
-        }
-
-        onCountItems(stockList, reservedStock, true, async (stockCountList) => {
+    const handleMinibarCount = (type) => {   
+        onCountItems(type, activity, minibarCount, true, async (stockCountList) => {
             const inventory = {};
             
             inventory.items = stockCountList.reduce((map, item) => {
