@@ -276,13 +276,13 @@ export function toDateTime(inputDate) {
 export function isToday(inputDate) {
     const inputDt = toLuxonDateTime(inputDate);
     const todayDt = today(0, false);
-    return inputDt.startOf('day') === todayDt.startOf('day');
+    return inputDt.startOf('day').equals(todayDt.startOf('day'));
 }
 
 export function isTomorrow(inputDate) {
     const inputDt = toLuxonDateTime(inputDate);
     const tomorrowDt = today(0, false).plus({days: 1});
-    return inputDt.startOf('day') === tomorrowDt.startOf('day');
+    return inputDt.startOf('day').equals(tomorrowDt.startOf('day'));
 }
 
 export function isBeforeToday(inputDate) {
