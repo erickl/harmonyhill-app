@@ -25,7 +25,7 @@ export async function add(data, onError) {
 
 async function processReceipt(data, onError) {
      // If just editing the expense, the user might not have taken a new photo
-    if(data.photo) {
+    if(data.photo && data.photo !== data.photoUrl) {
         const fileDate = utils.to_YYMMdd(data.purchasedAt);
         const fileDescription = data.description.trim().toLowerCase().replace(/ /g, "-");
         data.fileName = `${data.index}. ${fileDescription}-${fileDate}-${Date.now()}`;
