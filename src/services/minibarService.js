@@ -155,6 +155,19 @@ export async function getTotalRefills(booking, onError) {
     return total;
 }
 
+export async function getTotalProvided(booking, onError) {
+    const total = await getTotalRefills(booking, onError);
+
+    const startCount = await getCount(booking, "start", onError);
+
+    Object.entries(startCount.items).forEach(([name, quantity]) => {
+        if(!utils.exists(total, name)) total[name] = 0;
+        total[name] += quantity;
+    });
+    
+    return total;
+}
+
 /**
  * @param {*} 
  * @param {*} filters type=sale|end|start|refill, activityId, bookingId

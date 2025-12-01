@@ -228,6 +228,28 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         const headers = ["Name", "Quantity"];
         const values = Object.entries(completeMinibarCount);
+
+        if(activity.subCategory !== "checkin-prep") {
+            const totalProvided = await minibarService.getTotalProvided(customer, onError);
+            headers.push("Total Provided");
+            for(let i = 0; i < values.length; i++) {
+                const row = values[i];
+                const itemName = row[0];
+                const itemProvidedCount = totalProvided[itemName];
+                values[i].push(itemProvidedCount ? itemProvidedCount : 0);
+            }
+        }
+
+        if(activity.subCategory === "checkout") {
+            // todo: calc diff between quantity and provided to get sale count
+            headers.push("Sold");
+            for(let i = 0; i < values.length; i++) {
+                const row = values[i];
+                const itemSoldCount = row[2] - row[1];
+                values[i].push(itemSoldCount);
+            }
+        }
+        
         onDisplayDataTable("Minibar Count", headers, values);
     }
 
