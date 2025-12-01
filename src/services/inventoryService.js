@@ -79,6 +79,23 @@ export async function updateSale(activity, itemName, quantity, onError, writes =
     return result;
 }
 
+export async function refillMany(expense, quantities, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    let results = [];
+    for(const [itemName, quantity] of Object.entries(quantities)) {
+        const result = await refill(expense, itemName, quantity, onError, writes);
+        if(result === false) return false;
+        results.push(result);
+    }   
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return results;
+}
+
 export async function refill(expense, itemName, quantity, onError, writes = []) {
     const commit = decideCommit(writes);
 
@@ -197,8 +214,16 @@ export async function closeMonthForItem(name, onError, writes = []) {
 }
 
 export async function validateRefill(data, onValidationError) {
-    if(utils.isEmpty(data.quantity) || data.quantity == 0) {
-        return onValidationError("Fill a quantity more than zero");
+    if(utils.isEmpty(data.quantities)) {
+        return onValidationError("Input at least one item");
+    }
+
+    let totalQuantities = 0;
+    for(const [_, quantity] of Object.entries(data.quantities)) {
+        totalQuantities += quantity;
+    }
+    if(totalQuantities === 0) {
+        return onValidationError("Input at least one item");
     }
 
     if(utils.isEmpty(data.expense)) {

@@ -8,9 +8,9 @@ import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-export default function AddInventoryScreen({onNavigate, item, onClose}) {
+export default function AddInventoryScreen({onNavigate, inventory, onClose}) {
     const initialForm = {
-        quantity : 0,
+        quantities : {},
         expense  : null,
     }
 
@@ -26,6 +26,12 @@ export default function AddInventoryScreen({onNavigate, item, onClose}) {
         setValidationError(error);
         return false;
     };
+
+    const handleInputQuantity = (name, value) => {
+        const cleanedValue = utils.cleanNumeric(value);
+        const nextQuantities = ({ ...form.quantities, [name] : cleanedValue });
+        handleInputChange("quantities", nextQuantities);
+    }
 
     const handleInputChange = (name, value, type) => {
         let nextFormData = {};
@@ -62,7 +68,7 @@ export default function AddInventoryScreen({onNavigate, item, onClose}) {
                 return;
             }
             
-            const result = await inventoryService.refill(form.expense, item.name, form.quantity, onError);
+            const result = await inventoryService.refillMany(form.expense, form.quantities, onError);
    
             if(result !== false) {
                 setForm(initialForm);
@@ -100,20 +106,25 @@ export default function AddInventoryScreen({onNavigate, item, onClose}) {
         <div className="fullscreen">
             <div className="card-header">
                 <div>
-                    <h2 className="card-title">Add Inventory: {item.name}</h2>
+                    <h2 className="card-title">Add Inventory</h2>
                 </div>
             </div>
 
             <div className="card-content space-y-6">
-                <div>
-                    <TextInput 
-                        type={"amount"}
-                        name={"quantity"}
-                        label={"Quantity"}
-                        value={form.quantity}
-                        onChange={(e) => handleInputChange("quantity", e.target.value, "amount")}
-                    />
-                </div>
+                {inventory.map((item) => {
+                    const currentQuantity = utils.exists(form.quantities, item.name) ? form.quantities[item.name] : 0;
+                    return (
+                        <div>
+                            <TextInput 
+                                type={"amount"}
+                                name={item.name}
+                                label={item.name}
+                                value={currentQuantity}
+                                onChange={(e) => handleInputQuantity(e.target.name, e.target.value)}
+                            />
+                        </div>
+                    );
+                })}
 
                 <div>
                     <Dropdown 

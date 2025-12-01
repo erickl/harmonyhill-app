@@ -29,7 +29,8 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onAddStock = async(item) => {
-        onNavigate("addInventory", {item});
+        const items = [item];
+        onNavigate("addInventory", {items});
     }
 
     const onSubtractStock = async(item) => {
@@ -127,6 +128,11 @@ export default function InventoryScreen({onNavigate, onClose}) {
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Inventory</h2>
+                </div>
+                <div> 
+                    <button className="add-button" onClick={() => onNavigate('addInventory', {inventory})}>
+                        +
+                    </button> 
                 </div>
             </div>
             <div className="card-content">
