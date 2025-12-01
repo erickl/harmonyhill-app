@@ -12,6 +12,11 @@ export default function TextInput({type, name, label, value, onChange}) {
     if(type === "amount") {
         baseType = "text";
         formattedValue = utils.formatDisplayPrice(value);
+    }
+
+    else if(type === "price") {
+        baseType = "text";
+        formattedValue = utils.formatDisplayPrice(value);
         formattedLabel = `${label} (${utils.getCurrency()})`
     }
 
