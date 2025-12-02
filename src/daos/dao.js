@@ -153,7 +153,7 @@ export async function update(path, id, update, updateLogs, onError = null, write
             // todo: should the user be notified whether or not the update wasn't necessary?
             if(diffStr.length === 0) {
                 //if(onError) onError(`Update error: No changes to update to ${path}/${id}`);
-                return true;
+                return update_;
             }
                 
             update_.updateLogs = utils.exists(originalData, "updateLogs") ? originalData.updateLogs : [];
