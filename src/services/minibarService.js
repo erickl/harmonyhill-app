@@ -70,8 +70,8 @@ async function addOrEditMinibarSale(endCountEntry, booking, onError, writes = []
     if(existingMinibarMeals === false || !existingMinibarMeals || existingMinibarMeals.length === 0) {
         const minibarTypeInfo = await activityService.getActivityType("meal", "minibar");
         const minibarActivity = activityService.getInitialActivityData(minibarTypeInfo);
-        minibarActivity.startedAt = utils.now();
-        minibarActivity.startedTime = utils.now();
+        minibarActivity.startingAt = utils.now();
+        minibarActivity.startingTime = utils.now();
         minibarActivity.assignedTo = await userService.getCurrentUserName();
         minibarActivity.assigneeAccept = true;
         minibarActivity.status = "completed";
