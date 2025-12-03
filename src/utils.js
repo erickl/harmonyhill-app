@@ -342,6 +342,10 @@ export function monthRange(monthInt = 0) {
     };
 }
 
+export function beginning() {
+    return DateTime.now().set({year : 2000});
+}
+
 /**
  * get a Luxon date time object with time at midnight
  */

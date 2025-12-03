@@ -20,10 +20,6 @@ export async function get(filterOptions, onError) {
         queryFilter.push(where("type", "==", filterOptions.type));
     }
 
-    if (utils.exists(filterOptions, "type")) {
-        queryFilter.push(where("type", "==", filterOptions.type));
-    }
-
     return await dao.get(path, queryFilter, [], -1, onError);
 }
 

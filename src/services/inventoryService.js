@@ -188,15 +188,66 @@ export async function getCurrentQuantity(name, onError) {
     return await getQuantity(name, {}, onError);
 }
 
-export async function closeMonthForItem(name, onError, writes = []) {
+/**
+ * If someone changed an old stock count, before the month close 
+ * or we suspect the count is incorrect, redo it from the beginning
+ * and create new closed records on this date, today
+ */ 
+export async function recountAllClosedMonths(onError, onProgress, writes = []) {
     const commit = decideCommit(writes);
+
+    const countFrom = utils.beginning();
+    const countUntil = utils.today();
+
+    const result = await closeMonthAllItems(countFrom, countUntil, onProgress, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
+}
+
+export async function closeMonthAllItems(openAt, closeAt, onProgress, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const inventoryItems = await get({}, onError);
+    if(inventoryItems === false) return false;
+
+    let closedRecords = [];
+    const nItems = inventoryItems.length;
+    for(let i = 0; i < nItems; i++) {
+        const inventoryItem = inventoryItems[i];
+        const result = await closeMonthForItem(inventoryItem.name, openAt, closeAt, onError, writes);
+        if(result === false) return false;
+        if(onProgress) onProgress((i+1)/nItems);
+        closedRecords.push(result);
+    }
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return closedRecords;
+}
+
+/**
+ * 
+ * @param {*} name of the inventory item
+ * @param {*} openAt which date to count from. If undefined, count from last closed date
+ * @param {*} closeAt which date to count until
+ * @returns 
+ */
+export async function closeMonthForItem(name, openAt, closeAt, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const newClosedAt = utils.isDate(closeAt) ? closeAt : utils.monthStart().plus({seconds : -1});
+
+    const filter = {"before" : newClosedAt};
+    if(utils.isDate(openAt)) filter["after"] = openAt;
     
-    const lastClosedRecord = await getLastClosedRecord(name, onError);
-    if(!lastClosedRecord) return false;
-
-    const newClosedAt = utils.monthStart().plus({seconds : -1});
-
-    const totalMonthCount = await getQuantity(name, {"before" : newClosedAt}, onError);
+    const totalMonthCount = await getQuantity(name, filter, onError);
 
     const newLastClosedRecord = {
         "quantity" : totalMonthCount,

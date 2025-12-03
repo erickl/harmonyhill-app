@@ -5,6 +5,9 @@ import * as bookingService from "../services/bookingService.js";
 import * as expenseService from "../services/expenseService.js";
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
+import { useProgressCounter } from "../context/ProgressContext.js";
+import { useConfirmationModal } from "../context/ConfirmationContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
 import MetaInfo from './MetaInfo.js';
 import { Receipt, ShoppingCart, PlusCircle, MinusCircle } from 'lucide-react';
 import "./InventoryScreen.css";
@@ -20,6 +23,9 @@ export default function InventoryScreen({onNavigate, onClose}) {
     const [isAdmin,          setIsAdmin         ] = useState(false);
 
     const { onError } = useNotification();
+    const { onProgress } = useProgressCounter();
+    const { onConfirm } = useConfirmationModal();
+    const { onSuccess } = useSuccessNotification();
     const { onDisplayDataTable } = useDataTableModal();
 
     const handleSetExpanded = async(item) => {
@@ -35,6 +41,15 @@ export default function InventoryScreen({onNavigate, onClose}) {
 
     const onSubtractStock = async(item) => {
         onNavigate("subtractInventory", {item});
+    }
+
+    const onCloseMonth = async() => {
+        onConfirm("Are you sure you want to close month on all inventory?", async() => {
+            const result = await inventoryService.closeMonthAllItems(null, null, onProgress, onError);
+            if(result !== false) {
+                onSuccess();
+            }
+        });
     }
 
     const onDisplaySalesData = async(item) => {    
@@ -113,6 +128,9 @@ export default function InventoryScreen({onNavigate, onClose}) {
         const getUserPermissions = async() => {
             const userIsAdminOrManager = await userService.isManagerOrAdmin();
             setIsManagerOrAdmin(userIsAdminOrManager);
+            
+            const userIsAdmin = await userService.isAdmin();
+            setIsAdmin(userIsAdmin);
         } 
 
         getUserPermissions();
@@ -122,14 +140,17 @@ export default function InventoryScreen({onNavigate, onClose}) {
     if(isLoading) {
         return <p>Loading...</p>;
     }
-
+    
     return (
         <div className="fullscreen">
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Inventory</h2>
                 </div>
-                <div> 
+                <div className="card-header-right-top-row">
+                    {isAdmin && (<>
+                        <button onClick={onCloseMonth}>Close</button>
+                    </>)}
                     <button className="add-button" onClick={() => onNavigate('addInventory', {inventory})}>
                         +
                     </button> 
