@@ -7,10 +7,16 @@ import * as inventoryService from "../services/inventoryService.js"
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import ItemsCountList from './ItemCountList.js';
 
 export default function AddInventoryScreen({onNavigate, inventory, onClose}) {
+    const initialQuantities = inventory.reduce((map, item) => {
+        map[item.name] = 0;
+        return map;
+    }, {});
+
     const initialForm = {
-        quantities : {},
+        quantities : initialQuantities,
         expense  : null,
     }
 
@@ -111,20 +117,10 @@ export default function AddInventoryScreen({onNavigate, inventory, onClose}) {
             </div>
 
             <div className="card-content space-y-6">
-                {inventory.map((item) => {
-                    const currentQuantity = utils.exists(form.quantities, item.name) ? form.quantities[item.name] : 0;
-                    return (
-                        <div>
-                            <TextInput 
-                                type={"amount"}
-                                name={item.name}
-                                label={item.name}
-                                value={currentQuantity}
-                                onChange={(e) => handleInputQuantity(e.target.name, e.target.value)}
-                            />
-                        </div>
-                    );
-                })}
+                <ItemsCountList 
+                    quantities={form.quantities} 
+                    onChangeCount={handleInputQuantity}
+                />
 
                 <div>
                     <Dropdown 
