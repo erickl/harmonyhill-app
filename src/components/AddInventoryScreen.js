@@ -117,11 +117,13 @@ export default function AddInventoryScreen({onNavigate, inventory, onClose}) {
             </div>
 
             <div className="card-content space-y-6">
-                <ItemsCountList 
-                    quantities={form.quantities} 
-                    onChangeCount={handleInputQuantity}
-                />
-
+                {form.expense && (
+                    <img 
+                        src={form.expense.photoUrl}
+                        alt="Expense Receipt Preview"
+                    />
+                )}
+                
                 <div>
                     <Dropdown 
                         label={"Expense"}
@@ -130,6 +132,13 @@ export default function AddInventoryScreen({onNavigate, inventory, onClose}) {
                         onSelect={onExpenseSelect}
                     />
                 </div>
+
+                {form.expense && (
+                    <ItemsCountList 
+                        quantities={form.quantities} 
+                        onChangeCount={handleInputQuantity}
+                    />
+                )}
             </div>
 
             {(validationError && <p className="validation-error">{validationError}</p>)}
