@@ -35,8 +35,8 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onAddStock = async(item) => {
-        const items = [item];
-        onNavigate("addInventory", {items});
+        const inventory = [item];
+        onNavigate("addInventory", {inventory});
     }
 
     const onSubtractStock = async(item) => {

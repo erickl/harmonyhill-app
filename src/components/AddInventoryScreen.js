@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import ButtonsFooter from "./ButtonsFooter.js";
-import TextInput from "./TextInput.js";
 import Dropdown from "./Dropdown.js";
 import * as expenseService from "../services/expenseService.js";
 import * as inventoryService from "../services/inventoryService.js"
