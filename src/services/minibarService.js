@@ -3,6 +3,7 @@ import * as activityService from "./activityService.js";
 import * as mealService from "./mealService.js";
 import * as userService from "./userService.js";
 import * as bookingDao from "../daos/bookingDao.js";
+import * as inventoryService from "./inventoryService.js";
 import {getCurrent as getCurrentBookings} from "./bookingService.js";
 import * as utils from "../utils.js";
 import {commitTx, decideCommit, getParent} from "../daos/dao.js";
@@ -12,12 +13,12 @@ export async function addOrEdit(activity, newMinibarEntry, onError, writes = [])
 
     const existing = await bookingDao.getExistingMinibar(newMinibarEntry, onError);
 
-    const nonZeroItems = Object.entries(newMinibarEntry.items).filter(([name, quantity]) => {
-        return (existing && existing.items[name] > 0) || quantity > 0;
+    const nonZeroItems = Object.entries(newMinibarEntry.items).filter(([name, quantities]) => {
+        return (existing && existing.items[name] > 0) || quantities.current > 0;
     });
     const filteredItems = Object.fromEntries(nonZeroItems);
 
-    const updatedMinibarEntry = {...newMinibarEntry, items: filteredItems};
+    const updatedMinibarEntry = {...newMinibarEntry, items: utils.deepCopy(filteredItems)};
 
     let result = false;
 
@@ -122,17 +123,23 @@ export async function getReservedStock(filter, onError) {
     const bookings = await getCurrentBookings(filter, onError);
     for(const booking of bookings) {
         const minibarCounts = await bookingDao.getMinibarCounts(booking.id, {}, onError);
+        
+        // If no start count, current booking not yet checked in => no reserved items
+        const existingStartCount = minibarCounts.find((e) => e.type === "start");
+        if(!existingStartCount) continue;
+        
+        // If end count exists, current booking is checked out => no reserved items
+        const existingEndCount = minibarCounts.find((e) => e.type === "end");
+        if(existingEndCount) continue;
+
         for(const minibarCount of minibarCounts) {
             // For current bookings, there should only be 'start' count and 'refill' counts (I.e. no 'end' counts)
-            if(minibarCount.type !== "start" && minibarCount.type !== "refill") {
-                continue;
-            }
-            if(minibarCount.activityId === exceptActivityId) {
-                continue;
-            }
-            if(!minibarCount || !minibarCount.items || !utils.isJsonObject(minibarCount.items)) {
-                continue;
-            }
+            if(minibarCount.type !== "start" && minibarCount.type !== "refill") continue;
+            
+            if(minibarCount.activityId === exceptActivityId) continue;
+            
+            if(!minibarCount || !minibarCount.items || !utils.isJsonObject(minibarCount.items)) continue;
+            
             for(const [name, quantity] of Object.entries(minibarCount.items)) {
                 if(!utils.exists(reservedStock, name)) reservedStock[name] = 0;
                 reservedStock[name] += quantity;
@@ -140,6 +147,23 @@ export async function getReservedStock(filter, onError) {
         }
     }
     return reservedStock;
+}
+
+export async function getTotalStock(name, onError) {
+    return await inventoryService.getCurrentQuantity(name, onError);
+}
+
+/**
+ * Get available item stock for the given activity
+ * @param {*} name 
+ * @param {*} activity 
+ * @param {*} onError 
+ */
+export async function getAvailableStock(name, activity, onError) {
+    const quantity = await inventoryService.getCurrentQuantity(name, onError);
+    const reservedStock = await getReservedStock({exceptActivityId: activity.id}, onError);
+    const reservedItemStock = utils.exists(reservedStock, name) ? reservedStock.name : 0;
+    return quantity - reservedItemStock;
 }
 
 export async function getTotalRefills(booking, onError) {
