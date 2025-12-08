@@ -4,20 +4,24 @@ import * as utils from "../utils.js";
 const DataTableContext = createContext();
 
 export function DataTableProvider({ children }) {
-    const [title, setTitle] = useState(null);
-    const [headers, setHeaders] = useState(null);
-    const [rows, setRows] = useState(null);
+    const initState = {
+        title   : null,
+        headers : null,
+        rows    : null,
+    };
+    
+    const [data, setData] = useState(initState);
 
     const onDisplayDataTable = (title, headers, rows) => {
-        setTitle(title);
-        setHeaders(headers);
-        setRows(rows);
+        setData({
+            title   : title,
+            headers : headers,
+            rows    : rows,
+        });
     }
     
     const hidePopup = () => {
-        setTitle(null);
-        setHeaders(null);
-        setRows(null);
+        setData(initState);
     }
 
     const tableStyle = { 
@@ -38,17 +42,37 @@ export function DataTableProvider({ children }) {
         padding: '8px' 
     };
 
+    const tableCell = (index, value) => {
+        const isLink = utils.isLink(value);
+        const displayedValue = isLink ? <a href={value} style={{textDecoration:"none"}}>🔗</a> : value;
+        return (
+            <td style={valueColumnStyle} key={`${index}-value`}>
+                {displayedValue} 
+            </td>
+        );
+    };
+
+    const tableRow = (index, values) => {
+        return (
+            <tr key={`${index}-row`}>
+                {values.map((value, c) => {
+                    return tableCell(c, value);
+                })}
+            </tr>
+        );
+    }
+
     return (
         <DataTableContext.Provider value={{ onDisplayDataTable }}>
             {children}
-            {title && (
+            {data.title && (
                 <div className="modal-overlay" onClick={() => hidePopup()}>
                     <div className="modal-box">
-                        <h2>{title}</h2>
+                        <h2>{data.title}</h2>
                         <table style={tableStyle}>
                             <thead>
                                 <tr>
-                                    {headers.map((header) => (
+                                    {data.headers.map((header) => (
                                         <td style={keyColumnStyle}>
                                             {header}
                                         </td>
@@ -56,23 +80,7 @@ export function DataTableProvider({ children }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {rows.map((row, r) => (
-                                    <tr key={`${r}-row`}>
-                                        {row.map((value, c) => {
-                                            const isLink = utils.isLink(value);
-                                            return (
-                                                <td style={valueColumnStyle} key={`${c}-value`}>
-                                                    {isLink ? (
-                                                        <a href={value} style={{textDecoration:"none"}}>🔗</a>
-                                                    ) : (
-                                                        value
-                                                    )}
-                                                   
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
-                                ))}
+                                {data.rows.map((row, r) => tableRow(r, row))}
                             </tbody>
                         </table>
                     </div>
