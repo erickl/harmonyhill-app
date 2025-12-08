@@ -17,7 +17,7 @@ import { useItemsCounter } from "../context/ItemsCounterContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useCameraModal } from '../context/CameraContext.js';
 import { useImageCarousel } from '../context/ImageCarouselContext.js';
-import { useDataTableModal } from '../context/DataTableContext.js';
+import { useMinibarTableModal } from '../context/MinibarTableContext.js';
 import MetaInfo from './MetaInfo.js';
 
 import { motion } from "framer-motion";
@@ -51,13 +51,13 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const [requiredPhotosUploaded,  setRequiredPhotosUploaded ] = useState(false        );
     const [minibarCount,            setMinibarCount           ] = useState(null         );
 
-    const { onError            } = useNotification();
-    const { onCountItems       } = useItemsCounter();
-    const { onSuccess          } = useSuccessNotification();
-    const { onConfirm          } = useConfirmationModal();
-    const { onOpenCamera       } = useCameraModal();
-    const { onDisplayImages    } = useImageCarousel();
-    const { onDisplayDataTable } = useDataTableModal();
+    const { onError               } = useNotification();
+    const { onCountItems          } = useItemsCounter();
+    const { onSuccess             } = useSuccessNotification();
+    const { onConfirm             } = useConfirmationModal();
+    const { onOpenCamera          } = useCameraModal();
+    const { onDisplayImages       } = useImageCarousel();
+    const { onDisplayMinibarTable } = useMinibarTableModal();
 
     const getAssigneeStyleIndex = () => {
         let newAssigneeStyleIndex = 0;
@@ -217,17 +217,24 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         if(stockList === false) return false;
         
         const stockListItems = stockList.reduce((map, stockListItem) => {
-            map[stockListItem.name] = 0;
+            let data = { 
+                name     : stockListItem.name,
+                current  : 0,
+                reserved : 0,
+                total    : 0
+            };
+
+            if(utils.exists(minibarCount, stockListItem.name)) {
+                const counts = minibarCount[stockListItem.name];
+                data = { ...data, ...counts}
+            }
+
+            map[stockListItem.name] = data;
             return map;
         }, {});
 
-        const completeMinibarCount = {
-            ...stockListItems,
-            ...minibarCount,
-        }
-
-        const headers = ["Name", "Quantity"];
-        const values = Object.entries(completeMinibarCount);
+        const headers = ["name", "current", "reserved", "total"];
+        const values = Object.values(stockListItems);
 
         if(activity.subCategory !== "checkin-prep") {
             const totalProvided = await minibarService.getTotalProvided(customer, onError);
@@ -250,7 +257,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             }
         }
         
-        onDisplayDataTable("Minibar Count", headers, values);
+        onDisplayMinibarTable("Minibar Count", headers, values, stockListItems);
     }
 
     const handleMinibarCount = (type) => {   
@@ -258,7 +265,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             const inventory = {};
             
             inventory.items = stockCountList.reduce((map, item) => {
-                map[item.name] = item.quantity;
+                map[item.name] = {current: item.current, reserved: item.reserved, total: item.total};
                 return map;
             }, {});
 
