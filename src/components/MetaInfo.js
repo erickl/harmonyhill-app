@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import "./MetaInfo.css";
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
