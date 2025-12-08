@@ -10,6 +10,7 @@ import { CameraProvider } from "../context/CameraContext.js";
 import { ImageCarouselProvider } from "../context/ImageCarouselContext.js";
 import { ProgressProvider } from "../context/ProgressContext.js";
 import { DataTableProvider } from "../context/DataTableContext.js";
+import { MinibarTableProvider } from "../context/MinibarTableContext.js";
 
 export function AppProviders({ children }) {
     return (
@@ -24,7 +25,9 @@ export function AppProviders({ children }) {
         <CameraProvider>
         <ImageCarouselProvider>
         <DataTableProvider>
+        <MinibarTableProvider>
           {children}
+        </MinibarTableProvider>
         </DataTableProvider>
         </ImageCarouselProvider>
         </CameraProvider>
