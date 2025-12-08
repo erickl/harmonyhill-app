@@ -66,8 +66,8 @@ export function ItemsCounterProvider({ children }) {
         // If there's already an existing minibar inventory count, continue with that one
         const updatedCount = {};
         if(existingCount) {
-            for(const [name, quantity] of Object.entries(existingCount)) {
-                updatedCount[name] = quantity;
+            for(const [name, quantities] of Object.entries(existingCount)) {
+                updatedCount[name] = quantities.current;
             }
         }
 
@@ -97,17 +97,19 @@ export function ItemsCounterProvider({ children }) {
 
     const generateItemCountText = async (currentItem) => {
         if(!currentItem) return;
-        const itemStock = await getItemStock(currentItem);
 
-        let updatedQuantityText = "";
+        const itemStock = await getItemStock(currentItem);
 
         const currentQuantity = utils.exists(counts, currentItem.name) ? counts[currentItem.name] : 0;
 
+        let updatedQuantityText = `${currentQuantity}`;
+
         // If 'end' count, count how many the guest took, from the already reserved count of that booking
-        // If 'start' count, count how many we can take from storage (available)
         if(initState.type === "end") {
-            updatedQuantityText = `${currentQuantity}/${itemStock.reserved}`;
-        } else { // type = 'start' || 'housekeeping'
+            updatedQuantityText = `${updatedQuantityText}/${itemStock.reserved}`;
+            
+        // If 'start' count, count how many we can take from storage (available)
+        } else { // else if type = 'start' || 'housekeeping'
             updatedQuantityText = `${currentQuantity}/${itemStock.available}`;
 
             // Show user how many items have already been put elsewhere
@@ -116,7 +118,8 @@ export function ItemsCounterProvider({ children }) {
             }
         }
 
-        setQuantityText(updatedQuantityText);
+        //setQuantityText(updatedQuantityText);
+        setQuantityText(`${currentQuantity}`);
     }
 
     const onChangeCount = async (newQuantity) => {
@@ -129,7 +132,7 @@ export function ItemsCounterProvider({ children }) {
         // If 'start' count, count how many we can take from storage (available)
         let maxCount = initState.type === "end" ? itemStock.reserved : itemStock.available;
 
-        if(newQuantity <= maxCount) {
+        if(newQuantity <= 999/*maxCount*/) {
             updatedCount[currentItem.name] = utils.cleanNumeric(newQuantity);
             setCount(updatedCount);
         }
@@ -173,13 +176,20 @@ export function ItemsCounterProvider({ children }) {
         if(!onSubmit) return;
 
         let updatedItems = initState.items.map((item) => {
-            item.quantity = utils.exists(counts, item.name) ? counts[item.name] : 0;
+            item.current = utils.exists(counts, item.name) ? counts[item.name] : 0;
             return item;
         });
 
         if(initState.includeZeroCounts === false) {
-            updatedItems = updatedItems.filter((item) => item && utils.exists(item, "quantity") && item.quantity > 0);
+            updatedItems = updatedItems.filter((item) => item && utils.exists(item, "current") && item.current > 0);
         }
+
+        // Add reserved stock count and total item count to the returned object
+        updatedItems = updatedItems.map((item) => {
+            item.reserved = utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0;
+            item.total = utils.exists(totalStock, item.name) ? totalStock[item.name] : 0;
+            return item;
+        });
 
         const result = await onSubmit(updatedItems);
         
@@ -198,7 +208,7 @@ export function ItemsCounterProvider({ children }) {
                 <div className="modal-overlay">
                     <div className="modal-box">
                         {!loading && currentItem ? (<>
-                            <h2>{"Count Items"}</h2>
+                            <h2>{currentItem.name}</h2>
                             <div className="image-box">
                                 {!utils.isEmpty(currentItem.image) ? (
                                     <img src={currentPhotoUrl} alt="minibar-image" />
@@ -206,7 +216,7 @@ export function ItemsCounterProvider({ children }) {
                                     <div className="image-placeholder" />
                                 )}
                             </div>
-                            <p>{currentItem.name}</p>
+                            <span>Quantity</span>
                             <div className="nav-controls">
                                 <ArrowBigLeftIcon onClick={(e) => {
                                     e.stopPropagation();
