@@ -67,7 +67,7 @@ export function ItemsCounterProvider({ children }) {
         const updatedCount = {};
         if(existingCount) {
             for(const [name, quantities] of Object.entries(existingCount)) {
-                updatedCount[name] = quantities.current;
+                updatedCount[name] = quantities.count;
             }
         }
 
@@ -176,12 +176,12 @@ export function ItemsCounterProvider({ children }) {
         if(!onSubmit) return;
 
         let updatedItems = initState.items.map((item) => {
-            item.current = utils.exists(counts, item.name) ? counts[item.name] : 0;
+            item.count = utils.exists(counts, item.name) ? counts[item.name] : 0;
             return item;
         });
 
         if(initState.includeZeroCounts === false) {
-            updatedItems = updatedItems.filter((item) => item && utils.exists(item, "current") && item.current > 0);
+            updatedItems = updatedItems.filter((item) => item && utils.exists(item, "count") && item.count > 0);
         }
 
         // Add reserved stock count and total item count to the returned object

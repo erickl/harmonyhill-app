@@ -7,17 +7,15 @@ export function MinibarTableProvider({ children }) {
     const initState = {
         title   : null,
         headers : null,
-        rows    : null,
         data    : null,
     };
     
     const [state, setState] = useState(initState);
 
-    const onDisplayMinibarTable = (title, headers, rows, data) => {
+    const onDisplayMinibarTable = (title, headers, data) => {
         setState({
             title   : title,
             headers : headers,
-            rows    : rows,
             data    : Object.values(data),
         });
     }
@@ -63,7 +61,7 @@ export function MinibarTableProvider({ children }) {
         const rowStyle = {};
 
         const available = obj.total - obj.reserved;
-        if(obj.current > available) {
+        if(obj.count > available) {
             rowStyle.backgroundColor = "red";
         }
         

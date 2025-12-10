@@ -219,7 +219,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         const stockListItems = stockList.reduce((map, stockListItem) => {
             let data = { 
                 name     : stockListItem.name,
-                current  : 0,
+                count    : 0,
                 reserved : 0,
                 total    : 0
             };
@@ -233,12 +233,12 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             return map;
         }, {});
 
-        const headers = ["name", "current", "reserved", "total"];
+        const headers = ["name", "count", "reserved", "total"];
         const values = Object.values(stockListItems);
 
         if(activity.subCategory !== "checkin-prep") {
             const totalProvided = await minibarService.getTotalProvided(customer, onError);
-            headers.push("Total Provided");
+            headers.push("provided");
             for(let i = 0; i < values.length; i++) {
                 const row = values[i];
                 const itemName = row[0];
@@ -249,7 +249,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
         if(activity.subCategory === "checkout") {
             // todo: calc diff between quantity and provided to get sale count
-            headers.push("Sold");
+            headers.push("sold");
             for(let i = 0; i < values.length; i++) {
                 const row = values[i];
                 const itemSoldCount = row[2] - row[1];
@@ -257,7 +257,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             }
         }
         
-        onDisplayMinibarTable("Minibar Count", headers, values, stockListItems);
+        onDisplayMinibarTable("Minibar Count", headers, stockListItems);
     }
 
     const handleMinibarCount = (type) => {   
@@ -265,7 +265,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             const inventory = {};
             
             inventory.items = stockCountList.reduce((map, item) => {
-                map[item.name] = {current: item.current, reserved: item.reserved, total: item.total};
+                map[item.name] = {count: item.count, reserved: item.reserved, total: item.total};
                 return map;
             }, {});
 
