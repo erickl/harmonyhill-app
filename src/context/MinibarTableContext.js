@@ -1,23 +1,56 @@
 import React, { createContext, useState, useContext } from "react";
 import * as utils from "../utils.js";
+import * as inventoryService from "../services/inventoryService.js";
+import * as minibarService from "../services/minibarService.js";
+import { useNotification } from "../context/NotificationContext.js";
+import { XIcon } from 'lucide-react';
+import Spinner from '../components/Spinner.js';
 
 const MinibarTableContext = createContext();
 
 export function MinibarTableProvider({ children }) {
     const initState = {
-        title   : null,
-        headers : null,
-        data    : null,
+        activity : null,
+        title    : null,
+        headers  : null,
+        items    : null, //
     };
     
     const [state, setState] = useState(initState);
+    const [totalStock, setTotalStock] = useState({});
+    const [reservedStock, setReservedStock] = useState({});
 
-    const onDisplayMinibarTable = (title, headers, data) => {
+    const { onError } = useNotification();
+
+    const onDisplayMinibarTable = (title, activity, headers, items) => {
         setState({
-            title   : title,
-            headers : headers,
-            data    : Object.values(data),
+            activity : activity,
+            title    : title,
+            headers  : headers,
+            items    : Object.values(items),
         });
+
+        loadTotalStock(items); 
+        loadReservedStock(activity);
+    }
+
+    const loadReservedStock = async(activity) => {
+        const filter = {exceptActivityId : activity.id};
+        const reservedStock = await minibarService.getReservedStock(filter, onError);
+        if(reservedStock === false) return false;
+        setReservedStock(reservedStock);
+    }
+
+    const loadTotalStock = async(items) => {
+        if(utils.isEmpty(items)) return;
+
+        const newTotalStock = {};
+        for(const item of Object.values(items)) {
+            const itemTotalStock = newTotalStock[item.name] = await inventoryService.getCurrentQuantity(item.name, onError);
+            if(itemTotalStock === false) return false;
+            newTotalStock[item.name] = itemTotalStock;
+        }
+        setTotalStock(newTotalStock);
     }
     
     const hidePopup = () => {
@@ -52,24 +85,57 @@ export function MinibarTableProvider({ children }) {
         );
     };
 
-    const tableRow = (index, obj) => {
+    const tableRow = (index, item) => {
         let values = [];
-        for(const header of state.headers) {
-            values.push(utils.exists(obj, header) ? obj[header] : "");
-        }
-
         const rowStyle = {};
+        let total = null, reserved = null;
 
-        const available = obj.total - obj.reserved;
-        if(obj.count > available) {
-            rowStyle.backgroundColor = "red";
+        for(const header of state.headers) {
+            if(header === "total") {
+                item[header] = total = utils.exists(totalStock, item.name) ? totalStock[item.name] : ""; 
+            } else if(header === "reserved") {
+                item[header] = reserved = utils.exists(reservedStock, item.name) ? reservedStock[item.name] : ""; 
+            } 
+            
+            values.push(utils.exists(item, header) ? item[header] : "");
         }
+
+        if(total && reserved && item.provided) {
+            const available = item.total - item.reserved - item.provided;
+            if(item.count > available) {
+                rowStyle.backgroundColor = "red";
+            }
+        }
+
+        const onChangeCount = (count) => {      
+            const newCount = state.items[index].count + count;
+
+            // Count can be negative for housekeeping, since we might want to correct a count or take something out
+            if(newCount >= 0 || state.activity.subCategory === "housekeeping") {
+                const newState = utils.deepCopy(state);
+                newState.items[index].count = newCount;
+                setState(newState);    
+            }
+        }
+
+        const controlButtons = () => { 
+            // Don't let the user change the count if the task is already completed
+            return state.activity.status !== "completed" ? (
+                <td>
+                    <button onClick={() => onChangeCount(1)}>+</button>
+                    <button onClick={() => onChangeCount(-1)}>-</button>
+                </td>
+            ) : (
+                <td></td>
+            );
+        };
         
         return (
             <tr style={rowStyle} key={`${index}-row`}>
                 {values.map((value, c) => {
                     return tableCell(c, value);
                 })}
+                {controlButtons()};
             </tr>
         );
     }
@@ -78,9 +144,16 @@ export function MinibarTableProvider({ children }) {
         <MinibarTableContext.Provider value={{ onDisplayMinibarTable }}>
             {children}
             {state.title && (
-                <div className="modal-overlay" onClick={() => hidePopup()}>
+                <div className="modal-overlay">
                     <div className="modal-box">
-                        <h2>{state.title}</h2>
+                        <div style={{ textAlign: "left"}}>
+                            <XIcon 
+                                size={30}
+                                style={{ textAlign: "left", color:'#f44336'}}
+                                onClick={hidePopup}
+                            />
+                            <h2>{state.title}</h2>
+                        </div>
                         <table style={tableStyle}>
                             <thead>
                                 <tr>
@@ -92,7 +165,7 @@ export function MinibarTableProvider({ children }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {state.data.map((obj, r) => tableRow(r, obj))}
+                                {state.items.map((item, r) => tableRow(r, item))}
                             </tbody>
                         </table>
                     </div>

@@ -140,9 +140,9 @@ export async function getReservedStock(filter, onError) {
             
             if(!minibarCount || !minibarCount.items || !utils.isJsonObject(minibarCount.items)) continue;
             
-            for(const [name, quantity] of Object.entries(minibarCount.items)) {
+            for(const [name, quantities] of Object.entries(minibarCount.items)) {
                 if(!utils.exists(reservedStock, name)) reservedStock[name] = 0;
-                reservedStock[name] += quantity;
+                reservedStock[name] += quantities.count;
             }
         }
     }
@@ -184,9 +184,9 @@ export async function getTotalProvided(booking, onError) {
 
     const startCount = await getCount(booking, "start", onError);
 
-    Object.entries(startCount.items).forEach(([name, quantity]) => {
+    Object.entries(startCount.items).forEach(([name, quantities]) => {
         if(!utils.exists(total, name)) total[name] = 0;
-        total[name] += quantity;
+        total[name] += quantities.count;
     });
     
     return total;

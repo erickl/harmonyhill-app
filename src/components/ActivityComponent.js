@@ -241,9 +241,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             headers.push("provided");
             for(let i = 0; i < values.length; i++) {
                 const row = values[i];
-                const itemName = row[0];
-                const itemProvidedCount = totalProvided[itemName];
-                values[i].push(itemProvidedCount ? itemProvidedCount : 0);
+                values[i].provided = utils.exists(totalProvided, row.name) ? totalProvided[row.name] : 0;
             }
         }
 
@@ -257,7 +255,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             }
         }
         
-        onDisplayMinibarTable("Minibar Count", headers, stockListItems);
+        onDisplayMinibarTable("Minibar Count", activity, headers, stockListItems);
     }
 
     const handleMinibarCount = (type) => {   
