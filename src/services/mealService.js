@@ -157,21 +157,6 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
         if(!updateDishesSuccess) {
             throw new Error(`Cannot update dishes for ${bookingId}/${mealId}`);
         }
-
-        // Update total meal price
-        if(updateDishesSuccess !== false) {
-            const updatedDishes = await getMealDishes(bookingId, mealId);
-
-            const customerMealTotalPrice = mealUpdateData["isFree"] ? 0 : Object.values(updatedDishes).reduce((sum, dish) => {
-                return sum + (dish.isFree ? 0 : dish.quantity * parseInt(dish.customerPrice));
-            }, 0);
-            
-            const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: customerMealTotalPrice }, true, onError);
-            
-            if(!updateMealPriceSuccess) {
-                throw new Error(`Cannot update total meal price for meal with dish ${mealId}`);
-            }
-        }
         
         return updateMealRecord;
     });
@@ -181,6 +166,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError) {
 
 async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
     let dishesUpdated = [];
+    let priceDiff = 0;
 
     const meal = await getMeal(bookingId, mealId);
     if(!meal) {
@@ -199,6 +185,7 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
                 onError(`Unexpected error when deleting dish ${existingDish.id}. Contact admin, please`);
                 return false;
             }
+            priceDiff -= existingDish.isFree ? 0 : existingDish.quantity * existingDish.customerPrice;
             dishesUpdated.push(`Deleted: ${existingDish.id}`);
         }
     }
@@ -215,6 +202,7 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
             const newDishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dishUpdate.name);
             const addNewDishResult = await activityDao.addDish(bookingId, mealId, newDishId, dishUpdate, onError);
             if(addNewDishResult !== false) {
+                priceDiff += dishUpdate.isFree ? 0 : dishUpdate.quantity * dishUpdate.customerPrice;
                 dishesUpdated.push(newDishId);
             } else {
                 throw new Error(`Cannot add new dish ${newDishId} to meal ${bookingId}/${mealId}`);
@@ -222,11 +210,27 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
         } else {
             const updateExistingDishResult = await activityDao.updateDish(bookingId, mealId, existingDish.id, dishUpdate, onError);
             if(updateExistingDishResult !== false) {
+                if(dishUpdate.isFree && !existingDish.isFree) {
+                    priceDiff -= existingDish.quantity * existingDish.customerPrice;
+                } else if(!dishUpdate.isFree && existingDish.isFree) {
+                    priceDiff += dishUpdate.quantity * dishUpdate.customerPrice;
+                } else if(!dishUpdate.isFree && !existingDish.isFree) {
+                    priceDiff += (dishUpdate.quantity-existingDish.quantity) * existingDish.customerPrice;
+                } else if(dishUpdate.isFree && existingDish.isFree) {
+                    priceDiff += 0
+                }
+                
                 dishesUpdated.push(existingDish.id);
             } else {
                 throw new Error(`Cannot update existing dish ${existingDish.id} to meal ${bookingId}/${mealId}`);
             }
         }
+    }
+    
+    const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: meal.customerPrice + priceDiff }, true, onError);
+    
+    if(!updateMealPriceSuccess) {
+        throw new Error(`Cannot update total meal price for meal with dish ${mealId}`);
     }
     
     return dishesUpdated;
