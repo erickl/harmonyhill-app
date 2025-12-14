@@ -159,11 +159,11 @@ export async function canSeeAllBookings() {
 }
 
 export async function hasEditBookingsPermissions() {
-    return isAdmin();
+    return isManagerOrAdmin();
 }
 
 export async function hasAddBookingsPermissions() {
-    return isAdmin();
+    return isManagerOrAdmin();
 }
 
 export async function logout() {

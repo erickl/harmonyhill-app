@@ -33,7 +33,7 @@ const CustomersScreen = ({ onNavigate }) => {
         const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
         setEditBookingsPermissions(userHasEditBookingsPermissions);
 
-        const userHasAddBookingsPermissions = await userService.hasEditBookingsPermissions();
+        const userHasAddBookingsPermissions = await userService.hasAddBookingsPermissions();
         setAddBookingsPermissions(userHasAddBookingsPermissions)
 
         const canSeeAllBookings = await userService.canSeeAllBookings();
