@@ -246,18 +246,6 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     onChange={handleFormDataChange}
                 />
             </div>
-
-            <div className="purchase-form-group">
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={formData["isFree"] ? formData["isFree"] : false}
-                            onChange={(e) => handleFormDataChange("isFree", e.target.checked)}
-                        />
-                    }
-                    label="Check box if the entire meals is free"
-                />
-            </div>
         </div>
     );
 }

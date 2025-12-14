@@ -8,35 +8,59 @@ import * as utils from "../utils.js";
  */
 export async function getTotal(bookingId) {
     const activities = await activityService.get(bookingId);
-    const nonFreeActivities = activities.filter(activity => !activity.isFree && activity.customerPrice > 0);
     
-    const itemizedList = await Promise.all(
-        nonFreeActivities.map(async function(activity) {
-            let activityItem = {
-                name:          activity.category + ": " + activity.subCategory,
-                displayName:   activity.displayName,
-                customerPrice: activity.customerPrice,
-                date:          activity.startingAt,
-                isFree:        activity.isFree
+    // Get all meals, even with customerPrice = 0, because the dish prices are no longer summed up at meal level (since 2025-12)
+    const meals = activities.filter(activity => activity.category === "meal");
+    const nonFreeActivities = activities.filter(activity => activity.category !== "meal" && activity.isFree === false && activity.customerPrice > 0);
+    
+    const itemizedMealList = await Promise.all(
+        meals.map(async function(meal) {
+            let mealItem = {
+                name:          meal.category + ": " + meal.subCategory,
+                displayName:   meal.displayName,
+                customerPrice: meal.customerPrice,
+                date:          meal.startingAt,
+                isFree:        meal.isFree
             }
-            if(activity.category === "meal") {
-                // E.g. even though a whole breakfast can be free, it can still include non-free, extra items
-                const filters = {"isFree" : false};
-                const dishes = await mealService.getMealDishes(bookingId, activity.id, filters);
-                activityItem.dishes = dishes;
-            }
-            return activityItem;  
+            
+            // E.g. even though a whole breakfast can be free, it can still include non-free, extra items
+            const dishes = await mealService.getMealDishes(bookingId, meal.id, {"isFree" : false});
+            mealItem.dishes = dishes;
+            // Todo: should the meal total be displayed on meal level?
+            mealItem.customerPrice += dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice, 0);
+            
+            return mealItem;  
         })
     );
 
-    const totalSum = itemizedList.reduce((sum, item) => {
-        const itemCost = item && !item.isFree && !utils.isEmpty(item.customerPrice) ? item.customerPrice : 0;
+    const itemizedActivityList = nonFreeActivities.map((activity) => {
+        let activityItem = {
+            name:          activity.category + ": " + activity.subCategory,
+            displayName:   activity.displayName,
+            customerPrice: activity.customerPrice,
+            date:          activity.startingAt,
+            isFree:        activity.isFree
+        }
+        
+        return activityItem;  
+    });
+
+    const totalActivitySum = itemizedActivityList.reduce((sum, item) => {
+        const itemCost = item && item.isFree !== true && !utils.isEmpty(item.customerPrice) ? item.customerPrice : 0;
         return sum + itemCost;
     }, 0);
 
+    const totalMealSum = itemizedMealList.reduce((sum, item) => {
+        const mealCost = item && !item.isFree && !utils.isEmpty(item.customerPrice) ? item.customerPrice : 0;
+        //const dishesCost = item.dishes.reduce((sum, dish) => dish && dish.isFree !== true && !utils.isEmpty(dish.customerPrice) ? sum + dishCost : 0, 0);
+        return sum + mealCost;// + dishesCost;
+    }, 0);
+
+    const totalList = [...itemizedActivityList, ...itemizedMealList];
+
     return {
-        total        : totalSum,
-        itemizedList : itemizedList
+        total        : totalMealSum + totalActivitySum,
+        itemizedList : totalList
     }
 }
 

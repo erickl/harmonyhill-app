@@ -7,6 +7,10 @@ import { saveAs } from "file-saver";
 
 export async function upload(filename, dataUrl, options = {}, onError = null, writes = []) {
     try {
+        if(dataUrl instanceof Blob) {
+            dataUrl = await blobToBase64(dataUrl);
+        }
+        
         if(!utils.isEmpty(options)) {
             dataUrl = await compressImage(dataUrl, options, onError);
         }
@@ -14,7 +18,7 @@ export async function upload(filename, dataUrl, options = {}, onError = null, wr
         if(dataUrl === false) return false;
         
         const storageRef = ref(storage, filename);
-
+        
         const snapshot = await uploadString(storageRef, dataUrl, 'data_url');
         if (!snapshot) {
             if(onError) onError(`Unknown file upload error! Result: ${snapshot}`);

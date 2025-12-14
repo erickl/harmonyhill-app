@@ -40,7 +40,6 @@ export async function addMeal(bookingId, mealData, onError, writes = []) {
 
     const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
     meal.id = mealId; //  needed by inventory sales
-    meal.customerPrice = meal.isFree ? 0 : dishes.reduce((sum , dish) => sum + (dish.isFree ? 0 : dish.customerPrice), 0);
     const mealRecord = await activityDao.add(bookingId, mealId, meal, onError, writes);
     if(mealRecord === false) return false;
 
@@ -273,8 +272,8 @@ export async function getMealsByBooking(bookingId, options = {}) {
  * @returns all dishes for the given booking and meal, as key-value pairs, 
  * where the dish name is the key, and the dish is the value
  */
-export async function getMealDishes(bookingId, mealId, filterOptions) {
-    return await activityDao.getMealDishes(bookingId, mealId, filterOptions);
+export async function getMealDishes(bookingId, mealId, filterOptions, onError) {
+    return await activityDao.getMealDishes(bookingId, mealId, filterOptions, onError);
 }
 
 export async function getDishes(filterOptions, onError) {
@@ -365,8 +364,9 @@ async function mapMealObject(mealData) {
 
     if(mealData.isFree) {
         meal.customerPrice = 0;
-    } else if(utils.exists(mealData, "dishes")) {
-        meal.customerPrice = mealData.dishes.reduce((sum , dish) => sum + (dish.isFree ? 0 : dish.customerPrice), 0);
+    } else {
+        // Note: The floating breakfast might cost something in itself, even without the dishes
+        meal.customerPrice = mealData.customerPrice
     }
     
     if(utils.exists(mealData, "changeDescription")) {
@@ -400,7 +400,7 @@ export async function toArrays(filters, onProgress, onError) {
     const meals = await activityService.getAll(filters, onError);
     onProgress(20);
 
-    let rows = [["startingAt", "dish", "quantity", "course", "guestName", "house", "price", "mealFree", "dishFree", "assignedTo", "comments", "shouldBeFree"]];
+    let rows = [["startingAt", "dish", "quantity", "course", "guestName", "house", "price", "dishFree", "assignedTo", "comments"]];
     
     const mealCount = meals.length;
     const mealPercentagePoint = 0.8/mealCount;
@@ -414,12 +414,10 @@ export async function toArrays(filters, onProgress, onError) {
         onProgress(progress);
         
         for(const dish of dishes) {
-            const x = meal.isFree && !dish.isFree ? "x" : "";
-            //             startingAt, dish                                   guestName    house      price
-            let row = [meal.startingAt, dish.name, dish.quantity, dish.course, meal.name, meal.house, dish.customerPrice, meal.isFree, dish.isFree, meal.assignedTo, dish.comments, x];
+            //             startingAt,   dish                                  guestName    house      price
+            let row = [meal.startingAt, dish.name, dish.quantity, dish.course, meal.name, meal.house, dish.customerPrice, dish.isFree, meal.assignedTo, dish.comments];
             row = row.map((col) => col === null || col === undefined ? "" : col);
             rows.push(row);
-            //console.log(JSON.stringify(row));
         }
     }
     onProgress(100);

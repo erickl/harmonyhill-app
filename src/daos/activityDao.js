@@ -166,7 +166,7 @@ export async function remove(bookingId, activityId, onError, writes = []) {
     return await dao.remove([dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES], activityId, onError, writes);
 }
 
-export async function getMealDishes(bookingId, mealId, filterOptions = {}) {
+export async function getMealDishes(bookingId, mealId, filterOptions = {}, onError = null) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES];
     let filters = [];
 
@@ -174,7 +174,7 @@ export async function getMealDishes(bookingId, mealId, filterOptions = {}) {
         filters.push(where("isFree", "==", filterOptions.isFree));
     }
     
-    return await dao.get(path, filters, [], -1);
+    return await dao.get(path, filters, [], -1, onError);
 }
 
 export async function getDishes(filterOptions = {}, onError) {

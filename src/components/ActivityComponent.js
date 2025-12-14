@@ -42,6 +42,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false        );
     const [expanded,                setExpanded               ] = useState(false        );
     const [dishes,                  setDishes                 ] = useState([]           );
+    const [dishesPrice,             setDishesPrice            ] = useState(null         );
     const [status,                  setStatus                 ] = useState(null         );
     const [alert,                   setAlert                  ] = useState(null         );
     const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0            );
@@ -296,7 +297,9 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             if(activity.category === "meal") {
                 // If this list is displayed for all customers, get the customer for each activity 
                 const mealCustomer = customer ? customer : await getParent(activity);
-                const dishes = await mealService.getMealDishes(mealCustomer.id, activity.id);
+                const dishes = await mealService.getMealDishes(mealCustomer.id, activity.id, {}, onError);
+                const dishesPrice = dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice, 0);
+                setDishesPrice(dishesPrice);
                 setDishes(dishes);
             }
 
@@ -492,12 +495,19 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
                 </>)}
 
-                {!activity.isFree && activity.customerPrice !== 0 && (
+                {!activity.isFree && activity.customerPrice !== 0 && (<>
                     <p>
                         <span className="detail-label">Customer Price: </span> 
                         {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
                     </p>
-                )}
+
+                    {dishesPrice && dishesPrice > 0 && (
+                        <p>
+                            <span className="detail-label">Dishes Total: </span> 
+                            {utils.formatDisplayPrice(dishesPrice, true) ?? 0 }
+                        </p>
+                    )}
+                </>)}
 
                 {/* List dishes if the activity expanded is a meal */}
                 {activity.category === "meal" && (
