@@ -213,6 +213,31 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
     }
 
+    const onSubmitStockCount = async (stockCountList) => {
+        const inventory = {
+            items : stockCountList
+        };
+        if(activity.subCategory === "checkin-prep") inventory.type = "start";
+        if(activity.subCategory === "housekeeping") inventory.type = "refill";
+        if(activity.subCategory === "checkout") inventory.type = "end"; 
+        
+        // inventory.items = stockCountList.reduce((map, item) => {
+        //     map[item.name] = {count: item.count, reserved: item.reserved, total: item.total};
+        //     return map;
+        // }, {});
+
+        inventory.activityId = activity.id;
+        inventory.bookingId = customer.id;
+
+        const result = await minibarService.addOrEdit(activity, inventory, onError); 
+        if(result !== false) {
+            setMinibarCount(inventory.items);
+            onSuccess();
+        }
+
+        return result;
+    }
+
     const onDisplayMinibarCount = async () => {
         const stockList = await minibarService.getSelection(onError);
         if(stockList === false) return false;
@@ -247,7 +272,6 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
 
         if(activity.subCategory === "checkout") {
-            // todo: calc diff between quantity and provided to get sale count
             headers.push("sold");
             for(let i = 0; i < values.length; i++) {
                 const row = values[i];
@@ -256,30 +280,11 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             }
         }
         
-        onDisplayMinibarTable("Minibar Count", activity, headers, stockListItems);
+        onDisplayMinibarTable("Minibar Count", activity, headers, stockListItems, onSubmitStockCount);
     }
 
     const handleMinibarCount = (type) => {   
-        onCountItems(type, activity, minibarCount, true, async (stockCountList) => {
-            const inventory = {};
-            
-            inventory.items = stockCountList.reduce((map, item) => {
-                map[item.name] = {count: item.count, reserved: item.reserved, total: item.total};
-                return map;
-            }, {});
-
-            inventory.type = type;
-            inventory.activityId = activity.id;
-            inventory.bookingId = customer.id;
-
-            const result = await minibarService.addOrEdit(activity, inventory, onError); 
-            if(result !== false) {
-                setMinibarCount(inventory.items);
-                onSuccess();
-            }
-
-            return result;
-        });
+        onCountItems(type, activity, minibarCount, true, onSubmitStockCount);
     }
 
     const handleActivityClick = async () => {

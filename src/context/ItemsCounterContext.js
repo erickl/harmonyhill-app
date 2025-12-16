@@ -185,13 +185,22 @@ export function ItemsCounterProvider({ children }) {
         }
 
         // Add reserved stock count and total item count to the returned object
-        updatedItems = updatedItems.map((item) => {
-            item.reserved = utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0;
-            item.total = utils.exists(totalStock, item.name) ? totalStock[item.name] : 0;
-            return item;
-        });
+        // updatedItems = updatedItems.map((item) => {
+        //     item.reserved = utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0;
+        //     item.total = utils.exists(totalStock, item.name) ? totalStock[item.name] : 0;
+        //     return item;
+        // });
 
-        const result = await onSubmit(updatedItems);
+        const finalCount = updatedItems.reduce((map, item) => {
+            map[item.name] = {
+                reserved : utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0,
+                total    : utils.exists(totalStock, item.name) ? totalStock[item.name] : 0,
+                count    : item.count,
+            };
+            return map;
+        }, {});
+
+        const result = await onSubmit(finalCount);
         
         if(result !== false) {
             cleanState();

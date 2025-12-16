@@ -1,0 +1,64 @@
+.down-triangle-button {
+  position: relative;
+  width: 2rem;
+  height: 1.8rem;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: #ee4d29;
+
+  /* Downward rounded triangle */
+  clip-path: polygon(
+    3% 3%,
+    97% 3%,
+    50% 97%
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+/* Minus sign */
+.down-triangle-button .minus {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(-0.3rem);
+}
+
+/* Hover (desktop only) */
+@media (hover: hover) {
+  .down-triangle-button:hover {
+    background: #c83211;
+    box-shadow:
+      0 3px 6px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Active (pressed) */
+.down-triangle-button:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.35),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Keyboard accessibility */
+.down-triangle-button:focus-visible {
+  outline: 2px solid #7a1c0a;
+  outline-offset: 3px;
+}

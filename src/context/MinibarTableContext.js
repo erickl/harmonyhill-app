@@ -3,31 +3,48 @@ import * as utils from "../utils.js";
 import * as inventoryService from "../services/inventoryService.js";
 import * as minibarService from "../services/minibarService.js";
 import { useNotification } from "../context/NotificationContext.js";
-import { XIcon } from 'lucide-react';
+import { useSuccessNotification } from "../context/SuccessContext.js";
+import { XIcon, CheckCheck } from 'lucide-react';
+import PlusButton from "../components/PlusButton.js";
+import MinusButton from "../components/MinusButton.js";
 import Spinner from '../components/Spinner.js';
 
 const MinibarTableContext = createContext();
 
 export function MinibarTableProvider({ children }) {
     const initState = {
-        activity : null,
-        title    : null,
-        headers  : null,
-        items    : null, //
+        activity     : null,
+        title        : null,
+        headers      : null,
+        items        : null,
+        updatedCount : null,
+        onSubmit     : null,
     };
     
-    const [state, setState] = useState(initState);
-    const [totalStock, setTotalStock] = useState({});
-    const [reservedStock, setReservedStock] = useState({});
+    const [isChanged,     setIsChanged    ] = useState(false);
+    const [state,         setState        ] = useState(initState);
+    const [totalStock,    setTotalStock   ] = useState(null);
+    const [reservedStock, setReservedStock] = useState(null);
+    const [onSubmit,      setOnSubmit     ] = useState(null);
 
     const { onError } = useNotification();
+    const { onSuccess } = useSuccessNotification();
 
-    const onDisplayMinibarTable = (title, activity, headers, items) => {
+    const onDisplayMinibarTable = (title, activity, headers, items, onSubmit) => {
+        const newCount = Object.values(items).reduce((map, item) => {
+            map[item.name] = item.count;
+            return map;
+        }, {});
+
+        //const headers_ = ["" /* minusButton */, ...headers, "" /* plusButton */];
+
         setState({
-            activity : activity,
-            title    : title,
-            headers  : headers,
-            items    : Object.values(items),
+            activity     : activity,
+            title        : title,
+            headers      : headers,
+            items        : Object.values(items),
+            updatedCount : newCount,
+            onSubmit     : onSubmit,
         });
 
         loadTotalStock(items); 
@@ -55,6 +72,9 @@ export function MinibarTableProvider({ children }) {
     
     const hidePopup = () => {
         setState(initState);
+        setIsChanged(false);
+        setTotalStock(null);
+        setReservedStock(null);
     }
 
     const tableStyle = { 
@@ -75,11 +95,29 @@ export function MinibarTableProvider({ children }) {
         padding: '8px' 
     };
 
-    const tableCell = (index, value) => {
+    const onHandleSubmit = async() => {
+        const itemsCopy = utils.deepCopy(state.items);
+        const finalCount = itemsCopy.reduce((map, item) => {
+            map[item.name] = {
+                count    : state.updatedCount[item.name], 
+                reserved : item.reserved, 
+                total    : item.total
+            };
+            return map;
+        }, {});
+
+        const result = await state.onSubmit(finalCount);
+        if(result === false) return false;
+        hidePopup();
+        onSuccess();
+    }
+
+    const tableCell = (index, value, cellStyle) => {
         const isLink = utils.isLink(value);
+        const cellStyle_ = utils.isEmpty(cellStyle) ? valueColumnStyle : {...valueColumnStyle, ...cellStyle};
         const displayedValue = isLink ? <a href={value} style={{textDecoration:"none"}}>🔗</a> : value;
         return (
-            <td style={valueColumnStyle} key={`${index}-value`}>
+            <td style={cellStyle_} key={`${index}-value`}>
                 {displayedValue} 
             </td>
         );
@@ -87,43 +125,72 @@ export function MinibarTableProvider({ children }) {
 
     const tableRow = (index, item) => {
         let values = [];
-        const rowStyle = {};
-        let total = null, reserved = null;
-
+        const cellStyle = {};
+        
         for(const header of state.headers) {
+            let value = "";
+
             if(header === "total") {
-                item[header] = total = utils.exists(totalStock, item.name) ? totalStock[item.name] : ""; 
+                item[header] = value = totalStock && utils.exists(totalStock, item.name) ? totalStock[item.name] : 0; 
             } else if(header === "reserved") {
-                item[header] = reserved = utils.exists(reservedStock, item.name) ? reservedStock[item.name] : ""; 
-            } 
+                item[header] = value = reservedStock && utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0; 
+            } else if(header === "count") {
+                value = state.updatedCount[item.name];
+            } else if(!utils.isEmpty(header)) {
+                value = utils.exists(item, header) ? item[header] : "";
+            }
             
-            values.push(utils.exists(item, header) ? item[header] : "");
+            values.push(value);
         }
 
-        if(total && reserved && item.provided) {
-            const available = item.total - item.reserved - item.provided;
-            if(item.count > available) {
-                rowStyle.backgroundColor = "red";
+        if(totalStock !== null && reservedStock !== null) {
+            const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
+            const available = item.total - item.reserved - provided;
+            if(state.updatedCount[item.name] > available) {
+                cellStyle.backgroundColor = "red";
             }
         }
-
+        
         const onChangeCount = (count) => {      
-            const newCount = state.items[index].count + count;
+            const newCount = state.updatedCount[item.name] + count;
 
             // Count can be negative for housekeeping, since we might want to correct a count or take something out
             if(newCount >= 0 || state.activity.subCategory === "housekeeping") {
                 const newState = utils.deepCopy(state);
-                newState.items[index].count = newCount;
-                setState(newState);    
+                newState.updatedCount[item.name] = newCount;
+                setState(newState); 
+                
+                const isChangedUpdate = newCount !== state.items[index].count;
+                setIsChanged(isChangedUpdate);
             }
         }
 
-        const controlButtons = () => { 
+        const minusButton = () => { 
             // Don't let the user change the count if the task is already completed
             return state.activity.status !== "completed" ? (
                 <td>
-                    <button onClick={() => onChangeCount(1)}>+</button>
-                    <button onClick={() => onChangeCount(-1)}>-</button>
+                    <div style={{
+                            display: "flex", 
+                            justifyContent: "space-between" 
+                        }}>
+                        <MinusButton onClick={() => onChangeCount(-1)} />
+                    </div>
+                </td>
+            ) : (
+                <td></td>
+            );
+        };
+
+        const plusButton = () => { 
+            // Don't let the user change the count if the task is already completed
+            return state.activity.status !== "completed" ? (
+                <td>
+                    <div style={{
+                            display: "flex", 
+                            justifyContent: "space-between" 
+                        }}>
+                        <PlusButton onClick={() => onChangeCount(1)}/> 
+                    </div>
                 </td>
             ) : (
                 <td></td>
@@ -131,11 +198,12 @@ export function MinibarTableProvider({ children }) {
         };
         
         return (
-            <tr style={rowStyle} key={`${index}-row`}>
+            <tr key={`${index}-row`}>
+                {minusButton()}
                 {values.map((value, c) => {
-                    return tableCell(c, value);
+                    return tableCell(c, value, cellStyle);
                 })}
-                {controlButtons()};
+                {plusButton()}
             </tr>
         );
     }
@@ -146,17 +214,29 @@ export function MinibarTableProvider({ children }) {
             {state.title && (
                 <div className="modal-overlay">
                     <div className="modal-box">
-                        <div style={{ textAlign: "left"}}>
+                        <div style={{
+                            display: "flex", 
+                            justifyContent: "space-between", 
+                            alignItems: "center",
+                            width: "100%"
+                        }}>
                             <XIcon 
                                 size={30}
-                                style={{ textAlign: "left", color:'#f44336'}}
+                                style={{ color:'#f44336'}}
                                 onClick={hidePopup}
                             />
-                            <h2>{state.title}</h2>
+                            {isChanged && (<CheckCheck 
+                                size={30}
+                                style={{ color:'#119249ff'}}
+                                onClick={onHandleSubmit}
+                            />)}
                         </div>
+                        <h2>{state.title}</h2>
                         <table style={tableStyle}>
                             <thead>
                                 <tr>
+                                    {/* Empty start td for the minus button, left of the table */}
+                                    <td />
                                     {state.headers.map((header) => (
                                         <td style={keyColumnStyle}>
                                             {utils.capitalizeWords(header)}

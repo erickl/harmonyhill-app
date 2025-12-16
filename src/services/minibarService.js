@@ -14,7 +14,7 @@ export async function addOrEdit(activity, newMinibarEntry, onError, writes = [])
     const existing = await bookingDao.getExistingMinibar(newMinibarEntry, onError);
 
     const nonZeroItems = Object.entries(newMinibarEntry.items).filter(([name, quantities]) => {
-        return (existing && existing.items[name] > 0) || quantities.current > 0;
+        return (existing && existing.items[name] > 0) || quantities.count > 0;
     });
     const filteredItems = Object.fromEntries(nonZeroItems);
 
