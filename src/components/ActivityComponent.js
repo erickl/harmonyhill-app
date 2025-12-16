@@ -7,13 +7,12 @@ import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy, Camera, Image, Table } from 'lucide-react';
+import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy, Camera, Image } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle from './StatusCircle.js';
 import AlertCircle from './AlertCircle.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
-import { useItemsCounter } from "../context/ItemsCounterContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useCameraModal } from '../context/CameraContext.js';
 import { useImageCarousel } from '../context/ImageCarouselContext.js';
@@ -53,7 +52,6 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const [minibarCount,            setMinibarCount           ] = useState(null         );
 
     const { onError               } = useNotification();
-    const { onCountItems          } = useItemsCounter();
     const { onSuccess             } = useSuccessNotification();
     const { onConfirm             } = useConfirmationModal();
     const { onOpenCamera          } = useCameraModal();
@@ -214,20 +212,15 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     }
 
     const onSubmitStockCount = async (stockCountList) => {
-        const inventory = {
-            items : stockCountList
+        const inventory = { 
+            items : stockCountList,
+            activityId : activity.id,
+            bookingId : customer.id,
         };
+
         if(activity.subCategory === "checkin-prep") inventory.type = "start";
         if(activity.subCategory === "housekeeping") inventory.type = "refill";
         if(activity.subCategory === "checkout") inventory.type = "end"; 
-        
-        // inventory.items = stockCountList.reduce((map, item) => {
-        //     map[item.name] = {count: item.count, reserved: item.reserved, total: item.total};
-        //     return map;
-        // }, {});
-
-        inventory.activityId = activity.id;
-        inventory.bookingId = customer.id;
 
         const result = await minibarService.addOrEdit(activity, inventory, onError); 
         if(result !== false) {
@@ -250,7 +243,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                 total    : 0
             };
 
-            if(utils.exists(minibarCount, stockListItem.name)) {
+            if(minibarCount && utils.exists(minibarCount, stockListItem.name)) {
                 const counts = minibarCount[stockListItem.name];
                 data = { ...data, ...counts}
             }
@@ -281,10 +274,6 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
         
         onDisplayMinibarTable("Minibar Count", activity, headers, stockListItems, onSubmitStockCount);
-    }
-
-    const handleMinibarCount = (type) => {   
-        onCountItems(type, activity, minibarCount, true, onSubmitStockCount);
     }
 
     const handleActivityClick = async () => {
@@ -668,7 +657,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                             <Candy  
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMinibarCount("start");
+                                    onDisplayMinibarCount();
                                 }}
                             />
                             <p>Count Minibar</p>
@@ -680,7 +669,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                             <Candy  
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMinibarCount("end");
+                                    onDisplayMinibarCount();
                                 }}
                             />
                             <p>Count Minibar</p>
@@ -692,23 +681,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                             <Candy  
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMinibarCount("refill");
-                                }}
-                            />
-                            <p>Minibar Refill</p>
-                        </div>
-                    )}
-
-                    {/* Can be set for housekeeping, checkin prep and checkouts */}
-                    { minibarCount && (
-                        <div className="activity-component-footer-icon">
-                            <Table
-                                onClick={(e) => {
-                                    e.stopPropagation();
                                     onDisplayMinibarCount();
                                 }}
                             />
-                            <p>Minibar Count</p>
+                            <p>Minibar Refill</p>
                         </div>
                     )}
                 </div> 

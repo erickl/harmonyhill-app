@@ -4,10 +4,12 @@ import * as inventoryService from "../services/inventoryService.js";
 import * as minibarService from "../services/minibarService.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { XIcon, CheckCheck } from 'lucide-react';
 import PlusButton from "../components/PlusButton.js";
 import MinusButton from "../components/MinusButton.js";
 import Spinner from '../components/Spinner.js';
+
 
 const MinibarTableContext = createContext();
 
@@ -25,18 +27,16 @@ export function MinibarTableProvider({ children }) {
     const [state,         setState        ] = useState(initState);
     const [totalStock,    setTotalStock   ] = useState(null);
     const [reservedStock, setReservedStock] = useState(null);
-    const [onSubmit,      setOnSubmit     ] = useState(null);
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
+    const { onConfirm } = useConfirmationModal();
 
     const onDisplayMinibarTable = (title, activity, headers, items, onSubmit) => {
         const newCount = Object.values(items).reduce((map, item) => {
             map[item.name] = item.count;
             return map;
         }, {});
-
-        //const headers_ = ["" /* minusButton */, ...headers, "" /* plusButton */];
 
         setState({
             activity     : activity,
@@ -96,20 +96,22 @@ export function MinibarTableProvider({ children }) {
     };
 
     const onHandleSubmit = async() => {
-        const itemsCopy = utils.deepCopy(state.items);
-        const finalCount = itemsCopy.reduce((map, item) => {
-            map[item.name] = {
-                count    : state.updatedCount[item.name], 
-                reserved : item.reserved, 
-                total    : item.total
-            };
-            return map;
-        }, {});
+        onConfirm("Submit the minibar count?", async() => {
+            const itemsCopy = utils.deepCopy(state.items);
+            const finalCount = itemsCopy.reduce((map, item) => {
+                map[item.name] = {
+                    count    : state.updatedCount[item.name], 
+                    reserved : item.reserved, 
+                    total    : item.total
+                };
+                return map;
+            }, {});
 
-        const result = await state.onSubmit(finalCount);
-        if(result === false) return false;
-        hidePopup();
-        onSuccess();
+            const result = await state.onSubmit(finalCount);
+            if(result === false) return false;
+            hidePopup();
+            onSuccess();
+        });
     }
 
     const tableCell = (index, value, cellStyle) => {
