@@ -13,7 +13,10 @@
         "program": "${workspaceFolder}/src/scripts/seeder.mjs",
         "runtimeArgs": ["--experimental-modules"],
         "env": {
-          "NODE_ENV": "development"
+          "NODE_ENV": "development",
+          "FIRESTORE_EMULATOR_HOST": "localhost:8080",
+          "FIREBASE_AUTH_EMULATOR_HOST": "localhost:9099",
+          "GCLOUD_PROJECT": "harmonyhill-1" 
         },
         "skipFiles": ["<node_internals>/**"],
         "runtimeExecutable": "/Users/Smexmachine_1/.nvm/versions/node/v20.19.1/bin/node"

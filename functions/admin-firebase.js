@@ -3,9 +3,13 @@ import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { setGlobalOptions } from "firebase-functions/v2";
 
-if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-  // Use the default host and port for the Firestore emulator
-  process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"; 
+// import dotenv from 'dotenv';
+// dotenv.config(); // for the seeder script in the local env
+// console.log('API KEY:', process.env.FIREBASE_API_KEY);
+
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {  
+    // Use the default host and port for the Firestore emulator
+    process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"; 
 }
 
 let app;
