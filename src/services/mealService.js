@@ -142,7 +142,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
     // Update meal data
     const mealUpdate = await mapMealObject(mealUpdateData);
     const updateMealRecord = await activityDao.update(bookingId, mealId, mealUpdate, true, onError, writes);
-    if(!updateMealRecord) {
+    if(updateMealRecord === false) {
         return false;
     }
     
@@ -151,7 +151,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
     // Update dishes data, if there are any updates to them
     if(!utils.isEmpty(mealUpdateData.dishes)) {
         const dishesData = Object.values(mealUpdateData.dishes);
-        updateDishesSuccess = await updateDishes(existing, mealId, dishesData, onError, writes);
+        updateDishesSuccess = await updateDishes(updateMealRecord, mealId, dishesData, onError, writes);
     }
 
     if(!updateDishesSuccess) {
@@ -165,16 +165,16 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
     return updateMealRecord;
 }
 
-async function updateDishes(meal, mealId, dishesUpdateData, onError, writes) {
+async function updateDishes(updatedMeal, mealId, dishesUpdateData, onError, writes) {
     let dishesUpdated = [];
 
-    const existingDishes = await getMealDishes(meal.bookingId, mealId);
+    const existingDishes = await getMealDishes(updatedMeal.bookingId, mealId);
 
     // If any existingDishes are no longer part of the meal, delete dish
     for(const existingDish of Object.values(existingDishes)) {
         const dishUpdate = dishesUpdateData.find((dish) => dish.name === existingDish.name);
         if(!dishUpdate) {
-            const deleteDishResult = await deleteDish(meal, existingDish, onError, writes);
+            const deleteDishResult = await deleteDish(updatedMeal, existingDish, onError, writes);
             if(deleteDishResult === false) {
                 return false;
             }
@@ -188,11 +188,11 @@ async function updateDishes(meal, mealId, dishesUpdateData, onError, writes) {
         const existingDish = existingDishes.find((dish) => dish.name === dishUpdateData.name);
         
         if(!existingDish) {
-            const addDishSuccess = await addDish(meal, mealId, dishUpdateData, onError, writes);
+            const addDishSuccess = await addDish(updatedMeal, mealId, dishUpdateData, onError, writes);
             if(addDishSuccess === false) return false;
             dishesUpdated.push(addDishSuccess);
         } else {
-            const updateExistingDishResult = await updateDish(meal, existingDish, dishUpdateData, onError, writes);
+            const updateExistingDishResult = await updateDish(updatedMeal, existingDish, dishUpdateData, onError, writes);
             if(updateExistingDishResult === false) return false;
             dishesUpdated.push(updateExistingDishResult);
         }
@@ -201,20 +201,18 @@ async function updateDishes(meal, mealId, dishesUpdateData, onError, writes) {
     return dishesUpdated;
 }
 
-async function updateDish(meal, existingDish, dishUpdateData, onError, writes) {
+async function updateDish(updatedMeal, existingDish, dishUpdateData, onError, writes) {
     const dishUpdate = await mapDishObject(dishUpdateData);
-    const updateExistingDishResult = await activityDao.updateDish(meal.bookingId, meal.id, existingDish.id, dishUpdate, onError, writes);
+    const updateExistingDishResult = await activityDao.updateDish(updatedMeal.bookingId, updatedMeal.id, existingDish.id, dishUpdate, onError, writes);
     if(updateExistingDishResult === false) return false;
 
-    // Check if inventory sale needs changing, only if dish quantity changed
-    if(utils.exists(dishUpdate, "quantity") && dishUpdate.quantity !== existingDish.quantity) {
-        const sale = await inventoryService.getSale(existingDish.name, meal.id, onError);
-        if(sale) {
-            const saleUpdate = await inventoryService.updateSale(meal, existingDish.name, dishUpdate.quantity, onError, writes);
-            if(saleUpdate === false) return false;
-        }   
-    }
-
+    // Check if inventory sale needs changing, if dish is changed
+    const sale = await inventoryService.getSale(existingDish.name, updatedMeal.id, onError);
+    if(sale) {
+        const saleUpdate = await inventoryService.updateSale(updatedMeal, dishUpdate, onError, writes);
+        if(saleUpdate === false) return false;
+    }   
+    
     return updateExistingDishResult;
 }
 

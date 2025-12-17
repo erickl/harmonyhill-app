@@ -24,6 +24,7 @@ export async function subtract(activity, type, itemName, quantity, onError, writ
         bookingId  : activity ? activity.bookingId : null,
         house      : activity ? activity.house : null,
         activityId : activity ? activity.id : null,
+        doneAt     : activity ? activity.startingAt : utils.now(),
         name       : itemName,
         quantity   : quantity,
         type       : type,
@@ -56,20 +57,29 @@ export async function addSale(activity, itemName, quantity, onError, writes = []
     return result;
 }
 
-export async function updateSale(activity, itemName, quantity, onError, writes = []) {
+export async function updateSale(activity, item, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const stockChangeFilter = {
         activityId : activity.id,
         type : "sale",
     };
-    const existingSales = await inventoryDao.getInventoryChanges(itemName, stockChangeFilter, onError);
-    if(!existingSales || existingSales.length < 1) {
-        return false;
-    }
+
+    const existingSales = await inventoryDao.getInventoryChanges(item.name, stockChangeFilter, onError);
+    if(!existingSales || existingSales.length < 1) return false;
     const existingSale = existingSales[0];
 
-    const result = await inventoryDao.updateStock(existingSale.id, itemName, {quantity : quantity}, onError, writes);
+    const stockUpdate = {};
+
+    if(existingSale.quantity !== item.quantity) {
+        stockUpdate.quantity = item.quantity;
+    }
+
+    if(!utils.dateIsSame(existingSale.withdrawnAt, activity.startingAt)) {
+        stockUpdate.withdrawnAt = activity.startingAt;
+    }
+
+    const result = await inventoryDao.updateStock(existingSale.id, item.name, stockUpdate, onError, writes);
     if(result === false) return false;
 
     if(commit) {
@@ -100,11 +110,12 @@ export async function refill(expense, itemName, quantity, onError, writes = []) 
     const commit = decideCommit(writes);
 
     const refill = {
-        expenseId : expense.id,
-        name      : itemName,
-        quantity  : quantity,
-        seller    : utils.isEmpty(expense.seller) ? "" : expense.seller,
-        type      : "refill",
+        expenseId  : expense.id,
+        name       : itemName,
+        quantity   : quantity,
+        doneAt     : expense.purchasedAt,
+        seller     : utils.isEmpty(expense.seller) ? "" : expense.seller,
+        type       : "refill",
     };
     
     const result = await inventoryDao.add(refill, onError, writes);
@@ -185,7 +196,8 @@ export async function getQuantity(name, filter, onError) {
 }
 
 export async function getCurrentQuantity(name, onError) {
-    return await getQuantity(name, {}, onError);
+    const filter = { before: utils.now() }
+    return await getQuantity(name, filter, onError);
 }
 
 /**

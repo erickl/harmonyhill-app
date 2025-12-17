@@ -55,18 +55,20 @@ export async function getInventoryChanges(name, filterOptions, onError) {
     const invItem = await getOne(name, onError);
     if(!invItem) return [];
 
+    let dateFieldName = "doneAt";
+    
     const path = ["inventory", invItem.id, "stock"];
 
     const queryFilter = [];
 
     if (utils.exists(filterOptions, "after")) {
         const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
-        queryFilter.push(where("createdAt", ">=", afterDateFireStore));
+        queryFilter.push(where(dateFieldName, ">=", afterDateFireStore));
     }
 
     if (utils.exists(filterOptions, "before")) {
         const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
-        queryFilter.push(where("createdAt", "<=", beforeDateFireStore));
+        queryFilter.push(where(dateFieldName, "<=", beforeDateFireStore));
     }
 
     if (utils.exists(filterOptions, "type")) {
@@ -89,7 +91,7 @@ export async function getInventoryChanges(name, filterOptions, onError) {
         queryFilter.push(where("quantity", "==", filterOptions.quantity));
     }
 
-    let ordering = [ orderBy("createdAt", "asc") ];
+    let ordering = [ orderBy(dateFieldName, "asc") ];
     return await dao.get(path, queryFilter, ordering, -1, onError);
 }
 
