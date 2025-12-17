@@ -2,8 +2,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import Dish from '../models/Dish.js';
-//import ActivityType from '../models/ActivityType.js';
-//import Inventory from '../models/Inventory.js';
+import ActivityType from '../models/ActivityType.js';
+import Inventory from '../models/Inventory.js';
 //import Booking from '../models/Booking.js';
 import * as utils from "../../shared/utils.js";
 
@@ -23,9 +23,9 @@ export async function seed() {
         throw new Error("Environment config files missing");
     }
 
-    //await Dish.seed();
-    //await ActivityType.seed();
-    //await Inventory.seed();
+    await Dish.seed();
+    await ActivityType.seed();
+    await Inventory.seed();
     
     //await Booking.uploadData("./public/Booking list - Bookings Jungle Nook.tsv");
     //await Booking.uploadData("./public/Booking list - Bookings Harmony Hill.tsv");
