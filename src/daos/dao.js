@@ -150,10 +150,8 @@ export async function update(path, id, update, updateLogs, onError = null, write
         if(updateLogs) {
             diffStr = await jsonObjectDiffStr(originalData, update_);
         
-            // todo: should the user be notified whether or not the update wasn't necessary?
             if(diffStr.length === 0) {
-                //if(onError) onError(`Update error: No changes to update to ${path}/${id}`);
-                return update_;
+                return originalData;
             }
                 
             update_.updateLogs = utils.exists(originalData, "updateLogs") ? originalData.updateLogs : [];
@@ -180,8 +178,7 @@ export async function update(path, id, update, updateLogs, onError = null, write
         
         const updatedDoc = {...originalData, ...update_};
         return updatedDoc;
-    }
-    catch (e) {
+    } catch (e) {
         if(onError) onError(`Error updating document ${path}/${id}: ${e.message}`);
         return false;
     }
