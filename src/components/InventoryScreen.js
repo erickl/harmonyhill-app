@@ -18,6 +18,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
     const [inventory,        setInventory       ] = useState([]   );
     const [isLoading,        setIsLoading       ] = useState(true );
     const [expandedItems,    setExpandedItems   ] = useState({}   );
+    const [itemInfo,         setItemInfo        ] = useState({}   );
     const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
     const [isAdmin,          setIsAdmin         ] = useState(false);
@@ -30,9 +31,28 @@ export default function InventoryScreen({onNavigate, onClose}) {
 
     const handleSetExpanded = async(item) => {
         setLoadingExpanded((prev) => ({...prev, [item.id]: true}));
-        await fetchItemInfo(item);
+        let updatedExpandedList = { ...(expandedItems || {}) };
+        const expand = utils.isEmpty(updatedExpandedList[item.id]);
+        if(expand) {
+            await fetchItemInfo(item);
+            updatedExpandedList[item.id] = item;
+        } else {
+            updatedExpandedList[item.id] = null;
+        }
+
+        setExpandedItems(updatedExpandedList);
+
         setLoadingExpanded((prev) => ({...prev, [item.id]: false}));
     }
+
+    const fetchItemInfo = async (item) => {  
+        item.refills = await inventoryService.getRefills(item.name, {}, onError);
+        item.sales = await inventoryService.getSales(item.name, {}, onError);
+        const futureSales = item.sales.filter((item) => utils.isAfterToday(item.doneAt));
+        const reservedCount = futureSales.reduce((count, sale) => sale.quantity + count, 0);
+        item.quantity = await inventoryService.getCurrentQuantity(item.name, onError);
+        item.reserved = reservedCount;   
+    };
 
     const onAddStock = async(item) => {
         const inventory = [item];
@@ -100,25 +120,6 @@ export default function InventoryScreen({onNavigate, onClose}) {
         onDisplayDataTable("Refills", headers, enhancedRefills);
     }
 
-    const fetchItemInfo = async (item) => {
-        let updatedExpandedList = { ...(expandedItems || {}) };
-        
-        const expand = utils.isEmpty(updatedExpandedList[item.id]);
-        if(expand) {
-            item.refills = await inventoryService.getRefills(item.name, {}, onError);
-            item.sales = await inventoryService.getSales(item.name, {}, onError);
-            const futureSales = item.sales.filter((item) => utils.isAfterToday(item.doneAt));
-            const reservedCount = futureSales.reduce((count, sale) => sale.quantity + count, 0);
-            item.quantity = await inventoryService.getCurrentQuantity(item.name, onError);
-            if(reservedCount > 0) item.reserved = reservedCount;
-            updatedExpandedList[item.id] = item;
-        } else {
-            updatedExpandedList[item.id] = null;
-        }
-
-        setExpandedItems(updatedExpandedList);
-    };
-
     const handleEditItem = async(item) => {
 
     }
@@ -128,6 +129,13 @@ export default function InventoryScreen({onNavigate, onClose}) {
             const inventory_ = await inventoryService.get({}, onError);
             setInventory(inventory_);
             setIsLoading(false);
+
+            const newItemInfo = { ...(itemInfo || {}) };
+            for(const item of inventory_) {
+                const quantity = await inventoryService.getCurrentQuantity(item.name, onError);
+                newItemInfo[item.id] = {quantity : quantity};
+            }
+            setItemInfo(newItemInfo);
         };
 
         const getUserPermissions = async() => {
@@ -173,9 +181,11 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                         </div>
                                     </div>
                                     <div className="inv-item-header-right">
-                                        <div>
-                                            {""}
-                                        </div>
+                                        {utils.exists(itemInfo, item.id) && utils.exists(itemInfo[item.id], "quantity") && (
+                                            <div>
+                                                {itemInfo[item.id].quantity}
+                                            </div>
+                                        )}
                                         <div className="expand-icon">
                                             {expandedItems[item.id] ? '▼' : '▶'}
                                         </div>
@@ -195,7 +205,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                                 Quantity: {item.quantity}
                                             </div>
                                         )}
-                                        {utils.exists(item, "reserved") && (
+                                        {utils.exists(item, "reserved") && item.reserved > 0 && (
                                             <div>
                                                 Reserved: {item.reserved}
                                             </div>
