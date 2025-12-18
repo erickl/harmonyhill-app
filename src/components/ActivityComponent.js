@@ -191,7 +191,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         if(newStatus == null) return;
         const newStatusName = newStatus.category;
 
-        onConfirm(`Set activity status to ${newStatusName}?`, async() => {
+        onConfirm(`Set activity status to ${newStatusName}?`, async () => {
             const success = await activityService.setActivityStatus(activity.bookingId, activity.id, newStatusName);
             if(success) {
                 let updatedActivity = { ...(activity || {}) };

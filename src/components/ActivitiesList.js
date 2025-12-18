@@ -18,7 +18,6 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
     const [user,                    setUser             ] = useState(null );
 
     const [activityToEdit,          setActivityToEdit   ] = useState(null );
-    const [activityToDelete,        setActivityToDelete ] = useState(null );
     const [loading,                 setLoading          ] = useState(true );
     const [currentCustomer,         setCurrentCustomer  ] = useState(null );
 
@@ -39,29 +38,30 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
         }
     }
 
-    const handleDeleteActivity = async () => {
-        if(!activityToDelete || utils.isEmpty(activityToDelete.id)) {
-            return;
-        }
-        const activityCustomer = await getCustomer(activityToDelete);
-        if(!activityCustomer || utils.isEmpty(activityCustomer.id)) {
-            onError(`Can't find customer for activity ${activityToDelete.id}`);
-        }
-
-        let deleteActivityResult = false;
-        if(activityToDelete.category === "meal") {
-            deleteActivityResult = mealService.removeMeal(activityToDelete, onError);
-        } else {
-            deleteActivityResult = await activityService.remove(activityToDelete, onError);
-        }
+    const handleDeleteActivity = async (activity) => {
+        onConfirm(`Are you sure you want to delete this ${activity.displayName}?`, async () => {
+            if(!activity || utils.isEmpty(activity.id)) return;
         
-        if(deleteActivityResult) {
-            setActivityToDelete(null);
-            setCurrentCustomer(null);
-            if(triggerRerender) {
-                triggerRerender();
+            const activityCustomer = await getCustomer(activity);
+            if(!activityCustomer || utils.isEmpty(activityCustomer.id)) {
+                onError(`Can't find customer for activity ${activity.id}`);
             }
-        } 
+
+            let deleteActivityResult = false;
+            if(activity.category === "meal") {
+                deleteActivityResult = mealService.removeMeal(activity, onError);
+            } else {
+                deleteActivityResult = await activityService.remove(activity, onError);
+            }
+            
+            // Delete activity from the current GUI list
+            if(deleteActivityResult !== false) {
+                const newActivitiesByDate = utils.deepCopy(activitiesByDate);
+                const activitiesOnDate = newActivitiesByDate[activity.startingAt_ddMMM];
+                newActivitiesByDate[activity.startingAt_ddMMM] = activitiesOnDate.filter((act) => act.id !== activity.id);
+                setActivitiesByDate(newActivitiesByDate);
+            } 
+        });
     };
 
     const handleSetExpandedDates = (date) => {
@@ -89,7 +89,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
         getUsers();
     }, []);
 
-     useEffect(() => {
+    useEffect(() => {
         if (todaysHeader.current) {
             todaysHeader.current.scrollIntoView({ behavior: "smooth" });
         }
@@ -141,11 +141,11 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
             setLoading(false);
         }
 
-        // Only refresh activity list, after editing/deleting activity. Afterwards the variable is set to null
-        if (activityToDelete === null && activityToEdit === null) {
+        // Only refresh activity list, after editing activity. Afterwards the variable is set to null
+        if (activityToEdit === null) {
             getActivities();
         }
-    }, [customer, triggerRerender, activityToDelete, activityToEdit]);
+    }, [customer, triggerRerender, activityToEdit]);
 
     if (loading) {
         return (
@@ -203,7 +203,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
                                                     inputCustomer={customer}
                                                     inputActivity={activity}
                                                     handleEditActivity={handleEditActivity}
-                                                    handleDeleteActivity={() => setActivityToDelete(activity)}
+                                                    handleDeleteActivity={() => handleDeleteActivity(activity)}
                                                     users={users}
                                                     user={user}
                                                     triggerRerender={triggerRerender}
@@ -219,13 +219,6 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
                     </React.Fragment>
                 )
             })}
-
-            {activityToDelete && (
-                <ConfirmModal 
-                    onCancel={() => setActivityToDelete(null)}
-                    onConfirm={handleDeleteActivity}
-                />
-            )}
         </div>
     );
 };
