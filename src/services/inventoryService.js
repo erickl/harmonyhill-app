@@ -76,7 +76,7 @@ export async function updateSale(activity, item, onError, writes = []) {
     }
 
     if(!utils.dateIsSame(existingSale.withdrawnAt, activity.startingAt)) {
-        stockUpdate.withdrawnAt = activity.startingAt;
+        stockUpdate.doneAt = activity.startingAt;
     }
 
     const result = await inventoryDao.updateStock(existingSale.id, item.name, stockUpdate, onError, writes);
@@ -94,6 +94,7 @@ export async function refillMany(expense, quantities, onError, writes = []) {
 
     let results = [];
     for(const [itemName, quantity] of Object.entries(quantities)) {
+        if(quantity <= 0) continue;
         const result = await refill(expense, itemName, quantity, onError, writes);
         if(result === false) return false;
         results.push(result);

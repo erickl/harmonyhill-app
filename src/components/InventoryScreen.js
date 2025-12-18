@@ -53,7 +53,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onDisplaySalesData = async(item) => {    
-        const headers = ["#", "Date", "Quantity", "Booking", "Villa", "Sale Created By"];  
+        const headers = ["#", "Sold At", "Quantity", "Booking", "Villa", "Sale Created By", "Created"];  
         const enhancedSales = [];
 
         for(let i = 0; i < item.sales.length; i++) {
@@ -64,11 +64,12 @@ export default function InventoryScreen({onNavigate, onClose}) {
             
             const enhancedSale = [
                 i+1,
-                utils.to_ddMMM(sale.createdAt),
+                utils.to_ddMMM(sale.doneAt),
                 sale.quantity,
                 bookingName,
                 bookingHouse,
                 sale.createdBy,
+                utils.to_ddMMM(sale.createdAt),
             ];
             
             enhancedSales.push(enhancedSale);
@@ -77,7 +78,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onDisplayRefillsData = async(item) => {
-        const headers = ["#", "date", "quantity", "expense", "Receipt", "Refill Created By" ];  
+        const headers = ["#", "Refill At", "quantity", "expense", "Receipt", "Refill By", "Created" ];  
         const enhancedRefills = [];
 
         for(let i = 0; i < item.refills.length; i++) {
@@ -86,11 +87,12 @@ export default function InventoryScreen({onNavigate, onClose}) {
             
             const enhancedRefill = [
                 i+1,
-                utils.to_ddMMM(refill.createdAt),
+                utils.to_ddMMM(refill.doneAt),
                 refill.quantity,
                 expense.description,
                 expense.photoUrl,
                 refill.createdBy,
+                utils.to_ddMMM(refill.createdAt),
             ];
             
             enhancedRefills.push(enhancedRefill);

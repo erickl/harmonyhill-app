@@ -173,9 +173,9 @@ const CustomersScreen = ({ onNavigate }) => {
                                         />
                                     </div>
                                     <div className="customer-sub-header">
-                                        <span class="small-text">{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</span>
-                                        {utils.isToday(customer.checkInAt) && (<span class="small-text">Checking In Today</span>)}
-                                        {utils.isToday(customer.checkOutAt) && (<span class="small-text">Checking Out Today</span>)}
+                                        <span className="small-text">{customer.checkInAt_wwwddMMM} - {customer.checkOutAt_wwwddMMM}</span>
+                                        {utils.isToday(customer.checkInAt) && (<span className="small-text">Checking In Today</span>)}
+                                        {utils.isToday(customer.checkOutAt) && (<span className="small-text">Checking Out Today</span>)}
                                     </div>
                                 </div>
                                 {selectedCustomer?.id === customer.id && ( // ? is to deal with null/undefined selectedCustomer; *Only* render details for the selected customer

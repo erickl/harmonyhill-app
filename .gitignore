@@ -50,3 +50,5 @@ android/capacitor.properties
 *.keystore
 android/app/release/
 android/keystore.properties
+
+emulator-data/*

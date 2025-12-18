@@ -310,6 +310,14 @@ export function dateIsSame(oldDate, newDate) {
     }
 }
 
+export function allToTimestamp(data, level = 0) {
+    for(const [key, value] of Object.entries(data)) {
+        if(isDate(value)) {
+            data[key] = toFireStoreTime(value);
+        } //else if(isJsonObject(value)) {}
+    }
+}
+
 /**
  * get a Luxon date time object with time at midnight
  */
@@ -442,6 +450,10 @@ export function deepCopy(obj) {
     if(!isJsonObject(obj)) return obj;
         
     if (obj.constructor.name === 'Timestamp' && typeof obj.toDate === 'function') {
+        return obj;
+    }
+
+    if(obj instanceof DateTime) {
         return obj;
     }
 

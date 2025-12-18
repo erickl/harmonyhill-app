@@ -450,11 +450,23 @@ export function groupBy(elements, createKey) {
     }, {});
 }
 
+export function allToTimestamp(data, level = 0) {
+    for(const [key, value] of Object.entries(data)) {
+        if(isDate(value)) {
+            data[key] = toFireStoreTime(value);
+        } //else if(isJsonObject(value)) {}
+    }
+}
+
 export function deepCopy(obj) {
     if (isEmpty(obj)) return obj;
     if(!isJsonObject(obj)) return obj;
         
     if (obj.constructor.name === 'Timestamp' && typeof obj.toDate === 'function') {
+        return obj;
+    }
+
+    if(obj instanceof DateTime) {
         return obj;
     }
 

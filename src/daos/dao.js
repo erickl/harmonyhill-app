@@ -120,6 +120,7 @@ export async function getSubCollections(collectionName, filters = [], ordering =
 export async function update(path, id, update, updateLogs, onError = null, writes = []) { 
     try {
         const update_ = utils.deepCopy(update);
+        utils.allToTimestamp(update_);
 
         const originalData = await getOne(path, id);
 
@@ -192,6 +193,7 @@ async function getCurrentUsername() {
 export async function add(path, id, data, onError = null, writes = []) {
     try {
         const data_ = utils.deepCopy(data);
+        utils.allToTimestamp(data_);
 
         data_.createdAt = new Date();
         data_.createdBy = await getCurrentUsername();
@@ -208,7 +210,7 @@ export async function add(path, id, data, onError = null, writes = []) {
             "action"    : "create" 
         };
         const addLogRef = doc(db, ...["userLogs"], `c-${id}`);
-        writes.push((tx) => tx.set(addLogRef, addLog));
+        writes.push((tx) => tx.set(addLogRef, addLog));    
         
         // Create the data record in DB
         const ref = doc(db, ...path, id);
