@@ -107,7 +107,10 @@ export default function InventoryScreen({onNavigate, onClose}) {
         if(expand) {
             item.refills = await inventoryService.getRefills(item.name, {}, onError);
             item.sales = await inventoryService.getSales(item.name, {}, onError);
+            const futureSales = item.sales.filter((item) => utils.isAfterToday(item.doneAt));
+            const reservedCount = futureSales.reduce((count, sale) => sale.quantity + count, 0);
             item.quantity = await inventoryService.getCurrentQuantity(item.name, onError);
+            if(reservedCount > 0) item.reserved = reservedCount;
             updatedExpandedList[item.id] = item;
         } else {
             updatedExpandedList[item.id] = null;
@@ -190,6 +193,11 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                         {utils.exists(item, "quantity") && (
                                             <div>
                                                 Quantity: {item.quantity}
+                                            </div>
+                                        )}
+                                        {utils.exists(item, "reserved") && (
+                                            <div>
+                                                Reserved: {item.reserved}
                                             </div>
                                         )}
                                     

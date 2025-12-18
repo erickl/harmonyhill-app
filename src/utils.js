@@ -286,6 +286,12 @@ export function isBeforeToday(inputDate) {
     return luxonDateTime.day < todayDateTime.day;
 }
 
+export function isAfterToday(inputDate) {
+    const luxonDateTime = toLuxonDateTime(inputDate);
+    const todayDateTime = today(0, false);
+    return luxonDateTime.day > todayDateTime.day;
+}
+
 export function isPast(inputDate) {
     const luxonDateTime = toLuxonDateTime(inputDate);
     const nowTime = now(0, false);
