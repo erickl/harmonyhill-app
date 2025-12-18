@@ -114,14 +114,22 @@ export function isDate(value) {
  */
 export function to_yyMMddHHmmTz(date = null, separator = '') {
     date = date ? date : now();
-    const data = getData(date);
-    return `${data.yy}${separator}${data.month}${separator}${data.day} ${data.hours}:${data.minutes} ${data.tz}`;
+    try {
+        const data = getData(date);
+        return `${data.yy}${separator}${data.month}${separator}${data.day} ${data.hours}:${data.minutes} ${data.tz}`;
+    } catch(e) {
+        return "Invalid date";
+    }
 }
 
 export function to_yyMMddHHmm(date = null, separator = '') {
     date = date ? date : now();
-    const data = getData(date);
-    return `${data.yy}${separator}${data.month}${separator}${data.day} ${data.hours}:${data.minutes}`;
+    try {
+        const data = getData(date);
+        return `${data.yy}${separator}${data.month}${separator}${data.day} ${data.hours}:${data.minutes}`;
+    } catch(e) {
+        return "Invalid date";
+    }
 }
 
 /**
@@ -129,20 +137,73 @@ export function to_yyMMddHHmm(date = null, separator = '') {
  */
 export function to_YYMMdd(date = null, separator = '') {
     date = date ? date : now();
-    const data = getData(date);
-    return `${data.yy}${separator}${data.month}${separator}${data.day}`;
+    try {
+        const data = getData(date);
+        return `${data.yy}${separator}${data.month}${separator}${data.day}`;
+    } catch(e) {
+        return "Invalid date";
+    }
 }
 
 export function to_ddMMYY(date = null, separator = '') {
     date = date ? date : now();
-    const data = getData(date);
-    return `${data.day}${separator}${data.month}${separator}${data.yy}`;
+    try {
+        const data = getData(date);
+        return `${data.day}${separator}${data.month}${separator}${data.yy}`;
+    } catch(e) {
+        return "Invalid date";
+    }
 }
 
 export function to_yyMMM(date = null, separator = '') {
     date = date ? date : now();
-    const data = getData(date);
-    return `${data.yy}${separator}${data.monthName}`;
+    try {
+        const data = getData(date);
+        return `${data.yy}${separator}${data.monthName}`;
+    } catch(e) {
+        return "Invalid date";
+    }
+}
+
+
+export function to_ddMMM(date = null) {
+    date = date ? date : now();
+    try {
+        const data = getData(date);
+        return `${data.day} ${data.monthName}`;
+    } catch(e) {
+        return "Invalid date";
+    }
+}
+
+export function to_www_ddMMM(date = null) {
+    date = date ? date : now();
+    try {
+        const data = getData(date);
+        return `${data.weekday}, ${data.day} ${data.monthName}`;
+    } catch(e) {
+        return "Invalid date";
+    }
+}
+
+export function to_HHmm(date = null) {
+    date = date ? date : now();
+    try {
+        const data = getData(date);
+        return `${data.hours}:${data.minutes}`;
+    } catch(e) {
+        return "Invalid date";
+    }
+}
+
+export function to_ddMMM_HHmm(date = null) {
+    date = date ? date : now();
+    try {
+        const data = getData(date);
+        return `${data.day} ${data.monthName} ${data.hours}:${data.minutes}`;
+    } catch(e) {
+        return "Invalid date";
+    }
 }
 
 function getData(inputDate) {
@@ -230,30 +291,6 @@ function toJsDate(inputDate) {
     } else {
         throw new Error(`Invalid date type. Expected DateTime, Timestamp, Date, or string: ${inputDate}`);
     }
-}
-
-export function to_ddMMM(date = null) {
-    date = date ? date : now();
-    const data = getData(date);
-    return `${data.day} ${data.monthName}`;
-}
-
-export function to_www_ddMMM(date = null) {
-    date = date ? date : now();
-    const data = getData(date);
-    return `${data.weekday}, ${data.day} ${data.monthName}`;
-}
-
-export function to_HHmm(date = null) {
-    date = date ? date : now();
-    const data = getData(date);
-    return `${data.hours}:${data.minutes}`;
-}
-
-export function to_ddMMM_HHmm(date = null) {
-    date = date ? date : now();
-    const data = getData(date);
-    return `${data.day} ${data.monthName} ${data.hours}:${data.minutes}`;
 }
 
 export function toFireStoreTime(inputDate) {

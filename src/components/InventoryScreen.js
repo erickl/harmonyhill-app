@@ -225,16 +225,6 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                             )}
 
                                             <div className="inv-item-body-footer-icon">
-                                                <Receipt   
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onDisplaySalesData(item);
-                                                    }}
-                                                />
-                                                <p>Sales</p>
-                                            </div>
-
-                                            <div className="inv-item-body-footer-icon">
                                                 <PlusCircle   
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -242,6 +232,16 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                                     }}
                                                 />
                                                 <p>Add</p>
+                                            </div>
+
+                                            <div className="inv-item-body-footer-icon">
+                                                <Receipt   
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onDisplaySalesData(item);
+                                                    }}
+                                                />
+                                                <p>Sales</p>
                                             </div>
                                       
                                             <div className="inv-item-body-footer-icon">
