@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import "./ActivitiesScreen.css";
-import ActivitiesList from './ActivitiesList.js';
+import ActivitiesAllLists from './ActivitiesAllLists.js';
 import SheetUploader from './SheetUploader.js';
 import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import * as userService from "../services/userService.js";
+import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 
 export default  function ActivitiesScreen({onNavigate}) { 
     const [isAdmin, setIsAdmin] = useState(false);
+
     const { onError } = useNotification();
-    const [triggerRerender, setTriggerRerender] = useState(0);
 
     const filterHeaders = {
         "after"  : "date",
@@ -23,8 +24,7 @@ export default  function ActivitiesScreen({onNavigate}) {
             setIsAdmin(userIsAdmin);
         }
         getUserPermissions();
-    });
-
+    }, []);
 
     const getDataForExport = async(filterValues, onProgress) => {
         const rows = await activityService.toArrays(filterValues, onProgress, onError);
@@ -48,14 +48,7 @@ export default  function ActivitiesScreen({onNavigate}) {
                     </div>)}
                 </div>
             </div> 
-            
-            { /* customer = null, because this is for all customers */ }
-            <ActivitiesList
-                onNavigate={onNavigate}
-                customer={null} 
-                expandAllDates={true}
-                triggerRerender={() => setTriggerRerender(triggerRerender + 1)}
-            />
+            <ActivitiesAllLists onNavigate={onNavigate} futureExpanded={true} />   
         </div>
     );
 };

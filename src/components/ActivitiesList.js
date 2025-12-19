@@ -11,7 +11,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import {getParent} from "../daos/dao.js";
 
-export default function ActivitiesList({onNavigate, customer, expandAllDates, triggerRerender}) {
+export default function ActivitiesList({onNavigate, from, to, customer, expandAllDates, triggerRerender}) {
     const [expandedDates,           setExpandedDates    ] = useState({}   ); 
     const [activitiesByDate,        setActivitiesByDate ] = useState({}   );
     const [users,                   setUsers            ] = useState([]   );
@@ -70,11 +70,6 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
         setExpandedDates(updatedExpandedList);
     };
 
-    const loadPermissions = async () => {
-        const canSeeAllBookings = await userService.canSeeAllBookings();
-        return canSeeAllBookings;
-    };
-
     const today_ddMMM = utils.to_ddMMM(utils.today(0, false));
 
     useEffect(() => {
@@ -104,11 +99,8 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
 
             if(customer) {
                 activities = await activityService.get(customer.id);
-            } else {
-                const userCanSeeAllBookings = await loadPermissions();       
-                const after = userCanSeeAllBookings  ? utils.now(-7) : utils.now(-2);
-                const before = userCanSeeAllBookings ? utils.now(30) : utils.now(7);
-                const filter = {"after" : after, "before" : before};
+            } else {    
+                const filter = {"after" : from, "before" : to};
                 activities = await activityService.getAll(filter);
             }
 
@@ -173,7 +165,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
     }
 
     if(Object.keys(activitiesByDate).length === 0) {
-        return (<div><h2>No activities yet</h2></div>);
+        return (<div><h2>No activities</h2></div>);
     }
 
     return (
@@ -191,7 +183,7 @@ export default function ActivitiesList({onNavigate, customer, expandAllDates, tr
                                 {`${date}${(isTodaysHeader ? ` (Today) | ${utils.to_HHmm()}` : "")}`}
                                 
                                 <span className="expand-icon">
-                                    {expandedDates[date] ? ' ▼' : ' ▶'} {/* Added expand/collapse icon */}
+                                    {expandedDates[date] ? ' ▼' : ' ▶'}
                                 </span>
                             </h3>
                             {expandedDates[date] ? (
