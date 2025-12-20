@@ -3,31 +3,31 @@ import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 import * as bookingService from '../services/bookingService.js';
 import * as userService from '../services/userService.js';
 import * as utils from '../utils.js';
-import ErrorNoticeModal from './ErrorNoticeModal.js';
 import './CustomersScreen.css';
 import '../App.css';
 import EditCustomerScreen from './EditCustomerScreen.js';
 import CustomerPurchasesScreen from './CustomerPurchasesScreen.js';
-import ConfirmModal from './ConfirmModal.js';
 import VeganHamburgerButton from './VeganHamburgerButton.js';
 import MetaInfo from './MetaInfo.js';
 import { useNotification } from "../context/NotificationContext.js";
+import { useConfirmationModal } from "../context/ConfirmationContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
 
-const CustomersScreen = ({ onNavigate }) => {
+export default function CustomersScreen({ onNavigate }) {
     const [customers,                  setCustomers]               = useState([]    );
     const [loading,                    setLoading]                 = useState(true  );
-    const [selectedCustomer,           setSelectedCustomer]        = useState(null  ); // State to store the selected customer
-    const [pastExpanded,               setPastExpanded]            = useState(false ); // State to expand past customer section
-    const [futureExpanded,             setFutureExpanded]          = useState(false ); // State to expand future customer section
-    const [customerToEdit,             setCustomerToEdit]          = useState(null  ); // state to enable editing of customers
-    const [customerPurchases,          setCustomerPurchases]       = useState(null  ); // state to enable adding purchases
-    const [hasEditBookingsPermissions, setEditBookingsPermissions] = useState(false ); // true if current user has permissions to edit bookings
-    const [hasAddBookingsPermissions,  setAddBookingsPermissions]  = useState(false ); // true if current user has permissions to add bookings
-    const [canSeeAllBookings,          setCanSeeAllBookings]       = useState(false ); // true if current user can see all future/past bookings or just the closest ones
-    const [errorMessage,               setErrorMessage]            = useState(null  );
-    const [bookingToDelete,            setBookingToDelete]         = useState(null  );
-
-    const { onError, onWarning } = useNotification();
+    const [selectedCustomer,           setSelectedCustomer]        = useState(null  );
+    const [pastExpanded,               setPastExpanded]            = useState(false );
+    const [futureExpanded,             setFutureExpanded]          = useState(false );
+    const [customerToEdit,             setCustomerToEdit]          = useState(null  );
+    const [customerPurchases,          setCustomerPurchases]       = useState(null  );
+    const [hasEditBookingsPermissions, setEditBookingsPermissions] = useState(false );
+    const [hasAddBookingsPermissions,  setAddBookingsPermissions]  = useState(false );
+    const [canSeeAllBookings,          setCanSeeAllBookings]       = useState(false );
+    
+    const { onError } = useNotification();
+    const { onConfirm } = useConfirmationModal();
+    const { onSuccess } = useSuccessNotification();
 
     const loadPermissions = async () => {
         const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
@@ -71,7 +71,7 @@ const CustomersScreen = ({ onNavigate }) => {
         };
 
         load();
-    }, [bookingToDelete, customerToEdit]);
+    }, [customerToEdit]);
 
     // Logic to group customers into Past / Current / Future
     // Once checkInAt is updated to a string, this needs to be adjusted
@@ -101,12 +101,18 @@ const CustomersScreen = ({ onNavigate }) => {
         }
     };
 
-    const handleDeleteBooking = async () => {
-        if(!bookingToDelete) return;
-        const deleteBookingResult = await bookingService.remove(bookingToDelete.id, onError);
-        if(deleteBookingResult) {
-            setBookingToDelete(null);
-        }
+    const handleDeleteBooking = async (bookingToDelete) => {
+        onConfirm(`Are you sure you want to delete booking ${bookingToDelete.name}?`, async () => {
+            if(!bookingToDelete) return;
+
+            const deleteBookingResult = await bookingService.remove(bookingToDelete.id, onError);
+            if(deleteBookingResult !== false) {
+                let newCustomers = utils.deepCopy(customers);
+                newCustomers = newCustomers.filter((customer) => customer.id !== bookingToDelete.id);
+                setCustomers(newCustomers);
+                onSuccess();
+            }
+        });
     };
 
     const handleEditCustomer = (customer) => {
@@ -202,7 +208,7 @@ const CustomersScreen = ({ onNavigate }) => {
                                                     <Trash2  
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setBookingToDelete(customer);
+                                                            handleDeleteBooking(customer);
                                                         }}
                                                     />
                                                     <p>Delete</p>
@@ -277,34 +283,18 @@ const CustomersScreen = ({ onNavigate }) => {
                     <p>Loading customer data...</p>
                 </div>
             ) : (
-            <div className="card-content">
-                {/* Past Customers */}
-                {renderCustomerListSection("Past Customers", pastCustomers, "past-customer", pastExpanded, setPastExpanded)}
+                <div className="card-content">
+                    {/* Past Customers */}
+                    {renderCustomerListSection("Past Customers", pastCustomers, "past-customer", pastExpanded, setPastExpanded)}
 
-                {/* Current Customers */}
-                {renderCustomerListSection("Current Customers", currentCustomers, "current-customer", true, () => { })} {/* Always expanded */}
+                    {/* Current Customers */}
+                    {renderCustomerListSection("Current Customers", currentCustomers, "current-customer", true, () => { })} {/* Always expanded */}
 
-                {/* Future Customers */}
-                {renderCustomerListSection("Future Customers", futureCustomers, "future-customer", futureExpanded, setFutureExpanded)}
+                    {/* Future Customers */}
+                    {renderCustomerListSection("Future Customers", futureCustomers, "future-customer", futureExpanded, setFutureExpanded)}
 
-            </div>
-            )}
-
-            {bookingToDelete && (
-                <ConfirmModal 
-                    onCancel={() => setBookingToDelete(null)}
-                    onConfirm={handleDeleteBooking}
-                />
-            )}
-
-            {errorMessage && (
-                <ErrorNoticeModal 
-                    error={errorMessage}
-                    onClose={() => setErrorMessage(null) }
-                />
+                </div>
             )}
         </div>
     );
 };
-
-export default CustomersScreen;
