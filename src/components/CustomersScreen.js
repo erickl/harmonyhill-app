@@ -73,22 +73,6 @@ const CustomersScreen = ({ onNavigate }) => {
         load();
     }, [bookingToDelete, customerToEdit]);
 
-    if (loading) {
-        return (
-            <div className="fullscreen">
-                <div className="card-header">
-                    <div className='card-header-left'>
-                        <VeganHamburgerButton />
-                        <h2 className="card-title">Customers</h2>    
-                    </div>
-                </div>
-                <div className="card-content">
-                    <p>Loading customer data...</p>
-                </div>
-            </div>
-        );
-    }
-
     // Logic to group customers into Past / Current / Future
     // Once checkInAt is updated to a string, this needs to be adjusted
 
@@ -288,6 +272,11 @@ const CustomersScreen = ({ onNavigate }) => {
                     )}
                 </div>
             </div>
+            {loading ? (
+                <div className="card-content">
+                    <p>Loading customer data...</p>
+                </div>
+            ) : (
             <div className="card-content">
                 {/* Past Customers */}
                 {renderCustomerListSection("Past Customers", pastCustomers, "past-customer", pastExpanded, setPastExpanded)}
@@ -299,6 +288,7 @@ const CustomersScreen = ({ onNavigate }) => {
                 {renderCustomerListSection("Future Customers", futureCustomers, "future-customer", futureExpanded, setFutureExpanded)}
 
             </div>
+            )}
 
             {bookingToDelete && (
                 <ConfirmModal 
