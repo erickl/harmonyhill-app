@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
+import "./ActivitiesList.css";
 import ActivitiesList from './ActivitiesList.js';
 import * as userService from "../services/userService.js";
 

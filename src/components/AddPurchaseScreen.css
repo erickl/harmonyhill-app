@@ -29,3 +29,14 @@
     margin-left: 10px;
     color: red;
 }
+
+.activity-button, .category-button {
+    padding: 10px;
+    /* margin: 5px 0px; */
+    width: 60%;
+    margin: 10px auto;
+    display: block;
+    background-color: lightgrey;
+    color: darkcyan;
+    font-weight: 800;
+}

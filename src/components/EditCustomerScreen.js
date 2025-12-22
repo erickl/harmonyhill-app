@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BookingForm from './BookingForm.js';
 
-export default function EditCustomerScreen({ customer, onClose, onNavigate }) {
+export default function EditCustomerScreen({ onNavigate, onClose, customer}) {
     return (
         <div className="fullscreen">
             <div className="card-header">

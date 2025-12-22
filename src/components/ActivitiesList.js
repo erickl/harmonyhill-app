@@ -6,6 +6,7 @@ import EditPurchaseScreen from './EditPurchaseScreen.js';
 import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import "./ActivityComponent.css";
+import "./ActivitiesList.css";
 import ConfirmModal from './ConfirmModal.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';

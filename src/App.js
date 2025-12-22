@@ -6,6 +6,7 @@ import AddExpensesScreen from './components/AddExpensesScreen.js';
 import AddIncomeScreen from './components/AddIncomeScreen.js';
 import LoginScreen from './components/LoginScreen.js';
 import AddCustomerScreen from './components/AddCustomerScreen.js';
+import EditCustomerScreen from './components/EditCustomerScreen.js';
 import InventoryScreen from './components/InventoryScreen.js';
 import AddInventoryScreen from './components/AddInventoryScreen.js';
 import SubtractInventoryScreen from './components/SubtractInventoryScreen.js';
@@ -16,6 +17,8 @@ import SideMenu from './components/SideMenu.js';
 import * as userService from './services/userService.js';
 import { auth } from "./firebase.js";
 import './App.css';
+import AddPurchaseScreen from './components/AddPurchaseScreen.js';
+import CustomerPurchasesScreen from './components/CustomerPurchasesScreen.js';
 
 function App() {
     const [isLoggedIn,          setIsLoggedIn         ] = useState(false      );
@@ -71,6 +74,10 @@ function App() {
         screenToDisplay = <AddIncomeScreen onNavigate={navigate} />;
     } else if (currentScreen === 'add-customer') {
         screenToDisplay = <AddCustomerScreen onNavigate={navigate} />;
+    } else if (currentScreen === 'edit-customer') {
+        screenToDisplay = <EditCustomerScreen onNavigate={navigate} onClose={() => navigate("customers")} {...currentScreenParams} />;
+    } else if (currentScreen === 'customer-purchases') {
+        screenToDisplay = <CustomerPurchasesScreen onNavigate={navigate} onClose={() => navigate("customers")} {...currentScreenParams} />;
     } else if (currentScreen === 'admin') {
         screenToDisplay = <AdminScreen onNavigate={navigate} />;
     } else if (currentScreen === 'userLogs') {

@@ -1,8 +1,14 @@
+
+.customer-sub-header {
+    display: flex;
+    justify-content: space-between;
+}
+
 .card-title button {
     background-color: lightseagreen;
     border-radius: 50%;
     border: none;
-    color: rgb(90, 87, 87);
+    color: white;
     font-size: 40px;
     /* Add these lines to ensure a square shape, which will become a circle with rounded corners */
     width: 40px;
@@ -35,6 +41,47 @@
 
 }
 
+.bg-jn {
+    background-color: rgb(2, 65, 116);
+}
+
+.bg-hh {
+    background-color: darkcyan;
+}
+
+.bg-none {
+    background-color: black;
+}
+
+.customer-details {
+    padding: 0 0.5rem;
+    margin: 0;
+}
+
+.customer-details p {
+    margin: 0.5rem 0;
+}
+
+.customer-details .detail-label {
+    color: black;
+    font-weight: 600;
+}
+
+.important-badge {
+    background: red;
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.edit-booking {
+    color: black;
+    background-color: white;
+    font-size: 16px;
+}
+
 .category-buttons-container {
     width: 100%;
     display: block;
@@ -42,18 +89,15 @@
     /* align-items: center; */
 }
 
-.add-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background-color: #007bff; /* Or your preferred color */
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
+.booking-component-footer {
+    margin-top: 2rem;
     display: flex;
+    gap: 30px;
+}
+
+.booking-component-footer-icon p {
+    font-size: 10px; 
+    margin-top: 0rem;
+    cursor: pointer;
     align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.2s ease;
-  }
+}
