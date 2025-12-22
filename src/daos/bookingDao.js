@@ -30,14 +30,24 @@ export async function get(filterOptions = {}, onError = null) {
         queryFilter.push(where("checkOutAt", ">=", fireStoreDate));
     }
 
-    if (utils.exists(filterOptions, "after")) {
-        const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
-        queryFilter.push(where("checkOutAt", ">=", afterDateFireStore));
+    if (utils.exists(filterOptions, "checkOutAfter")) {
+        const checkOutAfterFireStore = utils.toFireStoreTime(filterOptions.checkOutAfter);
+        queryFilter.push(where("checkOutAt", ">=", checkOutAfterFireStore));
     }
 
-    if (utils.exists(filterOptions, "before")) {
-        const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
-        queryFilter.push(where("checkInAt", "<=", beforeDateFireStore));
+    if (utils.exists(filterOptions, "checkOutBefore")) {
+        const checkOutBeforeFireStore = utils.toFireStoreTime(filterOptions.checkOutBefore);
+        queryFilter.push(where("checkOutAt", "<=", checkOutBeforeFireStore));
+    }
+
+    if (utils.exists(filterOptions, "checkInAfter")) {
+        const checkInAfterFireStore = utils.toFireStoreTime(filterOptions.checkInAfter);
+        queryFilter.push(where("checkInAt", ">=", checkInAfterFireStore));
+    }
+
+    if (utils.exists(filterOptions, "checkInBefore")) {
+        const checkInBeforeFireStore = utils.toFireStoreTime(filterOptions.checkInBefore);
+        queryFilter.push(where("checkInAt", "<=", checkInBeforeFireStore));
     }
 
     let ordering = [ orderBy("checkInAt", "asc") ];

@@ -402,6 +402,10 @@ export function beginning() {
     return DateTime.now().set({year : 2000});
 }
 
+export function end() {
+    return DateTime.now().set({year : 2100});
+}
+
 /**
  * get a Luxon date time object with time at midnight
  */
