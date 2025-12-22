@@ -421,9 +421,9 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             </div>)}
 
             {/* Grey out the activity header to show it's completed */}
-            {/* {activity && activity.status === activityService.Status.COMPLETED && utils.isToday(activity.startingAt) && (
+            {activity && activity.status === activityService.Status.COMPLETED && utils.isToday(activity.startingAt) && (
                 <div className="activity-overlay" />
-            )} */}
+            )}
         </div>
 
         {loadingExpandedActivity ? (
