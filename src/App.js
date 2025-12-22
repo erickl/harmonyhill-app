@@ -78,6 +78,8 @@ function App() {
         screenToDisplay = <EditCustomerScreen onNavigate={navigate} onClose={() => navigate("customers")} {...currentScreenParams} />;
     } else if (currentScreen === 'customer-purchases') {
         screenToDisplay = <CustomerPurchasesScreen onNavigate={navigate} onClose={() => navigate("customers")} {...currentScreenParams} />;
+    } else if (currentScreen === 'add-customer-purchase') {
+        screenToDisplay = <AddPurchaseScreen onNavigate={navigate} onClose={() => navigate("customer-purchases", {...currentScreenParams})} {...currentScreenParams} />;
     } else if (currentScreen === 'admin') {
         screenToDisplay = <AdminScreen onNavigate={navigate} />;
     } else if (currentScreen === 'userLogs') {

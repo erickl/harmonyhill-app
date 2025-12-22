@@ -299,7 +299,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
     // --- Render Category Buttons (default view) ---
     return (
-        <div className="card add-purchase-card">
+        <div className="fullscreen">
             <div className="card-header">
                 <h2 className="card-title">Add Purchase for {customer ? customer.name : 'Customer'}</h2>
             </div>
