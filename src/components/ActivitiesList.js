@@ -12,12 +12,11 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import {getParent} from "../daos/dao.js";
 
-export default function ActivitiesList({onNavigate, from, to, customer, expandAllDates, triggerRerender}) {
+export default function ActivitiesList({onNavigate, from, to, customer, expandAllDates}) {
     const [expandedDates,           setExpandedDates    ] = useState({}   ); 
     const [activitiesByDate,        setActivitiesByDate ] = useState({}   );
     const [users,                   setUsers            ] = useState([]   );
     const [user,                    setUser             ] = useState(null );
-
     const [activityToEdit,          setActivityToEdit   ] = useState(null );
     const [loading,                 setLoading          ] = useState(true );
     const [currentCustomer,         setCurrentCustomer  ] = useState(null );
@@ -66,7 +65,7 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
     };
 
     const handleSetExpandedDates = (date) => {
-        let updatedExpandedList = { ...(expandedDates || {}) }; // Make shallow copy
+        let updatedExpandedList = { ...(expandedDates || {}) }; 
         updatedExpandedList[date] = updatedExpandedList[date] === true ? false : true;
         setExpandedDates(updatedExpandedList);
     };
@@ -90,7 +89,6 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
             todaysHeader.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [activitiesByDate]); // runs whenever activities change
-
 
     useEffect(() => {
         const getActivities = async() => {
@@ -138,17 +136,7 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
         if (activityToEdit === null) {
             getActivities();
         }
-    }, [customer, triggerRerender, activityToEdit]);
-
-    if (loading) {
-        return (
-            <div className="fullscreen">
-                <div className="card-content">
-                    <p>Loading activity data...</p>
-                </div>
-            </div>
-        );
-    }
+    }, [customer, activityToEdit]);
     
     if(activityToEdit && currentCustomer) {
         return (
@@ -160,7 +148,6 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
                     setCurrentCustomer(null);
                 }}
                 onNavigate={onNavigate}
-                triggerRerender={triggerRerender}
             />
         );
     }
@@ -171,6 +158,9 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
 
     return (
         <div className="card-content">
+            {loading ? (
+                <p>Loading...</p>
+            ) : (<>
             {Object.entries(activitiesByDate).map(([date, activities]) => {
                 const isTodaysHeader = date === today_ddMMM;
                 return (
@@ -181,7 +171,7 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
                                 onClick={() => handleSetExpandedDates(date) }
                                 ref={isTodaysHeader ? todaysHeader : null}
                             >
-                                {`${date}${(isTodaysHeader ? ` (Today) | ${utils.to_HHmm()}` : "")}`}
+                                {`${date}${(isTodaysHeader ? ` | ${utils.to_HHmm()}` : "")}`}
                                 
                                 <span className="expand-icon">
                                     {expandedDates[date] ? ' ▼' : ' ▶'}
@@ -199,7 +189,6 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
                                                     handleDeleteActivity={() => handleDeleteActivity(activity)}
                                                     users={users}
                                                     user={user}
-                                                    triggerRerender={triggerRerender}
                                                 />
                                             </React.Fragment>
                                         )
@@ -212,6 +201,7 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
                     </React.Fragment>
                 )
             })}
+            </>)}
         </div>
     );
 };

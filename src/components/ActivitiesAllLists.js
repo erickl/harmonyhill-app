@@ -5,8 +5,6 @@ import ActivitiesList from './ActivitiesList.js';
 import * as userService from "../services/userService.js";
 
 export default function ActivitiesAllLists({onNavigate, futureExpanded}) {
-
-    const [triggerRerender, setTriggerRerender] = useState(0);
     const [interval, setInterval] = useState(null);
     const [expandPrevious, setExpandPrevious] = useState(false);
     const [expandFuture, setExpandFuture] = useState(futureExpanded || false);
@@ -36,14 +34,23 @@ export default function ActivitiesAllLists({onNavigate, futureExpanded}) {
             </h3>
 
             {/* Past activities */}
-            {interval && expandPrevious && (<ActivitiesList
-                onNavigate={onNavigate}
-                from={interval.from}
-                to={utils.today(-1).endOf('day')}
-                customer={null}
-                expandAllDates={true}
-                triggerRerender={() => setTriggerRerender(triggerRerender + 1)}
-            />)}
+            {interval && expandPrevious && (
+                <ActivitiesList
+                    onNavigate={onNavigate}
+                    from={interval.from}
+                    to={utils.today(-1).endOf('day')}
+                    customer={null}
+                    expandAllDates={true}
+                />
+            )}
+
+            {/* Future activities */}
+            <h3
+                style={{marginBottom:"0px"}}
+                className={'customer-group-header clickable-header'}
+            >
+                Today
+            </h3>
 
             {/* Today's activities */}
             <ActivitiesList
@@ -52,7 +59,6 @@ export default function ActivitiesAllLists({onNavigate, futureExpanded}) {
                 to={utils.today().endOf('day')}
                 customer={null} 
                 expandAllDates={true}
-                triggerRerender={() => setTriggerRerender(triggerRerender + 1)}
             />
 
             {/* Future activities */}
@@ -68,14 +74,15 @@ export default function ActivitiesAllLists({onNavigate, futureExpanded}) {
                 </span>
             </h3>
 
-            {interval && expandFuture && (<ActivitiesList
-                onNavigate={onNavigate}
-                from={utils.today(1)}
-                to={interval.to.endOf('day')}
-                customer={null}
-                expandAllDates={true}
-                triggerRerender={() => setTriggerRerender(triggerRerender + 1)}
-            />)}
+            {interval && expandFuture && (
+                <ActivitiesList
+                    onNavigate={onNavigate}
+                    from={utils.today(1)}
+                    to={interval.to.endOf('day')}
+                    customer={null}
+                    expandAllDates={true}
+                />
+            )}
         </div>
     );
 }

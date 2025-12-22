@@ -190,7 +190,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         }   
 
         load();
-    }, [customer?.id]); // Dependency array: re-run this effect if the customer's ID changes
+    }, [customer?.id]);
 
     if (loadingMenu) {
         return (
