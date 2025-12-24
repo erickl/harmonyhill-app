@@ -76,21 +76,27 @@ export default function MyDatePicker({ name, date, time, onChange, useTime }) {
                 />
             </LocalizationProvider>
 
-            {useTime !== false && (<>
-                <div className="time-input" />
-                <LocalizationProvider dateAdapter={AdapterLuxon}>
-                    <MobileTimePicker
-                        label="Select a time"
-                        value={startingTime}
-                        onChange={(newTime) => handleTimeChange(newTime)}
-                        renderInput={(params) => <TextField {...params} fullWidth />}
-                        ampm={false}
-                        views={["hours", "minutes"]}
-                        desktopModeMediaQuery="(max-width: 999999px)" // force modal mode
-                        slotProps={slotProps} 
-                    />
-                </LocalizationProvider>
-            </>)}
+            {useTime !== false && (
+                <div style={{display:"flex", flexDirection: "row", alignItems: "center",marginTop:"1rem"}}>
+                    <div className="time-input" />
+                    <LocalizationProvider dateAdapter={AdapterLuxon}>
+                        <MobileTimePicker
+                            label="Select a time"
+                            value={startingTime}
+                            onChange={(newTime) => handleTimeChange(newTime)}
+                            renderInput={(params) => <TextField {...params} fullWidth />}
+                            ampm={false}
+                            views={["hours", "minutes"]}
+                            desktopModeMediaQuery="(max-width: 999999px)" // force modal mode
+                            slotProps={slotProps} 
+                        />
+                    </LocalizationProvider>
+                    <button 
+                        onClick={() => handleTimeChange(null)}
+                        style={{marginLeft: "1rem", padding:"0.5rem"}}>Set to TBD
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
