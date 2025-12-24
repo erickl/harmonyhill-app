@@ -421,7 +421,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             )}
 
             {/* Red out the activity header to show it's OVERDUE to be started/completed */}
-            {alert.category === activityService.Alert.OVERDUE && (
+            {alert && alert.category === activityService.Alert.OVERDUE && (
                 <motion.div
                 className="activity-delayed-overlay"
                     animate={{ scale: [1, 1, 1], opacity: [0.5, 0.1, 0.5] }}
