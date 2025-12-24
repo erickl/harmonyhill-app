@@ -45,6 +45,13 @@ export default function AlertCircle({status, message, onClick}) {
             };
             break;
         }
+        case Alert.OVERDUE: {
+            specific = {
+                backgroundColor : "#e40fa1ff",
+                color : "white",
+            };
+            break;
+        }
         case Alert.NONE: {
             symbol = "";
             break;

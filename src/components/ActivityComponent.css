@@ -40,10 +40,17 @@
     margin-top: 0rem;
 }
 
-.activity-overlay {
+.activity-completed-overlay {
   position: absolute;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.4); /* dim background */
+  z-index: 10000; /* make sure it's on top */
+}
+
+.activity-delayed-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(238, 102, 102, 0.978); /* dim background */
   z-index: 10000; /* make sure it's on top */
 }
 

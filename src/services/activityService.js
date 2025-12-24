@@ -8,29 +8,13 @@ import {get as getExpense} from "../services/expenseService.js";
 import * as storageDao from "../daos/storageDao.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 import {removeCounts as removeMinibarCounts} from "./minibarService.js";
-
-export const Status = Object.freeze({
-    GOOD_TO_GO            : "good to go",
-    COMPLETED             : "completed",
-    PENDING_GUEST_CONFIRM : "pending guest confirmation",
-    GUEST_CONFIRMED       : "guest confirmed",
-    PLEASE_BOOK           : "please book with provider",
-    ASSIGN_STAFF          : "assign staff",
-    STAFF_NOT_CONFIRM     : "staff not confirmed",
-    DETAILS_MISSING       : "details missing",
-    STARTED               : "started",
-    COMPLETED             : "completed",
-    AWAIT_COMMISSION      : "awaiting commission",
-    REMOVE_COMMISSION     : "remove commission",
-    AWAIT_EXPENSE         : "awaiting expense",
-    REMOVE_EXPENSE        : "remove expense",
-    NONE                  : "",
-});
+import * as ActivityStatus from "../models/ActivityStatus.js";
 
 export const Alert = Object.freeze({
     ATTENTION  : "attention",
     URGENT     : "urgent",
     EMERGENCY  : "emergency",
+    OVERDUE    : "overdue",
     NONE       : "",
 });
 
@@ -494,7 +478,7 @@ export function validate(customer, data, isUpdate, onError) {
             return false;
         }
 
-        if(data.status === Status.PENDING_GUEST_CONFIRM && !utils.isEmpty(data.provider)) {
+        if(ActivityStatus.PendingGuestConfirmation.equals(data.status) && !utils.isEmpty(data.provider)) {
             onError(`Don't book a provider before the guest has confirmed`);
             return false;
         }
@@ -555,12 +539,17 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
     if(activity == null) return alert();
     if(activityUnit == null) return alert();
 
+    // Haven't started yet, and past startingTime ==> Overdue
+    if(ActivityStatus.Started.greaterThan(currentStatus) && utils.isPast(activity.startingTime)) {
+        return alert(Alert.OVERDUE, "Activity should have been started already!");
+    }
+
     const timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
     const hoursLeft = Math.floor(timeLeft.hours);
     const urgent = !utils.isEmpty(activityUnit.deadline1) && hoursLeft <= activityUnit.deadline1;
     const emergency = !utils.isEmpty(activityUnit.deadline2) && hoursLeft <= activityUnit.deadline2;
     
-    if(currentStatus === Status.PENDING_GUEST_CONFIRM) {
+    if(ActivityStatus.PendingGuestConfirmation.equals(currentStatus)) {
         if(emergency) {
             return alert(Alert.EMERGENCY, "Confirm with guest immediately!");
         }
@@ -588,7 +577,7 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
             return alert(Alert.URGENT, "Assign task to someone");
         }
         const assignedNotYetAccepted = (!utils.exists(activity, "assigneeAccept") || activity.assigneeAccept === false);
-        if(currentStatus === Status.STAFF_NOT_CONFIRM && assignedNotYetAccepted) {
+        if(ActivityStatus.StaffNotConfirmed.equals(currentStatus) && assignedNotYetAccepted) {
             return alert(Alert.URGENT, "Accept the task");
         }
     }
@@ -603,77 +592,81 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
     return alert(Alert.NONE);
 }
 
-export function status(category = Status.NONE, message = "") {
-    return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
-};
-
 export async function getStatus(activity, onError) {
-    if(activity == null) return status();
+    if(activity == null) return ActivityStatus.None;
 
-    if(activity.status === Status.PENDING_GUEST_CONFIRM) {
-        return status(Status.PENDING_GUEST_CONFIRM);
+    if(ActivityStatus.PendingGuestConfirmation.equals(activity.status)) {
+        return ActivityStatus.PendingGuestConfirmation;
     }
+
     if(activity.needsProvider === true && utils.isEmpty(activity.provider)) {
-        return status(Status.PLEASE_BOOK);
+        return ActivityStatus.BookProvider;
     }
+
     if(utils.isEmpty(activity.assignedTo)) {
         if(utils.isBeforeToday(activity.startingAt)) {
-            return status(Status.ASSIGN_STAFF, "Staff assignment overdue!");
+            return ActivityStatus.AssignStaff.withMessage("Staff assignment overdue!");
+        // If activity is today, assigning staff
         } else if(utils.isToday(activity.startingAt)) {
-            return status(Status.ASSIGN_STAFF);
+            return ActivityStatus.AssignStaff;
+        // Start assigning staff after 17:00 the day before the activity
         } else if(utils.isTomorrow(activity.startingAt)) {
             const todayAtFivePm = utils.today().set({hour: 17});
             if(utils.isPast(todayAtFivePm)) {
-                return status(Status.ASSIGN_STAFF);
+                return ActivityStatus.AssignStaff;
             }
         } 
     }
+
     if(utils.isEmpty(activity.startingTime)) {
-        return status(Status.DETAILS_MISSING, "Set starting time");
+        return ActivityStatus.DetailsMissing.withMessage("Set starting time");
     }
+
     if(activity.isFree === false && utils.isEmpty(activity.customerPrice)) {
-        return status(Status.DETAILS_MISSING, "Provide customer price");
+        return ActivityStatus.DetailsMissing.withMessage("Provide customer price");
     }
+
     if(activity.needsProvider === true && utils.isEmpty(activity.providerPrice)) {
-        return status(Status.DETAILS_MISSING, "Provide provider price");
+        return ActivityStatus.DetailsMissing.withMessage("Provide provider price");
     }
+
     // Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded
     // if(activity.category === "meal" && utils.isEmpty(activity.dishes)) {
     //     return status(Status.DETAILS_MISSING, "Dishes missing");
     // }
     if(activity.assigneeAccept !== true) {
         if(utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) {
-            return status(Status.STAFF_NOT_CONFIRM);
+            return ActivityStatus.StaffNotConfirmed;
         }
     }
 
-    if(activity.status === Status.COMPLETED) {
+    if(ActivityStatus.Completed.equals(activity.status)) {
         const activityNeedsCommission = needsCommission(activity);
         const activityHasCommission = await hasCommission(activity, onError);
         if(activityNeedsCommission && !hasCommission) {
-            return status(Status.AWAIT_COMMISSION);
+            return ActivityStatus.AwaitingCommission;
         } else if(!activityNeedsCommission && activityHasCommission) {
-            return status(Status.REMOVE_COMMISSION);
+            return ActivityStatus.RemoveCommission;
         }
 
         const activityNeedsExpense = needsExpense(activity);
         const activityHasExpense = await hasExpense(activity, onError);
         if(activityNeedsExpense && !activityHasExpense) {
-            return status(Status.AWAIT_EXPENSE);
+            return ActivityStatus.AwaitingExpense;
         } else if(!activityNeedsExpense && activityHasExpense) {
-            return status(Status.REMOVE_EXPENSE);
+            return ActivityStatus.RemoveExpense;
         } else {
-            return status(Status.COMPLETED); 
+            return ActivityStatus.Completed;
         }
     }
 
-    if(activity.status === Status.GUEST_CONFIRMED) {
-        return status(Status.GOOD_TO_GO);
-    } else if(activity.status === Status.STARTED) {
-        return status(Status.STARTED);
+    if(ActivityStatus.GuestConfirmed.equals(activity.status)) {
+        return ActivityStatus.GoodToGo;
+    } else if(ActivityStatus.Started.equals(activity.status)) {
+        return ActivityStatus.Started;
     }
 
-    return status(Status.NONE);
+    return ActivityStatus.None;
 }
 
 export async function hasExpense(activity, onError) {

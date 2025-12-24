@@ -18,6 +18,7 @@ import { useCameraModal } from '../context/CameraContext.js';
 import { useImageCarousel } from '../context/ImageCarouselContext.js';
 import { useMinibarTableModal } from '../context/MinibarTableContext.js';
 import MetaInfo from './MetaInfo.js';
+import * as ActivityStatus from "../models/ActivityStatus.js";
 
 import { motion } from "framer-motion";
 
@@ -93,14 +94,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         setPhotoUploading(false);
     }
 
-    // const onDeletePhoto = async (photo) => {
-    //     if(status.category ===)
-    // }
-
     const canStartActivity = () => {
         if(!useActivityStartedStatus) return false;
 
-        const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
+        const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
         if(!isGoodToGo) {
             return false;
         }
@@ -123,13 +120,13 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     }
 
     const canAddPhotos = () => {
-        const isCompleted = status && status.category === activityService.Status.COMPLETED;
+        const isCompleted = ActivityStatus.Completed.equals(status);
         if(isCompleted) return false;
 
-        const isStarted = status && status.category === activityService.Status.STARTED;
+        const isStarted = ActivityStatus.Started.equals(status);
         if(isStarted) return true;
 
-        const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
+        const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
         if(!isGoodToGo) return false;
         
         // If it's already past the 'Started' stage, we can go from 'Good To Go' to 'Completed', if required photos has been uploaded
@@ -148,8 +145,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             return false;
         }
 
-        const isGoodToGo = status && status.category === activityService.Status.GOOD_TO_GO;
-        const isStarted = status && status.category === activityService.Status.STARTED;
+        const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
+        const isStarted = ActivityStatus.Started.equals(status);
         const canStillStart = canStartActivity();
 
         // Cannot Complete 15 minutes before the activity is scheduled to start
@@ -181,7 +178,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
         setStatus(newStatus);
 
-        const currentAlert = await activityService.getAlert(activity, newStatus.category, thisActivityInfo, onError);
+        const currentAlert = await activityService.getAlert(activity, newStatus, thisActivityInfo, onError);
         setAlert(currentAlert);
 
         return {activityInfo: thisActivityInfo, status: newStatus, alert: currentAlert};
@@ -189,13 +186,12 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
     const handleSetActivityStatusManually = async (newStatus) => {
         if(newStatus == null) return;
-        const newStatusName = newStatus.category;
 
-        onConfirm(`Set activity status to ${newStatusName}?`, async () => {
-            const success = await activityService.setActivityStatus(activity.bookingId, activity.id, newStatusName);
+        onConfirm(`Set activity status to ${newStatus.name}?`, async () => {
+            const success = await activityService.setActivityStatus(activity.bookingId, activity.id, newStatus.name);
             if(success) {
                 let updatedActivity = { ...(activity || {}) };
-                updatedActivity.status = newStatusName;
+                updatedActivity.status = newStatus.name;
                 setActivity(updatedActivity);
                 onSuccess();
             }
@@ -355,7 +351,6 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             setIsManagerOrAdmin(userRole);
         }
 
-
         setInitialData();
         setUserRole();
         getAndSetActivityInfo();
@@ -409,7 +404,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             {/* Display ongoing status of the activity */}
             {status && (<div className="activity-header-status">
                 <StatusCircle 
-                    status={status.category} 
+                    status={status.name} 
                 />
             </div>)}
             
@@ -421,9 +416,19 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             </div>)}
 
             {/* Grey out the activity header to show it's completed */}
-            {activity && activity.status === activityService.Status.COMPLETED && utils.isToday(activity.startingAt) && (
-                <div className="activity-overlay" />
+            {activity && ActivityStatus.Completed.equals(status) && utils.isToday(activity.startingAt) && (
+                <div className="activity-completed-overlay" />
             )}
+
+            {/* Red out the activity header to show it's OVERDUE to be started/completed */}
+            {alert.category === activityService.Alert.OVERDUE && (
+                <motion.div
+                className="activity-delayed-overlay"
+                    animate={{ scale: [1, 1, 1], opacity: [0.5, 0.1, 0.5] }}
+                    transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                />
+            )}
+
         </div>
 
         {loadingExpandedActivity ? (
@@ -571,7 +576,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
                     { user && user.shortName === assignedUserShortName && 
                         activity.assigneeAccept && 
-                        activity.status !== "started" &&
+                        ActivityStatus.Started.equals(activity.status) === false &&
                         (!utils.isPast(activity.startingAt)) && (
 
                         <div className="activity-component-footer-icon">
@@ -590,10 +595,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     { canStartActivity() && (
                         <div className="activity-component-footer-icon">
                             <StatusCircle 
-                                status={activityService.Status.STARTED} 
+                                status={ActivityStatus.Started.name} 
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleSetActivityStatusManually(activityService.status(activityService.Status.STARTED));
+                                    handleSetActivityStatusManually(ActivityStatus.Started);
                                 }}
                             />
                             <p>Start it</p>
@@ -605,10 +610,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                     { canCompleteActivity() && (
                         <div className="activity-component-footer-icon">
                             <StatusCircle 
-                                status={activityService.Status.COMPLETED} 
+                                status={ActivityStatus.Completed.name} 
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleSetActivityStatusManually(activityService.status(activityService.Status.COMPLETED));
+                                    handleSetActivityStatusManually(ActivityStatus.Completed);
                                 }}
                             />
                             <p>Complete it</p>
@@ -652,7 +657,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "checkin-prep" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED && (
+                    { activity && activity.subCategory === "checkin-prep" && utils.isToday(activity.startingAt) && ActivityStatus.Started.equals(status) && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
@@ -664,7 +669,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "checkout" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED && (
+                    { activity && activity.subCategory === "checkout" && utils.isToday(activity.startingAt) && ActivityStatus.Started.equals(status) && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
@@ -676,7 +681,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && status.category === activityService.Status.STARTED && (
+                    { activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && ActivityStatus.Started.equals(status) && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
