@@ -30,6 +30,11 @@
     color: red;
 }
 
+.validation-warning {
+    margin-left: 10px;
+    color: rgb(220, 147, 10);
+}
+
 .activity-button, .category-button {
     padding: 10px;
     /* margin: 5px 0px; */

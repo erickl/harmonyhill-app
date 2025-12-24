@@ -34,3 +34,8 @@
   margin-left: 10px;
   color: red;
 }
+
+.validation-warning {
+    margin-left: 10px;
+    color: rgb(220, 147, 10);
+}

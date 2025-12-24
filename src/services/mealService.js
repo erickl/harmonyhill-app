@@ -278,7 +278,9 @@ export async function getDishes(filterOptions, onError) {
     return await activityDao.getDishes(filterOptions, onError);
 }
 
-export function validate(customer, data, isUpdate, onError) {
+export function validate(customer, data, isUpdate, onError, onWarning) {
+    let warning = false;
+
     try {
         if(utils.isEmpty(data)) {
             onError("Fill in all required fields to submit");
@@ -290,13 +292,19 @@ export function validate(customer, data, isUpdate, onError) {
         }
 
         if(utils.isDateTime(customer.checkInAt) && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
-            onError(`Meal date too early. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
-            return false;
+            warning = true;
+            onWarning(`Beware! Activity date is before checkin date ${utils.to_ddMMM(customer.checkInAt)}`);
+            //return false; // We will allow this as there are exceptions, but display a warning
         }
 
         if(utils.isDateTime(customer.checkOutAt) && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
-            onError(`Meal date too late. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
-            return false;
+            warning = true;
+            onWarning(`Beware! Activity date is after checkout date ${utils.to_ddMMM(customer.checkOutAt)}`);
+            //return false; // We will allow this as there are exceptions, but display a warning
+        }
+
+        if(!warning) {
+            onWarning(null);
         }
 
         // todo: get other lunches/dinners on this date. If this is not an update, we should decline?
@@ -318,6 +326,8 @@ export function validate(customer, data, isUpdate, onError) {
         onError(`Unexpected error in meal form: ${e.message}`);
         return true; // A bug shouldn't prevent you from submitting a meal?
     }
+
+    onError(null);
 
     return true;
 }

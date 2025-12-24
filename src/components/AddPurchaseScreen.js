@@ -17,6 +17,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
     const [readyToSubmit, setReadyToSubmit] = useState(false);
 
     const [validationError, setValidationError] = useState(null);
+    const [validationWarning, setValidationWarning] = useState(null);
 
     // State to track the currently selected activity (for the purchase form)
     const [selectedActivity, setSelectedActivity] = useState(null);
@@ -51,12 +52,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
         internal      : false,
     };
 
-    const { onError } = useNotification();
+    const { onError, onWarning } = useNotification();
     const { onSuccess } = useSuccessNotification();
-
-    const onValidationError = (error) => {
-        setValidationError(error);
-    }
 
     // State for the purchase form data
     const [formData, setFormData] = useState(initialForm);
@@ -127,16 +124,12 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
 
         let validationResult = false;
         if(selectedActivity.category === "meal") {
-            validationResult = mealService.validate(customer, newFormData, false, onValidationError);
+            validationResult = mealService.validate(customer, newFormData, false, setValidationError, setValidationWarning);
         } else {
-            validationResult = activityService.validate(customer, newFormData, false, onValidationError);
+            validationResult = activityService.validate(customer, newFormData, false, setValidationError, setValidationWarning);
         }
 
         setReadyToSubmit(validationResult);
-
-        if(validationResult === true) {
-            setValidationError(null);
-        }
     }
 
     const handleFormDataChange = (name, value, type) => {
@@ -240,6 +233,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     />
                 )}
 
+                {(validationWarning && <p className="validation-warning">{validationWarning}</p>)}
                 {(validationError && <p className="validation-error">{validationError}</p>)}
                 
                 <ButtonsFooter 

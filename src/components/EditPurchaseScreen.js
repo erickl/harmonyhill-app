@@ -16,11 +16,12 @@ import { useSuccessNotification } from "../context/SuccessContext.js";
 const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, triggerRerender }) => {
 
     // Show purchase summary and confirmation pop up modal
-    const [showConfirm,      setShowConfirm]      = useState(false);
-    const [activityMenuItem, setActivityMenuItem] = useState(null );
-    const [readyToSubmit,    setReadyToSubmit]    = useState(false);
-    const [loading,          setLoading]          = useState(true );
-    const [validationError,  setValidationError]  = useState(null );
+    const [showConfirm,       setShowConfirm]       = useState(false);
+    const [activityMenuItem,  setActivityMenuItem]  = useState(null );
+    const [readyToSubmit,     setReadyToSubmit]     = useState(false);
+    const [loading,           setLoading]           = useState(true );
+    const [validationError,   setValidationError]   = useState(null );
+    const [validationWarning, setValidationWarning] = useState(null);
 
     const { onError, onWarning } = useNotification();
     const {onSuccess} = useSuccessNotification();
@@ -49,24 +50,17 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
         internal       : activityToEdit.internal,
     });
 
-    const onValidationError = (error) => {
-        setValidationError(error);
-    }
-
     const validateFormData = (newFormData) => {
         if(!activityToEdit) return;
         let validationResult = false;
+        
         if(activityToEdit.category === "meal") {
-            validationResult = mealService.validate(customer, newFormData, true, onValidationError);
+            validationResult = mealService.validate(customer, newFormData, true, setValidationError, setValidationWarning);
         } else {
-            validationResult = activityService.validate(customer, newFormData, true, onValidationError);
+            validationResult = activityService.validate(customer, newFormData, true, setValidationError, setValidationWarning);
         }
 
         setReadyToSubmit(validationResult);
-
-        if(validationResult === true) {
-            setValidationError(null);
-        }
     }
 
     const handleFormDataChange = (name, value, type) => {
@@ -208,6 +202,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
                     />
                 )}
 
+                {(validationWarning && <p className="validation-warning">{validationWarning}</p>)}
                 {(validationError && <p className="validation-error">{validationError}</p>)}
                 
                 <ButtonsFooter 

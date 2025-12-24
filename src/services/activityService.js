@@ -457,25 +457,33 @@ async function mapObject(data) {
     return activity;
 }
 
-export function validate(customer, data, isUpdate, onError) {
+export function validate(customer, data, isUpdate, onError, onWarning) {
+    let warning = false;
     try {
         if(utils.isEmpty(data)) {
             onError("Fill in all required fields to submit");
             return false;
         }
+
         if(utils.isEmpty(data.startingAt)) {
             onError("Activity date required");
             return false;
         }
 
         if(data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
-            onError(`Activity date too early. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
-            return false;
+            warning = true;
+            onWarning(`Beware! Activity date is before checkin date ${utils.to_ddMMM(customer.checkInAt)}`);
+            //return false; // We will allow this as there are exceptions, but display a warning
         }
 
         if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
-            onError(`Activity date too late. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
-            return false;
+            warning = true;
+            onWarning(`Beware! Activity date is after checkout date ${utils.to_ddMMM(customer.checkOutAt)}`);
+            //return false; // We will allow this as there are exceptions, but display a warning
+        }
+
+        if(!warning) {
+            onWarning(null);
         }
 
         if(ActivityStatus.PendingGuestConfirmation.equals(data.status) && !utils.isEmpty(data.provider)) {
@@ -486,6 +494,8 @@ export function validate(customer, data, isUpdate, onError) {
         onError(`Unexpected error in activity form: ${e.message}`);
         return true;  // A bug shouldn't prevent you from submitting an activity
     }
+
+    onError(null);
 
     return true; 
 }
