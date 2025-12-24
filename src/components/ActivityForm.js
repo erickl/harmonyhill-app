@@ -11,8 +11,7 @@ import { Checkbox, FormControlLabel } from '@mui/material';
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers,   setTeamMembers  ] = useState([]   );
-    const [needsProvider, setNeedsProvider] = useState(formData?.needsProvider || selectedActivity.internal === false);
-
+    
     const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
             
     const { onError } = useNotification();
@@ -27,7 +26,6 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     }
 
     const onSetNeedsProviderChecked = (checked) => {
-        setNeedsProvider(checked);
         handleFormDataChange("needsProvider", checked);
     }
 
@@ -148,7 +146,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
             </div>
 
             {/* (External) providers are not needed for activities organized by internal staff */}
-            { selectedActivity.internal !== true || custom === true && (<> 
+            { (selectedActivity.internal !== true || custom === true) && (<> 
                 { formData.needsProvider !== false && (
                     <div className="purchase-form-group">
                         <div className="provider-row">
@@ -190,7 +188,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <input
                         type="checkbox"
-                        checked={needsProvider}
+                        checked={formData.needsProvider}
                         onChange={(e) => onSetNeedsProviderChecked(e.target.checked)}
                     />
                     <span>Needs provider?</span>
