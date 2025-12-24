@@ -306,30 +306,35 @@ export function toDateTime(inputDate) {
 }
 
 export function isToday(inputDate) {
+    if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const todayDateTime = today(0, false);
     return luxonDateTime.day === todayDateTime.day;
 }
 
 export function isTomorrow(inputDate) {
+    if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const tomorrow = today(0, false).plus({days: 1});
     return luxonDateTime.day === tomorrow.day;
 }
 
 export function isBeforeToday(inputDate) {
+    if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const todayDateTime = today(0, false);
     return luxonDateTime.day < todayDateTime.day;
 }
 
 export function isAfterToday(inputDate) {
+    if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const todayDateTime = today(0, false);
     return luxonDateTime.day > todayDateTime.day;
 }
 
 export function isPast(inputDate) {
+    if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const nowTime = now(0, false);
     const diff = luxonDateTime.toMillis() - nowTime.toMillis();

@@ -321,28 +321,33 @@ export function toDateTime(inputDate) {
 }
 
 export function isToday(inputDate, plusDays = 0) {
+    if(!inputDate) return false;
     const inputLuxonDateTime = toLuxonDateTime(inputDate);
     const comparingDateTime = today(plusDays, false);
     return inputLuxonDateTime.day == comparingDateTime.day;
 }
 
 export function isTomorrow(inputDate) {
+    if(!inputDate) return false;
     return isToday(inputDate, 1);
 }
 
 export function isBeforeToday(inputDate) {
+    if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const todayDateTime = today(0, false);
     return luxonDateTime.day < todayDateTime.day;
 }
 
 export function isAfterToday(inputDate) {
+    if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const todayDateTime = today(0, false);
     return luxonDateTime.day > todayDateTime.day;
 }
 
 export function isPast(inputDate) {
+    if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const nowTime = now(0, false);
     const diff = luxonDateTime.toMillis() - nowTime.toMillis();
