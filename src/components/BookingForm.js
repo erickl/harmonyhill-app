@@ -33,7 +33,6 @@ export default function BookingForm({ booking, onClose }) {
         promotions:          booking ? booking.promotions          : '',
         country:             booking ? booking.country             : '',
         source:              booking ? booking.source              : '',
-        roomRate:            booking ? booking.roomRate            : '',
         guestPaid:           booking ? booking.guestPaid           : '',
         hostPayout:          booking ? booking.hostPayout          : '',
     };
@@ -286,20 +285,6 @@ export default function BookingForm({ booking, onClose }) {
                     value={formData.country}
                     onChange={(e) => handleInputChange('country', e.target.value)}
 
-                />
-            </div>
-
-            <div className="purchase-form-group">
-                <h3>Room Rate</h3>
-                <span className="currency-prefix">{utils.getCurrency()}</span>
-                <input
-                    type="text" // Changed from "number" to "text"
-                    id="roomRate"
-                    name="roomRate"
-                    // Apply formatting here for display inside the input
-                    value={utils.formatDisplayPrice(formData.roomRate)}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
-                    className="input"
                 />
             </div>
 

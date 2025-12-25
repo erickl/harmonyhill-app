@@ -147,7 +147,6 @@ export async function mapBookingObject(data) {
 
     if(!utils.isEmpty(data?.guestCount))          booking.guestCount             = data.guestCount   ;
     
-    if(utils.isAmount(data?.roomRate))            booking.roomRate               = data.roomRate     ;
     if(utils.isAmount(data?.guestPaid))           booking.guestPaid              = data.guestPaid / data.nightsCount;
     if(utils.isAmount(data?.hostPayout))          booking.hostPayout             = data.hostPayout   ;
             
@@ -232,31 +231,22 @@ export function validate(data, onError) {
         }
 
         if(source === "airbnb") {
-            const guestPaidPerNight = data.guestPaid / data.nightsCount;
-            // Room rate is excluding AirBnB added fee
-            if(data.roomRate >= guestPaidPerNight) {
-                onError("Room rate should be less than what guest paid per night, for an AirBnB booking");
-                return false;
-            }
             // Payout from AirBnB smaller since AirBnB takes a piece
             if(data.hostPayout >= data.guestPaid) {
                 onError("Host payout should be less than what guest paid total, for an AirBnB booking");
                 return false;
             }
         } else if(source === "direct") {
-            const roomRateAllNights = data.roomRate * data.nightsCount;
-            if(roomRateAllNights != data.guestPaid) {
-                onError("Total room cost should be equal to what guest paid total, for a direct booking");
-                return false;
-            }
-
             // If direct, we keep the entire payment
             if(data.hostPayout != data.guestPaid) {
                 onError("Host payout should be equal to what guest paid total, for a direct booking");
                 return false;
             }
         } else if(source === "booking.com") {
-            // todo: implement checks
+            if(data.hostPayout >= data.guestPaid) {
+                onError("Host payout should be less than what guest paid total, for an AirBnB booking");
+                return false;
+            }
         }
     } catch(e) {
         onError(`Unexpected booking validation error: ${e.message}`);
