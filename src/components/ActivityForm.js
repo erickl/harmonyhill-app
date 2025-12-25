@@ -182,6 +182,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
             
             <MyDatePicker 
                 name={"startingAt"} 
+                label="Start"
                 date={formData.startingAt} 
                 time={formData.startingTime} 
                 onChange={handleFormDataChange} 

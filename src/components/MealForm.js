@@ -240,7 +240,8 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
             <div className="purchase-form-group">
                 <MyDatePicker 
-                    name={"startingAt"} 
+                    name={"startingAt"}
+                    label="Start"
                     date={formData.startingAt}
                     time={formData.startingTime}
                     onChange={handleFormDataChange}

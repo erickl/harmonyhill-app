@@ -8,7 +8,7 @@ import "./MyDatePicker.css";
 import { MobileDateTimePicker } from '@mui/x-date-pickers/MobileDateTimePicker';
 import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 
-export default function MyDatePicker({ name, date, time, onChange, useTime }) {
+export default function MyDatePicker({ name, label, date, time, onChange, useTime }) {
     //const isMidnight = (dt) => dt !== null && dt.hour === 0 && dt.minute === 0 && dt.second === 0 && dt.millisecond === 0;
 
     date = utils.toDateTime(date);
@@ -61,12 +61,15 @@ export default function MyDatePicker({ name, date, time, onChange, useTime }) {
         //popper: {sx: { zIndex: 10001,},},
     };
 
+    const dateLabel = label ? `${label} date` : "date";
+    const timeLabel = label ? `${label} time` : "time";
+
     return (
         <div className="date-time-input">
             <LocalizationProvider dateAdapter={AdapterLuxon} adapterLocale="en-gb">
                 <MobileDateTimePicker
                     slotProps={slotProps}  
-                    label="Select a date"
+                    label={`Select ${dateLabel}`}
                     value={date}
                     format="dd/MM/yyyy"
                     onChange={(newDate) => handleDateChange(newDate)}
@@ -81,7 +84,7 @@ export default function MyDatePicker({ name, date, time, onChange, useTime }) {
                     <div className="time-input" />
                     <LocalizationProvider dateAdapter={AdapterLuxon}>
                         <MobileTimePicker
-                            label="Select a time"
+                            label={`Select ${timeLabel}`}
                             value={startingTime}
                             onChange={(newTime) => handleTimeChange(newTime)}
                             renderInput={(params) => <TextField {...params} fullWidth />}

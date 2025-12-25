@@ -367,6 +367,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                     <div className="purchase-form-group">
                         <MyDatePicker 
                             name={"purchasedAt"} 
+                            label={"Purchase"}
                             date={formData.purchasedAt} 
                             onChange={handleChange}
                             time={null}

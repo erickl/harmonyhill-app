@@ -285,7 +285,8 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
 
                 <div className="purchase-form-group">
                     <MyDatePicker 
-                        name={"receivedAt"} 
+                        name={"receivedAt"}
+                        label="Payment"
                         date={formData.receivedAt} 
                         onChange={handleChange}
                         time={null}
