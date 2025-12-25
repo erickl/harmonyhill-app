@@ -230,7 +230,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                 <TextInput
                     type="amount"
                     name="amount"
-                    label={"Customer Price"}
+                    label={"Amount"}
                     value={formData.amount}
                     onChange={(e) => handleChange(e.target.name, e.target.value, "amount")}
                 />

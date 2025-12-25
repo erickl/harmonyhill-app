@@ -10,6 +10,7 @@ import * as utils from "../utils.js";
 import "./AddExpenseScreen.css";
 import { useNotification } from "../context/NotificationContext.js";
 import ExpensesScreen from './ExpensesScreen.js';
+import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useCameraModal } from "../context/CameraContext.js";
 
@@ -320,22 +321,13 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                         Edit photo
                     </button>
 
-                    <div className="form-group">
-                        <label htmlFor="amount">Amount (IDR):</label>
-                        <div className="currency-input-wrapper">
-                            <span className="currency-prefix">Rp</span>
-                            <input
-                                type="text" // Use text to allow manual formatting display, number for numeric input
-                                id="amount"
-                                name="amount"
-                                value={utils.formatDisplayPrice(formData.amount)}
-                                onChange={(e) => handleChange(e.target.name, e.target.value)}
-                                required
-                                className="input"
-                                inputMode="numeric" // Optional: for mobile keyboards
-                            />
-                        </div>
-                    </div>
+                    <TextInput
+                        type="amount"
+                        name="amount"
+                        label={"Amount"}
+                        value={formData.amount}
+                        onChange={(e) => handleChange(e.target.name, e.target.value, "amount")}
+                    />
 
                     <div className="purchase-form-group">
                         <Dropdown 
@@ -364,16 +356,14 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                         />
                     </div>
 
-                    <div className="purchase-form-group">
-                        <MyDatePicker 
-                            name={"purchasedAt"} 
-                            label={"Purchase"}
-                            date={formData.purchasedAt} 
-                            onChange={handleChange}
-                            time={null}
-                            useTime={false}
-                        />
-                    </div>
+                    <MyDatePicker 
+                        name={"purchasedAt"} 
+                        label={"Purchase"}
+                        date={formData.purchasedAt} 
+                        onChange={handleChange}
+                        time={null}
+                        useTime={false}
+                    />
 
                     {needsGuestInfo(formData.category) && (
                         <div className="purchase-form-group">
@@ -397,31 +387,21 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                         </div>
                     )}
 
-                    <div className="form-group">
-                        <label htmlFor="description">Description:</label>
-                        <input
-                            type="text"
-                            id="description"
-                            name="description"
-                            value={formData.description}
-                            onChange={(e) => handleChange(e.target.name, e.target.value)}
-                            required
-                            className="input"
-                        />
-                    </div>
+                    <TextInput
+                        type="text"
+                        name="description"
+                        label={"Description"}
+                        value={formData.description}
+                        onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    />
 
-                    {/* Comments Field */}
-                    <div className="form-group">
-                        <label htmlFor="comments">Comments:</label>
-                        <textarea
-                            id="comments"
-                            name="comments"
-                            value={formData.comments}
-                            onChange={(e) => handleChange(e.target.name, e.target.value)}
-                            rows="4"
-                            className="input"
-                        ></textarea>
-                    </div>
+                    <TextInput
+                        type="text"
+                        name="comments"
+                        label={"Comments"}
+                        value={formData.comments}
+                        onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    />
                 </>) : (  
                     <button onClick={() => onOpenCamera(true, true, () => onConfirmPhoto)}>
                         Add photo
