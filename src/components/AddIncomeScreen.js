@@ -9,6 +9,7 @@ import IncomeScreen from "./IncomeScreen.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
+import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
 export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
@@ -226,22 +227,13 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
             </div>
             <div className="card-content">
                     
-                <div className="form-group">
-                    <label htmlFor="amount">Amount (IDR):</label>
-                    <div className="currency-input-wrapper">
-                        <span className="currency-prefix">Rp</span>
-                        <input
-                            type="text" // Use text to allow manual formatting display, number for numeric input
-                            id="amount"
-                            name="amount"
-                            value={utils.formatDisplayPrice(formData.amount)}
-                            onChange={(e) => handleChange(e.target.name, e.target.value)}
-                            required
-                            className="input"
-                            inputMode="numeric" // Optional: for mobile keyboards
-                        />
-                    </div>
-                </div>
+                <TextInput
+                    type="amount"
+                    name="amount"
+                    label={"Customer Price"}
+                    value={formData.amount}
+                    onChange={(e) => handleChange(e.target.name, e.target.value, "amount")}
+                />
 
                 <div className="purchase-form-group">
                     <Dropdown 
@@ -283,30 +275,22 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     />
                 </div>
 
-                <div className="purchase-form-group">
-                    <MyDatePicker 
-                        name={"receivedAt"}
-                        label="Payment"
-                        date={formData.receivedAt} 
-                        onChange={handleChange}
-                        time={null}
-                        useTime={false}
-                    />
-                </div>
+                <MyDatePicker 
+                    name={"receivedAt"}
+                    label="Payment"
+                    date={formData.receivedAt} 
+                    onChange={handleChange}
+                    time={null}
+                    useTime={false}
+                />
 
-                {/* Comments Field */}
-                <div className="form-group">
-                    <label htmlFor="comments">Comments:</label>
-                    <textarea
-                        id="comments"
-                        name="comments"
-                        value={formData.comments}
-                        placeholder={commentsHint} 
-                        onChange={(e) => handleChange(e.target.name, e.target.value)}
-                        rows="4"
-                        className="input"
-                    ></textarea>
-                </div>
+                <TextInput
+                    type="text"
+                    name="comments"
+                    label={"Comments"}
+                    value={formData.comments}
+                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                />
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 
