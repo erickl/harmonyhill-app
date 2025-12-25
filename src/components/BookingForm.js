@@ -4,6 +4,7 @@ import * as utils from "../utils.js";
 import * as bookingService from "../services/bookingService.js";
 import MyDatePicker from './MyDatePicker.js';
 import ButtonsFooter from './ButtonsFooter.js';
+import TextInput from './TextInput.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
@@ -147,68 +148,51 @@ export default function BookingForm({ booking, onClose }) {
                 </div>
             </div>
 
-            {/* Name */}
-            <div>
-                <h3>
-                    Guest Name
-                </h3>
-                <textarea
-                    placeholder="Enter guest name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+            <TextInput
+                type="text"
+                name="name"
+                label={"Guest Name"}
+                value={formData.name}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
 
-                />
-            </div>
+            <TextInput
+                type="text"
+                name="phoneNumber"
+                label={"Phone number"}
+                value={formData.phoneNumber}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
 
-            {/* Phone number */}
-            <div>
-                <h3>Phone number</h3>
-                <input
-                    placeholder="Enter phone number"
-                    value={formData.phoneNumber}
-                    onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+            <TextInput
+                type="text"
+                name="email"
+                label={"Email"}
+                value={formData.email}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
+           
+            <MyDatePicker 
+                name={"checkInAt"}
+                label={"Checkin"}
+                date={formData.checkInAt} 
+                time={formData.checkInTime} 
+                onChange={handleInputChange}
+            />
 
-                />
-            </div>
+            <MyDatePicker 
+                name={"checkOutAt"} 
+                label={"Checkout"} 
+                date={formData.checkOutAt} 
+                time={formData.checkOutTime} 
+                onChange={handleInputChange}
+            />
 
-            {/* Email */}
-            <div>
-                <h3>Email</h3>
-                <input
-                    placeholder="Enter email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-
-                />
-            </div>
-
-            <div className="form-group">
-                <h3>Check-In Date</h3>
-                <MyDatePicker 
-                    name={"checkInAt"} 
-                    date={formData.checkInAt} 
-                    time={formData.checkInTime} 
-                    onChange={handleInputChange}
-                />
-            </div>
-
-            <div>
-                <h3>Check-out Date</h3>
-                <MyDatePicker 
-                    name={"checkOutAt"} 
-                    date={formData.checkOutAt} 
-                    time={formData.checkOutTime} 
-                    onChange={handleInputChange}
-                />
-            </div>
-
-            {/* Length of Stay */}
             <div>
                 <h3>Length of Stay</h3>
                 <p>{nightsCount}</p>
             </div>
 
-            {/* Guest Count */}
             <div>
                 <h3>Guest Count</h3>
                 <select
@@ -224,97 +208,69 @@ export default function BookingForm({ booking, onClose }) {
                 </select>
             </div>
 
-            {/* Dietary Restrictions */}
-            <div>
-                <h3>Dietary Restrictions</h3>
-                <textarea
-                    placeholder="Enter dietary restrictions"
-                    value={formData.dietaryRestrictions}
-                    onChange={(e) => handleInputChange('dietaryRestrictions', e.target.value)}
+            <TextInput
+                type="text"
+                name="dietaryRestrictions"
+                label={"Dietary Restrictions"}
+                value={formData.dietaryRestrictions}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
 
-                />
-            </div>
+            <TextInput
+                type="text"
+                name="customerInfo"
+                label={"Customer Info"}
+                value={formData.customerInfo}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
 
-            {/* Other Details */}
-            <div>
-                <h3>Other Details</h3>
-                <textarea
-                    placeholder="Enter other details"
-                    value={formData.customerInfo}
-                    onChange={(e) => handleInputChange('customerInfo', e.target.value)}
-                />
-            </div>
+            <TextInput
+                type="text"
+                name="arrivalInfo"
+                label={"Arrival Info"}
+                value={formData.arrivalInfo}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
 
-            {/* Arrival Information */}
-            <div>
-                <h3>Arrival Information</h3>
-                <textarea
-                    placeholder="Enter other details"
-                    value={formData.arrivalInfo}
-                    onChange={(e) => handleInputChange('arrivalInfo', e.target.value)}
-                />
-            </div>
+            <TextInput
+                type="text"
+                name="specialRequests"
+                label={"Special Requests"}
+                value={formData.specialRequests}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
 
-            {/* Special Requests */}
-            <div>
-                <h3>Special Requests</h3>
-                <textarea
-                    placeholder="Enter special requests"
-                    value={formData.specialRequests}
-                    onChange={(e) => handleInputChange('specialRequests', e.target.value)}
+            <TextInput
+                type="text"
+                name="promotions"
+                label={"Promotions"}
+                value={formData.promotions}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
 
-                />
-            </div>
+            <TextInput
+                type="text"
+                name="country"
+                label={"Country"}
+                value={formData.country}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+            />
 
-            {/* Promotions */}
-            <div>
-                <h3>Promotions</h3>
-                <input
-                    placeholder="Enter promotions"
-                    value={formData.promotions}
-                    onChange={(e) => handleInputChange('promotions', e.target.value)}
+            <TextInput
+                type="amount"
+                name="guestPaid"
+                label={"Guest Paid"}
+                value={formData.guestPaid}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+            />
 
-                />
-            </div>
-
-            {/* Country */}
-            <div>
-                <h3>Country</h3>
-                <input
-                    placeholder="Enter country"
-                    value={formData.country}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
-
-                />
-            </div>
-
-            <div className="purchase-form-group">
-                <h3>Guest Paid</h3>
-                <span className="currency-prefix">{utils.getCurrency()}</span>
-                <input
-                    type="text" // Changed from "number" to "text"
-                    id="guestPaid"
-                    name="guestPaid"
-                    // Apply formatting here for display inside the input
-                    value={utils.formatDisplayPrice(formData.guestPaid)}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
-                    className="input"
-                />
-            </div>
-
-            <div className="purchase-form-group">
-                <h3>Host Payout</h3>
-                <span className="currency-prefix">{utils.getCurrency()}</span>
-                <input
-                    type="text" // Changed from "number" to "text"
-                    id="hostPayout"
-                    name="hostPayout"
-                    // Apply formatting here for display inside the input
-                    value={utils.formatDisplayPrice(formData.hostPayout)}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
-                    className="input"
-                />
-            </div>
+            <TextInput
+                type="amount"
+                name="hostPayout"
+                label={"Host Payout"}
+                value={formData.hostPayout}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+            />
 
             {/* Source */}
             <div>
