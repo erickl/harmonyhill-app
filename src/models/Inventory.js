@@ -57,7 +57,7 @@ export default class Inventory {
             new Inventory("Ice Cream Stick",                       "minibar",           55000,    0,               [],                null), 
             new Inventory("Cassava Chips",                         "minibar",           50000,    0,               [],                null), 
             new Inventory("Tempe Chips",                           "minibar",           50000,    0,               [],                null), 
-            new Inventory("Black Thins",                           "minibar",           50000,    0,               [],                null), 
+            new Inventory("Black Thins",                           "minibar",           60000,    0,               [],                null), 
             new Inventory("Yava Granola",                          "minibar",           50000,    0,               [],                null), 
             new Inventory("Casa Grata",                            "minibar",           60000,    0,               [],                null), 
             new Inventory("Biscoff Roll",                          "minibar",           60000,    0,               ["Delta Dewata"],  "gs://harmonyhill-1.firebasestorage.app/resources/minibar/biscoff-roll.jpeg"), 
