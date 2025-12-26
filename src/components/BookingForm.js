@@ -13,6 +13,7 @@ export default function BookingForm({ booking, onClose }) {
     const [nightsCount, setNightsCount] = useState('');
     const [readyToSubmit, setReadyToSubmit] = useState(false);
     const [validationError, setValidationError] = useState(null);
+    const [validationWarning, setValidationWarning] = useState(null);
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
@@ -41,13 +42,8 @@ export default function BookingForm({ booking, onClose }) {
     const [formData, setFormData] = useState(initialFormData);
 
     const validateFormData = (newFormData) => {
-        const validationResult = bookingService.validate(newFormData, onValidationError);
-
+        const validationResult = bookingService.validate(newFormData, setValidationError, setValidationWarning);
         setReadyToSubmit(validationResult);
-
-        if(validationResult === true) {
-            setValidationError(null);
-        }
     }
 
     const handleSubmit = async () => { 
@@ -89,10 +85,6 @@ export default function BookingForm({ booking, onClose }) {
 
         validateFormData(nextFormData);
     };
-
-    const onValidationError = (error) => {
-        setValidationError(error);
-    }
 
     // Initial validation
     useEffect(() => {
@@ -321,7 +313,8 @@ export default function BookingForm({ booking, onClose }) {
                 </div>
             </div>
 
-            {(validationError && <p className="validation-error">{validationError}</p>)}
+            {(validationWarning && <p className="validation-warning">{`Warning: ${validationWarning}`}</p>)}
+            {(validationError && <p className="validation-error">{`Error: ${validationError}`}</p>)}
 
             <ButtonsFooter 
                 onCancel={onClose} 

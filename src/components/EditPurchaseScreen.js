@@ -204,8 +204,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
                     />
                 )}
 
-                {(validationWarning && <p className="validation-warning">{validationWarning}</p>)}
-                {(validationError && <p className="validation-error">{validationError}</p>)}
+                {(validationWarning && <p className="validation-warning">{`Warning: ${validationWarning}`}</p>)}
+                {(validationError && <p className="validation-error">{`Error: ${validationError}`}</p>)}
                 
                 <ButtonsFooter 
                     onCancel={onClose} 

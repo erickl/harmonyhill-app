@@ -233,8 +233,8 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
                     />
                 )}
 
-                {(validationWarning && <p className="validation-warning">{validationWarning}</p>)}
-                {(validationError && <p className="validation-error">{validationError}</p>)}
+                {(validationWarning && <p className="validation-warning">{`Warning: ${validationWarning}`}</p>)}
+                {(validationError && <p className="validation-error">{`Error: ${validationError}``}</p>)}
                 
                 <ButtonsFooter 
                     onCancel={() => handleActivitySelection(null)} 

@@ -166,7 +166,7 @@ export async function mapBookingObject(data) {
     return booking;
 }
 
-export function validate(data, onError) {
+export function validate(data, onError, onWarning) {
     try {
         if(utils.isEmpty(data)) {
             onError("Fill in all required fields to submit");
@@ -203,21 +203,27 @@ export function validate(data, onError) {
             return false;
         }
 
-        if(!utils.isNumber(data.roomRate) || data.roomRate == 0) {
-            onError("Room rate is missing");
-            return false;
-        }
-
-        if(!utils.isNumber(data.guestPaid) || data.guestPaid == 0) {
+        if(!utils.isNumber(data.guestPaid)) {
             onError("Guest paid amount is missing");
             return false;
         }
 
-        if(!utils.isNumber(data.hostPayout) || data.hostPayout == 0) {
+        if(!utils.isNumber(data.hostPayout)) {
             onError("Host payout amount is missing");
             return false;
         }
 
+        let warningText = null;
+        if(data.guestPaid == 0) {
+            warningText = "Guest paid is 0";
+        }
+
+        if(data.hostPayout == 0) {
+            warningText = "Host payout is 0";
+        }
+
+        onWarning(warningText);
+        
         if(!utils.isString(data.source)) {
             onError("Booking source data type wrong");
             return false;
@@ -252,6 +258,8 @@ export function validate(data, onError) {
         onError(`Unexpected booking validation error: ${e.message}`);
         return true; // A bug shouldn't prevent you from submitting?
     }
+
+    onError(null);
 
     return true;
 }
