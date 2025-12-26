@@ -215,6 +215,7 @@ export async function toArrays(filters, onProgress, onError) {
 
     const headers = [
         "index",
+        "createdAt",
         "purchasedAt",
         "purchasedBy",
         "amount",
