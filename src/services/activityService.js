@@ -692,18 +692,16 @@ export async function hasCommission(activity, onError) {
 }
 
 export function needsCommission(activity) {
-    const noCustomerPrice = !utils.exists(activity, "customerPrice") || utils.isEmpty(activity.customerPrice) || activity.customerPrice == 0;
     const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;   
     const isPast = utils.isPast(activity.startingAt);
-    const needsCommission = noCustomerPrice && providerPriceExists && isPast;
+    const needsCommission = providerPriceExists && isPast;
     return needsCommission;
 }
 
 export function needsExpense(activity) {
-    const customerPriceExists = utils.exists(activity, "customerPrice") && !utils.isEmpty(activity.customerPrice) && activity.customerPrice > 0;
     const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;   
     const isPast = utils.isPast(activity.startingAt);
-    const needsExpenseNow = customerPriceExists && providerPriceExists && isPast;
+    const needsExpenseNow = providerPriceExists && isPast;
     return needsExpenseNow;
 }
 
