@@ -141,7 +141,9 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
 
         validateFormData(formData); 
 
-        if(formData.startingAt < utils.now()) {
+        // If both date and time are set (i.e. time not TBD), and start time is in the past:
+        const isPast = (utils.isDate(formData.startingAt) && utils.isBeforeToday(formData.startingAt)) || (utils.isDate(formData.startingTime) && utils.isPast(formData.startingAt));
+        if(isPast) {
             onWarning(`You are editing an ongoing or old activity (started ${utils.to_yyMMddHHmm(formData.startingAt, "/")})`)
         }
     }, []);
