@@ -1,13 +1,14 @@
 import * as mealService from './mealService.js';
 import * as activityService from './activityService.js';
 import * as utils from "../utils.js";
+import * as incomeService from "./incomeService.js";
 
 /**
  * @param {*} bookingId 
  * @returns json with itemized list of all a booking's activities and the total amount owed 
  */
-export async function getTotal(bookingId) {
-    const activities = await activityService.get(bookingId);
+export async function getTotal(bookingId, onError) {
+    const activities = await activityService.get(bookingId, {}, onError);
     
     // Get all meals, even with customerPrice = 0, because the dish prices are no longer summed up at meal level (since 2025-12)
     const meals = activities.filter(activity => activity.category === "meal");
@@ -24,10 +25,10 @@ export async function getTotal(bookingId) {
             }
             
             // E.g. even though a whole breakfast can be free, it can still include non-free, extra items
-            const dishes = await mealService.getMealDishes(bookingId, meal.id, {"isFree" : false});
+            const dishes = await mealService.getMealDishes(bookingId, meal.id, {"isFree" : false}, onError);
             mealItem.dishes = dishes;
             // Todo: should the meal total be displayed on meal level?
-            mealItem.customerPrice += dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice, 0);
+            mealItem.customerPrice += dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice * dish.quantity, 0);
             
             return mealItem;  
         })
@@ -58,9 +59,15 @@ export async function getTotal(bookingId) {
 
     const totalList = [...itemizedActivityList, ...itemizedMealList];
 
+    const payments = await incomeService.get({bookingId : bookingId}, onError);
+    const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+
     return {
         total        : totalMealSum + totalActivitySum,
-        itemizedList : totalList
+        paid         : totalPaid,
+        balance      : totalMealSum + totalActivitySum - totalPaid,
+        itemizedList : totalList,
+        payments     : payments
     }
 }
 

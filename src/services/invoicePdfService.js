@@ -3,9 +3,9 @@ import hhLogo from "../assets/logowhitegreen.png";
 import * as utils from "../utils.js";
 import * as invoiceService from "./invoiceService.js";
 
-export async function make(customer) {
+export async function make(customer, onError) {
     if(!customer) return;
-    const invoice = await invoiceService.getTotal(customer.id);
+    const invoice = await invoiceService.getTotal(customer.id, onError);
 
     const title = `Invoice: ${customer.name}`;
     let currentDate = "";
@@ -15,6 +15,9 @@ export async function make(customer) {
                 <View style={styles.header}>
                     <Image src={hhLogo} style={styles.logo} />
                     <Text style={styles.title}>{title}</Text>
+                </View>
+                <View style={styles.header}>
+                    <Text style={styles.subTitle}>Items</Text>
                 </View>
                 {invoice.itemizedList.map((item) => {
                     let dateView = (<></>);
@@ -47,7 +50,24 @@ export async function make(customer) {
                         </View>
                     );
                 })} 
+
+                <View style={styles.header}>
+                    <Text style={styles.subTitle}>Payments</Text>
+                </View>
+
+                {invoice.payments.map((payment) => {
+                    return (
+                        <View style={styles.itemRow}>
+                            <Text style={styles.item}>{`${utils.to_ddMMYY(payment.receivedAt, "/")}, ${payment.paymentMethod}, `}</Text>
+                            <View style={styles.dottedLine} />
+                            <Text style={styles.itemPrice}>{utils.formatDisplayPrice(payment.amount)}</Text>
+                        </View>
+                    );
+                })}
+                <View style={{marginTop: "50"}}/>
                 <Text style={styles.total}>Total: {utils.getCurrency()} {utils.formatDisplayPrice(invoice.total)}</Text>
+                <Text style={styles.total}>Paid: {utils.getCurrency()} {utils.formatDisplayPrice(invoice.paid)}</Text>
+                <Text style={styles.total}>Balance: {utils.getCurrency()} {utils.formatDisplayPrice(invoice.balance)}</Text>
                 <Text style={styles.metadata}>{utils.to_yyMMddHHmm(null, "/")}</Text>
             </Page>
         </Document>
@@ -102,6 +122,12 @@ const styles = StyleSheet.create({
         fontSize: 20,
         marginLeft: 10
     },
+    subTitle: {
+        fontSize: 16,
+        marginTop: 20,
+        marginBottom: 0,
+        marginLeft: 20
+    },
     date: {
         textAlign: 'left',
         fontSize: 12,
@@ -140,13 +166,18 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center', 
     },
+    itemRowLeft: {
+        flexDirection: 'row',
+        justifyContent: 'left',
+        alignItems: 'center', 
+    },
     dottedLine: {
         flexGrow: 1,
         borderBottom: '1 dotted black',
         marginHorizontal: 4,
     },
     total: {
-        marginTop: 50,
+        marginBottom: 10,
         textAlign: 'left',
         fontSize: 15,
         marginLeft: 40,

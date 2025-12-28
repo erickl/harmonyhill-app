@@ -22,7 +22,7 @@ export default function PdfViewer({customer, triggerRerender, onClose }) {
         let dataUrl = null;
 
         const createPdfDoc = async () => {
-            const pdfDoc = await invoicePdfService.make(customer);
+            const pdfDoc = await invoicePdfService.make(customer, onError);
 
             // const pdfLink = await pdf(pdfDoc);
             const pdfContainer = pdf([]); // create a fresh PDF instance

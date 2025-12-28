@@ -5,7 +5,6 @@ import * as utils from "../utils.js";
 import './CustomerPurchasesScreen.css'; 
 import ActivitiesList from './ActivitiesList.js';
 import { useNotification } from "../context/NotificationContext.js";
-import InvoicePdfLink from './InvoicePdfLink.js';
 import PdfViewer from './PdfViewer.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
@@ -27,7 +26,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
 
     useEffect(() => {
         const getTotal = async() => {
-            const total = await invoiceService.getTotal(customer.id);
+            const total = await invoiceService.getTotal(customer.id, onError);
             setTotal(total.total);
         }
         getTotal();
