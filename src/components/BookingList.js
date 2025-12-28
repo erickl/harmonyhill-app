@@ -15,6 +15,7 @@ export default function BookingList({ onNavigate, title, filter, expand}) {
     const [loading,                    setLoading                ] = useState(true );
     const [hasEditBookingsPermissions, setEditBookingsPermissions] = useState(false);
     const [canSeeAllBookings,          setCanSeeAllBookings      ] = useState(false);
+    const [isAdmin,                    setIsAdmin                ] = useState(false);
     const [expandedBookings,           setExpandedBookings       ] = useState({}   );
     
     const { onError } = useNotification();
@@ -57,6 +58,9 @@ export default function BookingList({ onNavigate, title, filter, expand}) {
             await userService.logLastActive(onError);
             const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
             setEditBookingsPermissions(userHasEditBookingsPermissions);
+
+            const userIsAdmin = await userService.isAdmin();
+            setIsAdmin(userIsAdmin);
 
             const canSeeAllBookings_ = await userService.canSeeAllBookings();
             setCanSeeAllBookings(canSeeAllBookings_)
@@ -145,6 +149,10 @@ export default function BookingList({ onNavigate, title, filter, expand}) {
                                             <p><span className="detail-label">Source:</span> {utils.capitalizeWords(customer.source)}</p>
                                             { customer.phoneNumber && (<p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>)}
                                             { customer.email && ( <p><span className="detail-label">Email:</span> {customer.email}</p> )}
+                                            { isAdmin && (<>
+                                                <p><span className="detail-label">Guest Paid:</span> {customer.guestPaid}</p>
+                                                <p><span className="detail-label">Host Payout:</span> {customer.hostPayout}</p>
+                                            </>)}
                                             { hasEditBookingsPermissions && (
                                                 <div className="booking-component-footer">
                                                     <div className="booking-component-footer-icon">
