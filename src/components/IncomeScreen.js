@@ -12,8 +12,9 @@ import AddIncomeScreen from './AddIncomeScreen.js';
 import ConfirmModal from "./ConfirmModal.js";
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
+import e from 'cors';
 
-export default function IncomeScreen({ onNavigate, onClose }) {
+export default function IncomeScreen({ customer, onNavigate, onClose }) {
 
     const [expandedIncomes,     setExpandedIncomes     ] = useState({}   );
     const [loadingExpanded,     setLoadingExpanded     ] = useState({}   );
@@ -81,8 +82,14 @@ export default function IncomeScreen({ onNavigate, onClose }) {
 
     useEffect(() => {
         const fetchIncomes = async() => {
-            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(onError);
-            const filter = lastClosedPettyCashRecord ? { "after" : lastClosedPettyCashRecord.closedAt} : {};
+            const filter = {};
+            if(customer) {
+                filter["bookingId"] = customer.id;
+            } else {
+                const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(onError);
+                filter["after"] = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : null;
+            }
+            
             const uploadedIncomes = await incomeService.get(filter, onError);
             setIncomes(uploadedIncomes);
             setLoading(false);
@@ -127,12 +134,14 @@ export default function IncomeScreen({ onNavigate, onClose }) {
             />
         );
     }
+
+    const incomeFromText = customer ? `: ${customer.name}` : "";
      
     return (
         <div className="fullscreen">
             <div className="card-header">
                 <div>
-                    <h2 className="card-title">Income</h2>
+                    <h2 className="card-title">Income {incomeFromText}</h2>
                     {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
                 </div>
 
@@ -142,7 +151,7 @@ export default function IncomeScreen({ onNavigate, onClose }) {
                             {isAdmin && (<>
                                 <SheetUploader label={"Incomes"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
-                            <button className="add-button" onClick={() => onClose()}>
+                            <button className="add-button" onClick={() => onNavigate("add-income", {customer})}>
                                 + 
                             </button>
                         </div>

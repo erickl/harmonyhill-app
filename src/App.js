@@ -3,7 +3,9 @@ import { onAuthStateChanged } from 'firebase/auth';
 import CustomersScreen from './components/CustomersScreen.js';
 import ActivitiesScreen from './components/ActivitiesScreen.js';
 import AddExpensesScreen from './components/AddExpensesScreen.js';
+import ExpensesScreen from './components/ExpensesScreen.js';
 import AddIncomeScreen from './components/AddIncomeScreen.js';
+import IncomeScreen from './components/IncomeScreen.js';
 import LoginScreen from './components/LoginScreen.js';
 import AddCustomerScreen from './components/AddCustomerScreen.js';
 import EditCustomerScreen from './components/EditCustomerScreen.js';
@@ -69,9 +71,13 @@ function App() {
     } else if (currentScreen === 'activities') {
         screenToDisplay = <ActivitiesScreen onNavigate={navigate} />;
     } else if (currentScreen === 'expenses') {
+        screenToDisplay = <ExpensesScreen onNavigate={navigate} />;
+    } else if (currentScreen === 'add-expense') {
         screenToDisplay = <AddExpensesScreen onNavigate={navigate} />;
-    } else if (currentScreen === 'income') {
-        screenToDisplay = <AddIncomeScreen onNavigate={navigate} />;
+    } else if (currentScreen === 'incomes') {
+        screenToDisplay = <IncomeScreen onNavigate={navigate} {...currentScreenParams} />;
+    } else if (currentScreen === 'add-income') {
+        screenToDisplay = <AddIncomeScreen onNavigate={navigate} {...currentScreenParams} />;
     } else if (currentScreen === 'add-customer') {
         screenToDisplay = <AddCustomerScreen onNavigate={navigate} />;
     } else if (currentScreen === 'edit-customer') {

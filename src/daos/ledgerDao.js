@@ -49,7 +49,6 @@ export async function getLastClosedPettyCashRecord(onError) {
     const ordering = [orderBy("closedAt", "desc")];
     const pettyCashRecords = await dao.get(path, filters, ordering, 1, onError);
     if(!pettyCashRecords || pettyCashRecords.length === 0) {
-        onError(`Can't find any previous closed petty cash record. Please ask the admins to create one`);
         return false
     }
     const pettyCashRecord = pettyCashRecords[0];

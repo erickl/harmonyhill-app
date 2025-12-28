@@ -12,27 +12,34 @@ import ButtonsFooter from './ButtonsFooter.js';
 import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
+export default function AddIncomeScreen({ customer, incomeToEdit, onNavigate, onClose }) {
 
     if(!onClose) {
-        onClose = () => {
-            setShowList(true);
-        }
+        onClose = () => onNavigate("incomes", {customer});
+    }
+
+    let bookingId = '';
+    let category = '';
+    if(incomeToEdit) {
+        bookingId = incomeToEdit.bookingId;
+        category = incomeToEdit.category;
+    } else if(customer) {
+        category = "Guest Payment";
+        bookingId = customer.id;
     }
 
     const emptyForm = {
         amount        : incomeToEdit ? incomeToEdit.amount        : '',
         receivedAt    : incomeToEdit ? incomeToEdit.receivedAt    : utils.today(),
         paymentMethod : incomeToEdit ? incomeToEdit.paymentMethod : '', 
-        category      : incomeToEdit ? incomeToEdit.category      : '',
+        category      : category,
         index         : incomeToEdit ? incomeToEdit.index         : '',
-        bookingId     : incomeToEdit ? incomeToEdit.bookingId     : '',
+        bookingId     : bookingId,
         activityId    : incomeToEdit ? incomeToEdit.activityId    : '',
         comments      : incomeToEdit ? incomeToEdit.comments      : '',
         description   : incomeToEdit ? incomeToEdit.description   : '',
     };
 
-    const [showList,        setShowList       ] = useState(false    );
     const [readyToSubmit,   setReadyToSubmit  ] = useState(false    );
     const [validationError, setValidationError] = useState(null     );
     const [bookings,        setBookings       ] = useState([]       );
@@ -44,7 +51,9 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         return category === "guest payment" || category === "commission";
     }
 
-    const needsActivityInfo = (formDataCategory) => {
+    const needsActivityInfo = (formDataCategory) => { 
+        if(customer) return false;
+
         const category = formDataCategory.trim().toLowerCase();
         return category === "guest payment" || category === "commission";
     }
@@ -190,10 +199,6 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         }
     }, [formData]);
 
-    if(showList) {
-        return (<IncomeScreen onClose={() => setShowList(false)}/>);
-    }
-
     // todo: put in database
     const categories = {
         'Guest Payment'        : {"name" : "Guest Payment"    },
@@ -210,23 +215,24 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
         'Booking.com' : {"name" : "Booking.com" },
     };
 
+    const incomeFromText = customer ? `: ${customer.name}` : "";
+
     return (
          <div className="fullscreen">
             <div className="card-header">
                 <div>
-                    <h2 className="card-title">Record New Income</h2>
+                    <h2 className="card-title">Record New Income {incomeFromText}</h2>
                 </div>
             
                 <div>
                     {!incomeToEdit && (
-                        <button className="add-button" onClick={() => setShowList(true)}>
+                        <button className="add-button" onClick={() => onNavigate("incomes", {customer})}>
                             ☰
                         </button>
                     )}
                 </div>
             </div>
-            <div className="card-content">
-                    
+            <div className="card-content">     
                 <TextInput
                     type="amount"
                     name="amount"
@@ -235,16 +241,20 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     onChange={(e) => handleChange(e.target.name, e.target.value, "amount")}
                 />
 
-                <div className="purchase-form-group">
-                    <Dropdown 
-                        label={"Category"} 
-                        options={categories}
-                        current={formData.category}
-                        onSelect={onCategorySelect}
-                    />
-                </div>
+                {/* If there's a customer input, this is a guest payment. No need to select another type */}
+                {utils.isEmpty(customer) && (
+                    <div className="purchase-form-group">
+                        <Dropdown 
+                            label={"Category"} 
+                            options={categories}
+                            current={formData.category}
+                            onSelect={onCategorySelect}
+                        />
+                    </div>
+                )}
 
-                {needsGuestInfo(formData.category) && (
+                {/* If there's a customer input, this is a payment for that specific guest. No need to select another */}
+                {utils.isEmpty(customer) && needsGuestInfo(formData.category) && (
                     <div className="purchase-form-group">
                         <Dropdown 
                             label={"Booking"} 
@@ -255,7 +265,7 @@ export default function AddIncomeScreen({ incomeToEdit, onNavigate, onClose }) {
                     </div>
                 )}
 
-                {needsActivityInfo(formData.category) && !utils.isEmpty(formData.bookingId) && (
+                {utils.isEmpty(customer) && needsActivityInfo(formData.category) && !utils.isEmpty(formData.bookingId) && (
                     <div className="purchase-form-group">
                         <Dropdown 
                             label={"Activity"} 
