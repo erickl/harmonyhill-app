@@ -31,25 +31,6 @@
 
 }
 
-.customer-list-item {
-    /* display: flex;
-    justify-content: left; */
-    padding: 1rem 0.5rem;
-    margin: 1rem 0.5rem;
-    color: white;
-}
-
-
-.customer-list-item .customer-name-in-list {
-    /* only name is bolded, not the date */
-    font-weight: 800;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-}
-
 .clickable-header {
     display: flex;
     justify-content: space-between;

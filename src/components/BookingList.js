@@ -92,7 +92,7 @@ export default function BookingList({ onNavigate, title, filter, expand}) {
                             return (
                                 <React.Fragment key={customer.id}>
                                     <div
-                                        className={`customer-list-item clickable-item ${utils.getHouseColor(customer.house)}`} 
+                                        className={`customer-list-item ${utils.getHouseColor(customer.house)}`} 
                                         onClick={() => handleCustomerClick(customer)}
                                     >
                                         <div className="customer-name-in-list">
