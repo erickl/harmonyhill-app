@@ -8,6 +8,7 @@ import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { XIcon, CheckCheck } from 'lucide-react';
 import PlusButton from "../components/PlusButton.js";
 import MinusButton from "../components/MinusButton.js";
+import * as ActivityStatus from "../models/ActivityStatus.js";
 import Spinner from '../components/Spinner.js';
 
 
@@ -43,30 +44,51 @@ export function MinibarTableProvider({ children }) {
             title        : title,
             headers      : headers,
             items        : Object.values(items),
-            updatedCount : newCount,
+            updatedCount : newCount,              
             onSubmit     : onSubmit,
         });
 
-        loadTotalStock(items); 
-        loadReservedStock(activity);
+        loadTotalStock(activity, items);           
+        loadReservedStock(activity, items);        
     }
 
-    const loadReservedStock = async(activity) => {
-        const filter = {exceptActivityId : activity.id};
-        const reservedStock = await minibarService.getReservedStock(filter, onError);
-        if(reservedStock === false) return false;
+    const loadReservedStock = async(activity, items) => {
+        let reservedStock = {};
+
+        // If activity is ongoing, fetch new reserved stock count
+        if(ActivityStatus.Completed.greaterThan(activity.status)) {
+            const filter = {exceptActivityId : activity.id};
+            reservedStock = await minibarService.getReservedStock(filter, onError);
+            if(reservedStock === false) return false;
+        // If activity completed, display the reserved count as it was when it was completed. Don't fetch it anew
+        } else {
+            for(const item of Object.values(items)) {
+                reservedStock[item.name] = item.reserved;
+            }
+        }
+
         setReservedStock(reservedStock);
     }
 
-    const loadTotalStock = async(items) => {
+    const loadTotalStock = async(activity, items) => {
         if(utils.isEmpty(items)) return;
 
-        const newTotalStock = {};
-        for(const item of Object.values(items)) {
-            const itemTotalStock = newTotalStock[item.name] = await inventoryService.getCurrentQuantity(item.name, onError);
-            if(itemTotalStock === false) return false;
-            newTotalStock[item.name] = itemTotalStock;
+        let newTotalStock = {};
+
+        // If activity is ongoing, fetch new total stock count
+        if(ActivityStatus.Completed.greaterThan(activity.status)) {
+            for(const item of Object.values(items)) {
+                const itemTotalStock = newTotalStock[item.name] = await inventoryService.getCurrentQuantity(item.name, onError);
+                if(itemTotalStock === false) return false;
+                newTotalStock[item.name] = itemTotalStock;
+            }
+        // If activity completed, display the total as it was when it was completed. Don't fetch it anew
+        } else {
+            for(const item of Object.values(items)) {
+                newTotalStock[item.name] = item.total;
+            }
         }
+
         setTotalStock(newTotalStock);
     }
     
@@ -167,9 +189,11 @@ export function MinibarTableProvider({ children }) {
             }
         }
 
+        const canStillEdit = ActivityStatus.Completed.greaterThan(state.activity.status) && utils.isToday(state.activity.startingAt);
+
         const minusButton = () => { 
             // Don't let the user change the count if the task is already completed
-            return state.activity.status !== "completed" ? (
+            return canStillEdit ? (
                 <td>
                     <div style={{
                             display: "flex", 
@@ -185,7 +209,7 @@ export function MinibarTableProvider({ children }) {
 
         const plusButton = () => { 
             // Don't let the user change the count if the task is already completed
-            return state.activity.status !== "completed" ? (
+            return canStillEdit ? (
                 <td>
                     <div style={{
                             display: "flex", 
