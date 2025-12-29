@@ -33,7 +33,7 @@ export default function StatusCircle({status, message, onClick}) {
             }} 
             symbol={"✓"} 
         />;
-    } else if(ActivityStatus.GoodToGo.equals(status)) {
+    } else if(ActivityStatus.Started.equals(status)) {
         return <StatusStartedIcon onClick={onClick}/>;
     } else if(ActivityStatus.Completed.equals(status)) {
         icon = <GenericStatusIcon 
