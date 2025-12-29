@@ -13,12 +13,13 @@ export async function addOrEdit(activity, newMinibarEntry, onError, writes = [])
 
     const existing = await bookingDao.getExistingMinibar(newMinibarEntry, onError);
 
-    const nonZeroItems = Object.entries(newMinibarEntry.items).filter(([name, quantities]) => {
-        return (existing && existing.items[name] > 0) || quantities.count > 0;
-    });
-    const filteredItems = Object.fromEntries(nonZeroItems);
+    // Actually let's include even zero-counts, because we also want to see their reserved and total numbers
+    // const nonZeroItems = Object.entries(newMinibarEntry.items).filter(([name, quantities]) => {
+    //     return (existing && existing.items[name] > 0) || quantities.count > 0;
+    // });
+    // const filteredItems = Object.fromEntries(nonZeroItems);
 
-    const updatedMinibarEntry = {...newMinibarEntry, items: utils.deepCopy(filteredItems)};
+    const updatedMinibarEntry = {...newMinibarEntry};//, items: utils.deepCopy(filteredItems)};
 
     let result = false;
 
