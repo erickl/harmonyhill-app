@@ -602,7 +602,7 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
     return alert(Alert.NONE);
 }
 
-export async function getStatus(activity, onError) {
+export async function getStatus(activity, activityInfo, onError) {
     if(activity == null) return ActivityStatus.None;
 
     if(ActivityStatus.PendingGuestConfirmation.equals(activity.status)) {
@@ -651,23 +651,26 @@ export async function getStatus(activity, onError) {
     }
 
     if(ActivityStatus.Completed.equals(activity.status)) {
-        const activityNeedsCommission = needsCommission(activity);
-        const activityHasCommission = await hasCommission(activity, onError);
-        if(activityNeedsCommission && !hasCommission) {
-            return ActivityStatus.AwaitingCommission;
-        } else if(!activityNeedsCommission && activityHasCommission) {
-            return ActivityStatus.RemoveCommission;
+        // Checking commissions and expenses only needed for external activities, with providers
+        if(activityInfo.internal !== true) {
+            const activityNeedsCommission = needsCommission(activity);
+            const activityHasCommission = await hasCommission(activity, onError);
+            if(activityNeedsCommission && !hasCommission) {
+                return ActivityStatus.AwaitingCommission;
+            } else if(!activityNeedsCommission && activityHasCommission) {
+                return ActivityStatus.RemoveCommission;
+            }
+
+            const activityNeedsExpense = needsExpense(activity);
+            const activityHasExpense = await hasExpense(activity, onError);
+            if(activityNeedsExpense && !activityHasExpense) {
+                return ActivityStatus.AwaitingExpense;
+            } else if(!activityNeedsExpense && activityHasExpense) {
+                return ActivityStatus.RemoveExpense;
+            }
         }
 
-        const activityNeedsExpense = needsExpense(activity);
-        const activityHasExpense = await hasExpense(activity, onError);
-        if(activityNeedsExpense && !activityHasExpense) {
-            return ActivityStatus.AwaitingExpense;
-        } else if(!activityNeedsExpense && activityHasExpense) {
-            return ActivityStatus.RemoveExpense;
-        } else {
-            return ActivityStatus.Completed;
-        }
+        return ActivityStatus.Completed;
     }
 
     if(ActivityStatus.GuestConfirmed.equals(activity.status)) {

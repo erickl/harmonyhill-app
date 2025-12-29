@@ -28,7 +28,7 @@ const assigneeStyles = [
     { backgroundColor: "green",     color: "white" }
 ];  
 
-export default function ActivityComponent({ inputCustomer, inputActivity, handleEditActivity, handleDeleteActivity, users, user, triggerRerender }) {
+export default function ActivityComponent({ inputCustomer, inputActivity, handleEditActivity, handleDeleteActivity, users, user }) {
     const useActivityStartedStatus = true;
     
     const assignedUser = users && inputActivity ? users.find(user => user.name === inputActivity.assignedTo) : null;
@@ -171,10 +171,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const calculateActivityStatus = async(newStatus = null) => {
         if(!activity) return;
 
-        let thisActivityInfo = getAndSetActivityInfo();
+        let thisActivityInfo = await getAndSetActivityInfo();
 
         if(!newStatus) {
-            newStatus = await activityService.getStatus(activity, onError);
+            newStatus = await activityService.getStatus(activity, thisActivityInfo, onError);
         }
         setStatus(newStatus);
 
