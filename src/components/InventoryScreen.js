@@ -73,7 +73,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onDisplaySalesData = async(item) => {    
-        const headers = ["#", "Sold At", "Quantity", "Booking", "Villa", "Sale Created By", "Created"];  
+        const headers = ["#", "Sold At", "Quantity", "Quantity At Sale", "Booking", "Villa", "Sale Created By", "Created"];  
         const enhancedSales = [];
 
         for(let i = 0; i < item.sales.length; i++) {
@@ -86,6 +86,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                 i+1,
                 utils.to_ddMMM(sale.doneAt),
                 sale.quantity,
+                sale.quantityAtSale,
                 bookingName,
                 bookingHouse,
                 sale.createdBy,
