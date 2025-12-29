@@ -21,13 +21,14 @@ export async function subtract(activity, type, itemName, quantity, onError, writ
     }
 
     const stock = {
-        bookingId  : activity ? activity.bookingId : null,
-        house      : activity ? activity.house : null,
-        activityId : activity ? activity.id : null,
-        doneAt     : activity ? activity.startingAt : utils.now(),
-        name       : itemName,
-        quantity   : quantity,
-        type       : type,
+        bookingId      : activity ? activity.bookingId : null,
+        house          : activity ? activity.house : null,
+        activityId     : activity ? activity.id : null,
+        doneAt         : activity ? activity.startingAt : utils.now(),
+        name           : itemName,
+        quantity       : quantity,
+        quantityAtSale : currentQuantity,
+        type           : type,
     };
 
     const result = await inventoryDao.add(stock, onError, writes);
