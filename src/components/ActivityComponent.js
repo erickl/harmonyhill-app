@@ -657,7 +657,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "checkin-prep" && utils.isToday(activity.startingAt) && ActivityStatus.Started.equals(status) && (
+                    {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
+                    { activity && activity.subCategory === "checkin-prep" && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
@@ -669,7 +670,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "checkout" && utils.isToday(activity.startingAt) && ActivityStatus.Started.equals(status) && (
+                    {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
+                    { activity && activity.subCategory === "checkout" && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
@@ -681,7 +683,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         </div>
                     )}
 
-                    { activity && activity.subCategory === "housekeeping" && utils.isToday(activity.startingAt) && ActivityStatus.Started.equals(status) && (
+                    { activity && activity.subCategory === "housekeeping" && (
                         <div className="activity-component-footer-icon">
                             <Candy  
                                 onClick={(e) => {
