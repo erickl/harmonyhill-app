@@ -107,11 +107,15 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
                             slotProps={slotProps} 
                         />
                     </LocalizationProvider>
-
+                    <button 
+                        onClick={() => handleTimeChange(utils.now())}
+                        style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
+                            Now
+                    </button>
                     <button 
                         onClick={() => handleTimeChange(null)}
                         style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
-                            Set to TBD
+                            TBD
                     </button>
                 </div>
             )}
