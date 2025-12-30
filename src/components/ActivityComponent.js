@@ -264,8 +264,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             headers.push("sold");
             for(let i = 0; i < values.length; i++) {
                 const row = values[i];
-                const itemSoldCount = row[2] - row[1];
-                values[i].push(itemSoldCount);
+                values[i].sold = row.provided - row.count;
             }
         }
         

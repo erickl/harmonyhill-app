@@ -52,12 +52,15 @@ export function MinibarTableProvider({ children }) {
         loadReservedStock(activity, items);        
     }
 
+    // todo: is there a need to get reserved stock, if we are counting the end stock, to calculate a sale?
     const loadReservedStock = async(activity, items) => {
         let reservedStock = {};
 
         // If activity is ongoing, fetch new reserved stock count
         if(ActivityStatus.Completed.greaterThan(activity.status)) {
-            const filter = {exceptActivityId : activity.id};
+            // Since already provided stock counts is part of the calculation, at housekeeping refills, 
+            // we only need to know the reserved stock in other houses than this one
+            const filter = {exceptBookingId : activity.bookingId};
             reservedStock = await minibarService.getReservedStock(filter, onError);
             if(reservedStock === false) return false;
         // If activity completed, display the reserved count as it was when it was completed. Don't fetch it anew
@@ -167,10 +170,22 @@ export function MinibarTableProvider({ children }) {
             values.push(value);
         }
 
-        if(totalStock !== null && reservedStock !== null) {
+        // For start and refill count, the current count is about how much stock to ADD/REFILL.
+        // And we can't add more than we have in storage
+        if(state.activity.subCategory !== "checkout") {
+            if(totalStock !== null && reservedStock !== null) {
+                const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
+                const available = item.total - item.reserved - provided;
+                if(state.updatedCount[item.name] > available) {
+                    cellStyle.backgroundColor = "red";
+                }
+            }
+        }
+        // For end count (checkout), the current count is about how many is LEFT.
+        // And there can't be more in the fridge than have been provided during their stay
+        else {
             const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
-            const available = item.total - item.reserved - provided;
-            if(state.updatedCount[item.name] > available) {
+            if(state.updatedCount[item.name] > provided) {
                 cellStyle.backgroundColor = "red";
             }
         }
@@ -189,7 +204,7 @@ export function MinibarTableProvider({ children }) {
             }
         }
 
-        const canStillEdit = ActivityStatus.Completed.greaterThan(state.activity.status) && utils.isToday(state.activity.startingAt);
+        const canStillEdit = ActivityStatus.Started.equals(state.activity.status) && utils.isToday(state.activity.startingAt);
 
         const minusButton = () => { 
             // Don't let the user change the count if the task is already completed

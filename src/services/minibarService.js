@@ -115,14 +115,18 @@ export async function calculateSale(endCount, booking, onError) {
 /**
  * Return the number of reserved stock for each item.
  * 'Reserved' here means that the item is currently in the fridge of one of the villas
- * @param {*} name 
+ * @param {*} filter. exceptHouse: get reserved stock in other house but the selected house 
  * @param {*} onError 
  */
 export async function getReservedStock(filter, onError) {
     const exceptActivityId = utils.exists(filter, "exceptActivityId") ? filter.exceptActivityId : "";
+    const exceptBookingId = utils.exists(filter, "exceptBookingId") ? filter.exceptBookingId : "";
+
     let reservedStock = {};
     const bookings = await getCurrentBookings(filter, onError);
     for(const booking of bookings) {
+        if(booking.id === exceptBookingId) continue;
+
         const minibarCounts = await bookingDao.getMinibarCounts(booking.id, {}, onError);
         
         // If no start count, current booking not yet checked in => no reserved items
@@ -172,7 +176,7 @@ export async function getTotalRefills(booking, onError) {
 
     const total = refills.reduce((map, refill) => {
         Object.entries(refill.items).forEach(([name, quantity]) => {
-            map[name] = utils.exists(map, name) ? map[name] + quantity : quantity;  
+            map[name] = utils.exists(map, name) ? map[name] + quantity.count : quantity.count;  
         });
         return map;
     }, {});
