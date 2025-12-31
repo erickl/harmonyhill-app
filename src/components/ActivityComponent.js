@@ -375,334 +375,336 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
     const finalAssigneeStyle = assigneeStyles[assigneeStyleIndex];
 
-    return (<>
-        <div className="activity-header" onClick={(e) => {
-                e.stopPropagation();
-                handleActivityClick(activity);
-            }}>
-            <div className="activity-header-left">
-                <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
-                    {houseShortName}
+    return (
+        <div>
+            <div className="activity-header" onClick={(e) => {
+                    e.stopPropagation();
+                    handleActivityClick(activity);
+                }}>
+                <div className="activity-header-left">
+                    <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
+                        {houseShortName}
+                    </div>
+                    <div className="activity-header-assignee" style={finalAssigneeStyle}>
+                        {assignedUserShortName}
+                    </div>
                 </div>
-                <div className="activity-header-assignee" style={finalAssigneeStyle}>
-                    {assignedUserShortName}
+
+                <div className="activity-header-time">
+                    <span className="preserve-whitespaces">{activity.startingAt_HHmm}</span>
                 </div>
-            </div>
 
-            <div className="activity-header-time">
-                <span className="preserve-whitespaces">{activity.startingAt_HHmm}</span>
-            </div>
+                <div className="activity-header-right">
+                    <div className="activity-header-name">
+                        {activity.displayName}
+                    </div>  
+                    <div className="activity-header-provider">
+                        {activity.provider}
+                    </div>  
+                    <div className="activity-header-guest">
+                        {showCustomerInfo === true ? activity.name : ""}
+                    </div>  
+                </div>
 
-            <div className="activity-header-right">
-                <div className="activity-header-name">
-                    {activity.displayName}
-                </div>  
-                <div className="activity-header-provider">
-                    {activity.provider}
-                </div>  
-                <div className="activity-header-guest">
-                    {showCustomerInfo === true ? activity.name : ""}
-                </div>  
-            </div>
-
-            {/* Display ongoing status of the activity */}
-            {status && (<div className="activity-header-status">
-                <StatusCircle 
-                    status={status.name} 
-                />
-            </div>)}
-            
-            {/* Display alert when something needs to be fixed urgently  */}
-            {alert && (<div className="activity-header-status">
-                <AlertCircle 
-                    status={alert.category} 
-                />
-            </div>)}
-
-            {/* Grey out the activity header to show it's completed */}
-            {activity && ActivityStatus.Completed.equals(status) && utils.isToday(activity.startingAt) && (
-                <div className="activity-completed-overlay" />
-            )}
-
-            {/* Red out the activity header to show it's OVERDUE to be started/completed */}
-            {alert && alert.category === activityService.Alert.OVERDUE && (
-                <motion.div
-                className="activity-delayed-overlay"
-                    animate={{ scale: [1, 1, 1], opacity: [0.5, 0.1, 0.5] }}
-                    transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-                />
-            )}
-
-        </div>
-
-        {loadingExpandedActivity ? (
-            <Spinner />
-        ) : expanded ? ( 
-            <div className="activity-details">
-                {alert && !utils.isEmpty(alert.message) && (
-                    <p>
-                        <span className="detail-label">Alert: </span>
-                        <span className="important-badge">{alert.message}</span> 
-                    </p>
-                )}
-                {activity.category === "meal" && customer && !utils.isEmpty(customer.dietaryRestrictions) && (
-                    <p>
-                        <span className="detail-label">Dietary restrictions: </span>
-                        <span className="important-badge">{customer.dietaryRestrictions}</span>
-                    </p>
-                )}
-
-                {activity.comments && (
-                    <p className="preserve-whitespaces">
-                        <span className="detail-label">Comments: </span> 
-                            {activity.comments}
-                    </p>
-                )}
-
-                {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
-                {activity.specialRequests && (
-                    <p className="preserve-whitespaces">
-                        <span className="detail-label">Special Requests: </span> 
-                        <span className="important-badge">{activity.specialRequests}</span>
-                    </p>
-                )}
-
-                {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
-                {activity.promotions && (
-                    <p className="preserve-whitespaces">
-                        <span className="detail-label">Promotions: </span> 
-                        <span className="important-badge">{activity.promotions}</span>
-                    </p>
-                )}
-
-                {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
-                {activity.customerInfo && (
-                    <p className="preserve-whitespaces">
-                        <span className="detail-label">Customer Info: </span> 
-                            {activity.customerInfo}
-                    </p>
-                )}
-
-                {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
-                {activity.arrivalInfo && (
-                    <p className="preserve-whitespaces">
-                        <span className="detail-label">Arrival Info: </span> 
-                            {activity.arrivalInfo}
-                    </p>
-                )}
+                {/* Display ongoing status of the activity */}
+                {status && (<div className="activity-header-status">
+                    <StatusCircle 
+                        status={status.name} 
+                    />
+                </div>)}
                 
-                <p><span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}</p>
-                
-                { showProvider && (<>
-                    <p><span className="detail-label">Provider: </span> {activity.provider}</p>
-                    { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
-                </>)}
+                {/* Display alert when something needs to be fixed urgently  */}
+                {alert && (<div className="activity-header-status">
+                    <AlertCircle 
+                        status={alert.category} 
+                    />
+                </div>)}
 
-                {!activity.isFree && activity.customerPrice !== 0 && (<>
-                    <p>
-                        <span className="detail-label">Customer Price: </span> 
-                        {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
-                    </p>
+                {/* Grey out the activity header to show it's completed */}
+                {activity && ActivityStatus.Completed.equals(status) && utils.isToday(activity.startingAt) && (
+                    <div className="activity-completed-overlay" />
+                )}
 
-                    {dishesPrice && dishesPrice > 0 && (
+                {/* Red out the activity header to show it's OVERDUE to be started/completed */}
+                {alert && alert.category === activityService.Alert.OVERDUE && (
+                    <motion.div
+                    className="activity-delayed-overlay"
+                        animate={{ scale: [1, 1, 1], opacity: [0.5, 0.1, 0.5] }}
+                        transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                    />
+                )}
+
+            </div>
+
+            {loadingExpandedActivity ? (
+                <Spinner />
+            ) : expanded ? ( 
+                <div className="activity-details">
+                    {alert && !utils.isEmpty(alert.message) && (
                         <p>
-                            <span className="detail-label">Dishes Total: </span> 
-                            {utils.formatDisplayPrice(dishesPrice, true) ?? 0 }
+                            <span className="detail-label">Alert: </span>
+                            <span className="important-badge">{alert.message}</span> 
                         </p>
                     )}
-                </>)}
+                    {activity.category === "meal" && customer && !utils.isEmpty(customer.dietaryRestrictions) && (
+                        <p>
+                            <span className="detail-label">Dietary restrictions: </span>
+                            <span className="important-badge">{customer.dietaryRestrictions}</span>
+                        </p>
+                    )}
 
-                {/* List dishes if the activity expanded is a meal */}
-                {activity.category === "meal" && (
-                    <DishesSummaryComponent dishes={dishes} />
-                )}
-
-                { !utils.isEmpty(activity.changeDescription) && (
-                    <div style={{color:"red"}}>
+                    {activity.comments && (
                         <p className="preserve-whitespaces">
-                            <span className="detail-label">Change:</span> 
-                            {activity.changeDescription.map((change) => {
-                                return (<p>• {change}</p>)
-                            })}
+                            <span className="detail-label">Comments: </span> 
+                                {activity.comments}
                         </p>
-                    </div>
-                )}
-
-                <div className="activity-component-footer">
-                    <div className="activity-component-footer-icon">
-                        <Pencil   
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if(!utils.isEmpty(dishes)) {
-                                    activity.dishes = dishes;
-                                }
-                                handleEditActivity(activity);
-                            }}
-                        />
-                        <p>Edit</p>
-                    </div>
-                    {isManagerOrAdmin && (
-                        <div className="activity-component-footer-icon">
-                            <Trash2  
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteActivity();
-                                }}
-                            />
-                            <p>Delete</p>
-                        </div>
                     )}
 
-                    { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (<>
-                        { (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
+                    {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
+                    {activity.specialRequests && (
+                        <p className="preserve-whitespaces">
+                            <span className="detail-label">Special Requests: </span> 
+                            <span className="important-badge">{activity.specialRequests}</span>
+                        </p>
+                    )}
 
-                            <div className="activity-component-footer-icon">
-                                <ThumbsUp  
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAssigneeStatusChange(true);
-                                    }}
-                                />
-                                <p>Accept task?</p>
-                            </div>
-                        ) : (
-                            <div className="activity-component-footer-icon">
-                                <ThumbsUp  
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onError("Only available from 1 day before, and if all activity info is provided");
-                                    }}
-                                />
-                                <p>Unavailable</p>
-                            </div>
+                    {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
+                    {activity.promotions && (
+                        <p className="preserve-whitespaces">
+                            <span className="detail-label">Promotions: </span> 
+                            <span className="important-badge">{activity.promotions}</span>
+                        </p>
+                    )}
+
+                    {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
+                    {activity.customerInfo && (
+                        <p className="preserve-whitespaces">
+                            <span className="detail-label">Customer Info: </span> 
+                                {activity.customerInfo}
+                        </p>
+                    )}
+
+                    {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
+                    {activity.arrivalInfo && (
+                        <p className="preserve-whitespaces">
+                            <span className="detail-label">Arrival Info: </span> 
+                                {activity.arrivalInfo}
+                        </p>
+                    )}
+                    
+                    <p><span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}</p>
+                    
+                    { showProvider && (<>
+                        <p><span className="detail-label">Provider: </span> {activity.provider}</p>
+                        { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
+                    </>)}
+
+                    {!activity.isFree && activity.customerPrice !== 0 && (<>
+                        <p>
+                            <span className="detail-label">Customer Price: </span> 
+                            {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
+                        </p>
+
+                        {dishesPrice && dishesPrice > 0 && (
+                            <p>
+                                <span className="detail-label">Dishes Total: </span> 
+                                {utils.formatDisplayPrice(dishesPrice, true) ?? 0 }
+                            </p>
                         )}
                     </>)}
 
-                    { user && user.shortName === assignedUserShortName && 
-                        activity.assigneeAccept && 
-                        ActivityStatus.Started.equals(activity.status) === false &&
-                        (!utils.isPast(activity.startingAt)) && (
+                    {/* List dishes if the activity expanded is a meal */}
+                    {activity.category === "meal" && (
+                        <DishesSummaryComponent dishes={dishes} />
+                    )}
 
-                        <div className="activity-component-footer-icon">
-                            <ThumbsDown  
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAssigneeStatusChange(false);
-                                }}
-                            />
-                            <p>Decline task?</p>
+                    { !utils.isEmpty(activity.changeDescription) && (
+                        <div style={{color:"red"}}>
+                            <p className="preserve-whitespaces">
+                                <span className="detail-label">Change:</span> 
+                                {activity.changeDescription.map((change) => {
+                                    return (<p>• {change}</p>)
+                                })}
+                            </p>
                         </div>
                     )}
 
-                    {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
-                    {/* Mark activity started */}
-                    { canStartActivity() && (
+                    <div className="activity-component-footer">
                         <div className="activity-component-footer-icon">
-                            <StatusCircle 
-                                status={ActivityStatus.Started.name} 
+                            <Pencil   
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleSetActivityStatusManually(ActivityStatus.Started);
+                                    if(!utils.isEmpty(dishes)) {
+                                        activity.dishes = dishes;
+                                    }
+                                    handleEditActivity(activity);
                                 }}
                             />
-                            <p>Start it</p>
+                            <p>Edit</p>
                         </div>
-                    )}
-
-                    {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
-                    {/* Mark activity started */}
-                    { canCompleteActivity() && (
-                        <div className="activity-component-footer-icon">
-                            <StatusCircle 
-                                status={ActivityStatus.Completed.name} 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSetActivityStatusManually(ActivityStatus.Completed);
-                                }}
-                            />
-                            <p>Complete it</p>
-                        </div>
-                    )}
-
-                    { canAddPhotos() && (
-                        <div className="activity-component-footer-icon">
-                            
-                            <motion.div
-                                animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
-                                transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-                            >
-                                <Camera 
+                        {isManagerOrAdmin && (
+                            <div className="activity-component-footer-icon">
+                                <Trash2  
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onOpenCamera(true, false, () => onConfirmPhoto);
+                                        handleDeleteActivity();
                                     }}
                                 />
-                            </motion.div>
-                            <p>Take photo</p>
-                        </div>
-                    )}
+                                <p>Delete</p>
+                            </div>
+                        )}
 
-                    { !photoUploading && photos.length > 0 && (
-                        <div className="activity-component-footer-icon">
-                            <Image 
-                                onClick={async (e) => {
-                                    e.stopPropagation();
-                                    onDisplayImages(photos);
-                                }}
-                            />
-                            <p>See photos</p>
-                        </div>
-                    )}
+                        { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (<>
+                            { (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
 
-                    { photoUploading && (
-                        <div className="activity-component-footer-icon">
-                            <Spinner size={15}/>
-                            <p>Uploading...</p>
-                        </div>
-                    )}
+                                <div className="activity-component-footer-icon">
+                                    <ThumbsUp  
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAssigneeStatusChange(true);
+                                        }}
+                                    />
+                                    <p>Accept task?</p>
+                                </div>
+                            ) : (
+                                <div className="activity-component-footer-icon">
+                                    <ThumbsUp  
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onError("Only available from 1 day before, and if all activity info is provided");
+                                        }}
+                                    />
+                                    <p>Unavailable</p>
+                                </div>
+                            )}
+                        </>)}
 
-                    {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
-                    { activity && activity.subCategory === "checkin-prep" && (
-                        <div className="activity-component-footer-icon">
-                            <Candy  
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDisplayMinibarCount();
-                                }}
-                            />
-                            <p>Count Minibar</p>
-                        </div>
-                    )}
+                        { user && user.shortName === assignedUserShortName && 
+                            activity.assigneeAccept && 
+                            ActivityStatus.Started.equals(activity.status) === false &&
+                            (!utils.isPast(activity.startingAt)) && (
 
-                    {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
-                    { activity && activity.subCategory === "checkout" && (
-                        <div className="activity-component-footer-icon">
-                            <Candy  
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDisplayMinibarCount();
-                                }}
-                            />
-                            <p>Count Minibar</p>
-                        </div>
-                    )}
+                            <div className="activity-component-footer-icon">
+                                <ThumbsDown  
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAssigneeStatusChange(false);
+                                    }}
+                                />
+                                <p>Decline task?</p>
+                            </div>
+                        )}
 
-                    { activity && activity.subCategory === "housekeeping" && (
-                        <div className="activity-component-footer-icon">
-                            <Candy  
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDisplayMinibarCount();
-                                }}
-                            />
-                            <p>Minibar Refill</p>
-                        </div>
-                    )}
-                </div> 
-                <MetaInfo document={activity}/>
-            </div>
-        ) : ( 
-            <></>
-        )}
-    </>);
+                        {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
+                        {/* Mark activity started */}
+                        { canStartActivity() && (
+                            <div className="activity-component-footer-icon">
+                                <StatusCircle 
+                                    status={ActivityStatus.Started.name} 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSetActivityStatusManually(ActivityStatus.Started);
+                                    }}
+                                />
+                                <p>Start it</p>
+                            </div>
+                        )}
+
+                        {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
+                        {/* Mark activity started */}
+                        { canCompleteActivity() && (
+                            <div className="activity-component-footer-icon">
+                                <StatusCircle 
+                                    status={ActivityStatus.Completed.name} 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSetActivityStatusManually(ActivityStatus.Completed);
+                                    }}
+                                />
+                                <p>Complete it</p>
+                            </div>
+                        )}
+
+                        { canAddPhotos() && (
+                            <div className="activity-component-footer-icon">
+                                
+                                <motion.div
+                                    animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
+                                    transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                >
+                                    <Camera 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onOpenCamera(true, false, () => onConfirmPhoto);
+                                        }}
+                                    />
+                                </motion.div>
+                                <p>Take photo</p>
+                            </div>
+                        )}
+
+                        { !photoUploading && photos.length > 0 && (
+                            <div className="activity-component-footer-icon">
+                                <Image 
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        onDisplayImages(photos);
+                                    }}
+                                />
+                                <p>See photos</p>
+                            </div>
+                        )}
+
+                        { photoUploading && (
+                            <div className="activity-component-footer-icon">
+                                <Spinner size={15}/>
+                                <p>Uploading...</p>
+                            </div>
+                        )}
+
+                        {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
+                        { activity && activity.subCategory === "checkin-prep" && (
+                            <div className="activity-component-footer-icon">
+                                <Candy  
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDisplayMinibarCount();
+                                    }}
+                                />
+                                <p>Count Minibar</p>
+                            </div>
+                        )}
+
+                        {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
+                        { activity && activity.subCategory === "checkout" && (
+                            <div className="activity-component-footer-icon">
+                                <Candy  
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDisplayMinibarCount();
+                                    }}
+                                />
+                                <p>Count Minibar</p>
+                            </div>
+                        )}
+
+                        { activity && activity.subCategory === "housekeeping" && (
+                            <div className="activity-component-footer-icon">
+                                <Candy  
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDisplayMinibarCount();
+                                    }}
+                                />
+                                <p>Minibar Refill</p>
+                            </div>
+                        )}
+                    </div> 
+                    <MetaInfo document={activity}/>
+                </div>
+            ) : ( 
+                <></>
+            )}
+        </div>
+    );
 };
