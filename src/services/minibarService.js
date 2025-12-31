@@ -21,29 +21,29 @@ export async function addOrEdit(activity, newMinibarEntry, onError, writes = [])
 
     const updatedMinibarEntry = {...newMinibarEntry};//, items: utils.deepCopy(filteredItems)};
 
-    let result = false;
+    let minibarResult = false;
 
     if(existing !== null) {
-        result = await bookingDao.updateMinibar(activity.bookingId, existing.id, updatedMinibarEntry, onError, writes);
+        minibarResult = await bookingDao.updateMinibar(activity.bookingId, existing.id, updatedMinibarEntry, onError, writes);
     } else {
-        result = await bookingDao.addMinibar(activity, updatedMinibarEntry, onError, writes);
+        minibarResult = await bookingDao.addMinibar(activity, updatedMinibarEntry, onError, writes);
     }
 
-    if(result === false) return false;
+    if(minibarResult === false) return false;
 
     // If this is the end count, create a "minibar meal" activity, which will count as a final minibar sale 
     if(updatedMinibarEntry.type === "end") { 
         const booking = await getParent(activity);
         if(!booking) return false;
-        result = await addOrEditMinibarSale(result, booking, onError, writes);
-        if(result === false) return false;
+        const minibarSaleResult = await addOrEditMinibarSale(minibarResult, booking, onError, writes);
+        if(minibarSaleResult === false) return false;
     }
 
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;
     }
 
-    return result;
+    return minibarResult;
 }
 
 async function addOrEditMinibarSale(endCountEntry, booking, onError, writes = []) {
@@ -99,14 +99,18 @@ export async function calculateSale(endCount, booking, onError) {
 
     const totalRefills = await getTotalRefills(booking, onError);
     
-    const totalProvided = startCount.items;
+    const totalProvided = Object.entries(startCount.items).reduce((map, [name, counts]) => {
+        map[name] = counts.count;
+        return map;
+    }, {});
+
     Object.entries(totalRefills).forEach(([name, quantity]) => {
         totalProvided[name] = utils.exists(totalProvided, name) ? totalProvided[name] + quantity : quantity;
     });
 
-    const sales = totalProvided;
-    Object.entries(endCount.items).forEach(([name, quantity]) => {
-        sales[name] = totalProvided[name] - quantity;
+    const sales = utils.deepCopy(totalProvided);
+    Object.entries(endCount.items).forEach(([name, quantities]) => {
+        sales[name] = totalProvided[name] - quantities.count;
     });
 
     return sales;

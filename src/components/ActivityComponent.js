@@ -248,8 +248,12 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             return map;
         }, {});
 
-        const headers = ["name", "count", "reserved", "total"];
+        const headers = ["name", "count", "reserved"];
         const values = Object.values(stockListItems);
+
+        if(activity.subCategory !== "checkout") {
+            headers.push("total");
+        }
 
         if(activity.subCategory !== "checkin-prep") {
             const totalProvided = await minibarService.getTotalProvided(customer, onError);
@@ -260,7 +264,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
             }
         }
 
-        if(activity.subCategory === "checkout") {
+        // If this is a checkout activity, and there's an existing minibar count, we can calculate the minibar sale
+        if(activity.subCategory === "checkout" && minibarCount !== null) {
             headers.push("sold");
             for(let i = 0; i < values.length; i++) {
                 const row = values[i];

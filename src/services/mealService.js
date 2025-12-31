@@ -144,7 +144,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
     // Update dishes data
     const dishesData = Object.values(mealUpdateData.dishes);
     const updateDishesSuccess = await updateDishes(updateMealRecord, mealId, dishesData, onError, writes);
-    if(!updateDishesSuccess) return false;
+    if(updateDishesSuccess === false) return false;
 
     if(commit) {
         return await commitTx(writes, onError);
