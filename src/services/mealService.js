@@ -129,10 +129,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
     const commit = decideCommit(writes);
 
     const existing = await getMeal(bookingId, mealId);
-    if(!existing) {
-        onError(`Cannot find meal ${bookingId}/${mealId}`);
-        return false;
-    } 
+    if(!existing) return onError(`Cannot find meal ${bookingId}/${mealId}`);
 
     // When changing assignee 
     if(utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && existing.assignedTo !== mealUpdateData.assignedTo) {
@@ -142,21 +139,12 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
     // Update meal data
     const mealUpdate = await mapMealObject(mealUpdateData);
     const updateMealRecord = await activityDao.update(bookingId, mealId, mealUpdate, true, onError, writes);
-    if(updateMealRecord === false) {
-        return false;
-    }
-    
-    let updateDishesSuccess = false;
+    if(updateMealRecord === false) return false;
 
-    // Update dishes data, if there are any updates to them
-    if(!utils.isEmpty(mealUpdateData.dishes)) {
-        const dishesData = Object.values(mealUpdateData.dishes);
-        updateDishesSuccess = await updateDishes(updateMealRecord, mealId, dishesData, onError, writes);
-    }
-
-    if(!updateDishesSuccess) {
-        return false;
-    }
+    // Update dishes data
+    const dishesData = Object.values(mealUpdateData.dishes);
+    const updateDishesSuccess = await updateDishes(updateMealRecord, mealId, dishesData, onError, writes);
+    if(!updateDishesSuccess) return false;
 
     if(commit) {
         return await commitTx(writes, onError);
@@ -175,9 +163,7 @@ async function updateDishes(updatedMeal, mealId, dishesUpdateData, onError, writ
         const dishUpdate = dishesUpdateData.find((dish) => dish.name === existingDish.name);
         if(!dishUpdate) {
             const deleteDishResult = await deleteDish(updatedMeal, existingDish, onError, writes);
-            if(deleteDishResult === false) {
-                return false;
-            }
+            if(deleteDishResult === false) return false;
             dishesUpdated.push(`Deleted: ${existingDish.id}`);
         }
     }
