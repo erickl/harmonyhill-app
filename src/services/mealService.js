@@ -354,6 +354,8 @@ async function mapMealObject(mealData) {
 
     if(utils.isBoolean(mealData?.isFree)) {
         meal.isFree = mealData.isFree;
+    } else {
+        meal.isFree = false;
     }
 
     if(mealData.isFree) {

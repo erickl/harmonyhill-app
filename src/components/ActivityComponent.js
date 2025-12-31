@@ -499,11 +499,13 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
                         { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
                     </>)}
 
-                    {!activity.isFree && activity.customerPrice !== 0 && (<>
-                        <p>
-                            <span className="detail-label">Customer Price: </span> 
-                            {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
-                        </p>
+                    { activity.isFree !== true && (<>
+                        {
+                            activity.customerPrice !== 0 && (<p>
+                                <span className="detail-label">Customer Price: </span> 
+                                {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
+                            </p>
+                        )}
 
                         {dishesPrice && dishesPrice > 0 && (
                             <p>

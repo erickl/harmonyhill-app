@@ -427,6 +427,8 @@ async function mapObject(data) {
 
     if(utils.exists(data, "isFree")) {
         activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
+    } else {
+        activity.isFree = false;
     }
     
     if(utils.exists(data, "needsProvider") && !utils.isEmpty(data.needsProvider)) {

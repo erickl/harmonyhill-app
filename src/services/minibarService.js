@@ -76,6 +76,7 @@ async function addOrEditMinibarSale(endCountEntry, booking, onError, writes = []
         minibarActivity.startingTime = utils.now();
         minibarActivity.assignedTo = await userService.getCurrentUserName();
         minibarActivity.assigneeAccept = true;
+        minibarActivity.isFree = false;
         minibarActivity.status = "completed";
         minibarActivity.dishes = dishes;
         result = await mealService.addMeal(booking.id, minibarActivity, onError, writes);
