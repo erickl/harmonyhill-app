@@ -110,7 +110,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                 i+1,
                 utils.to_ddMMM(refill.doneAt),
                 refill.quantity,
-                expense.description,
+                `${expense.index}. ${expense.description}`,
                 expense.photoUrl,
                 refill.createdBy,
                 utils.to_ddMMM(refill.createdAt),
