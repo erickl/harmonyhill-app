@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext } from "react";
 import * as utils from "../utils.js";
 import * as inventoryService from "../services/inventoryService.js";
 import * as minibarService from "../services/minibarService.js";
+import * as userService from "../services/userService.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
@@ -24,20 +25,31 @@ export function MinibarTableProvider({ children }) {
         onSubmit     : null,
     };
     
-    const [isChanged,     setIsChanged    ] = useState(false);
-    const [state,         setState        ] = useState(initState);
-    const [totalStock,    setTotalStock   ] = useState(null);
-    const [reservedStock, setReservedStock] = useState(null);
+    const [isChanged,        setIsChanged       ] = useState(false);
+    const [state,            setState           ] = useState(initState);
+    const [totalStock,       setTotalStock      ] = useState(null);
+    const [reservedStock,    setReservedStock   ] = useState(null);
+    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
 
-    const onDisplayMinibarTable = (title, activity, headers, items, onSubmit) => {
+    const onDisplayMinibarTable = async (title, activity, headers, items, onSubmit) => {
         const newCount = Object.values(items).reduce((map, item) => {
             map[item.name] = item.count;
             return map;
         }, {});
+
+        const isManagerOrAdmin_ = await userService.isManagerOrAdmin();
+        setIsManagerOrAdmin(isManagerOrAdmin_);
+
+        if(isManagerOrAdmin_ === false) {
+            for(const header of ["provided", "total", "reserved"]) {
+                const indexToRemove = headers.indexOf(header);
+                headers.splice(indexToRemove, 1);
+            }
+        }
 
         setState({
             activity     : activity,
@@ -48,8 +60,12 @@ export function MinibarTableProvider({ children }) {
             onSubmit     : onSubmit,
         });
 
-        loadTotalStock(activity, items);           
-        loadReservedStock(activity, items);        
+        if(utils.exists(headers, "total")) {
+            loadTotalStock(activity, items);    
+        }
+        if(utils.exists(headers, "reserved")) {    
+            loadReservedStock(activity, items);    
+        }    
     }
 
     // todo: is there a need to get reserved stock, if we are counting the end stock, to calculate a sale?
@@ -183,7 +199,8 @@ export function MinibarTableProvider({ children }) {
         }
         // For end count (checkout), the current count is about how many is LEFT.
         // And there can't be more in the fridge than have been provided during their stay
-        else {
+        // If the provided header is not present, the provided data won't be displayed and the red marking won't make sense
+        else if(utils.exists(state.headers, "provided")) {
             const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
             if(state.updatedCount[item.name] > provided) {
                 cellStyle.backgroundColor = "red";
