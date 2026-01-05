@@ -333,13 +333,23 @@ export function isAfterToday(inputDate) {
     return luxonDateTime.day > todayDateTime.day;
 }
 
-export function isPast(inputDate) {
+export function dateDiffNow(inputDate) {
     if(!inputDate) return false;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const nowTime = now(0, false);
     const diff = luxonDateTime.toMillis() - nowTime.toMillis();
+    return diff;
+}
+
+export function isPast(inputDate) {
+    const diff = dateDiffNow(inputDate);
     return diff < 0;
-}   
+}
+
+export function isFuture(inputDate) {
+    const diff = dateDiffNow(inputDate);
+    return diff > 0;
+}  
 
 export function dateIsSame(oldDate, newDate) {
     if(isEmpty(oldDate)) {
