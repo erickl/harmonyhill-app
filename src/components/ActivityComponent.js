@@ -101,14 +101,8 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         if(!isGoodToGo) {
             return false;
         }
-
-        const now = utils.now();
-        const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
-        if(minutesLeft < 10 && minutesLeft > -60) {
-            return true;
-        }
-
-        return false;
+       
+        return utils.isToday(activity.startingAt);
     }
 
     const requiresMinibarCount = () => {
@@ -187,9 +181,18 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     const handleSetActivityStatusManually = async (newStatus) => {
         if(newStatus == null) return;
 
-        onConfirm(`Set activity status to ${newStatus.name}?`, async () => {
-            const success = await activityService.setActivityStatus(activity.bookingId, activity.id, newStatus.name);
-            if(success) {
+        let confirmationText = `Set activity status to ${newStatus.name}?`;
+        const minutesLeft = activity.startingAt.diff(utils.now(), 'minutes').minutes;
+
+        if(ActivityStatus.Started.equals(newStatus)) {
+            if(minutesLeft > 30) {
+                confirmationText = `Are you sure you want set activity status to ${newStatus.name}? It's still a bit early?`;
+            }
+        }
+
+        onConfirm(confirmationText, async () => {
+            const success = await activityService.setActivityStatus(activity, newStatus.name, onError);
+            if(success) { //todo: success should be the updated activity? Set that object in setActivity
                 let updatedActivity = { ...(activity || {}) };
                 updatedActivity.status = newStatus.name;
                 setActivity(updatedActivity);
