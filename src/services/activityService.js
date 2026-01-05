@@ -223,10 +223,19 @@ export async function getProviders(category, subCategory) {
     return providers;
 }
 
-export async function setActivityStatus(bookingId, id, status, onError, writes = []) {
+export async function setActivityStatus(activity, newStatus, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await update(bookingId, id, { status : status }, onError, writes);
+    const updatedData = { status : newStatus };
+
+    if(ActivityStatus.Started.equals(newStatus)) {
+        // If activity is not delayed, set startingTime when starting activity
+        if(activity.startingTime === null || utils.isFuture(activity.startingTime)) {
+            updatedData["startingTime"] = utils.now();
+        }
+    }
+
+    const result = await update(activity.bookingId, activity.id, updatedData, onError, writes);
     if(result === false) return false;
 
     if(commit) {
