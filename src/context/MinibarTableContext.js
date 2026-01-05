@@ -44,6 +44,7 @@ export function MinibarTableProvider({ children }) {
         const isManagerOrAdmin_ = await userService.isManagerOrAdmin();
         setIsManagerOrAdmin(isManagerOrAdmin_);
 
+        // Remove table columns for staff members
         if(isManagerOrAdmin_ === false) {
             for(const header of ["provided", "total", "reserved"]) {
                 const indexToRemove = headers.indexOf(header);

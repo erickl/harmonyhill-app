@@ -12,7 +12,15 @@ export function toNumber(valueIn) {
 }
 
 export function exists(obj, fieldName) {
-    return Object.hasOwn(obj, fieldName) && obj[fieldName] !== undefined;
+    if(isEmpty(obj) || isEmpty(fieldName) || !isString(fieldName)) {
+        return false;
+    } else if(Array.isArray(obj)) {
+        return obj.includes(fieldName);
+    } else if(isObject(obj)) {
+        return Object.hasOwn(obj, fieldName) && obj[fieldName] !== undefined;
+    } else {
+        return false;
+    }
 }
 
 export function isBoolean(value) {
