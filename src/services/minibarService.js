@@ -35,7 +35,9 @@ export async function addOrEdit(activity, newMinibarEntry, onError, writes = [])
     if(updatedMinibarEntry.type === "end") { 
         const booking = await getParent(activity);
         if(!booking) return false;
+        
         const minibarSaleResult = await addOrEditMinibarSale(minibarResult, booking, onError, writes);
+        // May be null, if no minibar items are taken
         if(minibarSaleResult === false) return false;
     }
 
@@ -70,6 +72,11 @@ async function addOrEditMinibarSale(endCountEntry, booking, onError, writes = []
     const existingMinibarMeals = await activityService.get(booking.id, {subCategory: "minibar"}, onError);
     
     if(existingMinibarMeals === false || !existingMinibarMeals || existingMinibarMeals.length === 0) {
+        // If nothing is taken from minibar
+        if(utils.isEmpty(dishes)) {
+            return null;
+        }
+
         const minibarTypeInfo = await activityService.getActivityType("meal", "minibar");
         const minibarActivity = activityService.getInitialActivityData(minibarTypeInfo);
         minibarActivity.startingAt = utils.now();
@@ -79,6 +86,7 @@ async function addOrEditMinibarSale(endCountEntry, booking, onError, writes = []
         minibarActivity.isFree = false;
         minibarActivity.status = "completed";
         minibarActivity.dishes = dishes;
+        
         result = await mealService.addMeal(booking.id, minibarActivity, onError, writes);
     } else if(existingMinibarMeals.length > 1) {
         return onError(`Booking ${booking.id} has ${existingMinibarMeals.length}/1 minibar meals`);
