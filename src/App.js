@@ -20,14 +20,28 @@ import * as userService from './services/userService.js';
 import { auth } from "./firebase.js";
 import './App.css';
 import AddPurchaseScreen from './components/AddPurchaseScreen.js';
+import EditPurchaseScreen from './components/EditPurchaseScreen.js';
 import CustomerPurchasesScreen from './components/CustomerPurchasesScreen.js';
 
 function App() {
-    const [isLoggedIn,          setIsLoggedIn         ] = useState(false      );
-    const [loading,             setLoading            ] = useState(true       );
-    const [activeTab,           setActiveTab          ] = useState('customers');
-    const [currentScreen,       setCurrentScreen      ] = useState('customers');
-    const [currentScreenParams, setCurrentScreenParams] = useState(null       );
+    const [isLoggedIn, setIsLoggedIn         ] = useState(false      );
+    const [loading,    setLoading            ] = useState(true       );
+    const [history,    setHistory            ] = useState([{ name: 'customers', data: {} }]);
+    const [activeTab,  setActiveTab          ] = useState('customers');
+
+    const currentScreen = history[history.length - 1];
+
+    // Push a new screen onto the stack
+    const navigate = (screenName, screenData = {}) => {
+        setHistory((prev) => [...prev, { name: screenName, data: screenData }]);
+    };
+
+    // Pop the top screen off to go back
+    const onClose = () => {
+        if (history.length > 1) {
+            setHistory((prev) => prev.slice(0, -1));
+        }
+    };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -44,17 +58,10 @@ function App() {
         return () => unsubscribe();
     }, []);
 
-    const handleTabChange = (tab) => { // For navigation between tabs
+    const handleTabChange = (tab) => {
         setActiveTab(tab);
-        // if (tab !== 'add-customer') { // Don't change screen for add-customer (handled separately)
-        //   setCurrentScreen(tab);
-        // }
-        setCurrentScreen(tab);
-    };
-
-    const navigate = (screen, params = null) => { 
-        setCurrentScreen(screen);
-        setCurrentScreenParams(params);
+        // Tabs are the top of hierarchy, so clear history
+        setHistory([{ name: tab, data: {} }]);
     };
 
     if(loading) {
@@ -63,55 +70,43 @@ function App() {
         )
     }
 
-    let screenToDisplay;
-    if (!isLoggedIn) {
-        screenToDisplay = <LoginScreen onLogin={userService.login} onLoginSuccess={navigate} />;
-    } else if (currentScreen === 'customers') {
-        screenToDisplay = <CustomersScreen onNavigate={navigate} />;
-    } else if (currentScreen === 'activities') {
-        screenToDisplay = <ActivitiesScreen onNavigate={navigate} />;
-    } else if (currentScreen === 'expenses') {
-        screenToDisplay = <ExpensesScreen onNavigate={navigate} />;
-    } else if (currentScreen === 'add-expense') {
-        screenToDisplay = <AddExpensesScreen onNavigate={navigate} />;
-    } else if (currentScreen === 'incomes') {
-        screenToDisplay = <IncomeScreen onNavigate={navigate} {...currentScreenParams} />;
-    } else if (currentScreen === 'add-income') {
-        screenToDisplay = <AddIncomeScreen onNavigate={navigate} {...currentScreenParams} />;
-    } else if (currentScreen === 'add-customer') {
-        screenToDisplay = <AddCustomerScreen onNavigate={navigate} />;
-    } else if (currentScreen === 'edit-customer') {
-        screenToDisplay = <EditCustomerScreen onNavigate={navigate} onClose={() => navigate("customers")} {...currentScreenParams} />;
-    } else if (currentScreen === 'customer-purchases') {
-        screenToDisplay = <CustomerPurchasesScreen onNavigate={navigate} onClose={() => navigate("customers")} {...currentScreenParams} />;
-    } else if (currentScreen === 'add-customer-purchase') {
-        screenToDisplay = <AddPurchaseScreen onNavigate={navigate} onClose={() => navigate("customer-purchases", {...currentScreenParams})} {...currentScreenParams} />;
-    } else if (currentScreen === 'admin') {
-        screenToDisplay = <AdminScreen onNavigate={navigate} />;
-    } else if (currentScreen === 'userLogs') {
-        screenToDisplay = <ChangeLogsComponent onNavigate={navigate} />;
-    } else if(currentScreen === "inventory") {
-        screenToDisplay = <InventoryScreen onNavigate={navigate} />;
-    } else if(currentScreen === "addInventory") {
-        screenToDisplay = <AddInventoryScreen onNavigate={navigate} onClose={() => navigate("inventory")} {...currentScreenParams} />;
-    } else if(currentScreen === "subtractInventory") {
-        screenToDisplay = <SubtractInventoryScreen onNavigate={navigate} onClose={() => navigate("inventory")} {...currentScreenParams} />;
-    }
+    const SCREENS = {
+        'customers'              : CustomersScreen,
+        'activities'             : ActivitiesScreen,
+        'expenses'               : ExpensesScreen,
+        'add-expense'            : AddExpensesScreen,
+        'edit-expense'           : AddExpensesScreen,
+        'incomes'                : IncomeScreen,
+        'add-income'             : AddIncomeScreen,
+        'edit-income'            : AddIncomeScreen,
+        'customer-purchases'     : CustomerPurchasesScreen,
+        'add-customer-purchase'  : AddPurchaseScreen,
+        'edit-customer-purchase' : EditPurchaseScreen,
+        'admin'                  : AdminScreen,
+        'userLogs'               : ChangeLogsComponent,
+        'inventory'              : InventoryScreen,
+        'addInventory'           : AddInventoryScreen,
+        'subtractInventory'      : SubtractInventoryScreen,
+    };
+
+    const ScreenToDisplay = SCREENS[currentScreen.name];
 
     return (
-        <>
-            <div className="app-container">   
-                {isLoggedIn ? (<>                     
-                        <SideMenu onNavigate={navigate}/>
-                        <div className="content">
-                            {screenToDisplay}
-                        </div> { /* Use screenToDisplay */}
-                        <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />        
-                </>) : (
-                    <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
-                )}
-            </div>
-        </>
+        <div className="app-container">   
+            {isLoggedIn ? (<>                     
+                    <SideMenu onNavigate={navigate}/>
+                    <div className="content">
+                        <ScreenToDisplay
+                            onNavigate={navigate} 
+                            onClose={onClose}
+                            {...currentScreen.data}
+                        />
+                    </div> { /* Use screenToDisplay */}
+                    <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />        
+            </>) : (
+                <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
+            )}
+        </div>
     );
 }
 

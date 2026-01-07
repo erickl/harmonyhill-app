@@ -13,11 +13,6 @@ import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
 export default function AddIncomeScreen({ customer, incomeToEdit, onNavigate, onClose }) {
-
-    if(!onClose) {
-        onClose = () => onNavigate("incomes", {customer});
-    }
-
     let bookingId = '';
     let category = '';
     if(incomeToEdit) {
@@ -226,7 +221,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, onNavigate, on
             
                 <div>
                     {!incomeToEdit && (
-                        <button className="add-button" onClick={() => onNavigate("incomes", {customer})}>
+                        <button className="add-button" onClick={() => onNavigate("incomes", {customer:customer})}>
                             ☰
                         </button>
                     )}

@@ -11,14 +11,12 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import {getParent} from "../daos/dao.js";
 
-export default function ActivitiesList({onNavigate, from, to, customer, expandAllDates}) {
+export default function ActivitiesList({onNavigate, onClose, from, to, customer, expandAllDates}) {
     const [expandedDates,           setExpandedDates    ] = useState({}   ); 
     const [activitiesByDate,        setActivitiesByDate ] = useState({}   );
     const [users,                   setUsers            ] = useState([]   );
     const [user,                    setUser             ] = useState(null );
-    const [activityToEdit,          setActivityToEdit   ] = useState(null );
     const [loading,                 setLoading          ] = useState(true );
-    const [currentCustomer,         setCurrentCustomer  ] = useState(null );
 
     const todaysHeader = useRef(null);
 
@@ -28,14 +26,6 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
 
     const { onError } = useNotification();
     const { onConfirm } = useConfirmationModal();
-
-    const handleEditActivity = async(activity) => {
-        if(activity) {
-            const activityCustomer = await getCustomer(activity);
-            setCurrentCustomer(activityCustomer);
-            setActivityToEdit(activity); 
-        }
-    }
 
     const handleDeleteActivity = async (activity) => {
         onConfirm(`Are you sure you want to delete this ${activity.displayName}?`, async () => {
@@ -131,25 +121,8 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
             setLoading(false);
         }
 
-        // Only refresh activity list, after editing activity. Afterwards the variable is set to null
-        if (activityToEdit === null) {
-            getActivities();
-        }
-    }, [customer, activityToEdit]);
-    
-    if(activityToEdit && currentCustomer) {
-        return (
-            <EditPurchaseScreen
-                customer={currentCustomer}
-                activityToEdit={activityToEdit}
-                onClose={() => {
-                    setActivityToEdit(null);
-                    setCurrentCustomer(null);
-                }}
-                onNavigate={onNavigate}
-            />
-        );
-    }
+        getActivities();
+    }, [customer]);
 
     if(Object.keys(activitiesByDate).length === 0) {
         return (<div><h2>No activities</h2></div>);
@@ -189,7 +162,8 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
                                                         changedActivitiesByDate[date][index] = changedActivity;
                                                         setActivitiesByDate(changedActivitiesByDate);
                                                     }}
-                                                    handleEditActivity={handleEditActivity}
+                                                    onNavigate={onNavigate}
+                                                    onClose={onClose}
                                                     handleDeleteActivity={() => handleDeleteActivity(activity)}
                                                     users={users}
                                                     user={user}
@@ -203,7 +177,7 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
                             )}
                         </div>
                     </React.Fragment>
-                )
+                );
             })}
             </>)}
         </div>

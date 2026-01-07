@@ -8,7 +8,7 @@ export default function EditCustomerScreen({ onNavigate, onClose, customer}) {
                 <h2 className="card-title">Edit Customer</h2>
             </div>
             <div className="card-content space-y-6">
-                <BookingForm booking={customer} onClose={onClose} />
+                <BookingForm booking={customer} onNavigate={onNavigate} onClose={onClose} />
             </div>
         </div>
     );

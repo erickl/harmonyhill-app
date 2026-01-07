@@ -8,18 +8,14 @@ import * as utils from "../utils.js";
 import "./IncomeScreen.css";
 import Spinner from "./Spinner.js";
 import MetaInfo from './MetaInfo.js';
-import AddIncomeScreen from './AddIncomeScreen.js';
-import ConfirmModal from "./ConfirmModal.js";
-import { Pencil, ShoppingCart, Trash2 } from 'lucide-react';
+import { useConfirmationModal } from "../context/ConfirmationContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
+import { Pencil, Trash2 } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
-import e from 'cors';
 
 export default function IncomeScreen({ customer, onNavigate, onClose }) {
-
     const [expandedIncomes,     setExpandedIncomes     ] = useState({}   );
     const [loadingExpanded,     setLoadingExpanded     ] = useState({}   );
-    const [incomeToEdit,        setIncomeToEdit        ] = useState(null );
-    const [incomeToDelete,      setIncomeToDelete      ] = useState(null );
     const [incomes,             setIncomes             ] = useState([]   );
     const [loading,             setLoading             ] = useState(true );
     const [isManagerOrAdmin,    setIsManagerOrAdmin    ] = useState(false);
@@ -27,7 +23,9 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
     const [pettyCash,           setPettyCash           ] = useState(null );
     const [incomeSum,           setIncomeSum           ] = useState(null );
 
-    const { onError } = useNotification();
+    const { onError   } = useNotification();
+    const { onSuccess } = useSuccessNotification();
+    const { onConfirm } = useConfirmationModal();
 
     const filterHeaders = {
         "after"  : "date",
@@ -61,18 +59,17 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
         setExpandedIncomes(updatedExpandedList);
     };
 
-    const handleEditIncome = async(income) => {
-        setIncomeToEdit(income);
-    }
-
-    const handleDeleteIncome = async() => {
-        if(!incomeToDelete || utils.isEmpty(incomeToDelete.id)) {
-            return;
-        }
-        const result = await incomeService.remove(incomeToDelete.id, onError);
-        if(result) {
-            setIncomeToDelete(null);
-        }
+    const handleDeleteIncome = async(incomeToDelete) => {
+        if(!incomeToDelete || utils.isEmpty(incomeToDelete.id)) return;
+        onConfirm(`Are you sure you want to delete income ${incomeToDelete.id}?`, async () => {
+            const result = await incomeService.remove(incomeToDelete.id, onError);
+            if(result !== false) {
+                let newIncomes = utils.deepCopy(incomes);
+                newIncomes = newIncomes.filter((income) => income.id !== incomeToDelete.id);
+                setIncomes(newIncomes);
+                onSuccess();
+            }
+        });
     }
 
     const getDataForExport = async(filterValues, onProgress) => {
@@ -105,7 +102,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
     
         fetchIncomes();
         getCashFlow();
-    }, [incomeToEdit, incomeToDelete]);
+    }, []);
 
     useEffect(() => {
         const getUserPermissions = async() => {
@@ -125,16 +122,6 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
         )
     }
 
-    if(incomeToEdit) {
-        return (
-            <AddIncomeScreen 
-                incomeToEdit={incomeToEdit} 
-                onNavigate={onNavigate} 
-                onClose={() => setIncomeToEdit(null)}
-            />
-        );
-    }
-
     const incomeFromText = customer ? `: ${customer.name}` : "";
      
     return (
@@ -151,7 +138,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                             {isAdmin && (<>
                                 <SheetUploader label={"Incomes"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
-                            <button className="add-button" onClick={() => onNavigate("add-income", {customer})}>
+                            <button className="add-button" onClick={() => onClose()}>
                                 + 
                             </button>
                         </div>
@@ -206,7 +193,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                                                 <Pencil   
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleEditIncome(income);
+                                                        onNavigate("edit-income", {customer:customer, incomeToEdit:income});
                                                     }}
                                                 />
                                                 <p>Edit</p>
@@ -216,7 +203,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                                                     <Trash2  
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setIncomeToDelete(income);
+                                                            handleDeleteIncome(income);
                                                         }}
                                                     />
                                                     <p>Delete</p>
@@ -231,13 +218,6 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                     )
                 })}
             </div>
-
-            {incomeToDelete && (
-                <ConfirmModal 
-                    onCancel={() => setIncomeToDelete(null)}
-                    onConfirm={handleDeleteIncome}
-                />
-            )}
         </div>
     )
 }

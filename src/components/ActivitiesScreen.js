@@ -8,7 +8,7 @@ import * as userService from "../services/userService.js";
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 
-export default  function ActivitiesScreen({onNavigate}) { 
+export default  function ActivitiesScreen({onNavigate, onClose}) { 
     const [isAdmin, setIsAdmin] = useState(false);
 
     const { onError } = useNotification();
@@ -48,7 +48,7 @@ export default  function ActivitiesScreen({onNavigate}) {
                     </div>)}
                 </div>
             </div> 
-            <ActivitiesAllLists onNavigate={onNavigate} futureExpanded={true} />   
+            <ActivitiesAllLists onNavigate={onNavigate} onClose={onClose} futureExpanded={true} />   
         </div>
     );
 };

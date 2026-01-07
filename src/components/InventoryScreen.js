@@ -56,11 +56,11 @@ export default function InventoryScreen({onNavigate, onClose}) {
 
     const onAddStock = async(item) => {
         const inventory = [item];
-        onNavigate("addInventory", {inventory});
+        onNavigate("addInventory", {inventory: inventory});
     }
 
     const onSubtractStock = async(item) => {
-        onNavigate("subtractInventory", {item});
+        onNavigate("subtractInventory", {item: item});
     }
 
     const onCloseMonth = async() => {
@@ -165,7 +165,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                     {isAdmin && (<>
                         <button onClick={onCloseMonth}>Close</button>
                     </>)}
-                    <button className="add-button" onClick={() => onNavigate('addInventory', {inventory})}>
+                    <button className="add-button" onClick={() => onNavigate('addInventory', {inventory:inventory})}>
                         +
                     </button> 
                 </div>

@@ -9,7 +9,7 @@ import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import './BookingList.css';
 
-export default function BookingList({ onNavigate, title, filter, expand}) {
+export default function BookingList({ onNavigate, onClose, title, filter, expand}) {
     const [sectionIsExpanded,          setSectionIsExpanded      ] = useState(expand || false);
     const [customers,                  setCustomers              ] = useState([]   );
     const [loading,                    setLoading                ] = useState(true );
@@ -107,7 +107,7 @@ export default function BookingList({ onNavigate, title, filter, expand}) {
                                                         className="cursor-pointer"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            onNavigate('incomes', {customer});
+                                                            onNavigate('incomes', {customer:customer});
                                                         }}
                                                     />
                                                     <ShoppingCart
@@ -115,7 +115,7 @@ export default function BookingList({ onNavigate, title, filter, expand}) {
                                                         className="cursor-pointer"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            onNavigate('customer-purchases', {customer});
+                                                            onNavigate('customer-purchases', {customer:customer});
                                                         }}
                                                     />
                                                 </div>
@@ -160,7 +160,7 @@ export default function BookingList({ onNavigate, title, filter, expand}) {
                                                             <Pencil   
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onNavigate("edit-customer", {customer});
+                                                                    onNavigate("edit-customer", {customer:customer});
                                                                 }}
                                                             />
                                                             <p>Edit</p>

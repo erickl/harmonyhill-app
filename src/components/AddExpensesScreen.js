@@ -15,13 +15,6 @@ import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useCameraModal } from "../context/CameraContext.js";
 
 export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
-
-    if(!onClose) {
-        onClose = () => {
-            setShowList(true);
-        }
-    }
-
     const emptyForm = {
         photoUrl      : expenseToEdit ? expenseToEdit.photoUrl      : null,
         amount        : expenseToEdit ? expenseToEdit.amount        : '',
@@ -302,7 +295,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
             
                 <div>
                     {!expenseToEdit && (
-                        <button className="add-button" onClick={() => setShowList(true)}>
+                        <button className="add-button" onClick={() => onNavigate("expenses")}>
                             ☰
                         </button>
                     )}

@@ -9,9 +9,9 @@ import * as ledgerService from "../services/ledgerService.js";
 import "./ExpensesScreen.css";
 import Spinner from "./Spinner.js";
 import invoiceLogo from "../assets/invoice-icon.png";
-import AddExpensesScreen from "./AddExpensesScreen.js";
-import ConfirmModal from "./ConfirmModal.js";
-import { Pencil, ShoppingCart, Trash2, ImageDown } from 'lucide-react';
+import { useConfirmationModal } from "../context/ConfirmationContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
+import { Pencil, Trash2, ImageDown } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 import MetaInfo from './MetaInfo.js';
 import { useFilters } from "../context/FilterContext.js";
@@ -21,19 +21,19 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
 
     const [expandedExpenses, setExpandedExpenses] = useState({}   );
     const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
-    const [receipts,         setExpenses        ] = useState([]   );
+    const [expenses,         setExpenses        ] = useState([]   );
     const [displayedReceipt, setDisplayedReceipt] = useState(null );
     const [loading,          setLoading         ] = useState(true );
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
     const [isAdmin,          setIsAdmin         ] = useState(false);
-    const [expenseToEdit,    setExpenseToEdit   ] = useState(null );
-    const [expenseToDelete,  setExpenseToDelete ] = useState(null );
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
 
-    const {onFilter} = useFilters();
-    const { onError } = useNotification();
+    const { onFilter   } = useFilters();
+    const { onError    } = useNotification();
     const { onProgress } = useProgressCounter();
+    const { onConfirm  } = useConfirmationModal();
+    const { onSuccess  } = useSuccessNotification();
 
     const filterHeaders = {
         "after"  : "date",
@@ -87,18 +87,18 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         setExpandedExpenses(updatedExpandedList);
     };
 
-    const handleEditExpense = async(expense) => {
-        setExpenseToEdit(expense);
-    }
-
-    const handleDeleteExpense = async() => {
-        if(!expenseToDelete || utils.isEmpty(expenseToDelete.id)) {
-            return;
-        }
-        const result = await expenseService.remove(expenseToDelete.id, onError);
-        if(result) {
-            setExpenseToDelete(null);
-        }
+    const handleDeleteExpense = async(expenseToDelete) => {
+        if(!expenseToDelete || utils.isEmpty(expenseToDelete.id)) return;
+        
+        onConfirm(`Are you sure you want to delete expense ${expenseToDelete.id}?`, async () => {
+            const result = await expenseService.remove(expenseToDelete.id, onError);
+            if(result !== false) {
+                let newExpenses = utils.deepCopy(expenses);
+                newExpenses = newExpenses.filter((expense) => expense.id !== expenseToDelete.id);
+                setExpenses(newExpenses);
+                onSuccess();
+            }
+        });
     }
 
     useEffect(() => {
@@ -127,7 +127,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         }
 
         fetchExpenses();
-    }, [expenseToEdit, expenseToDelete]);
+    }, []);
 
     useEffect(() => {
         const getUserPermissions = async() => {
@@ -142,16 +142,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         return (
             <p>Loading...</p>
         )
-    }
-
-    if(expenseToEdit) {
-        return (
-            <AddExpensesScreen 
-                expenseToEdit={expenseToEdit} 
-                onNavigate={onNavigate} 
-                onClose={() => setExpenseToEdit(null)}
-            />
-        );
     }
      
     return (
@@ -178,7 +168,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 </div>  
             </div>
             <div className="card-content">
-                {receipts.map((expense) => {
+                {expenses.map((expense) => {
                     return (
                         <React.Fragment key={expense.id}>
                             <div className="expense-box" onClick={()=> handleSetExpanded(expense)}>
@@ -229,7 +219,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                                 <Pencil   
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleEditExpense(expense);
+                                                        onNavigate("edit-expense", {expenseToEdit:expense})
                                                     }}
                                                 />
                                                 <p>Edit</p>
@@ -239,7 +229,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                                     <Trash2  
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setExpenseToDelete(expense);
+                                                            handleDeleteExpense(expense);
                                                         }}
                                                     />
                                                     <p>Delete</p>
@@ -267,13 +257,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                     )
                 })}
             </div>
-            
-            {expenseToDelete && (
-                <ConfirmModal 
-                    onCancel={() => setExpenseToDelete(null)}
-                    onConfirm={handleDeleteExpense}
-                />
-            )}
 
             {displayedReceipt && (
                 <img 

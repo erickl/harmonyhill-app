@@ -7,7 +7,7 @@ import VeganHamburgerButton from './VeganHamburgerButton.js';
 import { useNotification } from "../context/NotificationContext.js";
 import BookingList from "./BookingList.js";
 
-export default function CustomersScreen({ onNavigate }) {
+export default function CustomersScreen({ onNavigate, onClose }) {
     const [hasAddBookingsPermissions,  setAddBookingsPermissions] = useState(false );
     const [previousInterval,           setPreviousInterval      ] = useState(null);
     const [futureInterval,             setFutureInterval        ] = useState(null);
@@ -57,9 +57,9 @@ export default function CustomersScreen({ onNavigate }) {
             </div>
             
             <div className="card-content">
-                {previousInterval && (<BookingList onNavigate={onNavigate} title={"Previous"} filter={previousInterval} /> )}
-                <BookingList onNavigate={onNavigate} title={"Current"} filter={{date: utils.today()}} expand={true} />
-                {futureInterval && (<BookingList onNavigate={onNavigate} title={"Future"} filter={futureInterval} /> )}
+                {previousInterval && (<BookingList onNavigate={onNavigate} onClose={onClose} title={"Previous"} filter={previousInterval} /> )}
+                <BookingList onNavigate={onNavigate} title={"Current"} onClose={onClose} filter={{date: utils.today()}} expand={true} />
+                {futureInterval && (<BookingList onNavigate={onNavigate} onClose={onClose} title={"Future"} filter={futureInterval} /> )}
             </div>
         </div>
     );

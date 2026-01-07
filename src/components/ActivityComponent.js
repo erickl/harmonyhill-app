@@ -28,7 +28,7 @@ const assigneeStyles = [
     { backgroundColor: "green",     color: "white" }
 ];  
 
-export default function ActivityComponent({ inputCustomer, activity, onActivityChange, handleEditActivity, handleDeleteActivity, users, user }) {
+export default function ActivityComponent({ inputCustomer, activity, onActivityChange, onNavigate, onClose, handleDeleteActivity, users, user }) {
     const useActivityStartedStatus = true;
     
     const assignedUser = users && activity ? users.find(user => user.name === activity.assignedTo) : null;
@@ -541,7 +541,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                     if(!utils.isEmpty(dishes)) {
                                         activity.dishes = dishes;
                                     }
-                                    handleEditActivity(activity);
+                                    onNavigate("edit-customer-purchase", {
+                                        customer : customer,
+                                        activityToEdit: activity,
+                                    });
                                 }}
                             />
                             <p>Edit</p>

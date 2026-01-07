@@ -54,7 +54,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                             className="add-button"  
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onNavigate("add-customer-purchase", {customer});
+                                onNavigate("add-customer-purchase", {customer:customer});
                             }}>
                             +
                         </button> 
@@ -66,6 +66,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
             <div className="card-content">
                 <ActivitiesList
                     onNavigate={onNavigate}
+                    onClose={onClose}
                     customer={customer}
                     expandAllDates={true}
                     triggerRerender={() => setTriggerRerender(triggerRerender + 1)}
