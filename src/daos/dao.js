@@ -152,6 +152,7 @@ export async function update(path, id, update, updateLogs, onError = null, write
             diffStr = await jsonObjectDiffStr(originalData, update_);
         
             if(diffStr.length === 0) {
+                utils.allToDateTime(originalData);
                 return originalData;
             }
                 
@@ -178,6 +179,7 @@ export async function update(path, id, update, updateLogs, onError = null, write
         writes.push((tx) => tx.update(ref, update_));
         
         const updatedDoc = {...originalData, ...update_};
+        utils.allToDateTime(updatedDoc);
         return updatedDoc;
     } catch (e) {
         if(onError) onError(`Error updating document ${path}/${id}: ${e.message}`);
