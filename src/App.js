@@ -72,6 +72,8 @@ function App() {
 
     const SCREENS = {
         'customers'              : CustomersScreen,
+        'add-customer'           : AddCustomerScreen,
+        'edit-customer'          : EditCustomerScreen,
         'activities'             : ActivitiesScreen,
         'expenses'               : ExpensesScreen,
         'add-expense'            : AddExpensesScreen,
