@@ -272,6 +272,7 @@ export async function getParent(child) {
             let parentData = parentSnap.data();
             parentData.id = parentSnap.id;
             parentData.ref = parentSnap.ref;
+            utils.allToDateTime(parentData);
             return parentData;
         }
     }

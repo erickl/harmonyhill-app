@@ -385,6 +385,14 @@ export function allToTimestamp(data, level = 0) {
     }
 }
 
+export function allToDateTime(data, level = 0) {
+    for(const [key, value] of Object.entries(data)) {
+        if(isDate(value)) {
+            data[key] = toDateTime(value);
+        } //else if(isJsonObject(value)) {}
+    }
+}
+
 /**
  * get a Luxon date time object with time at midnight
  */

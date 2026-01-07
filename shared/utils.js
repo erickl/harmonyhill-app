@@ -528,6 +528,14 @@ export function allToTimestamp(data, level = 0) {
     }
 }
 
+export function allToDateTime(data, level = 0) {
+    for(const [key, value] of Object.entries(data)) {
+        if(isDate(value)) {
+            data[key] = toDateTime(value);
+        } //else if(isJsonObject(value)) {}
+    }
+}
+
 export function deepCopy(obj) {
     if (isEmpty(obj)) return obj;
     if(!isJsonObject(obj)) return obj;
