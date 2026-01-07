@@ -59,7 +59,8 @@ export async function addMeal(bookingId, mealData, onError, writes = []) {
     }
 
     mealRecord.dishes = addedDishes;
-    return mealRecord;
+    const enhancedMealRecord = await activityService.enhanceActivities(mealRecord);
+    return enhancedMealRecord;
 }
 
 export async function removeMeal(meal, onError, writes = []) {

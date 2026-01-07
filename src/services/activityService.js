@@ -101,7 +101,7 @@ export async function enhanceActivities(activities) {
     const enhance = async (activity) => {
         if(!activity) return;
 
-        const newActivity = activity;
+        const newActivity = utils.deepCopy(activity);
         try {
             // Date time stored in timestamp format in database. Convert to Luxon Date time to display correct time zone 
             if(!utils.isEmpty(activity.startingAt)) {
@@ -194,7 +194,8 @@ export async function add(bookingId, activityData, onError, writes = []) {
         if((await commitTx(writes, onError)) === false) return false;
     }
     
-    return result;
+    const enhancedRecord = await enhanceActivities(result);
+    return enhancedRecord;
 }
 
 /**
@@ -272,7 +273,7 @@ export async function changeAssigneeStatus(accept, bookingId, activityId, onErro
     const dataUpdate = { 
         assigneeAccept  : accept,
         changeDescription : null,
-    }
+    };
 
     const result = await update(bookingId, activityId, dataUpdate, onError, writes);
     if(result === false) return false;

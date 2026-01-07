@@ -217,7 +217,11 @@ export async function add(path, id, data, onError = null, writes = []) {
         // Create the data record in DB
         const ref = doc(db, ...path, id);
         writes.push((tx) => tx.set(ref, data_));
-        return data_;
+        
+        const dataToReturn = utils.deepCopy(data_);
+        utils.allToDateTime(dataToReturn);
+        dataToReturn.id = id;
+        return dataToReturn;
     } catch (e) {
         if(onError) onError(`Error adding document ${path}/${id}: ${e.message}`);
         return false;
