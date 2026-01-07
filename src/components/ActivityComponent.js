@@ -191,9 +191,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         onConfirm(confirmationText, async () => {
             const result = await activityService.setActivityStatus(activity, newStatus.name, onError);
-            if(result !== false) { //todo: success should be the updated activity? Set that object in setActivity
-                let updatedActivity = { ...(activity || {}) };
-                updatedActivity.status = newStatus.name;
+            if(result !== false) {
+                const updatedActivity = {
+                    ...(activity || {}),
+                    ...result
+                };
                 onActivityChange(updatedActivity);
                 onSuccess();
             }
@@ -203,8 +205,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const handleAssigneeStatusChange = async (accept) => {
         const result = await activityService.changeAssigneeStatus(accept, activity.bookingId, activity.id, onError);
         if(result !== false) {
-            let updatedActivity = { ...(activity || {}) };
-            updatedActivity.assigneeAccept = accept;
+            const updatedActivity = { 
+                ...(activity || {}),
+                ...result
+            };
+            
             onActivityChange(updatedActivity);
         }
     }
@@ -502,8 +507,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     </>)}
 
                     { activity.isFree !== true && (<>
-                        {
-                            activity.customerPrice !== 0 && (<p>
+                        {activity.customerPrice !== 0 && (<p>
                                 <span className="detail-label">Customer Price: </span> 
                                 {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
                             </p>
@@ -633,8 +637,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         { canAddPhotos() && (
-                            <div className="activity-component-footer-icon">
-                                
+                            <div className="activity-component-footer-icon">   
                                 <motion.div
                                     animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
                                     transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
@@ -672,12 +675,17 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
                         { activity && activity.subCategory === "checkin-prep" && (
                             <div className="activity-component-footer-icon">
-                                <Candy  
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDisplayMinibarCount();
-                                    }}
-                                />
+                                <motion.div
+                                    animate={minibarCount ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
+                                    transition={minibarCount ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                >
+                                    <Candy  
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDisplayMinibarCount();
+                                        }}
+                                    />
+                                </motion.div>
                                 <p>Count Minibar</p>
                             </div>
                         )}
@@ -685,24 +693,34 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
                         { activity && activity.subCategory === "checkout" && (
                             <div className="activity-component-footer-icon">
-                                <Candy  
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDisplayMinibarCount();
-                                    }}
-                                />
+                                <motion.div
+                                    animate={minibarCount ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
+                                    transition={minibarCount ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                >
+                                    <Candy  
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDisplayMinibarCount();
+                                        }}
+                                    />
+                                </motion.div>
                                 <p>Count Minibar</p>
                             </div>
                         )}
 
                         { activity && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">
-                                <Candy  
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDisplayMinibarCount();
-                                    }}
-                                />
+                                <motion.div
+                                    animate={minibarCount ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
+                                    transition={minibarCount ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                >
+                                    <Candy  
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDisplayMinibarCount();
+                                        }}
+                                    />
+                                </motion.div>
                                 <p>Minibar Refill</p>
                             </div>
                         )}
