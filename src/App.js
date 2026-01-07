@@ -26,8 +26,8 @@ import CustomerPurchasesScreen from './components/CustomerPurchasesScreen.js';
 function App() {
     const [isLoggedIn, setIsLoggedIn         ] = useState(false      );
     const [loading,    setLoading            ] = useState(true       );
-    const [history,    setHistory            ] = useState([{ name: 'customers', data: {} }]);
-    const [activeTab,  setActiveTab          ] = useState('customers');
+    const [history,    setHistory            ] = useState([{ name: 'activities', data: {} }]);
+    const [activeTab,  setActiveTab          ] = useState('activities');
 
     const currentScreen = history[history.length - 1];
 
