@@ -63,7 +63,13 @@ export function MinibarTableProvider({ children }) {
         }
         if(utils.exists(headers, "reserved")) {    
             loadReservedStock(activity, items);    
-        }    
+        }
+        
+        // The count always starts at 0. At checkout, possibly the guest took all items, the count
+        // should stay 0, meaning there'll be no change. So enable submit button from the start
+        if(activity.subCategory === "checkout") {
+            setIsChanged(true);
+        }
     }
 
     // todo: is there a need to get reserved stock, if we are counting the end stock, to calculate a sale?
