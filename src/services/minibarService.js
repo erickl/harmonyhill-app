@@ -30,25 +30,27 @@ export async function addOrEdit(activity, newMinibarEntry, onError, writes = [])
     }
 
     if(minibarResult === false) return false;
+    const result = {minibarCount: minibarResult};
 
     // If this is the end count, create a "minibar meal" activity, which will count as a final minibar sale 
     if(updatedMinibarEntry.type === "end") { 
         const booking = await getParent(activity);
         if(!booking) return false;
         
-        const minibarSaleResult = await addOrEditMinibarSale(minibarResult, booking, onError, writes);
+        const minibarMealResult = await addOrEditMinibarMeal(minibarResult, booking, onError, writes);
         // May be null, if no minibar items are taken
-        if(minibarSaleResult === false) return false;
+        if(minibarMealResult === false) return false;
+        result.minibarMeal = minibarMealResult;
     }
 
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;
     }
 
-    return minibarResult;
+    return result;
 }
 
-async function addOrEditMinibarSale(endCountEntry, booking, onError, writes = []) {
+async function addOrEditMinibarMeal(endCountEntry, booking, onError, writes = []) {
     const itemsSold = await calculateSale(endCountEntry, booking, onError);
     if(itemsSold === false) return false;
 

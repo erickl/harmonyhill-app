@@ -59,6 +59,18 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
         setExpandedDates(updatedExpandedList);
     };
 
+    // newActivity might an update to an existing activity or an entirely new activity (e.g minibar sale)
+    const onActivityChange = (newActivity, date, index) => {
+        const changedActivitiesByDate = utils.deepCopy(activitiesByDate);
+        if(index === null) {
+            changedActivitiesByDate[date].push(newActivity);
+        } else {
+            changedActivitiesByDate[date][index] = newActivity;
+        }
+        
+        setActivitiesByDate(changedActivitiesByDate);
+    };
+
     const today_ddMMM = utils.to_ddMMM(utils.today(0, false));
 
     useEffect(() => {
@@ -157,10 +169,8 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
                                                 <ActivityComponent 
                                                     inputCustomer={customer}
                                                     activity={activity}
-                                                    onActivityChange={(changedActivity) => {
-                                                        const changedActivitiesByDate = utils.deepCopy(activitiesByDate);
-                                                        changedActivitiesByDate[date][index] = changedActivity;
-                                                        setActivitiesByDate(changedActivitiesByDate);
+                                                    onActivityChange={(newActivity, isUpdate = true) => {
+                                                        onActivityChange(newActivity, date, isUpdate ? index : null);
                                                     }}
                                                     onNavigate={onNavigate}
                                                     onClose={onClose}
