@@ -159,7 +159,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                 <SheetUploader label={"Expenses"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                                 <ImageDown style={{margin:"1rem"}} onClick={() => handleReceiptsDownloadFilter()} />
                             </>)}
-                            <button className="add-button" onClick={() => onClose()}>
+                            <button className="add-button" onClick={() => onNavigate("add-expense")}>
                                 + 
                             </button>
                         </div>

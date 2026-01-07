@@ -138,7 +138,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                             {isAdmin && (<>
                                 <SheetUploader label={"Incomes"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
-                            <button className="add-button" onClick={() => onClose()}>
+                            <button className="add-button" onClick={() => onNavigate("add-income", {customer:customer})}>
                                 + 
                             </button>
                         </div>

@@ -221,7 +221,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, onNavigate, on
             
                 <div>
                     {!incomeToEdit && (
-                        <button className="add-button" onClick={() => onNavigate("incomes", {customer:customer})}>
+                        <button className="add-button" onClick={() => onClose()}>
                             ☰
                         </button>
                     )}

@@ -36,15 +36,15 @@ export default function BottomNavigation({ activeTab, onTabChange }) {
             {isAdminOrManager && (
                 <>
                     <button
-                        className={`nav-button ${activeTab === 'add-expense' ? 'active' : ''}`}
-                        onClick={() => onTabChange('add-expense')}
+                        className={`nav-button ${activeTab === 'expenses' ? 'active' : ''}`}
+                        onClick={() => onTabChange('expenses')}
                     >
                         <Upload className="h-5 w-5 mb-1" />
                         Expenses
                     </button>
                     <button
-                        className={`nav-button ${activeTab === 'add-income' ? 'active' : ''}`}
-                        onClick={() => onTabChange('add-income')}
+                        className={`nav-button ${activeTab === 'incomes' ? 'active' : ''}`}
+                        onClick={() => onTabChange('incomes')}
                     >
                         <Download className="h-5 w-5 mb-1" />
                         Income

@@ -295,7 +295,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
             
                 <div>
                     {!expenseToEdit && (
-                        <button className="add-button" onClick={() => onNavigate("expenses")}>
+                        <button className="add-button" onClick={() => onClose()}>
                             ☰
                         </button>
                     )}
