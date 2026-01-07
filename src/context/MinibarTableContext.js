@@ -12,7 +12,6 @@ import MinusButton from "../components/MinusButton.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import Spinner from '../components/Spinner.js';
 
-
 const MinibarTableContext = createContext();
 
 export function MinibarTableProvider({ children }) {
@@ -29,8 +28,7 @@ export function MinibarTableProvider({ children }) {
     const [state,            setState           ] = useState(initState);
     const [totalStock,       setTotalStock      ] = useState(null);
     const [reservedStock,    setReservedStock   ] = useState(null);
-    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
-
+    
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
@@ -41,11 +39,10 @@ export function MinibarTableProvider({ children }) {
             return map;
         }, {});
 
-        const isManagerOrAdmin_ = await userService.isManagerOrAdmin();
-        setIsManagerOrAdmin(isManagerOrAdmin_);
-
-        // Remove table columns for staff members
-        if(isManagerOrAdmin_ === false) {
+        const isManagerOrAdmin = await userService.isManagerOrAdmin();
+        
+        // Remove some table columns for staff members
+        if(isManagerOrAdmin === false) {
             for(const header of ["provided", "total", "reserved"]) {
                 const indexToRemove = headers.indexOf(header);
                 headers.splice(indexToRemove, 1);
@@ -208,16 +205,25 @@ export function MinibarTableProvider({ children }) {
             }
         }
         
-        const onChangeCount = (count) => {      
-            const newCount = state.updatedCount[item.name] + count;
+        const onChangeCount = (diff) => {      
+            const newCount = state.updatedCount[item.name] + diff;
 
             // Count can be negative for housekeeping, since we might want to correct a count or take something out
             if(newCount >= 0 || state.activity.subCategory === "housekeeping") {
                 const newState = utils.deepCopy(state);
                 newState.updatedCount[item.name] = newCount;
                 setState(newState); 
+
+                // If the count of any minibar item changed, make the submit button visible
+                let isChangedUpdate = false;
+                for(const [name, count] of Object.entries(newState.updatedCount)) {
+                    const item = state.items.find((item) => name === item.name);
+                    if(item.count !== count) {
+                        isChangedUpdate = true;
+                        break;
+                    }
+                }
                 
-                const isChangedUpdate = newCount !== state.items[index].count;
                 setIsChanged(isChangedUpdate);
             }
         }
