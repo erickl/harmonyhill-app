@@ -28,14 +28,13 @@ const assigneeStyles = [
     { backgroundColor: "green",     color: "white" }
 ];  
 
-export default function ActivityComponent({ inputCustomer, inputActivity, handleEditActivity, handleDeleteActivity, users, user }) {
+export default function ActivityComponent({ inputCustomer, activity, onActivityChange, handleEditActivity, handleDeleteActivity, users, user }) {
     const useActivityStartedStatus = true;
     
-    const assignedUser = users && inputActivity ? users.find(user => user.name === inputActivity.assignedTo) : null;
+    const assignedUser = users && activity ? users.find(user => user.name === activity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
     
     const [customer,                setCustomer               ] = useState(null         );
-    const [activity,                setActivity               ] = useState(inputActivity);
     const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false        );
     const [activityInfo,            setActivityInfo           ] = useState(null         );
     const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false        );
@@ -191,11 +190,11 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
         }
 
         onConfirm(confirmationText, async () => {
-            const success = await activityService.setActivityStatus(activity, newStatus.name, onError);
-            if(success) { //todo: success should be the updated activity? Set that object in setActivity
+            const result = await activityService.setActivityStatus(activity, newStatus.name, onError);
+            if(result !== false) { //todo: success should be the updated activity? Set that object in setActivity
                 let updatedActivity = { ...(activity || {}) };
                 updatedActivity.status = newStatus.name;
-                setActivity(updatedActivity);
+                onActivityChange(updatedActivity);
                 onSuccess();
             }
         });
@@ -203,10 +202,10 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
 
     const handleAssigneeStatusChange = async (accept) => {
         const result = await activityService.changeAssigneeStatus(accept, activity.bookingId, activity.id, onError);
-        if(result) {
+        if(result !== false) {
             let updatedActivity = { ...(activity || {}) };
             updatedActivity.assigneeAccept = accept;
-            setActivity(updatedActivity);
+            onActivityChange(updatedActivity);
         }
     }
 
@@ -369,7 +368,7 @@ export default function ActivityComponent({ inputCustomer, inputActivity, handle
     }, []);
 
     const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
-    const houseShortName = inputActivity ? (inputActivity.house === "harmony hill" ? "HH" : "JN") : "?";
+    const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
     const houseColor = houseShortName === "HH" ? "darkcyan" : "rgb(2, 65, 116)";
 
     if(!activity) {

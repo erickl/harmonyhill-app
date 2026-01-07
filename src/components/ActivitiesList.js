@@ -7,7 +7,6 @@ import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import "./ActivityComponent.css";
 import "./ActivitiesList.css";
-import ConfirmModal from './ConfirmModal.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import {getParent} from "../daos/dao.js";
@@ -179,12 +178,17 @@ export default function ActivitiesList({onNavigate, from, to, customer, expandAl
                             </h3>
                             {expandedDates[date] ? (
                                 <div>
-                                    {activities.map((activity) => {
+                                    {activities.map((activity, index) => {
                                         return (
                                             <React.Fragment key={activity.id}>   
                                                 <ActivityComponent 
                                                     inputCustomer={customer}
-                                                    inputActivity={activity}
+                                                    activity={activity}
+                                                    onActivityChange={(changedActivity) => {
+                                                        const changedActivitiesByDate = utils.deepCopy(activitiesByDate);
+                                                        changedActivitiesByDate[date][index] = changedActivity;
+                                                        setActivitiesByDate(changedActivitiesByDate);
+                                                    }}
                                                     handleEditActivity={handleEditActivity}
                                                     handleDeleteActivity={() => handleDeleteActivity(activity)}
                                                     users={users}
