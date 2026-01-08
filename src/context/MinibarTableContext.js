@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import * as utils from "../utils.js";
 import * as inventoryService from "../services/inventoryService.js";
 import * as minibarService from "../services/minibarService.js";
@@ -24,10 +24,12 @@ export function MinibarTableProvider({ children }) {
         onSubmit     : null,
     };
     
-    const [isChanged,        setIsChanged       ] = useState(false);
+    const [enableSubmit,     setEnableSubmit    ] = useState(false);
+    const [enableClose,      setEnableClose     ] = useState(true);
     const [state,            setState           ] = useState(initState);
     const [totalStock,       setTotalStock      ] = useState(null);
     const [reservedStock,    setReservedStock   ] = useState(null);
+    const [editable,         setEditable        ] = useState(false); 
     
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
@@ -64,12 +66,6 @@ export function MinibarTableProvider({ children }) {
         if(utils.exists(headers, "reserved")) {    
             loadReservedStock(activity, items);    
         }
-        
-        // The count always starts at 0. At checkout, possibly the guest took all items, the count
-        // should stay 0, meaning there'll be no change. So enable submit button from the start
-        if(activity.subCategory === "checkout") {
-            setIsChanged(true);
-        }
     }
 
     // todo: is there a need to get reserved stock, if we are counting the end stock, to calculate a sale?
@@ -92,6 +88,22 @@ export function MinibarTableProvider({ children }) {
 
         setReservedStock(reservedStock);
     }
+
+    const canStillEdit = (activity = null) => {
+        const activity_ = activity ? activity : state.activity;
+        return activity_ && ActivityStatus.Started.equals(activity_.status) && utils.isToday(activity_.startingAt);
+    }
+
+    useEffect(() => {
+        const isEditable_ = canStillEdit();
+        setEditable(isEditable_);
+
+        // The minibar count always starts at 0. At checkout, possibly the guest took all items and the count
+        // should stay 0, meaning there'll be no change in count. Thus enable submit button from the start
+        if(isEditable_ && state.activity && state.activity.subCategory === "checkout") {
+            setEnableSubmit(true);
+        }
+    }, [state.activity]);
 
     const loadTotalStock = async(activity, items) => {
         if(utils.isEmpty(items)) return;
@@ -117,9 +129,13 @@ export function MinibarTableProvider({ children }) {
     
     const hidePopup = () => {
         setState(initState);
-        setIsChanged(false);
+        setEnableSubmit(false);
         setTotalStock(null);
         setReservedStock(null);
+
+        setEditable(false);
+        setEnableSubmit(false);
+        setEnableClose(true);
     }
 
     const tableStyle = { 
@@ -142,20 +158,33 @@ export function MinibarTableProvider({ children }) {
 
     const onHandleSubmit = async() => {
         onConfirm("Submit the minibar count?", async() => {
-            const itemsCopy = utils.deepCopy(state.items);
-            const finalCount = itemsCopy.reduce((map, item) => {
-                map[item.name] = {
-                    count    : state.updatedCount[item.name], 
-                    reserved : item.reserved, 
-                    total    : item.total
-                };
-                return map;
-            }, {});
+            const editable_ = editable;
+            try {
+                setEditable(false);
+                setEnableSubmit(false);
+                setEnableClose(false);
 
-            const result = await state.onSubmit(finalCount);
-            if(result === false) return false;
-            hidePopup();
-            onSuccess();
+                const itemsCopy = utils.deepCopy(state.items);
+                const finalCount = itemsCopy.reduce((map, item) => {
+                    map[item.name] = {
+                        count    : state.updatedCount[item.name], 
+                        reserved : item.reserved, 
+                        total    : item.total
+                    };
+                    return map;
+                }, {});
+
+                const result = await state.onSubmit(finalCount);
+                if(result === false) throw new Error(`Submit failed`);
+                
+                hidePopup();
+                onSuccess();
+            } catch(e) {
+                onError(`Unexpected error when submitting minibar count: ${e.message}`);
+            } finally {
+                setEditable(editable_);
+                setEnableClose(true);
+            }
         });
     }
 
@@ -230,15 +259,13 @@ export function MinibarTableProvider({ children }) {
                     }
                 }
                 
-                setIsChanged(isChangedUpdate);
+                setEnableSubmit(isChangedUpdate);
             }
         }
 
-        const canStillEdit = ActivityStatus.Started.equals(state.activity.status) && utils.isToday(state.activity.startingAt);
-
         const minusButton = () => { 
             // Don't let the user change the count if the task is already completed
-            return canStillEdit ? (
+            return editable ? (
                 <td>
                     <div style={{
                             display: "flex", 
@@ -254,7 +281,7 @@ export function MinibarTableProvider({ children }) {
 
         const plusButton = () => { 
             // Don't let the user change the count if the task is already completed
-            return canStillEdit ? (
+            return editable ? (
                 <td>
                     <div style={{
                             display: "flex", 
@@ -291,12 +318,12 @@ export function MinibarTableProvider({ children }) {
                             alignItems: "center",
                             width: "100%"
                         }}>
-                            <XIcon 
+                            {enableClose && (<XIcon 
                                 size={30}
                                 style={{ color:'#f44336'}}
                                 onClick={hidePopup}
-                            />
-                            {isChanged && (<CheckCheck 
+                            />)}
+                            {enableSubmit && (<CheckCheck 
                                 size={30}
                                 style={{ color:'#119249ff'}}
                                 onClick={onHandleSubmit}
