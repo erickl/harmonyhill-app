@@ -85,14 +85,6 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
         validateFormData(nextFormData); 
     };
 
-    const onSubmit = async () => {
-        setShowConfirm(true);
-    };
-
-    const handleCancelConfirm = () => {
-        setShowConfirm(false);
-    };
-
     const handleEditPurchaseSubmit = async() => {
         try {
             // If user already accepted the task, get and display change description
@@ -116,9 +108,9 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
             if(editActivitySuccess) {
                 onSuccess();
                 onClose();
-                if(triggerRerender) {
-                    triggerRerender();
-                }
+                if(triggerRerender) triggerRerender();
+            } else {
+                setShowConfirm(false);
             }
         } catch(error) {
             onError(`Unexpected error while trying to update meal: ${error.message}`);
@@ -199,7 +191,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
                 {showConfirm && (
                     <ConfirmOrderModal 
                         selected={formData.dishes}
-                        onCancel={handleCancelConfirm}
+                        onCancel={() => setShowConfirm(false)}
                         onConfirm={handleEditPurchaseSubmit}
                     />
                 )}
@@ -209,7 +201,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
                 
                 <ButtonsFooter 
                     onCancel={onClose} 
-                    onSubmit={onSubmit}
+                    onSubmit={() => setShowConfirm(true)}
                     submitEnabled={readyToSubmit}
                 />
             </div>
