@@ -34,22 +34,22 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const assignedUser = users && activity ? users.find(user => user.name === activity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
     
-    const [customer,                setCustomer               ] = useState(null         );
-    const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false        );
-    const [activityInfo,            setActivityInfo           ] = useState(null         );
-    const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false        );
-    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false        );
-    const [expanded,                setExpanded               ] = useState(false        );
-    const [dishes,                  setDishes                 ] = useState([]           );
-    const [dishesPrice,             setDishesPrice            ] = useState(null         );
-    const [status,                  setStatus                 ] = useState(null         );
-    const [alert,                   setAlert                  ] = useState(null         );
-    const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0            );
-    const [minuteTicker,            setMinuteTicker           ] = useState(0            );
-    const [photos,                  setPhotos                 ] = useState([]           );   
-    const [photoUploading,          setPhotoUploading         ] = useState(false        );  
-    const [requiredPhotosUploaded,  setRequiredPhotosUploaded ] = useState(false        );
-    const [minibarCount,            setMinibarCount           ] = useState(null         );
+    const [customer,                setCustomer               ] = useState(null );
+    const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false);
+    const [activityInfo,            setActivityInfo           ] = useState(null );
+    const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false);
+    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
+    const [expanded,                setExpanded               ] = useState(false);
+    const [dishes,                  setDishes                 ] = useState([]   );
+    const [dishesPrice,             setDishesPrice            ] = useState(null );
+    const [status,                  setStatus                 ] = useState(null );
+    const [alert,                   setAlert                  ] = useState(null );
+    const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0    );
+    const [minuteTicker,            setMinuteTicker           ] = useState(0    );
+    const [photos,                  setPhotos                 ] = useState([]   );   
+    const [photoUploading,          setPhotoUploading         ] = useState(false);  
+    const [requiredPhotosUploaded,  setRequiredPhotosUploaded ] = useState(false);
+    const [minibarCount,            setMinibarCount           ] = useState(null );
 
     const { onError               } = useNotification();
     const { onSuccess             } = useSuccessNotification();
@@ -227,6 +227,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         const result = await minibarService.addOrEdit(activity, inventory, onError); 
         if(result !== false) {
+            if(result.minibarMeal) onActivityChange(result.minibarMeal, false);
             setMinibarCount(inventory.items);
             onSuccess();
         }
@@ -569,12 +570,17 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             { (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
 
                                 <div className="activity-component-footer-icon">
-                                    <ThumbsUp  
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAssigneeStatusChange(true);
-                                        }}
-                                    />
+                                    <motion.div
+                                        animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
+                                        transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                    >
+                                        <ThumbsUp  
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleAssigneeStatusChange(true);
+                                            }}
+                                        />
+                                    </motion.div>
                                     <p>Accept task?</p>
                                 </div>
                             ) : (
