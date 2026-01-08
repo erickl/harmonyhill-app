@@ -576,3 +576,7 @@ export function deepCopy(obj) {
     
     return copy;
 }
+
+export async function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
