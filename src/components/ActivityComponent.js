@@ -70,6 +70,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         return newAssigneeStyleIndex;
     };
 
+    const countMinibarNow = minibarCount === null && activity && ActivityStatus.Started.equals(activity.status) && utils.isToday(activity.startingAt);
+    const minibarCountAnimation = countMinibarNow ? { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] } : {};
+    const minibarCountTransition = countMinibarNow ? { duration: 1.5, ease: "easeInOut", repeat: Infinity } : {};                      
+
     const getAndSetActivityInfo = async() => {
         if(!activity) return null;
 
@@ -679,11 +683,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
-                        { activity && activity.subCategory === "checkin-prep" && (
+                        { activity && ActivityStatus.Started.lessThanOrEqual(activity.status) && activity.subCategory === "checkin-prep" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
-                                    animate={minibarCount ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
-                                    transition={minibarCount ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                    animate={minibarCountAnimation}
+                                    transition={minibarCountTransition}
                                 >
                                     <Candy  
                                         onClick={(e) => {
@@ -697,11 +701,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
-                        { activity && activity.subCategory === "checkout" && (
+                        { activity && ActivityStatus.Started.lessThanOrEqual(activity.status) && activity.subCategory === "checkout" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
-                                    animate={minibarCount ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
-                                    transition={minibarCount ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                    animate={minibarCountAnimation}
+                                    transition={minibarCountTransition}
                                 >
                                     <Candy  
                                         onClick={(e) => {
@@ -714,11 +718,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        { activity && activity.subCategory === "housekeeping" && (
+                        { activity && ActivityStatus.Started.lessThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
-                                    animate={minibarCount ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
-                                    transition={minibarCount ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+                                    animate={minibarCountAnimation}
+                                    transition={minibarCountTransition}
                                 >
                                     <Candy  
                                         onClick={(e) => {
