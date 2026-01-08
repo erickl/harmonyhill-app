@@ -11,7 +11,7 @@ export async function getOne(nameOrId, onError) {
     return await inventoryDao.getOne(nameOrId, onError);
 }
 
-export async function subtract(activity, type, itemName, quantity, comment, onError, writes = []) {
+export async function remove(activity, reason, itemName, quantity, comments, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const currentQuantity = await getCurrentQuantity(itemName, onError);
@@ -21,17 +21,18 @@ export async function subtract(activity, type, itemName, quantity, comment, onEr
     }
 
     const stock = {
-        bookingId      : activity ? activity.bookingId : null,
-        house          : activity ? activity.house : null,
-        activityId     : activity ? activity.id : null,
-        doneAt         : activity ? activity.startingAt : utils.now(),
-        name           : itemName,
-        quantity       : quantity,
-        quantityAtSale : currentQuantity,
-        type           : type,
+        bookingId         : activity ? activity.bookingId : null,
+        house             : activity ? activity.house : null,
+        activityId        : activity ? activity.id : null,
+        doneAt            : activity ? activity.startingAt : utils.now(),
+        name              : itemName,
+        quantity          : quantity,
+        quantityAtRemoval : currentQuantity,
+        type              : "removal",
+        reason            : reason,
     };
 
-    if(!utils.isEmpty(comment)) stock.comment = comment;
+    if(!utils.isEmpty(comments)) stock.comments = comments;
 
     const result = await inventoryDao.add(stock, onError, writes);
     if(result === false) return false;
@@ -50,7 +51,7 @@ export async function getSale(itemName, activityId, onError) {
 export async function addSale(activity, itemName, quantity, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await subtract(activity, "sale", itemName, quantity, onError, writes);
+    const result = await remove(activity, "sale", itemName, quantity, onError, writes);
     if(result === false) return false;
 
     if(commit) {
@@ -65,7 +66,7 @@ export async function updateSale(activity, item, onError, writes = []) {
 
     const stockChangeFilter = {
         activityId : activity.id,
-        type : "sale",
+        reason : "sale",
     };
 
     const existingSales = await inventoryDao.getInventoryChanges(item.name, stockChangeFilter, onError);
@@ -113,13 +114,17 @@ export async function refillMany(expense, quantities, onError, writes = []) {
 export async function refill(expense, itemName, quantity, onError, writes = []) {
     const commit = decideCommit(writes);
 
+    const currentQuantity = await getCurrentQuantity(itemName, onError);
+
     const refill = {
-        expenseId  : expense.id,
-        name       : itemName,
-        quantity   : quantity,
-        doneAt     : expense.purchasedAt,
-        seller     : utils.isEmpty(expense.seller) ? "" : expense.seller,
-        type       : "refill",
+        expenseId        : expense.id,
+        name             : itemName,
+        quantity         : quantity,
+        quantityAtRefill : currentQuantity,
+        doneAt           : expense.purchasedAt,
+        seller           : utils.isEmpty(expense.seller) ? "" : expense.seller,
+        type             : "supply",
+        reason           : "refill",
     };
     
     const result = await inventoryDao.add(refill, onError, writes);
@@ -137,14 +142,20 @@ export async function getLastClosedRecord(name, onError) {
     return lastClosedRecord;
 }
 
+export async function getRemovals(name, filters, onError) {
+    filters.type = "removal";
+    const removals = await inventoryDao.getInventoryChanges(name, filters, onError);
+    return removals;
+}
+
 export async function getSales(name, filters, onError) {
-    filters.type = "sale";
+    filters.reason = "sale";
     const sales = await inventoryDao.getInventoryChanges(name, filters, onError);
     return sales;
 }
 
 export async function getRefills(name, filters, onError) {
-    filters.type = "refill";
+    filters.reason = "refill";
     const purchases = await inventoryDao.getInventoryChanges(name, filters, onError);
     return purchases;
 }
@@ -189,13 +200,13 @@ export async function getQuantity(name, filter, onError) {
         }
     }  
 
-    const sales = await getSales(name, filter, onError);
-    const totalSales = sales.reduce((sum, sale) => sum + sale.quantity, 0);
+    const removals = await getRemovals(name, filter, onError);
+    const totalRemovals = removals.reduce((sum, removal) => sum + removal.quantity, 0);
 
     const refills = await getRefills(name, filter, onError);
     const totalRefills = refills.reduce((sum, refill) => sum + refill.quantity, 0);
 
-    const currentCount = startQuantity + totalRefills - totalSales;
+    const currentCount = startQuantity + totalRefills - totalRemovals;
     return currentCount;
 }
 
@@ -300,16 +311,16 @@ export async function validateRefill(data, onValidationError) {
     return true;
 }
 
-export async function validateSubtraction(data, onValidationError) {
+export async function validateRemoval(data, onValidationError) {
     if(utils.isEmpty(data.quantity) || data.quantity == 0) {
         return onValidationError("Fill a quantity more than zero");
     }
 
-    if(utils.isEmpty(data.type)) {
-        return onValidationError("Choose a type");
+    if(utils.isEmpty(data.reason)) {
+        return onValidationError("Choose a reason");
     }
 
-    if(data.type === "sale" && utils.isEmpty(data.booking)) {
+    if(data.reason === "sale" && utils.isEmpty(data.booking)) {
         return onValidationError("Choose a booking");
     }
 

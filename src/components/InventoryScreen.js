@@ -59,8 +59,8 @@ export default function InventoryScreen({onNavigate, onClose}) {
         onNavigate("addInventory", {inventory: inventory});
     }
 
-    const onSubtractStock = async(item) => {
-        onNavigate("subtractInventory", {item: item});
+    const onRemoveStock = async(item) => {
+        onNavigate("removeInventory", {item: item});
     }
 
     const onCloseMonth = async() => {
@@ -72,8 +72,8 @@ export default function InventoryScreen({onNavigate, onClose}) {
         });
     }
 
-    const onDisplaySalesData = async(item) => {    
-        const headers = ["#", "Sold At", "Quantity", "Quantity At Sale", "Booking", "Villa", "Sale Created By", "Created"];  
+    const onDisplayRemovalsData = async(item) => {    
+        const headers = ["#", "Removed At", "Quantity", "Quantity Before", "Booking", "Villa", "Removed By", "Created"];  
         const enhancedSales = [];
 
         for(let i = 0; i < item.sales.length; i++) {
@@ -86,7 +86,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                 i+1,
                 utils.to_ddMMM(sale.doneAt),
                 sale.quantity,
-                sale.quantityAtSale,
+                sale.quantityAtRemoval,
                 bookingName,
                 bookingHouse,
                 sale.createdBy,
@@ -218,10 +218,10 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                                     <MinusCircle   
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            onSubtractStock(item);
+                                                            onRemoveStock(item);
                                                         }}
                                                     />
-                                                    <p>Subtract</p>
+                                                    <p>Remove</p>
                                                 </div>
                                             )}
 
@@ -239,10 +239,10 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                                 <Receipt   
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        onDisplaySalesData(item);
+                                                        onDisplayRemovalsData(item);
                                                     }}
                                                 />
-                                                <p>Sales</p>
+                                                <p>Removals</p>
                                             </div>
                                       
                                             <div className="inv-item-body-footer-icon">

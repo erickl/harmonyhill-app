@@ -11,7 +11,7 @@ import AddCustomerScreen from './components/AddCustomerScreen.js';
 import EditCustomerScreen from './components/EditCustomerScreen.js';
 import InventoryScreen from './components/InventoryScreen.js';
 import AddInventoryScreen from './components/AddInventoryScreen.js';
-import SubtractInventoryScreen from './components/SubtractInventoryScreen.js';
+import RemoveInventoryScreen from './components/RemoveInventoryScreen.js';
 import BottomNavigation from './components/BottomNavigation.js';
 import AdminScreen from './components/AdminScreen.js';
 import ChangeLogsComponent from "./components/ChangeLogsComponent.js";
@@ -88,7 +88,7 @@ function App() {
         'userLogs'               : ChangeLogsComponent,
         'inventory'              : InventoryScreen,
         'addInventory'           : AddInventoryScreen,
-        'subtractInventory'      : SubtractInventoryScreen,
+        'removeInventory'        : RemoveInventoryScreen,
     };
 
     const ScreenToDisplay = SCREENS[currentScreen.name];

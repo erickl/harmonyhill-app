@@ -20,6 +20,10 @@ export async function get(filterOptions, onError) {
         queryFilter.push(where("type", "==", filterOptions.type));
     }
 
+    if (utils.exists(filterOptions, "reason")) {
+        queryFilter.push(where("reason", "==", filterOptions.reason));
+    }
+
     return await dao.get(path, queryFilter, [], -1, onError);
 }
 
@@ -30,7 +34,7 @@ export async function removeStockChange(invItemId, stockChangeId, onError, write
 
 export async function add(object, onError, writes) {
     const inventoryItemId = makeInventoryItemId(object.name);
-    const docId = makeId(object.type, inventoryItemId);
+    const docId = makeId(object.reason, inventoryItemId);
     const path = ["inventory", inventoryItemId, "stock"];
     return await dao.add(path, docId, object, onError, writes);
 }
@@ -41,8 +45,8 @@ export async function updateStock(stockChangeId, invItemName, object, onError, w
     return await dao.update(path, stockChangeId, object, true, onError, writes);
 }
 
-export async function getInventoryChange(name, type, activityId, onError) {
-    const filter = {type: type, activityId: activityId};
+export async function getInventoryChange(name, reason, activityId, onError) {
+    const filter = {reason: reason, activityId: activityId};
     const inventoryChanges = await getInventoryChanges(name, filter, onError);
     if(!inventoryChanges || inventoryChanges.length === 0) {
         return null;
@@ -73,6 +77,10 @@ export async function getInventoryChanges(name, filterOptions, onError) {
 
     if (utils.exists(filterOptions, "type")) {
         queryFilter.push(where("type", "==", filterOptions.type));
+    }
+
+    if (utils.exists(filterOptions, "reason")) {
+        queryFilter.push(where("reason", "==", filterOptions.reason));
     }
 
     if (utils.exists(filterOptions, "bookingId")) {
@@ -120,9 +128,9 @@ export async function addClosedRecord(name, data, onError, writes) {
     return await dao.add(path, id, data, onError, writes);
 }
 
-export function makeId(type, inventoryItemId) {
+export function makeId(reason, inventoryItemId) {
     const date = utils.to_YYMMdd();
-    return `${inventoryItemId}-${type}-${date}-${Date.now()}`;
+    return `${inventoryItemId}-${reason}-${date}-${Date.now()}`;
 }
 
 export function makeInventoryItemId(name) {

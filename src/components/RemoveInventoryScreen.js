@@ -8,15 +8,15 @@ import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
+export default function RemoveInventoryScreen({onNavigate, item, onClose}) {
     const initialForm = {
         quantity : 0,
         activity : null,
-        type     : null,
+        reason   : null,
         comment  : null,
     }
 
-    const types = {
+    const reasons = {
         "sale"    : { name : "sale"    },
         "lost"    : { name : "lost"    },
         "expired" : { name : "expired" },
@@ -54,7 +54,7 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
     };
 
     const validateFormData = async (nextFormData) => {
-        const validationResult = await inventoryService.validateSubtraction(nextFormData, onValidationError);
+        const validationResult = await inventoryService.validateRemoval(nextFormData, onValidationError);
 
         setValidated(validationResult);
 
@@ -70,7 +70,7 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
                 return;
             }
             
-            const result = await inventoryService.subtract(form.activity, form.type, item.name, form.quantity, form.comment, onError);
+            const result = await inventoryService.remove(form.activity, form.reason, item.name, form.quantity, form.comments, onError);
    
             if(result !== false) {
                 setForm(initialForm);
@@ -86,9 +86,9 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
         handleInputChange("activity", activity);
     }
 
-    const onTypeSelect = (type) => {
-        const name = type ? type.name : '';
-        handleInputChange("type", name);
+    const onReasonSelect = (reason) => {
+        const name = reason ? reason.name : '';
+        handleInputChange("reason", name);
     }
 
     useEffect(() => {
@@ -112,7 +112,7 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
         <div className="fullscreen">
             <div className="card-header">
                 <div>
-                    <h2 className="card-title">Subtract Inventory: {item.name}</h2>
+                    <h2 className="card-title">Remove Inventory: {item.name}</h2>
                 </div>
             </div>
 
@@ -129,10 +129,10 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
 
                 <div>
                     <Dropdown 
-                        label={"Type"}
-                        current={form.type}
-                        options={types}
-                        onSelect={onTypeSelect}
+                        label={"Reason"}
+                        current={form.reason}
+                        options={reasons}
+                        onSelect={onReasonSelect}
                     />
                 </div>
 
@@ -150,7 +150,7 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
                         type={"text"}
                         name={"comments"}
                         label={"Comments"}
-                        value={form.quantity}
+                        value={form.comments}
                         onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                     />
                 </div>
