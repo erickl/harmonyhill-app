@@ -76,8 +76,16 @@ class ActivityStatus {
         return this.compare(value) < 0;
     }
 
+    lessThanOrEqual(value) {
+        return this.compare(value) <= 0;
+    }
+
     greaterThan(value) {
         return this.compare(value) > 0;
+    }
+
+    greaterThanOrEqual(value) {
+        return this.compare(value) >= 0;
     }
 }
 
