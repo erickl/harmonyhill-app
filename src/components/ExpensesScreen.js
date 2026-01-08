@@ -7,6 +7,7 @@ import * as activityService from "../services/activityService.js";
 import * as userService from "../services/userService.js";
 import * as ledgerService from "../services/ledgerService.js";
 import "./ExpensesScreen.css";
+import VeganHamburgerButton from './VeganHamburgerButton.js';
 import Spinner from "./Spinner.js";
 import invoiceLogo from "../assets/invoice-icon.png";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
@@ -147,9 +148,10 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     return (
         <div className="fullscreen">
             <div className="card-header">
-                <div>
+                <div className='card-header-left'>
+                    <VeganHamburgerButton />
                     <h2 className="card-title">Expenses</h2>
-                    {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
+                    {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}    
                 </div>
             
                 <div className="card-header-right">

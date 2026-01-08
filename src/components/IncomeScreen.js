@@ -12,6 +12,7 @@ import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { Pencil, Trash2 } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
+import VeganHamburgerButton from './VeganHamburgerButton.js';
 
 export default function IncomeScreen({ customer, onNavigate, onClose }) {
     const [expandedIncomes,     setExpandedIncomes     ] = useState({}   );
@@ -127,9 +128,10 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
     return (
         <div className="fullscreen">
             <div className="card-header">
-                <div>
+                <div className='card-header-left'>
+                    <VeganHamburgerButton />
                     <h2 className="card-title">Income {incomeFromText}</h2>
-                    {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}
+                    {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}    
                 </div>
 
                 <div className="card-header-right">

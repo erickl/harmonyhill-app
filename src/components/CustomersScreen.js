@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import * as userService from '../services/userService.js';
 import * as utils from '../utils.js';
 import './CustomersScreen.css';
