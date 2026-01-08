@@ -96,15 +96,15 @@ function App() {
     return (
         <div className="app-container">   
             {isLoggedIn ? (<>                     
-                    <SideMenu onNavigate={navigate}/>
-                    <div className="content">
-                        <ScreenToDisplay
-                            onNavigate={navigate} 
-                            onClose={onClose}
-                            {...currentScreen.data}
-                        />
-                    </div> { /* Use screenToDisplay */}
-                    <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />        
+                <SideMenu onNavigate={navigate}/>
+                <div className="content">
+                    <ScreenToDisplay
+                        onNavigate={navigate} 
+                        onClose={onClose}
+                        {...currentScreen.data}
+                    />
+                </div> { /* Use screenToDisplay */}
+                <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />        
             </>) : (
                 <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
             )}
