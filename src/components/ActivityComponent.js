@@ -683,7 +683,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
-                        { activity && ActivityStatus.Started.lessThanOrEqual(activity.status) && activity.subCategory === "checkin-prep" && (
+                        { activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "checkin-prep" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
                                     animate={minibarCountAnimation}
@@ -701,7 +701,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
-                        { activity && ActivityStatus.Started.lessThanOrEqual(activity.status) && activity.subCategory === "checkout" && (
+                        { activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "checkout" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
                                     animate={minibarCountAnimation}
@@ -718,7 +718,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        { activity && ActivityStatus.Started.lessThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
+                        { activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
                                     animate={minibarCountAnimation}

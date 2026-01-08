@@ -72,11 +72,11 @@ class ActivityStatus {
         return 0; // equals
     }
 
-    lessThan(value) {
+    lesserThan(value) {
         return this.compare(value) < 0;
     }
 
-    lessThanOrEqual(value) {
+    lesserThanOrEqual(value) {
         return this.compare(value) <= 0;
     }
 
