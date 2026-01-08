@@ -13,6 +13,7 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
         quantity : 0,
         activity : null,
         type     : null,
+        comment  : null,
     }
 
     const types = {
@@ -69,7 +70,7 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
                 return;
             }
             
-            const result = await inventoryService.subtract(form.activity, form.type, item.name, form.quantity, onError);
+            const result = await inventoryService.subtract(form.activity, form.type, item.name, form.quantity, form.comment, onError);
    
             if(result !== false) {
                 setForm(initialForm);
@@ -141,6 +142,16 @@ export default function SubtractInventoryScreen({onNavigate, item, onClose}) {
                         current={form.activity ? form.activity.name : null}
                         options={activities}
                         onSelect={onActivitySelect}
+                    />
+                </div>
+
+                <div>
+                    <TextInput 
+                        type={"text"}
+                        name={"comments"}
+                        label={"Comments"}
+                        value={form.quantity}
+                        onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                     />
                 </div>
             </div>

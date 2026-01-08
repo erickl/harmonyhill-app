@@ -11,7 +11,7 @@ export async function getOne(nameOrId, onError) {
     return await inventoryDao.getOne(nameOrId, onError);
 }
 
-export async function subtract(activity, type, itemName, quantity, onError, writes = []) {
+export async function subtract(activity, type, itemName, quantity, comment, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const currentQuantity = await getCurrentQuantity(itemName, onError);
@@ -30,6 +30,8 @@ export async function subtract(activity, type, itemName, quantity, onError, writ
         quantityAtSale : currentQuantity,
         type           : type,
     };
+
+    if(!utils.isEmpty(comment)) stock.comment = comment;
 
     const result = await inventoryDao.add(stock, onError, writes);
     if(result === false) return false;
