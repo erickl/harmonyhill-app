@@ -49,8 +49,7 @@ export async function addMeal(bookingId, mealData, onError, writes = []) {
         if(addedDishes === false) return false;
         
         if(addedDishes.length !== Object.keys(mealData.dishes).length) {
-            onError(`Unexpected error: Not all dishes were included`);
-            return false;
+            return onError(`Unexpected error: Not all dishes were included`);
         }
     }
 
@@ -117,10 +116,8 @@ async function addDishes(meal, mealId, dishesData, onError, writes) {
     let dishes = [];   
     for(const dishData of dishesData) {
         const addDishSuccess = await addDish(meal, mealId, dishData, onError, writes);
-       
-        if(addDishSuccess) {
-            dishes.push(addDishSuccess);
-        }
+        if(addDishSuccess === false) return false;
+        dishes.push(addDishSuccess);
     }
 
     return dishes;

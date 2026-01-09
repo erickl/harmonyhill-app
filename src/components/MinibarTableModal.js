@@ -163,15 +163,20 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 }, {});
 
                 const result = await state.onSubmit(finalCount);
-                if(result === false) throw new Error(`Submit failed`);
+                if(result === false) {
+                    setEditable(editable_);
+                    setEnableClose(true);
+                    onHide();
+                    return false;
+                }
                 
-                onHide();
                 onSuccess();
             } catch(e) {
                 onError(`Unexpected error when submitting minibar count: ${e.message}`);
             } finally {
                 setEditable(editable_);
                 setEnableClose(true);
+                onHide();
             }
         });
     }

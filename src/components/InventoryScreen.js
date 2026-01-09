@@ -87,7 +87,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                 removal.reason,
                 utils.to_ddMMM(removal.doneAt),
                 removal.quantity,
-                removal.quantityAtRemoval,
+                removal.quantityBefore,
                 bookingName,
                 bookingHouse,
                 removal.createdBy,
@@ -101,7 +101,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onDisplayRefillsData = async(item) => {
-        const headers = ["#", "Refill At", "quantity", "expense", "Receipt", "Refill By", "Created" ];  
+        const headers = ["#", "Refill At", "Quantity", "Quantity Before", "expense", "Receipt", "Refill By", "Created" ];  
         const enhancedRefills = [];
 
         for(let i = 0; i < item.refills.length; i++) {
@@ -112,6 +112,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                 i+1,
                 utils.to_ddMMM(refill.doneAt),
                 refill.quantity,
+                refill.quantityBefore,
                 `${expense.index}. ${expense.description}`,
                 expense.photoUrl,
                 refill.createdBy,

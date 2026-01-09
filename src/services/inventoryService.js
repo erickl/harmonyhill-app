@@ -16,20 +16,19 @@ export async function remove(activity, reason, itemName, quantity, comments, onE
 
     const currentQuantity = await getCurrentQuantity(itemName, onError);
     if(currentQuantity < quantity) {
-        onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
-        return false;
+        return onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
     }
 
     const stock = {
-        bookingId         : activity ? activity.bookingId : null,
-        house             : activity ? activity.house : null,
-        activityId        : activity ? activity.id : null,
-        doneAt            : activity ? activity.startingAt : utils.now(),
-        name              : itemName,
-        quantity          : quantity,
-        quantityAtRemoval : currentQuantity,
-        type              : "removal",
-        reason            : reason,
+        bookingId      : activity ? activity.bookingId : null,
+        house          : activity ? activity.house : null,
+        activityId     : activity ? activity.id : null,
+        doneAt         : activity ? activity.startingAt : utils.now(),
+        name           : itemName,
+        quantity       : quantity,
+        quantityBefore : currentQuantity,
+        type           : "removal",
+        reason         : reason,
     };
 
     if(!utils.isEmpty(comments)) stock.comments = comments;
@@ -51,7 +50,7 @@ export async function getSale(itemName, activityId, onError) {
 export async function addSale(activity, itemName, quantity, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await remove(activity, "sale", itemName, quantity, onError, writes);
+    const result = await remove(activity, "sale", itemName, quantity, null, onError, writes);
     if(result === false) return false;
 
     if(commit) {
@@ -120,7 +119,7 @@ export async function refill(expense, itemName, quantity, onError, writes = []) 
         expenseId        : expense.id,
         name             : itemName,
         quantity         : quantity,
-        quantityAtRefill : currentQuantity,
+        quantityBefore   : currentQuantity,
         doneAt           : expense.purchasedAt,
         seller           : utils.isEmpty(expense.seller) ? "" : expense.seller,
         type             : "supply",
