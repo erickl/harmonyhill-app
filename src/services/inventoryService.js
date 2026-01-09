@@ -143,20 +143,20 @@ export async function getLastClosedRecord(name, onError) {
 }
 
 export async function getRemovals(name, filters, onError) {
-    filters.type = "removal";
-    const removals = await inventoryDao.getInventoryChanges(name, filters, onError);
+    const filters_ = {...filters, type: "removal"};
+    const removals = await inventoryDao.getInventoryChanges(name, filters_, onError);
     return removals;
 }
 
 export async function getSales(name, filters, onError) {
-    filters.reason = "sale";
-    const sales = await inventoryDao.getInventoryChanges(name, filters, onError);
+    const filters_ = {...filters, reason: "sale"};
+    const sales = await inventoryDao.getInventoryChanges(name, filters_, onError);
     return sales;
 }
 
 export async function getRefills(name, filters, onError) {
-    filters.reason = "refill";
-    const purchases = await inventoryDao.getInventoryChanges(name, filters, onError);
+    const filters_ = {...filters, reason: "refill"};
+    const purchases = await inventoryDao.getInventoryChanges(name, filters_, onError);
     return purchases;
 }
 

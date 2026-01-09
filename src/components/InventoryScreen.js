@@ -47,9 +47,9 @@ export default function InventoryScreen({onNavigate, onClose}) {
 
     const fetchItemInfo = async (item) => {  
         item.refills = await inventoryService.getRefills(item.name, {}, onError);
-        item.sales = await inventoryService.getSales(item.name, {}, onError);
-        const futureSales = item.sales.filter((item) => utils.isAfterToday(item.doneAt));
-        const reservedCount = futureSales.reduce((count, sale) => sale.quantity + count, 0);
+        item.removals = await inventoryService.getRemovals(item.name, {}, onError);
+        const futureRemovals = item.removals.filter((item) => utils.isAfterToday(item.doneAt));
+        const reservedCount = futureRemovals.reduce((count, removal) => removal.quantity + count, 0);
         item.quantity = await inventoryService.getCurrentQuantity(item.name, onError);
         item.reserved = reservedCount;   
     };
@@ -73,29 +73,31 @@ export default function InventoryScreen({onNavigate, onClose}) {
     }
 
     const onDisplayRemovalsData = async(item) => {    
-        const headers = ["#", "Removed At", "Quantity", "Quantity Before", "Booking", "Villa", "Removed By", "Created"];  
-        const enhancedSales = [];
+        const headers = ["#", "Reason", "Removed At", "Quantity", "Quantity Before", "Booking", "Villa", "Removed By", "Comments", "Created"];  
+        const enhancedRemovals = [];
 
-        for(let i = 0; i < item.sales.length; i++) {
-            const sale = item.sales[i];
-            const booking = await bookingService.getOne(sale.bookingId);
+        for(let i = 0; i < item.removals.length; i++) {
+            const removal = item.removals[i];
+            const booking = await bookingService.getOne(removal.bookingId);
             const bookingName = booking ? booking.name : "-";
             const bookingHouse = booking ? (booking.house.trim().toLowerCase() === "harmony hill" ? "HH" : "JN") : "-";
             
-            const enhancedSale = [
+            const enhancedRemoval = [
                 i+1,
-                utils.to_ddMMM(sale.doneAt),
-                sale.quantity,
-                sale.quantityAtRemoval,
+                removal.reason,
+                utils.to_ddMMM(removal.doneAt),
+                removal.quantity,
+                removal.quantityAtRemoval,
                 bookingName,
                 bookingHouse,
-                sale.createdBy,
-                utils.to_ddMMM(sale.createdAt),
+                removal.createdBy,
+                removal.comments,
+                utils.to_ddMMM(removal.createdAt),
             ];
             
-            enhancedSales.push(enhancedSale);
+            enhancedRemovals.push(enhancedRemoval);
         }
-        onDisplayDataTable("Sales", headers, enhancedSales);
+        onDisplayDataTable("Removals", headers, enhancedRemovals);
     }
 
     const onDisplayRefillsData = async(item) => {
