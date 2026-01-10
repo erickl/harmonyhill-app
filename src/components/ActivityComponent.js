@@ -268,7 +268,8 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         }
 
         if(activity.subCategory !== "checkin-prep") {
-            const totalProvided = await minibarService.getTotalProvided(customer, onError);
+            // Get total provided items up until this current activity
+            const totalProvided = await minibarService.getTotalProvided(customer, activity.startingAt, onError);
             headers.push("provided");
             for(let i = 0; i < values.length; i++) {
                 const row = values[i];

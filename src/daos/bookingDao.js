@@ -100,6 +100,11 @@ export async function getMinibarCounts(bookingId, filterOptions, onError) {
         queryFilter.push(where("type", "==", filterOptions.type));
     }
 
+    if (utils.exists(filterOptions, "before")) {
+        const before = utils.toFireStoreTime(filterOptions.before);
+        queryFilter.push(where("createdAt", "<=", before));
+    }
+
     if (utils.exists(filterOptions, "activityId")) {
         queryFilter.push(where("activityId", "==", filterOptions.activityId));
     }

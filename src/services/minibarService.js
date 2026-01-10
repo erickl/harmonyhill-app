@@ -186,8 +186,11 @@ export async function getAvailableStock(name, activity, onError) {
     return quantity - reservedItemStock;
 }
 
-export async function getTotalRefills(booking, onError) {
-    const refills = await get(booking, {"type": "refill"}, onError);
+export async function getTotalRefills(booking, beforeDate, onError) {
+    const refillsFilter = { type: "refill"};
+    if(beforeDate) refillsFilter.before = beforeDate;
+
+    const refills = await get(booking, refillsFilter, onError);
 
     const total = refills.reduce((map, refill) => {
         Object.entries(refill.items).forEach(([name, quantity]) => {
@@ -199,8 +202,8 @@ export async function getTotalRefills(booking, onError) {
     return total;
 }
 
-export async function getTotalProvided(booking, onError) {
-    const total = await getTotalRefills(booking, onError);
+export async function getTotalProvided(booking, beforeDate, onError) {
+    const total = await getTotalRefills(booking, beforeDate, onError);
 
     const startCount = await getCount(booking, "start", onError);
 

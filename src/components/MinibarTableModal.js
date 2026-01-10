@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import * as utils from "../utils.js";
 import * as inventoryService from "../services/inventoryService.js";
 import * as minibarService from "../services/minibarService.js";
@@ -11,7 +11,6 @@ import PlusButton from "../components/PlusButton.js";
 import MinusButton from "../components/MinusButton.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import Spinner from '../components/Spinner.js';
-import { count } from "firebase/firestore";
 
 export function MinibarTableModal({title, activity, headers, items, onSubmit, onHide}) {
     const itemCount = Object.values(items).length;
