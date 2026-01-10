@@ -22,6 +22,8 @@ import './App.css';
 import AddPurchaseScreen from './components/AddPurchaseScreen.js';
 import EditPurchaseScreen from './components/EditPurchaseScreen.js';
 import CustomerPurchasesScreen from './components/CustomerPurchasesScreen.js';
+import TodoScreen from './components/TodoScreen.js';
+import AddTodoScreen from './components/AddTodoScreen.js';
 
 function App() {
     const [isLoggedIn, setIsLoggedIn         ] = useState(false      );
@@ -89,6 +91,8 @@ function App() {
         'inventory'              : InventoryScreen,
         'addInventory'           : AddInventoryScreen,
         'removeInventory'        : RemoveInventoryScreen,
+        'todo-list'              : TodoScreen,
+        'add-todo'               : AddTodoScreen,
     };
 
     const ScreenToDisplay = SCREENS[currentScreen.name];

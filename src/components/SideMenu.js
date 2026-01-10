@@ -70,6 +70,13 @@ export default function SideMenu({onNavigate}) {
                         style={{ color: 'white' }}>Inventory</p>
                     </li>
 
+                    {true && (<li><p onClick={() => {
+                            onNavigate('todo-list');
+                            close();
+                        }} 
+                        style={{ color: 'white' }}>Todo</p>
+                    </li>)}
+
                     <li><p onClick={() => {
                             onNavigate('userLogs');
                             close();

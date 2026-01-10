@@ -10,3 +10,5 @@ export const EXPENSES       = "expenses";
 export const INCOME         = "income";
 export const COMPANY        = "company";
 export const MINIBAR        = "minibar";
+export const TODOS          = "todos";
+export const TODO_STEPS     = "steps";
