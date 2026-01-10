@@ -727,6 +727,7 @@ export async function toArrays(filters, onProgress, onError) {
         "startingAt",
         "displayName",
         "name", // guest name
+        "isFree",
         "house",
         "customerPrice",
         "provider",
