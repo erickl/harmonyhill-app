@@ -297,6 +297,15 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 {plusButton()}
             </tr>
         );
+    };
+
+    const getHeaderDisplayName = (header) => {
+        let displayName = header;
+        if(header === "count" && activity && activity.subCategory === "housekeeping") {
+            displayName = "refill";
+        }
+
+        return utils.capitalizeWords(displayName);
     }
 
     return (  
@@ -327,7 +336,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                             <td />
                             {state.headers?.map((header) => (
                                 <td style={keyColumnStyle}>
-                                    {utils.capitalizeWords(header)}
+                                    {getHeaderDisplayName(header)}
                                 </td>
                             ))}
                         </tr>
