@@ -35,7 +35,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const [activities,        setActivities       ] = useState([]       );
     const [teamMembers,       setTeamMembers      ] = useState([]       );
     const [readyToSubmit,     setReadyToSubmit    ] = useState(false    );
-    const [showList,          setShowList         ] = useState(false    );
     const [validationError,   setValidationError  ] = useState(null     );
     const [formData,          setFormData         ] = useState(emptyForm);
     const [imageResetTrigger, setImageResetTrigger] = useState(0        );
@@ -88,21 +87,15 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         setBookings(bookingsByName);
     };
 
-    // Initial validation
     useEffect(() => {
+        // Initial validation
         validateFormData(emptyForm);
-    }, []);
 
-    useEffect(() => {
         const getUserPermissions = async() => {
             const userIsAdmin = await userService.isAdmin();
             setIsAdmin(userIsAdmin);
         } 
 
-        getUserPermissions();
-    }, []);
-
-    useEffect(() => {
         const fetchTeamMembers = async () => {
             const teamMembers = await userService.getUsers();
             const formattedTeamMembers = teamMembers.reduce((m, teamMember) => {
@@ -113,6 +106,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         };
 
         fetchTeamMembers();
+        getUserPermissions();
     }, []);
 
     
@@ -244,11 +238,8 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
 
     const handleSubmit = async () => {
         try {
-            if(!readyToSubmit) {
-                onError(`Not yet ready to submit. Missing obligatory data`);
-                return;
-            }
-            
+            if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
+               
             let result = false;
             
             if(expenseToEdit) {
@@ -280,10 +271,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const paymentMethodNames = Object.keys(paymentMethods);
     if(paymentMethodNames.length === 1 && !currentPaymentMethod) {
         currentPaymentMethod = paymentMethodNames[0];
-    }
-
-    if(showList) {
-        return (<ExpensesScreen onClose={() => setShowList(false)}/>);
     }
 
     return (

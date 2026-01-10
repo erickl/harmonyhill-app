@@ -107,6 +107,9 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
             const userIsAdmin = await userService.isAdmin();
             setIsAdmin(userIsAdmin);
 
+            const userIsAdminOrManager = await userService.isManagerOrAdmin();
+            setIsManagerOrAdmin(userIsAdminOrManager);
+
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(onError);
 
             const filter = lastClosedPettyCashRecord ? { "after" : lastClosedPettyCashRecord.closedAt} : {};
@@ -128,15 +131,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         }
 
         fetchExpenses();
-    }, []);
-
-    useEffect(() => {
-        const getUserPermissions = async() => {
-            const userIsAdminOrManager = await userService.isManagerOrAdmin();
-            setIsManagerOrAdmin(userIsAdminOrManager);
-        } 
-
-        getUserPermissions();
     }, []);
 
     if(loading) {
