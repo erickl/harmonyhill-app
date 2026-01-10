@@ -104,7 +104,7 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
     // Note: 'values' is a key word for the google sheets API. Keep the name
     const uploadData = async (values, token) => {
         // the range or sheet name you want to append to
-        const sheetName = `${label} ${utils.to_ddMMM_HHmm()}`;
+        const sheetName = `${label} (Created ${utils.to_ddMMM_HHmm()})`;
         const range = `${sheetName}!A1`;
 
         const sheetExists = await ensureSheetExists(token, range);
