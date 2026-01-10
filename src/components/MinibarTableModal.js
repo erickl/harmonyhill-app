@@ -11,8 +11,11 @@ import PlusButton from "../components/PlusButton.js";
 import MinusButton from "../components/MinusButton.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import Spinner from '../components/Spinner.js';
+import { count } from "firebase/firestore";
 
 export function MinibarTableModal({title, activity, headers, items, onSubmit, onHide}) {
+    const itemCount = Object.values(items).length;
+
     const initState = {
         activity     : null,
         title        : null,
@@ -23,12 +26,13 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         onHide       : null,
     };
     
-    const [enableSubmit,     setEnableSubmit    ] = useState(false);
-    const [enableClose,      setEnableClose     ] = useState(true);
-    const [state,            setState           ] = useState(initState);
-    const [totalStock,       setTotalStock      ] = useState(null);
-    const [reservedStock,    setReservedStock   ] = useState(null);
-    const [editable,         setEditable        ] = useState(false); 
+    const [enableSubmit,  setEnableSubmit ] = useState(false);
+    const [enableClose,   setEnableClose  ] = useState(true);
+    const [state,         setState        ] = useState(initState);
+    const [totalStock,    setTotalStock   ] = useState(null);
+    const [reservedStock, setReservedStock] = useState(null);
+    const [editable,      setEditable     ] = useState(false);
+    const [countIsValid,  setCountIsValid ] = useState(Array(itemCount).fill(true));
     
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
@@ -41,15 +45,15 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 return map;
             }, {});
 
-            const isManagerOrAdmin = await userService.isManagerOrAdmin();
+            // const isManagerOrAdmin = await userService.isManagerOrAdmin();
             
-            // Remove some table columns for staff members
-            if(isManagerOrAdmin === false) {
-                for(const header of ["provided", "total", "reserved"]) {
-                    const indexToRemove = headers.indexOf(header);
-                    headers.splice(indexToRemove, 1);
-                }
-            }
+            // // Remove some table columns for staff members
+            // if(isManagerOrAdmin === false) {
+            //     for(const header of ["provided", "total", "reserved"]) {
+            //         const indexToRemove = headers.indexOf(header);
+            //         headers.splice(indexToRemove, 1);
+            //     }
+            // }
 
             setState({
                 activity     : activity,
@@ -82,6 +86,26 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             setEnableSubmit(true);
         }
     }, [state.activity]);
+
+    useEffect(() => {
+        if(utils.isEmpty(state.updatedCount) || utils.isEmpty(countIsValid)) {
+            return;
+        }
+
+        // If the count of any minibar item changed, make the submit button visible
+        let hasCountUpdate = false;
+        for(const [name, count] of Object.entries(state.updatedCount)) {
+            const item = state.items.find((item) => name === item.name);
+            if(item.count !== count) {
+                hasCountUpdate = true;
+                break;
+            }
+        }
+
+        const allCountsValid = !countIsValid.includes(false);   
+
+        setEnableSubmit(hasCountUpdate && allCountsValid);
+    }, [countIsValid, state.updatedCount]);
 
     // todo: is there a need to get reserved stock, if we are counting the end stock, to calculate a sale?
     const loadReservedStock = async(activity, items) => {
@@ -212,14 +236,16 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             values.push(value);
         }
 
+        let thisCountIsValid = true;
+
         // For start and refill count, the current count is about how much stock to ADD/REFILL.
         // And we can't add more than we have in storage
         if(state.activity.subCategory !== "checkout") {
             if(totalStock !== null && reservedStock !== null) {
                 const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
                 const available = item.total - item.reserved - provided;
-                if(state.updatedCount[item.name] > available) {
-                    cellStyle.backgroundColor = "red";
+                if(state.updatedCount[item.name] > available) { 
+                    thisCountIsValid = false;
                 }
             }
         }
@@ -229,8 +255,19 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         else if(utils.exists(state.headers, "provided")) {
             const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
             if(state.updatedCount[item.name] > provided) {
-                cellStyle.backgroundColor = "red";
+                thisCountIsValid = false;
             }
+        }
+
+        if(!thisCountIsValid) {
+            cellStyle.backgroundColor = "red";
+        }
+
+        // Mark the state if the item count is invalid
+        if(thisCountIsValid !== countIsValid[index]) {
+            const nextCountIsValid = [...countIsValid];
+            nextCountIsValid[index] = thisCountIsValid;  
+            setCountIsValid(nextCountIsValid);
         }
         
         const onChangeCount = (diff) => {      
@@ -241,18 +278,6 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 const newState = utils.deepCopy(state);
                 newState.updatedCount[item.name] = newCount;
                 setState(newState); 
-
-                // If the count of any minibar item changed, make the submit button visible
-                let isChangedUpdate = false;
-                for(const [name, count] of Object.entries(newState.updatedCount)) {
-                    const item = state.items.find((item) => name === item.name);
-                    if(item.count !== count) {
-                        isChangedUpdate = true;
-                        break;
-                    }
-                }
-                
-                setEnableSubmit(isChangedUpdate);
             }
         }
 
