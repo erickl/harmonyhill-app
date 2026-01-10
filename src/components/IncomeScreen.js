@@ -79,6 +79,14 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
     }
 
     useEffect(() => {
+        const getUserPermissions = async() => {
+            const userIsAdminOrManager = await userService.isManagerOrAdmin();
+            setIsManagerOrAdmin(userIsAdminOrManager);
+
+            const userIsAdmin = await userService.isAdmin();
+            setIsAdmin(userIsAdmin);
+        }
+
         const fetchIncomes = async() => {
             const filter = {};
             if(customer) {
@@ -101,20 +109,9 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
             setIncomeSum(incomeSum);
         }
     
+        getUserPermissions();
         fetchIncomes();
         getCashFlow();
-    }, []);
-
-    useEffect(() => {
-        const getUserPermissions = async() => {
-            const userIsAdminOrManager = await userService.isManagerOrAdmin();
-            setIsManagerOrAdmin(userIsAdminOrManager);
-
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
-        }
-
-        getUserPermissions();
     }, []);
 
     if(loading) {
