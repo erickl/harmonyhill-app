@@ -11,9 +11,11 @@ import { ImageCarouselProvider } from "../context/ImageCarouselContext.js";
 import { ProgressProvider } from "../context/ProgressContext.js";
 import { DataTableProvider } from "../context/DataTableContext.js";
 import { MinibarTableProvider } from "../context/MinibarTableContext.js";
+import { UserPermissionProvider } from "../context/UserPermissionsContext.js";
 
 export function AppProviders({ children }) {
     return (
+        <UserPermissionProvider>
         <ProgressProvider>
         <SuccessNotificationProvider>
         <NotificationProvider>
@@ -39,5 +41,6 @@ export function AppProviders({ children }) {
         </NotificationProvider>
         </SuccessNotificationProvider>
         </ProgressProvider>
+        </UserPermissionProvider>
     );
 }
