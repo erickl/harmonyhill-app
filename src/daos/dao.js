@@ -18,7 +18,9 @@ export async function getOne(path, id, onError = null) {
         const docRef = doc(db, ...path, id);
         const snapshot = await getDoc(docRef);
         if(snapshot.exists()) {
-            return { ...snapshot.data(), id: snapshot.id, ref: snapshot.ref };
+            const doc = { ...snapshot.data(), id: snapshot.id, ref: snapshot.ref };
+            utils.allToDateTime(doc);
+            return doc
         }
         return null;
     } catch (e) {
@@ -43,6 +45,7 @@ export async function get(path, filters = [], ordering = [], max = -1, onError =
             return [];
         }
         const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+        docs.forEach((doc) => utils.allToDateTime(doc));
         return docs
     } catch (e) {
         if(onError) onError(`Error getting documents from ${path}: ${e.message}`);
