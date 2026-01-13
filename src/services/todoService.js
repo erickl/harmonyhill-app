@@ -11,10 +11,6 @@ export async function get(filter, onError) {
     return await todoDao.get(filter, onError);
 }
 
-export async function getTodoSteps(todoId, filter, onError) {
-    return await todoDao.getTodoSteps(todoId, filter, onError);
-}
-
 export async function add(todo, onError, writes = []) {
     const commit = decideCommit(writes);
 
@@ -62,6 +58,40 @@ export async function remove(todoId, onError, writes = []) {
     return result;
 }
 
+export async function getTodoStep(todoId, todoStepId, onError) {
+    return await todoDao.getTodoStep(todoId, todoStepId, onError);
+}
+
+export async function getTodoSteps(todoId, filter, onError) {
+    return await todoDao.getTodoSteps(todoId, filter, onError);
+}
+
+export async function addTodoStep(todoId, todoStep, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const result = await todoDao.addTodoStep(todoId, todoStep, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
+}
+
+export async function updateTodoStep(todoId, todoStepId, todoStepUpdate, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const result = await todoDao.updateTodoStep(todoId, todoStepId, todoStepUpdate, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
+}
+
 export async function removeTodoStep(todoId, todoStepId, onError, writes = []) {
     const commit = decideCommit(writes);
 
@@ -76,6 +106,16 @@ export async function removeTodoStep(todoId, todoStepId, onError, writes = []) {
 }
 
 export function validate(data, onError) {
+    if(utils.isEmpty(data.title)) {
+        return onError(`Choose title`);
+    }
+    if(!utils.isDateTime(data.deadlineAt)) {
+        return onError(`Pick a deadline`);
+    }
+    return true;
+}
+
+export function validateStep(data, onError) {
     if(utils.isEmpty(data.title)) {
         return onError(`Choose title`);
     }
