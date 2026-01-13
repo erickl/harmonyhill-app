@@ -8,14 +8,14 @@ import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
-import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import TextInput from './TextInput.js';
 
 export default function AddTodoScreen({ todoToEdit, onNavigate, onClose }) {
     const emptyForm = {
         title         : todoToEdit ? todoToEdit.title         : '',
         deadlineAt    : todoToEdit ? todoToEdit.deadlineAt    : '',
-        //deadlineTime  : todoToEdit ? todoToEdit.deadlineTime  : '', // DatePicker not ready yet for custom time fields
+        //deadlineTime: todoToEdit ? todoToEdit.deadlineTime  : '', // DatePicker not ready yet for custom time fields
         assignedTo    : todoToEdit ? todoToEdit.assignedTo    : '',
         duration      : todoToEdit ? todoToEdit.duration      : '',
         category      : todoToEdit ? todoToEdit.category      : '',
@@ -45,10 +45,6 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onClose }) {
         'Tax & Accounting' : {"name" : "Tax & Accounting" },
         'Guest'            : {"name" : "Guest"            },
         'Other'            : {"name" : "Other"            },
-    };
-
-    const onValidationError = (error) => {
-        setValidationError(error);
     };
 
     const getBookingActivities = async(bookingId) => {
@@ -164,12 +160,8 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onClose }) {
         handleChange("activityId", id);
     }
 
-    const resetForm = () => {
-        setFormData(emptyForm);
-    };
-
     const validateFormData = async (newFormData) => {
-        const validationResult = await todoService.validate(newFormData, onValidationError);
+        const validationResult = await todoService.validate(newFormData, setValidationError);
 
         setReadyToSubmit(validationResult);
 
@@ -212,7 +204,7 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onClose }) {
 
             if(result !== false) {
                 if(todoToEdit) onClose();
-                else resetForm();
+                else setFormData(emptyForm);
                 onSuccess();
             }
         } catch(e) {
