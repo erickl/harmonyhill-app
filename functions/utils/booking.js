@@ -1,5 +1,7 @@
 import ICAL from 'ical.js';
 import * as utils from "@harmonyhill/shared/utils.js";
+//const utils = await import("@harmonyhill/shared/utils.js");
+import { adapter } from "../db-adapter.js";
 
 export function parseICal(rawICalData) {
     const jcalData = ICAL.parse(rawICalData);
@@ -29,10 +31,28 @@ export function parseICal(rawICalData) {
  * @param {*} filters 
  */
 export async function getInternalBookings(filters) {
-    const {makeFirestoreAdapter} = await import("@harmonyhill/shared/firestoreAdapter.js");
-    //const utils = await import("@harmonyhill/shared/utils.js");
-    const {db, Timestamp} = await import("../admin-firebase.js");
-    const adapter = await makeFirestoreAdapter(db, Timestamp);
     const bookings = await adapter.get("bookings", filters);
     return bookings;
+}
+
+export async function getCurrentBookings() {
+    const today = utils.today();
+    const tomorrow = utils.today(1);
+
+    const currentBookings = await getInternalBookings([
+        ["checkInAt", "<=", today],
+        ["checkOutAt", ">=", tomorrow],
+    ]);
+
+    return currentBookings;
+}
+
+export async function getFutureBookings() {
+    const tomorrow = utils.today(1);
+
+    const futureBookings = await getInternalBookings([
+        ["checkInAt", "==", tomorrow],
+    ]);
+
+    return futureBookings;
 }

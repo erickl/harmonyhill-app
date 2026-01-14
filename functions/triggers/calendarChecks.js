@@ -1,8 +1,7 @@
-import * as calUtils from "../utils/calendar.js";
+import * as bookingUtils from "../utils/booking.js";
 import * as config from "../config/config.js";
 import * as utils from "@harmonyhill/shared/utils.js";
-import { makeFirestoreAdapter } from "@harmonyhill/shared/firestoreAdapter.js";
-import {db, Timestamp} from "../admin-firebase.js";
+import { adapter } from "../db-adapter.js";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 
 // Upload calendar comparison result which compares booking.com & airbnb to our own internal calendar
@@ -12,8 +11,6 @@ export const hourlyJob = onSchedule("every 15 minutes", async (event) => {
         console.log("Couldn't create calendar comparison notification", new Date().toISOString());
         return false;
     }
-
-    const adapter = await makeFirestoreAdapter(db, Timestamp);
 
     result.createdAt = utils.now();
     const addNotificationResult = adapter.add("notifications", "calendar-check-result", result);
@@ -40,7 +37,7 @@ export const compareCalendars = async() => {
     //const bookingComBookingsStrings = bookingComBookings.map((b) => {return {start: utils.to_YYMMdd(b.checkInAt, "-"), end: utils.to_YYMMdd(b.checkOutAt, "-")} });
 
     const internalBookingsFilter = [["checkInAt", ">=", utils.today()], ["house", "==", "harmony hill"]];
-    const internalBookings = await calUtils.getInternalBookings(internalBookingsFilter);
+    const internalBookings = await bookingUtils.getInternalBookings(internalBookingsFilter);
     if(internalBookings === false) return false;
 
     const bookingLists1 = Object.entries({
@@ -91,7 +88,7 @@ export const getCalendar = async(iCalLink) => {
         }
 
         const rawICalData = await response.text();
-        const result = calUtils.parseICal(rawICalData);        
+        const result = bookingUtils.parseICal(rawICalData);        
         return result;
     } catch (error) {
         console.error("Request failed:", error);
