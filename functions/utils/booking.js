@@ -1,7 +1,7 @@
 import ICAL from 'ical.js';
 import * as utils from "@harmonyhill/shared/utils.js";
 //const utils = await import("@harmonyhill/shared/utils.js");
-import { adapter } from "../db-adapter.js";
+import { makeAdapter } from "../db-adapter.js";
 
 export function parseICal(rawICalData) {
     const jcalData = ICAL.parse(rawICalData);
@@ -31,6 +31,7 @@ export function parseICal(rawICalData) {
  * @param {*} filters 
  */
 export async function getInternalBookings(filters) {
+    const adapter = await makeAdapter();
     const bookings = await adapter.get("bookings", filters);
     return bookings;
 }

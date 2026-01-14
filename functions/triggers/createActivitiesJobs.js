@@ -3,7 +3,7 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import * as activityUtils from "../utils/activity.js";
 import * as bookingUtils from "../utils/booking.js";
 import * as utils from "@harmonyhill/shared/utils.js";
-import { adapter } from "../db-adapter.js";
+import { makeAdapter } from "../db-adapter.js";
 
 /**
  * '0 0 * * *' => runs at midnight, every day, every month, every day of the week
@@ -59,6 +59,7 @@ export const onBookingCreate = onDocumentCreated("bookings/{bookingId}", async (
 });
 
 async function createCheckInActivity(booking) {
+    const adapter = await makeAdapter();
     const activitiesPath = activityUtils.createActivityCollectionPath(booking);
     const checkIn = activityUtils.createService(booking, "checkin");
     const checkInId = adapter.makeActivityId(checkIn);
@@ -69,6 +70,7 @@ async function createCheckInActivity(booking) {
 }
 
 async function createCheckOutActivity(booking) {
+    const adapter = await makeAdapter();
     const activitiesPath = activityUtils.createActivityCollectionPath(booking);
     const checkOut = activityUtils.createService(booking, "checkout");
     const checkOutId = adapter.makeActivityId(checkOut);
@@ -79,6 +81,7 @@ async function createCheckOutActivity(booking) {
 }
 
 async function createRedEnvelopeActivity(booking, startingAt) {
+    const adapter = await makeAdapter();
     const activitiesPath = activityUtils.createActivityCollectionPath(booking);
     const redEnvelopeActivity = activityUtils.createService(booking, "red-envelope");
     redEnvelopeActivity.startingAt = startingAt;
@@ -91,6 +94,7 @@ async function createRedEnvelopeActivity(booking, startingAt) {
 }
 
 async function createHousekeepingActivity(booking, startingAt) {
+    const adapter = await makeAdapter();
     const activitiesPath = activityUtils.createActivityCollectionPath(booking);
     const housekeepingActivity = activityUtils.createService(booking, "housekeeping");
     housekeepingActivity.startingAt = startingAt;

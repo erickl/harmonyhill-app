@@ -2,6 +2,9 @@ import { onRequest } from "firebase-functions/v2/https";
 import * as calChecks from "../triggers/calendarChecks.js";
 import * as calUtils from "../utils/booking.js";
 import * as config from "../config/config.js";
+import * as utils from "@harmonyhill/shared/utils.js";
+//const utils = await import("@harmonyhill/shared/utils.js");
+import { makeAdapter } from "../db-adapter.js";
 
 // http://localhost:5001/harmonyhill-1/us-central1/calendars-check
 export const check = onRequest(async (req, res) => {
@@ -38,8 +41,6 @@ export const getOccupancy = onRequest( (req, res) => {
     
     (async () => {
         try {
-            const utils = await import("@harmonyhill/shared/utils.js");
-         
             let untilDate = null;
             if (!utils.isEmpty(year) && !utils.isEmpty(month)) {
                 untilDate = utils.monthEnd(`${year}-${month}-01`);
@@ -74,10 +75,6 @@ export const getOccupancy = onRequest( (req, res) => {
 // http://localhost:5001/harmonyhill-1/us-central1/getOccupancy?house=harmony-hill&year=2025&month=10
 export const getOccupancy2 = onRequest((req, res) => {
     config.corsHandler(req, res, async () => {
-        const {makeFirestoreAdapter} = await import("@harmonyhill/shared/firestoreAdapter.js");
-        const utils = await import("@harmonyhill/shared/utils.js");
-        const {db, Timestamp} = await import("../admin-firebase.js");
-
         const year = req.query.year;
         const month = req.query.month;
         const houseQuery = req.query.house.trim().toLowerCase();
@@ -90,7 +87,7 @@ export const getOccupancy2 = onRequest((req, res) => {
         }
 
         try {
-            const adapter = await makeFirestoreAdapter(db, Timestamp);
+            const adapter = await makeAdapter();
 
             const today = utils.today();
             const house = houseQuery.replace(/-/g, " ");

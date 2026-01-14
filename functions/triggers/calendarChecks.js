@@ -1,11 +1,13 @@
 import * as bookingUtils from "../utils/booking.js";
 import * as config from "../config/config.js";
 import * as utils from "@harmonyhill/shared/utils.js";
-import { adapter } from "../db-adapter.js";
+import { makeAdapter } from "../db-adapter.js";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 
 // Upload calendar comparison result which compares booking.com & airbnb to our own internal calendar
 export const hourlyJob = onSchedule("every 15 minutes", async (event) => {
+    const adapter = await makeAdapter();
+    
     const result = await compareCalendars();
     if(result === false) {
         console.log("Couldn't create calendar comparison notification", new Date().toISOString());
@@ -13,7 +15,7 @@ export const hourlyJob = onSchedule("every 15 minutes", async (event) => {
     }
 
     result.createdAt = utils.now();
-    const addNotificationResult = adapter.add("notifications", "calendar-check-result", result);
+    const addNotificationResult = await adapter.add("notifications", "calendar-check-result", result);
     
     if(addNotificationResult !== false) {
         console.log("⏰ Calendar comparison done", new Date().toISOString());
