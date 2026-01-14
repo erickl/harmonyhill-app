@@ -360,7 +360,7 @@ export function isFuture(inputDate) {
     return diff > 0;
 }  
 
-export function dateIsSame(oldDate, newDate) {
+export function dateIsSame(oldDate, newDate, ignoreTimeOfDay = false) {
     if(isEmpty(oldDate)) {
         return isEmpty(newDate);
     }
@@ -371,7 +371,11 @@ export function dateIsSame(oldDate, newDate) {
     try {
         const oldDateTime = toDateTime(oldDate);
         const newDateTime = toDateTime(newDate);
-        return oldDateTime.equals(newDateTime);
+        if(ignoreTimeOfDay) {
+            return oldDateTime.startOf('day').equals(newDateTime.startOf('day'));
+        } else {
+            return oldDateTime.equals(newDateTime);
+        }
     } catch(e) {
         return false;
     }
