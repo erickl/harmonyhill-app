@@ -1,11 +1,14 @@
 import { onRequest } from "firebase-functions/v2/https"; 
 import * as calChecks from "../triggers/calendarChecks.js";
+import * as calUtils from "../utils/calendar.js";
 import * as config from "../config/config.js";
 
 // http://localhost:5001/harmonyhill-1/us-central1/calendars-check
 export const check = onRequest(async (req, res) => {
-    const result = await calChecks.getCalendar();
-    return result;
+    (async () => {
+        const result = await calChecks.compareCalendars();
+        res.status(200).json(result);
+    })();
 });
 
 // http://localhost:5001/harmonyhill-1/us-central1/calendars-getOccupancy
@@ -35,12 +38,8 @@ export const getOccupancy = onRequest( (req, res) => {
     
     (async () => {
         try {
-            const {makeFirestoreAdapter} = await import("@harmonyhill/shared/firestoreAdapter.js");
             const utils = await import("@harmonyhill/shared/utils.js");
-            const {db, Timestamp} = await import("./admin-firebase.js");
-
-            const adapter = await makeFirestoreAdapter(db, Timestamp);
-
+         
             let untilDate = null;
             if (!utils.isEmpty(year) && !utils.isEmpty(month)) {
                 untilDate = utils.monthEnd(`${year}-${month}-01`);
@@ -56,7 +55,7 @@ export const getOccupancy = onRequest( (req, res) => {
                 filters.push(["checkInAt", "<=", untilDate]);
             }
 
-            const bookings = await adapter.get("bookings", filters);
+            const bookings = await calUtils.getInternalBookings(filters);
 
             let occupied = {};
             for (const booking of bookings) {
@@ -77,7 +76,7 @@ export const getOccupancy2 = onRequest((req, res) => {
     config.corsHandler(req, res, async () => {
         const {makeFirestoreAdapter} = await import("@harmonyhill/shared/firestoreAdapter.js");
         const utils = await import("@harmonyhill/shared/utils.js");
-        const {db, Timestamp} = await import("./admin-firebase.js");
+        const {db, Timestamp} = await import("../admin-firebase.js");
 
         const year = req.query.year;
         const month = req.query.month;
