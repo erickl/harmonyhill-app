@@ -13,7 +13,7 @@ export const dailyActivitiesCreationWork = async() => {
     try {
         const {makeFirestoreAdapter} = await import("@harmonyhill/shared/firestoreAdapter.js");
         const utils = await import("@harmonyhill/shared/utils.js");
-        const {db, Timestamp} = await import("./admin-firebase.js");
+        const {db, Timestamp} = await import("../admin-firebase.js");
         const adapter = await makeFirestoreAdapter(db, Timestamp);
 
         const today = utils.today();
