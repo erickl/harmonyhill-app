@@ -1,7 +1,10 @@
 import { initializeApp, getApp } from 'firebase-admin/app';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
+import { getStorage } from 'firebase-admin/storage';
 import { setGlobalOptions } from "firebase-functions/v2";
+import admin from "firebase-admin";
+import serviceAccount from "./harmonyhill-1-service-account-key.json" with { type: "json" };
 
 // import dotenv from 'dotenv';
 // dotenv.config(); // for the seeder script in the local env
@@ -10,6 +13,7 @@ import { setGlobalOptions } from "firebase-functions/v2";
 if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {  
     // Use the default host and port for the Firestore emulator
     process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"; 
+    process.env.FIREBASE_STORAGE_EMULATOR_HOST = "127.0.0.1:9199";
 }
 
 let app;
@@ -17,11 +21,15 @@ let app;
 try {
     app = getApp();
 } catch(e) {
-    app = initializeApp();
+    app = initializeApp({
+        credential : admin.credential.cert(serviceAccount),
+        storageBucket: 'harmonyhill-1.firebasestorage.app'
+    });
 }
 
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 // Only when running Firestore emulator
 if (process.env.FUNCTIONS_EMULATOR === "true") {
@@ -46,5 +54,6 @@ if (process.env.FUNCTIONS_EMULATOR === "true") {
 export { 
     db, 
     auth,
+    storage,
     Timestamp,
 };
