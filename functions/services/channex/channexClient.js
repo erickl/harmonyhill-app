@@ -16,13 +16,13 @@ const TAX_SETS_API              = `${CHANNEX_URL}/tax_sets`;
 const HOTEL_POLICIES_API        = `${CHANNEX_URL}/hotel_policies`;
 const TAXES_API                 = `${CHANNEX_URL}/taxes`;
 const ROOM_TYPES_API            = `${CHANNEX_URL}/room_types`;
-const PROPERTY_FACILITIES_API   = `${channexUrl}/property_facilities`; 
+const PROPERTY_FACILITIES_API   = `${CHANNEX_URL}/property_facilities`; 
 
 export function createErrorResponse(statusCode, message) {
     return { 
         isOk : false,
         status: statusCode, 
-        error: "Cannot create property create request"
+        error: message
     };
 }
 

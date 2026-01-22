@@ -1,5 +1,5 @@
 import * as utils from "@harmonyhill/shared/utils.js";
-import { makeAdapter } from "../db-adapter.js";
+import { makeAdapter } from "../../db-adapter.js";
 import * as client from "./channexClient.js";
 import * as mappers from "./channexMappers.js";
 
