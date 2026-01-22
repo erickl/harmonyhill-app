@@ -1,6 +1,5 @@
 import * as utils from "../../shared/utils.js";
-import {makeFirestoreAdapter} from "../../shared/firestoreAdapter.js";
-import {db, Timestamp} from "../../functions/admin-firebase.js";
+import { makeAdapter } from "../db-adapter.js";
 
 export default class Dish {
     static COLLECTION = "menu";
@@ -168,7 +167,7 @@ export default class Dish {
             new Dish("Schweppes",                                   [""],                 ["harmony hill", "the jungle nook"], ["minibar",                                                       ], "minibar",  600,             25000,  "",               ""                                                                                                                                                                     , null), 
         ];
 
-        const adapter = await makeFirestoreAdapter(db, Timestamp);
+        const adapter = await makeAdapter();
         
         let errorCount = 0;
         const nDishes = dishes.length;

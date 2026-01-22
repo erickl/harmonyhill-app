@@ -1,7 +1,6 @@
 import * as utils from "../utils.js";
 import { setDoc, doc } from 'firebase/firestore';
-import {makeFirestoreAdapter} from "../../shared/firestoreAdapter.js";
-import {db, Timestamp} from "../../functions/admin-firebase.js";
+import { makeAdapter } from "../db-adapter.js";
 
 export default class Inventory {
     static COLLECTION = "inventory";
@@ -85,7 +84,7 @@ export default class Inventory {
             new Inventory("Biscoff Cheesecake (Round)",            "dessert",           60000,    0,               [],                {"hh" : 0, "jn": 0}               ,"gs://harmonyhill-1.firebasestorage.app/resources/menu/biscoff-cheesecake-round.png" ), 
         ];
 
-        const adapter = await makeFirestoreAdapter(db, Timestamp);
+        const adapter = await makeAdapter();
         
         let errorCount = 0;
         const count = inventoryItems.length;
