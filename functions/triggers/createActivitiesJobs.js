@@ -44,7 +44,7 @@ export const dailyActivitiesCreationWork = async() => {
 }
 
 /**
- * Create checkin and checkout activities for bookings which are created with a checkin date today.
+ * Create checkin and checkout activities for bookings which are created with a checkin date of today.
  * Because these bookings won't get a checkin activity auto created by any scheduled trigger
  */
 export const onBookingCreate = onDocumentCreated("bookings/{bookingId}", async (event) => {

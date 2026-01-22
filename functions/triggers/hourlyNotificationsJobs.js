@@ -1,4 +1,6 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import * as utils from "@harmonyhill/shared/utils.js";
+import { makeAdapter } from "../db-adapter.js";
 
 // Upload count of activities which still need more information (providers missing, etc)
 export const hourlyJob = onSchedule("every 60 minutes", async (event) => {
@@ -6,10 +8,7 @@ export const hourlyJob = onSchedule("every 60 minutes", async (event) => {
 });
 
 const hourlyWork = async() => {
-    const {makeFirestoreAdapter} = await import("@harmonyhill/shared/firestoreAdapter.js");
-    const utils = await import("@harmonyhill/shared/utils.js");
-    const {db, Timestamp} = await import("../admin-firebase.js");
-    const adapter = await makeFirestoreAdapter(db, Timestamp);
+    const adapter = await makeAdapter();
 
     const today = utils.today();
 
