@@ -52,6 +52,10 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 
 - set cors: gsutil cors set cors.json gs://harmonyhill-1.firebasestorage.app
 
+# Using & exporting internal libraries
+- Go to shared/ and run npm link
+- go to functions/ and run npm link @harmonyhill/shared
+
 
 # Versions
 - 1.0: browse booking data
@@ -65,6 +69,7 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
     - starts all emulators configured in firebase.json, with the imported database
 - see local DB: http://localhost:4000/firestore/default/data
 - export data: firebase emulators:export ./emulator-data
+- latest command: firebase emulators:start --project=harmonyhill-1 --import=./emulator-data --export-on-exit
 
 - How to start debugging firebase functions
     - node --inspect=9229 ./node_modules/.bin/firebase emulators:start --import=./emulator-data 
