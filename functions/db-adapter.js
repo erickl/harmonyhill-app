@@ -1,5 +1,5 @@
 import { makeFirestoreAdapter } from "@harmonyhill/shared/firestoreAdapter.js";
-import { db, Timestamp } from "./admin-firebase.js";
+import { db, storage, Timestamp } from "./admin-firebase.js";
 
 // Create the instance once
-export const makeAdapter = async () => await makeFirestoreAdapter(db, Timestamp);
+export const makeAdapter = async () => await makeFirestoreAdapter(db, storage, Timestamp);

@@ -1,5 +1,6 @@
 
 import * as utils from "./utils.js";
+import { getDownloadURL } from "firebase-admin/storage";
 
 function makeActivityId(activity) { 
     const houseShort = activity.house.trim().toLowerCase() === "harmony hill" ? "hh" : "jn";
@@ -8,7 +9,7 @@ function makeActivityId(activity) {
     return `${startingAt}-${houseShort}-${subCategory}-${Date.now()}`;
 }
 
-export async function makeFirestoreAdapter(db, adminTimestamp = null) {
+export async function makeFirestoreAdapter(db, storage, adminTimestamp = null) {
     const isAdmin = !!db.collectionGroup; 
 
     let adapter = {};
@@ -76,7 +77,7 @@ export async function makeFirestoreAdapter(db, adminTimestamp = null) {
                     const docRef = db.collection(path).doc(id);
                     const docSnapshot = await docRef.get();
                     if (!docSnapshot.exists) return null;
-                    return { ...snapshot.data(), id: snapshot.id, ref: snapshot.ref };
+                    return { ...docSnapshot.data(), id: docSnapshot.id, ref: docSnapshot.ref };
                 } catch(e) {
                     console.log(`Error getting one document ${path}/${id}: ${e.message}`);
                     return null;
@@ -96,6 +97,17 @@ export async function makeFirestoreAdapter(db, adminTimestamp = null) {
                     return true;
                 } catch(e) {
                     console.log(`Error adding document ${path}/${id}: ${e.message}`);
+                    return false;
+                }
+            },
+
+            async getFile(path) {
+                try {
+                    const bucket = storage.bucket();            
+                    const fileRef = bucket.file(path);
+                    const url = await getDownloadURL(fileRef);
+                    return url;           
+                } catch(e) {
                     return false;
                 }
             }
