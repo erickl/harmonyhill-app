@@ -16,5 +16,10 @@
 
 import * as calendars from "./api/calendars.js";
 import * as debug from "./api/debug.js";
+import * as pms from "./api/pms.js";
 
-export { calendars, debug };
+export { 
+    calendars, 
+    //debug, 
+    //pms 
+};
