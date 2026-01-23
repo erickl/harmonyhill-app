@@ -15,9 +15,8 @@ export async function remove(activity, reason, itemName, quantity, comments, onE
     const commit = decideCommit(writes);
 
     const currentQuantity = await getCurrentQuantity(itemName, onError);
-    if(currentQuantity < quantity) {
-        return onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
-    }
+    // Don't stop users from withdrawing more than exists. It might just be a purchase wasn't recorded, and we actually can sell more of this item
+    //if(currentQuantity < quantity) return onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
 
     const stock = {
         bookingId      : activity ? activity.bookingId : null,
