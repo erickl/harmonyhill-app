@@ -82,6 +82,7 @@ How to trigger scheduled functions
 - run ```node src/scripts/seeder.mjs```
 - if you are getting an authentication problem, run ```gcloud auth application-default login```
 - Note: launch the debugger for the seeder script, and the env vars in launch.json will be used
+- To seed the emulator database, select "Run Seeder Script" in the debug menu (see launch.json) and press Debug
 
 
 ### Code Splitting
