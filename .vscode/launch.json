@@ -16,7 +16,8 @@
           "NODE_ENV": "development",
           "FIRESTORE_EMULATOR_HOST": "localhost:8080",
           "FIREBASE_AUTH_EMULATOR_HOST": "localhost:9099",
-          "GCLOUD_PROJECT": "harmonyhill-1" 
+          "GCLOUD_PROJECT": "harmonyhill-1",
+          "FUNCTIONS_EMULATOR":"true"
         },
         "skipFiles": ["<node_internals>/**"],
         "runtimeExecutable": "/Users/Smexmachine_1/.nvm/versions/node/v20.19.1/bin/node"
@@ -29,12 +30,6 @@
         "skipFiles": [
           "<node_internals>/**"
         ]
-      },{ // Debugging the react app
-          "name": "Attach to Chrome",
-          "port": 9222,
-          "request": "attach",
-          "type": "chrome",
-          "webRoot": "${workspaceFolder}"
       },{
           "type": "chrome",
           "request": "launch",
