@@ -1,5 +1,5 @@
 import * as utils from "../utils.js";
-import { makeAdapter } from "../db-adapter.js";
+import { makeAdapter } from "../../functions/db-adapter.js";
 
 export default class ActivityType {
     static COLLECTION = "activityTypes";

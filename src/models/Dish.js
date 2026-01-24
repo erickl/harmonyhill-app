@@ -1,5 +1,5 @@
 import * as utils from "../../shared/utils.js";
-import { makeAdapter } from "../db-adapter.js";
+import { makeAdapter } from "../../functions/db-adapter.js";
 
 export default class Dish {
     static COLLECTION = "menu";
