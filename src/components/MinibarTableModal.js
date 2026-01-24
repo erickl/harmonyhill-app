@@ -231,11 +231,12 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     }
 
     const isCountValid = (item, newCount) => {
+        const subCategory = state.activity.subCategory;
         let errorMessage_ = "";
 
         // For start and refill count, the current count is about how much stock to ADD/REFILL.
         // And we can't add more than we have in storage
-        if(state.activity.subCategory !== "checkout") {
+        if(subCategory === "checkin" || subCategory === "housekeeping") {
             if(totalStock !== null && reservedStock !== null) {
                 const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
                 const available = item.total - item.reserved - provided;
@@ -245,17 +246,20 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             }
 
             // Put at least as many items as required by our minimum stock standards
-            if(newCount < item.minStock) {
+            // Cannot compare against minStock in house keeping, because we don't know how many is left when refilling
+            if(subCategory === "checkin" && newCount < item.minStock) {
                 errorMessage_ = `Error: Provide minimum ${item.minStock} ${item.name}`;
             }
         }
         // For end count (checkout), the current count is about how many is LEFT.
         // And there can't be more in the fridge than have been provided during their stay
         // If the provided header is not present, the provided data won't be displayed and the red marking won't make sense
-        else if(utils.exists(state.headers, "provided")) {
-            const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
-            if(newCount > provided) {
-                errorMessage_ = `Error: We only provided ${item.provided} ${item.name}`;
+        else if(subCategory === "checkout") {
+            if(utils.exists(state.headers, "provided")) {
+                const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
+                if(newCount > provided) {
+                    errorMessage_ = `Error: We only provided ${item.provided} ${item.name}`;
+                }
             }
         }
 
@@ -312,13 +316,12 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             const thisCountIsValid = !utils.isEmpty(errorMessage_);
 
             // Mark the state if the item count is invalid
-            //if(thisCountIsValid !== countIsValid[index]) {
-                const nextCountIsValid = [...countIsValid];
-                nextCountIsValid[index] = thisCountIsValid;  
-                setCountIsValid(nextCountIsValid);
-                setErrorMessages(prev => prev.map((msg, i) => i === index ? errorMessage_ : msg));
-            //}
-
+            const nextCountIsValid = [...countIsValid];
+            nextCountIsValid[index] = thisCountIsValid;  
+            setCountIsValid(nextCountIsValid);
+            //setCountIsValid(prev => prev.map((valid, i) => i === index ? thisCountIsValid : valid));
+            setErrorMessages(prev => prev.map((msg, i) => i === index ? errorMessage_ : msg));
+            
             // Count can be negative for housekeeping, since we might want to correct a count or take something out
             if(newCount >= 0 || state.activity.subCategory === "housekeeping") {
                 const newState = utils.deepCopy(state);
