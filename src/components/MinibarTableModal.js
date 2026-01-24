@@ -331,8 +331,9 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             setCountIsValid(prev => prev.map((valid, i) => i === index ? thisCountIsValid : valid));
             setErrorMessages(prev => prev.map((msg, i) => i === index ? errorMessage_ : msg));
             
-            // Count can be negative for housekeeping, since we might want to correct a count or take something out
-            if(newCount >= 0 || state.activity.subCategory === "housekeeping") {
+            // Count can be negative, if taking items which were earlier provided
+            const provided = utils.exists(item, "provided") ? item.provided : 0;
+            if(provided + newCount >= 0) {
                 const newState = utils.deepCopy(state);
                 newState.updatedCount[item.name] = newCount;
                 setState(newState); 
