@@ -204,20 +204,24 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         });
     }
 
-    const tableCell = (index, value, cellStyle) => {
+    const tableCell = (index, value, cellStyle, plusButton, minusButton) => {
         const isLink = utils.isLink(value);
         const cellStyle_ = utils.isEmpty(cellStyle) ? valueColumnStyle : {...valueColumnStyle, ...cellStyle};
         const displayedValue = isLink ? <a href={value} style={{textDecoration:"none"}}>🔗</a> : value;
         return (
             <td style={cellStyle_} key={`${index}-value`}>
-                {displayedValue} 
+                <div style={{display:"flex", justifyContent:"space-evenly", alignItems:"center"}}>
+                    {plusButton}
+                    {displayedValue} 
+                    {minusButton}
+                </div>
             </td>
         );
     };
 
     const tableRow = (index, item) => {
         let values = [];
-        const cellStyle = {};
+        const cellStyle = { };
         
         for(const header of state.headers) {
             let value = "";
@@ -316,11 +320,12 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         
         return (
             <tr key={`${index}-row`}>
-                {minusButton()}
                 {values.map((value, c) => {
-                    return tableCell(c, value, cellStyle);
+                    // c == 1 is the 'count' column
+                    const plusButton_ = c == 1 ? plusButton() : null;
+                    const minusButton_ = c == 1 ? minusButton() : null;
+                    return tableCell(c, value, cellStyle, plusButton_, minusButton_);
                 })}
-                {plusButton()}
             </tr>
         );
     };
@@ -358,8 +363,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 <table style={tableStyle}>
                     <thead>
                         <tr>
-                            {/* Empty start td for the minus button, left of the table */}
-                            <td />
+                           
                             {state.headers?.map((header) => (
                                 <td style={keyColumnStyle}>
                                     {getHeaderDisplayName(header)}
