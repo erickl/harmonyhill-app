@@ -25,23 +25,23 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         onHide       : null,
     };
     
-    const [enableSubmit,   setEnableSubmit  ] = useState(false);
-    const [enableClose,    setEnableClose   ] = useState(true);
-    const [state,          setState         ] = useState(initState);
-    const [totalStock,     setTotalStock    ] = useState(null);
-    const [reservedStock,  setReservedStock ] = useState(null);
-    const [editable,       setEditable      ] = useState(false);
-    const [countIsValid,   setCountIsValid  ] = useState(Array(itemCount).fill(true));
-    const [errorMessages,  setErrorMessages ] = useState(Array(itemCount).fill(""));
-    const [errorMessage,   setErrorMessage  ] = useState("");
+    const [enableSubmit,          setEnableSubmit          ] = useState(false);
+    const [enableClose,           setEnableClose           ] = useState(true);
+    const [state,                 setState                 ] = useState(initState);
+    const [totalStock,            setTotalStock            ] = useState(null);
+    const [reservedStock,         setReservedStock         ] = useState(null);
+    const [editable,              setEditable              ] = useState(false);
+    const [countIsValid,          setCountIsValid          ] = useState(Array(itemCount).fill(true));
+    const [errorMessages,         setErrorMessages         ] = useState(Array(itemCount).fill(""));
+    const [displayedErrorMessage, setDisplayedErrorMessage ] = useState("");
     
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
 
-    const setDisplayedErrorMessage = () => {
+    const selectDisplayedErrorMessage = () => {
         const displayedErrorMessage = errorMessages.find((errMsg) => !utils.isEmpty(errMsg));
-        setErrorMessage(displayedErrorMessage ? displayedErrorMessage : "");
+        setDisplayedErrorMessage(displayedErrorMessage ? displayedErrorMessage : "");
     };
 
     useEffect(() => {
@@ -91,12 +91,12 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 newErrorMessages.push(errorMessage_);
             }
             setErrorMessages(newErrorMessages);
-            setDisplayedErrorMessage();
+            selectDisplayedErrorMessage();
         }
     }, [reservedStock, totalStock]);
 
     useEffect(() => {
-        setDisplayedErrorMessage();
+        selectDisplayedErrorMessage();
     }, [errorMessages]);
 
     useEffect(() => {
@@ -126,8 +126,6 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         }
 
         //const allCountsValid = !countIsValid.includes(false);
-        //const errorMessage_ = errorMessages.find((msg) => !utils.isEmpty(msg));
-        //setErrorMessage(errorMessage_);
 
         setEnableSubmit(hasCountUpdate);
     }, [countIsValid, state.updatedCount]);
@@ -300,7 +298,10 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 value = state.updatedCount[item.name];
             } else if(header === "minimum stock") {
                 value = item["minStock"];
-            } else if(!utils.isEmpty(header)) {
+            // Turn 'provided' into 'provided so far', including current count 
+            } else if(header === "provided") {
+                value = item.provided + state.updatedCount[item.name];
+            }else if(!utils.isEmpty(header)) {
                 value = utils.exists(item, header) ? item[header] : "";
             }
             
@@ -412,7 +413,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                     />)}
                 </div>
                 <h2>{state.title}</h2>
-                <h4 style={{color:"red"}}>{errorMessage || "\u00A0"}</h4>
+                <h4 style={{color:"red"}}>{displayedErrorMessage || "\u00A0"}</h4>
                 <table style={tableStyle}>
                     <thead>
                         <tr>
