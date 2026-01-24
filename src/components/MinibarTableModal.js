@@ -228,6 +228,8 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 item[header] = value = reservedStock && utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0; 
             } else if(header === "count") {
                 value = state.updatedCount[item.name];
+            } else if(header === "minimum stock") {
+                value = item["minStock"];
             } else if(!utils.isEmpty(header)) {
                 value = utils.exists(item, header) ? item[header] : "";
             }

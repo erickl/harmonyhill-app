@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, act } from 'react';
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
 import * as minibarService from "../services/minibarService.js";
+import * as inventoryService from "../services/inventoryService.js";
 import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import {getParent} from "../daos/dao.js";
@@ -33,6 +34,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     
     const assignedUser = users && activity ? users.find(user => user.name === activity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
+    const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
     
     const [customer,                setCustomer               ] = useState(null );
     const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false);
@@ -240,15 +242,22 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     }
 
     const onDisplayMinibarCount = async () => {
-        const stockList = await minibarService.getSelection(onError);
-        if(stockList === false) return false;
+        //const stockList = await minibarService.getSelection(onError);
+        const stockList = await inventoryService.get({type: "minibar"});
         
+        if(stockList === false) return false;
+        const houseShortLowerCase = houseShortName.toLowerCase();
+
         const stockListItems = stockList.reduce((map, stockListItem) => {
+            const minStockLevel = utils.exists(stockListItem, "minimumStock") && 
+                utils.exists(stockListItem.minimumStock, houseShortLowerCase) ? 
+                stockListItem.minimumStock[houseShortLowerCase] : 0;
             let data = { 
                 name     : stockListItem.name,
                 count    : 0,
                 reserved : 0,
-                total    : 0
+                total    : 0,
+                minStock : minStockLevel,
             };
 
             if(minibarCount && utils.exists(minibarCount, stockListItem.name)) {
@@ -264,7 +273,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         const values = Object.values(stockListItems);
 
         if(activity.subCategory !== "checkout") {
-            headers.push("total");
+            headers.push("minimum stock", "total");
         }
 
         if(activity.subCategory !== "checkin-prep") {
@@ -379,7 +388,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     }, []);
 
     const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
-    const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
     const houseColor = houseShortName === "HH" ? "darkcyan" : "rgb(2, 65, 116)";
 
     if(!activity) {
