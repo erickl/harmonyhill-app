@@ -39,6 +39,11 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
 
+    const setDisplayedErrorMessage = () => {
+        const displayedErrorMessage = errorMessages.find((errMsg) => !utils.isEmpty(errMsg));
+        setErrorMessage(displayedErrorMessage ? displayedErrorMessage : "");
+    };
+
     useEffect(() => {
         const load = async () => {
             const newCount = Object.values(items).reduce((map, item) => {
@@ -83,20 +88,15 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             const newErrorMessages = [];
             for(const item of state.items) {
                 const errorMessage_ = isCountValid(item, state.updatedCount[item.name]);
-                if(!utils.isEmpty(errorMessage_)) {
-                    newErrorMessages.push(errorMessage_);
-                }
+                newErrorMessages.push(errorMessage_);
             }
             setErrorMessages(newErrorMessages);
-            if(newErrorMessages.length > 0) {
-                setErrorMessage(newErrorMessages[0]);
-            }
+            setDisplayedErrorMessage();
         }
     }, [reservedStock, totalStock]);
 
     useEffect(() => {
-        const displayedErrorMessage = errorMessages.find((errMsg) => !utils.isEmpty(errMsg));
-        setErrorMessage(displayedErrorMessage);
+        setDisplayedErrorMessage();
     }, [errorMessages]);
 
     useEffect(() => {
@@ -126,8 +126,8 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         }
 
         //const allCountsValid = !countIsValid.includes(false);
-        const errorMessage_ = errorMessages.find((msg) => !utils.isEmpty(msg));
-        setErrorMessage(errorMessage_);
+        //const errorMessage_ = errorMessages.find((msg) => !utils.isEmpty(msg));
+        //setErrorMessage(errorMessage_);
 
         setEnableSubmit(hasCountUpdate);
     }, [countIsValid, state.updatedCount]);
@@ -324,13 +324,10 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             }    
             
             const errorMessage_ = isCountValid(item, newCount);
-            const thisCountIsValid = !utils.isEmpty(errorMessage_);
+            const thisCountIsValid = utils.isEmpty(errorMessage_);
 
             // Mark the state if the item count is invalid
-            const nextCountIsValid = [...countIsValid];
-            nextCountIsValid[index] = thisCountIsValid;  
-            setCountIsValid(nextCountIsValid);
-            //setCountIsValid(prev => prev.map((valid, i) => i === index ? thisCountIsValid : valid));
+            setCountIsValid(prev => prev.map((valid, i) => i === index ? thisCountIsValid : valid));
             setErrorMessages(prev => prev.map((msg, i) => i === index ? errorMessage_ : msg));
             
             // Count can be negative for housekeeping, since we might want to correct a count or take something out
@@ -415,7 +412,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                     />)}
                 </div>
                 <h2>{state.title}</h2>
-                <h4 style={{color:"red"}}>{errorMessage}</h4>
+                <h4 style={{color:"red"}}>{errorMessage || "\u00A0"}</h4>
                 <table style={tableStyle}>
                     <thead>
                         <tr>
