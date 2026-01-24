@@ -25,13 +25,15 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         onHide       : null,
     };
     
-    const [enableSubmit,  setEnableSubmit ] = useState(false);
-    const [enableClose,   setEnableClose  ] = useState(true);
-    const [state,         setState        ] = useState(initState);
-    const [totalStock,    setTotalStock   ] = useState(null);
-    const [reservedStock, setReservedStock] = useState(null);
-    const [editable,      setEditable     ] = useState(false);
-    const [countIsValid,  setCountIsValid ] = useState(Array(itemCount).fill(true));
+    const [enableSubmit,   setEnableSubmit  ] = useState(false);
+    const [enableClose,    setEnableClose   ] = useState(true);
+    const [state,          setState         ] = useState(initState);
+    const [totalStock,     setTotalStock    ] = useState(null);
+    const [reservedStock,  setReservedStock ] = useState(null);
+    const [editable,       setEditable      ] = useState(false);
+    const [countIsValid,   setCountIsValid  ] = useState(Array(itemCount).fill(true));
+    const [errorMessages,  setErrorMessages ] = useState(Array(itemCount).fill(""));
+    const [errorMessage,   setErrorMessage  ] = useState("");
     
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
@@ -76,6 +78,28 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     }, []);
 
     useEffect(() => {
+        if(reservedStock !== null && totalStock !== null) {
+            // Set initial error messages array, once the reserved and total stock has been loaded
+            const newErrorMessages = [];
+            for(const item of state.items) {
+                const errorMessage_ = isCountValid(item, state.updatedCount[item.name]);
+                if(!utils.isEmpty(errorMessage_)) {
+                    newErrorMessages.push(errorMessage_);
+                }
+            }
+            setErrorMessages(newErrorMessages);
+            if(newErrorMessages.length > 0) {
+                setErrorMessage(newErrorMessages[0]);
+            }
+        }
+    }, [reservedStock, totalStock]);
+
+    useEffect(() => {
+        const displayedErrorMessage = errorMessages.find((errMsg) => !utils.isEmpty(errMsg));
+        setErrorMessage(displayedErrorMessage);
+    }, [errorMessages]);
+
+    useEffect(() => {
         const isEditable_ = state.activity && ActivityStatus.Started.equals(state.activity.status) && utils.isToday(state.activity.startingAt);
         setEditable(isEditable_);
 
@@ -101,9 +125,11 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             }
         }
 
-        const allCountsValid = !countIsValid.includes(false);   
+        //const allCountsValid = !countIsValid.includes(false);
+        const errorMessage_ = errorMessages.find((msg) => !utils.isEmpty(msg));
+        setErrorMessage(errorMessage_);
 
-        setEnableSubmit(hasCountUpdate && allCountsValid);
+        setEnableSubmit(hasCountUpdate);
     }, [countIsValid, state.updatedCount]);
 
     // todo: is there a need to get reserved stock, if we are counting the end stock, to calculate a sale?
@@ -204,6 +230,38 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         });
     }
 
+    const isCountValid = (item, newCount) => {
+        let errorMessage_ = "";
+
+        // For start and refill count, the current count is about how much stock to ADD/REFILL.
+        // And we can't add more than we have in storage
+        if(state.activity.subCategory !== "checkout") {
+            if(totalStock !== null && reservedStock !== null) {
+                const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
+                const available = item.total - item.reserved - provided;
+                if(newCount > available) { 
+                    errorMessage_ = `Error: ${newCount} ${item.name} not available`;
+                }
+            }
+
+            // Put at least as many items as required by our minimum stock standards
+            if(newCount < item.minStock) {
+                errorMessage_ = `Error: Provide minimum ${item.minStock} ${item.name}`;
+            }
+        }
+        // For end count (checkout), the current count is about how many is LEFT.
+        // And there can't be more in the fridge than have been provided during their stay
+        // If the provided header is not present, the provided data won't be displayed and the red marking won't make sense
+        else if(utils.exists(state.headers, "provided")) {
+            const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
+            if(newCount > provided) {
+                errorMessage_ = `Error: We only provided ${item.provided} ${item.name}`;
+            }
+        }
+
+        return errorMessage_;
+    }
+
     const tableCell = (index, value, cellStyle, plusButton, minusButton) => {
         const isLink = utils.isLink(value);
         const cellStyle_ = utils.isEmpty(cellStyle) ? valueColumnStyle : {...valueColumnStyle, ...cellStyle};
@@ -241,42 +299,25 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             values.push(value);
         }
 
-        let thisCountIsValid = true;
+        const errorMessage_ = isCountValid(item, state.updatedCount[item.name]);
 
-        // For start and refill count, the current count is about how much stock to ADD/REFILL.
-        // And we can't add more than we have in storage
-        if(state.activity.subCategory !== "checkout") {
-            if(totalStock !== null && reservedStock !== null) {
-                const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
-                const available = item.total - item.reserved - provided;
-                if(state.updatedCount[item.name] > available) { 
-                    thisCountIsValid = false;
-                }
-            }
-        }
-        // For end count (checkout), the current count is about how many is LEFT.
-        // And there can't be more in the fridge than have been provided during their stay
-        // If the provided header is not present, the provided data won't be displayed and the red marking won't make sense
-        else if(utils.exists(state.headers, "provided")) {
-            const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
-            if(state.updatedCount[item.name] > provided) {
-                thisCountIsValid = false;
-            }
-        }
-
-        if(!thisCountIsValid) {
-            cellStyle.backgroundColor = "red";
-        }
-
-        // Mark the state if the item count is invalid
-        if(thisCountIsValid !== countIsValid[index]) {
-            const nextCountIsValid = [...countIsValid];
-            nextCountIsValid[index] = thisCountIsValid;  
-            setCountIsValid(nextCountIsValid);
+        if(!utils.isEmpty(errorMessage_)) {
+            cellStyle.backgroundColor = "#f0745b";
         }
         
         const onChangeCount = (diff) => {      
             const newCount = state.updatedCount[item.name] + diff;
+
+            const errorMessage_ = isCountValid(item, newCount);
+            const thisCountIsValid = !utils.isEmpty(errorMessage_);
+
+            // Mark the state if the item count is invalid
+            //if(thisCountIsValid !== countIsValid[index]) {
+                const nextCountIsValid = [...countIsValid];
+                nextCountIsValid[index] = thisCountIsValid;  
+                setCountIsValid(nextCountIsValid);
+                setErrorMessages(prev => prev.map((msg, i) => i === index ? errorMessage_ : msg));
+            //}
 
             // Count can be negative for housekeeping, since we might want to correct a count or take something out
             if(newCount >= 0 || state.activity.subCategory === "housekeeping") {
@@ -360,10 +401,10 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                     />)}
                 </div>
                 <h2>{state.title}</h2>
+                <h4 style={{color:"red"}}>{errorMessage}</h4>
                 <table style={tableStyle}>
                     <thead>
                         <tr>
-                           
                             {state.headers?.map((header) => (
                                 <td style={keyColumnStyle}>
                                     {getHeaderDisplayName(header)}
