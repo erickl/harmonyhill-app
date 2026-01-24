@@ -231,6 +231,9 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     }
 
     const isCountValid = (item, newCount) => {
+        //If count input is null, count it as 0
+        newCount = newCount === null ? 0 : newCount;
+
         const subCategory = state.activity.subCategory;
         let errorMessage_ = "";
 
@@ -267,6 +270,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     }
 
     const tableCell = (index, value, cellStyle, plusButton, minusButton) => {
+        value = value === null ? "-" : value;
         const isLink = utils.isLink(value);
         const cellStyle_ = utils.isEmpty(cellStyle) ? valueColumnStyle : {...valueColumnStyle, ...cellStyle};
         const displayedValue = isLink ? <a href={value} style={{textDecoration:"none"}}>🔗</a> : value;
@@ -309,9 +313,16 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             cellStyle.backgroundColor = "#f0745b";
         }
         
-        const onChangeCount = (diff) => {      
-            const newCount = state.updatedCount[item.name] + diff;
+        const onChangeCount = (diff) => { 
+            let newCount = 0;
 
+            // If updated count is not set yet, first click sets it to 0
+            if(state.updatedCount[item.name] === null) {
+                newCount = 0;
+            } else {
+                newCount = state.updatedCount[item.name] + diff;
+            }    
+            
             const errorMessage_ = isCountValid(item, newCount);
             const thisCountIsValid = !utils.isEmpty(errorMessage_);
 
