@@ -51,15 +51,20 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 return map;
             }, {});
 
-            // const isManagerOrAdmin = await userService.isManagerOrAdmin();
+            const isManagerOrAdmin = await userService.isManagerOrAdmin();
             
             // // Remove some table columns for staff members
-            // if(isManagerOrAdmin === false) {
-            //     for(const header of ["provided", "total", "reserved"]) {
-            //         const indexToRemove = headers.indexOf(header);
-            //         headers.splice(indexToRemove, 1);
-            //     }
-            // }
+            if(isManagerOrAdmin === false) {
+                for(const header of ["total", "reserved"]) {
+                    const indexToRemove = headers.indexOf(header);
+                    if(indexToRemove !== -1) headers.splice(indexToRemove, 1);
+                }
+            }
+
+            // 'available' is a calculation of total stock, minus stock already provided in other villas
+            if(activity.subCategory !== "checkout") {
+                headers.push("available");
+            }
 
             setState({
                 activity     : activity,
@@ -70,13 +75,9 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 onSubmit     : onSubmit,
                 onHide       : onHide,
             });
-
-            if(utils.exists(headers, "total")) {
-                loadTotalStock(activity, items);    
-            }
-            if(utils.exists(headers, "reserved")) {    
-                loadReservedStock(activity, items);    
-            }
+           
+            loadTotalStock(activity, items);    
+            loadReservedStock(activity, items);       
         };
 
         load();
@@ -240,7 +241,9 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         if(subCategory === "checkin" || subCategory === "housekeeping") {
             if(totalStock !== null && reservedStock !== null) {
                 const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
-                const available = item.total - item.reserved - provided;
+                const total = utils.exists(totalStock, item.name) ? totalStock[item.name] : 0;
+                const reserved = utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0;
+                const available = Math.max(0, total - reserved - provided);
                 if(newCount > available) { 
                     errorMessage_ = `Error: ${newCount} ${item.name} not available`;
                 }
@@ -294,7 +297,11 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 item[header] = value = totalStock && utils.exists(totalStock, item.name) ? totalStock[item.name] : 0; 
             } else if(header === "reserved") {
                 item[header] = value = reservedStock && utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0; 
-            } else if(header === "count") {
+            } else if(header === "available") {
+                const totalLoaded = totalStock && utils.exists(totalStock, item.name);
+                const reserved = reservedStock && utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0;
+                item[header] = value = totalLoaded ? totalStock[item.name] - reserved - item.provided : "-";
+            }else if(header === "count") {
                 value = state.updatedCount[item.name];
             } else if(header === "minimum stock") {
                 value = item["minStock"];
