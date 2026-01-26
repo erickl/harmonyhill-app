@@ -14,6 +14,7 @@ import Spinner from '../components/Spinner.js';
 
 export function MinibarTableModal({title, activity, headers, items, onSubmit, onHide}) {
     const itemCount = Object.values(items).length;
+    const subCategory = activity.subCategory;
 
     const initState = {
         activity     : null,
@@ -47,7 +48,8 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     useEffect(() => {
         const load = async () => {
             const newCount = Object.values(items).reduce((map, item) => {
-                map[item.name] = item.count;
+                // For checkout, force users to set count for all items, even if they're 0
+                map[item.name] = subCategory === "checkout" ? null : item.count;
                 return map;
             }, {});
 
@@ -62,7 +64,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             }
 
             // 'available' is a calculation of total stock, minus stock already provided in other villas
-            if(activity.subCategory !== "checkout") {
+            if(subCategory !== "checkout") {
                 headers.push("available");
             }
 
@@ -103,12 +105,6 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     useEffect(() => {
         const isEditable_ = state.activity && ActivityStatus.Started.equals(state.activity.status) && utils.isToday(state.activity.startingAt);
         setEditable(isEditable_);
-
-        // The minibar count always starts at 0. At checkout, possibly the guest took all items and the count
-        // should stay 0, meaning there'll be no change in count. Thus enable submit button from the start
-        if(isEditable_ && state.activity && state.activity.subCategory === "checkout") {
-            setEnableSubmit(true);
-        }
     }, [state.activity]);
 
     useEffect(() => {
@@ -126,9 +122,10 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             }
         }
 
-        //const allCountsValid = !countIsValid.includes(false);
-
-        setEnableSubmit(hasCountUpdate);
+        const allCountsValid = !Object.values(state.updatedCount).includes(null);
+        
+        // For checkout, it's fine if all new counts are zero
+        setEnableSubmit((hasCountUpdate || subCategory === "checkout") && allCountsValid);
     }, [countIsValid, state.updatedCount]);
 
     // todo: is there a need to get reserved stock, if we are counting the end stock, to calculate a sale?
@@ -233,7 +230,6 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         //If count input is null, count it as 0
         newCount = newCount === null ? 0 : newCount;
 
-        const subCategory = state.activity.subCategory;
         let errorMessage_ = "";
 
         // For start and refill count, the current count is about how much stock to ADD/REFILL.
@@ -338,9 +334,10 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             setCountIsValid(prev => prev.map((valid, i) => i === index ? thisCountIsValid : valid));
             setErrorMessages(prev => prev.map((msg, i) => i === index ? errorMessage_ : msg));
             
-            // Count can be negative, if taking items which were earlier provided
+            // Count can be negative, if taking items which were earlier provided. 
+            // ...except when counting at checkout!
             const provided = utils.exists(item, "provided") ? item.provided : 0;
-            if(provided + newCount >= 0) {
+            if((subCategory === "checkout" && newCount >= 0) || (subCategory !== "checkout" && provided + newCount >= 0)) {
                 const newState = utils.deepCopy(state);
                 newState.updatedCount[item.name] = newCount;
                 setState(newState); 
@@ -393,7 +390,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
 
     const getHeaderDisplayName = (header) => {
         let displayName = header;
-        if(header === "count" && activity && activity.subCategory === "housekeeping") {
+        if(header === "count" && activity && subCategory === "housekeeping") {
             displayName = "refill";
         }
 
