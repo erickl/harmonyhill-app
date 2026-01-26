@@ -254,7 +254,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 stockListItem.minimumStock[houseShortLowerCase] : 0;
             let data = { 
                 name     : stockListItem.name,
-                count    : 0,
+                count    : activity.subCategory === "checkout" ? null : 0,
                 reserved : 0,
                 total    : 0,
                 minStock : minStockLevel,

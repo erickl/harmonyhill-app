@@ -49,7 +49,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         const load = async () => {
             const newCount = Object.values(items).reduce((map, item) => {
                 // For checkout, force users to set count for all items, even if they're 0
-                map[item.name] = subCategory === "checkout" ? null : item.count;
+                map[item.name] = item.count;
                 return map;
             }, {});
 
