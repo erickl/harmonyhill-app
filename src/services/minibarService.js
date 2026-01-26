@@ -108,7 +108,7 @@ export async function calculateSale(endCount, booking, onError) {
         return onError(`No start count found for booking ${booking.id}`);
     }
 
-    const totalRefills = await getTotalRefills(booking, onError);
+    const totalRefills = await getTotalRefills(booking, null, onError);
     
     const totalProvided = Object.entries(startCount.items).reduce((map, [name, counts]) => {
         map[name] = counts.count;

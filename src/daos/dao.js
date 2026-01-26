@@ -272,19 +272,23 @@ export async function remove(path, id, onError = null, writes = []) {
 
 export async function getParent(child) {
     const childDocRef = child.ref;
-    const childCollectionRef = childDocRef.parent;
-    const parentDocRef = childCollectionRef.parent;
+    if(!childDocRef) return null;
 
-    if (parentDocRef) {
-        const parentSnap = await getDoc(parentDocRef);
-        if (parentSnap.exists()) {
-            let parentData = parentSnap.data();
-            parentData.id = parentSnap.id;
-            parentData.ref = parentSnap.ref;
-            utils.allToDateTime(parentData);
-            return parentData;
-        }
+    const childCollectionRef = childDocRef.parent;
+    if(!childCollectionRef) return null;
+
+    const parentDocRef = childCollectionRef.parent;
+    if(!parentDocRef) return null;
+
+    const parentSnap = await getDoc(parentDocRef);
+    if (parentSnap.exists()) {
+        let parentData = parentSnap.data();
+        parentData.id = parentSnap.id;
+        parentData.ref = parentSnap.ref;
+        utils.allToDateTime(parentData);
+        return parentData;
     }
+    
     return null;
 }
 
