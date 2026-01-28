@@ -75,6 +75,7 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
         }
         
         setActivitiesByDate(changedActivitiesByDate);
+        return true;
     };
 
     const today_ddMMM = utils.to_ddMMM(utils.today(0, false));

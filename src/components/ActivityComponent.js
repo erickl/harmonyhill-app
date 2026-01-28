@@ -202,8 +202,8 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     ...(activity || {}),
                     ...result
                 };
-                onActivityChange(updatedActivity);
-                onSuccess();
+                const updateActivityListResult = onActivityChange(updatedActivity);
+                if(updateActivityListResult !== false) onSuccess();
             }
         });
     }
@@ -216,7 +216,8 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 ...result
             };
             
-            onActivityChange(updatedActivity);
+            const updateActivityListResult = onActivityChange(updatedActivity);
+            if(updateActivityListResult !== false) onSuccess();
         }
     }
 
@@ -233,7 +234,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         const result = await minibarService.addOrEdit(activity, inventory, onError); 
         if(result !== false) {
-            if(result.minibarMeal) onActivityChange(result.minibarMeal);
+            if(result.minibarMeal) {
+                const updateActivityListResult = onActivityChange(result.minibarMeal);
+                if(updateActivityListResult === false) return false;
+            }
             setMinibarCount(inventory.items);
             onSuccess();
         }
