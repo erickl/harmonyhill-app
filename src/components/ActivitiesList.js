@@ -59,10 +59,16 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
         setExpandedDates(updatedExpandedList);
     };
 
-    // newActivity might an update to an existing activity or an entirely new activity (e.g minibar sale)
-    const onActivityChange = (newActivity, date, index) => {
+    // newActivity might be an update to an existing activity or an entirely new activity (e.g minibar sale)
+    const onActivityChange = (newActivity) => {
+        if(!newActivity) return onError(`Unexpected error: Cannot add new activity to current list`);
         const changedActivitiesByDate = utils.deepCopy(activitiesByDate);
-        if(index === null) {
+        
+        const date = newActivity.startingAt_ddMMM;
+        if(!date) return onError(`Unexpected error: New activity is missing DD MMM date`);
+
+        const index = changedActivitiesByDate[newActivity.startingAt_ddMMM].findIndex((activity) => activity.id === newActivity.id);
+        if(index === -1) {
             changedActivitiesByDate[date].push(newActivity);
         } else {
             changedActivitiesByDate[date][index] = newActivity;
@@ -169,9 +175,7 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
                                                 <ActivityComponent 
                                                     inputCustomer={customer}
                                                     activity={activity}
-                                                    onActivityChange={(newActivity, isUpdate = true) => {
-                                                        onActivityChange(newActivity, date, isUpdate ? index : null);
-                                                    }}
+                                                    onActivityChange={(newActivity) => onActivityChange(newActivity)}
                                                     onNavigate={onNavigate}
                                                     onClose={onClose}
                                                     handleDeleteActivity={() => handleDeleteActivity(activity)}

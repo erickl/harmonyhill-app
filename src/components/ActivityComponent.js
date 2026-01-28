@@ -233,7 +233,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         const result = await minibarService.addOrEdit(activity, inventory, onError); 
         if(result !== false) {
-            if(result.minibarMeal) onActivityChange(result.minibarMeal, false);
+            if(result.minibarMeal) onActivityChange(result.minibarMeal);
             setMinibarCount(inventory.items);
             onSuccess();
         }

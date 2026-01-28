@@ -143,12 +143,14 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
     const dishesData = Object.values(mealUpdateData.dishes);
     const updateDishesSuccess = await updateDishes(updateMealRecord, mealId, dishesData, onError, writes);
     if(updateDishesSuccess === false) return false;
+    updateMealRecord.dishes = updateDishesSuccess;
 
     if(commit) {
         return await commitTx(writes, onError);
     }
     
-    return updateMealRecord;
+    const enhancedMealRecord = await activityService.enhanceActivities(updateMealRecord);
+    return enhancedMealRecord;
 }
 
 async function updateDishes(updatedMeal, mealId, dishesUpdateData, onError, writes) {
