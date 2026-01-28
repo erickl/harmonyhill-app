@@ -300,11 +300,14 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             }else if(header === "count") {
                 value = state.updatedCount[item.name];
             } else if(header === "minimum stock") {
-                value = item["minStock"];
-            // Turn 'provided' into 'provided so far', including current count 
+                value = item["minStock"];    
             } else if(header === "provided") {
-                value = item.provided + state.updatedCount[item.name];
-            }else if(!utils.isEmpty(header)) {
+                value = item.provided;
+                // For refills, turn 'provided' into 'provided so far', including current count 
+                if(subCategory !== "checkout") {
+                    value += state.updatedCount[item.name];
+                }
+            } else if(!utils.isEmpty(header)) {
                 value = utils.exists(item, header) ? item[header] : "";
             }
             
