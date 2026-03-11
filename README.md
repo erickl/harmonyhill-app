@@ -64,6 +64,15 @@ Use this instead of "npx cap copy" when you changed anything related to Capacito
 - 2.2: PDF invoice generator
 - 3.0 Expense and Income menus, activity provider deadlines, side menu, export to G Sheets 
 
+# See that your java version is updated
+= brew update && brew upgrade --cask temurin (brew install --cask temurin if temurin isn’t installed)
+- Java -version to check if installation was successful
+
+# Login to Firebase
+If needed, if this is your first time developing with firebase on this computer
+- firebase login --reauth
+- firebase use --add harmonyhill-1
+
 # Test your firebase functions locally
 - firebase emulators:start --import=./emulator-data
     - starts all emulators configured in firebase.json, with the imported database
@@ -84,6 +93,9 @@ How to trigger scheduled functions
 - Note: launch the debugger for the seeder script, and the env vars in launch.json will be used
 - To seed the emulator database, select "Run Seeder Script" in the debug menu (see launch.json) and press Debug
 
+# Getting access to the shared repo
+- go to shared project, run ```npm link```
+- go to other project, run ```npm link @harmonyhill/shared```
 
 ### Code Splitting
 
