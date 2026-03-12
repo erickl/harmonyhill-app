@@ -3,10 +3,10 @@ import { isObject } from "framer-motion";
 import { DateTime } from 'luxon';
 
 export function toNumber(valueIn) {
-    if(isString(valueIn)) {
+    if (isString(valueIn)) {
         const value = valueIn.replace(/,/g, '');
         return Number(value);
-    } else if(isNumber(valueIn)) {
+    } else if (isNumber(valueIn)) {
         return valueIn;
     } else {
         throw new Error(`${valueIn} cannot be parsed to a number`);
@@ -14,11 +14,11 @@ export function toNumber(valueIn) {
 }
 
 export function exists(obj, fieldName) {
-    if(isEmpty(obj) || isEmpty(fieldName) || !isString(fieldName)) {
+    if (isEmpty(obj) || isEmpty(fieldName) || !isString(fieldName)) {
         return false;
-    } else if(Array.isArray(obj)) {
+    } else if (Array.isArray(obj)) {
         return obj.includes(fieldName);
-    } else if(isObject(obj)) {
+    } else if (isObject(obj)) {
         return Object.hasOwn(obj, fieldName) && obj[fieldName] !== undefined;
     } else {
         return false;
@@ -39,16 +39,16 @@ export function isNumber(value) {
 
 export function isEmpty(value) {
     value = isString(value) ? value.trim() : value;
-    if(value === "" || value === undefined || value === null) {
+    if (value === "" || value === undefined || value === null) {
         return true;
     }
 
-    if(Array.isArray(value)) {
+    if (Array.isArray(value)) {
         const valueStr = JSON.stringify(value);
         return valueStr === "[]";
     }
 
-    if(isJsonObject(value)) {
+    if (isJsonObject(value)) {
         const valueStr = JSON.stringify(value);
         return valueStr === "{}";
     }
@@ -68,12 +68,12 @@ export function getDatesBetween(start, end, occupied = {}) {
     const startDt = toDateTime(start);
     const endDt = toDateTime(end);
 
-    if(isEmpty(startDt) || isEmpty(endDt)) return occupied;
+    if (isEmpty(startDt) || isEmpty(endDt)) return occupied;
 
     let current = startDt.startOf('day');
-    while(current < endDt.startOf('day')) {
+    while (current < endDt.startOf('day')) {
         const month = `${current.month}`;
-        if(!exists(occupied, month)) {
+        if (!exists(occupied, month)) {
             occupied[month] = [];
         }
         occupied[month].push(current.day);
@@ -104,13 +104,13 @@ export function isDateTime(value) {
 }
 
 export function isDate(value) {
-    if(isEmpty(value)) {
+    if (isEmpty(value)) {
         return false;
-    } else if(value instanceof Date || value instanceof Timestamp || isDateTime(value)) {
+    } else if (value instanceof Date || value instanceof Timestamp || isDateTime(value)) {
         return true;
-    } else if(isString(value)) {
+    } else if (isString(value)) {
         const hasDateFormat = /^\d{4}-\d{2}-\d{2}/.test(value); // starts with YYYY-MM-dd
-        if(hasDateFormat) {
+        if (hasDateFormat) {
             const parsedDate = new Date(value);
             return !isNaN(parsedDate);
         }
@@ -126,7 +126,7 @@ export function to_yyMMddHHmmTz(date = null, separator = '') {
     try {
         const data = getData(date);
         return `${data.yy}${separator}${data.month}${separator}${data.day} ${data.hours}:${data.minutes} ${data.tz}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
@@ -136,7 +136,7 @@ export function to_yyMMddHHmm(date = null, separator = '') {
     try {
         const data = getData(date);
         return `${data.yy}${separator}${data.month}${separator}${data.day} ${data.hours}:${data.minutes}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
@@ -149,7 +149,7 @@ export function to_YYMMdd(date = null, separator = '') {
     try {
         const data = getData(date);
         return `${data.yy}${separator}${data.month}${separator}${data.day}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
@@ -159,7 +159,7 @@ export function to_ddMMYY(date = null, separator = '') {
     try {
         const data = getData(date);
         return `${data.day}${separator}${data.month}${separator}${data.yy}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
@@ -169,7 +169,7 @@ export function to_yyMMM(date = null, separator = '') {
     try {
         const data = getData(date);
         return `${data.yy}${separator}${data.monthName}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
@@ -180,7 +180,7 @@ export function to_ddMMM(date = null) {
     try {
         const data = getData(date);
         return `${data.day} ${data.monthName}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
@@ -190,7 +190,7 @@ export function to_www_ddMMM(date = null) {
     try {
         const data = getData(date);
         return `${data.weekday}, ${data.day} ${data.monthName}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
@@ -200,7 +200,7 @@ export function to_HHmm(date = null) {
     try {
         const data = getData(date);
         return `${data.hours}:${data.minutes}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
@@ -210,17 +210,17 @@ export function to_ddMMM_HHmm(date = null) {
     try {
         const data = getData(date);
         return `${data.day} ${data.monthName} ${data.hours}:${data.minutes}`;
-    } catch(e) {
+    } catch (e) {
         return "Invalid date";
     }
 }
 
 function getData(inputDate) {
-    if(isEmpty(inputDate)) {
+    if (isEmpty(inputDate)) {
         return {};
     }
-    
-    const luxonDateTime = toLuxonDateTime(inputDate); 
+
+    const luxonDateTime = toLuxonDateTime(inputDate);
     const month = luxonDateTime.month.toString().padStart(2, '0');
 
     const monthNames = [
@@ -234,15 +234,15 @@ function getData(inputDate) {
     const tz = `GMT${tzOffsetHr >= 0 ? "+" : ""}${tzOffsetHr}`;
 
     return {
-        yy        : luxonDateTime.year.toString().slice(-2),
-        ccyy      : luxonDateTime.year, // Full year
-        month     : month,
-        day       : luxonDateTime.day.toString().padStart(2, '0'), // Pad day with leading zero if needed
-        weekday   : luxonDateTime.weekdayShort,
-        hours     : luxonDateTime.hour.toString().padStart(2, '0'), // Pad hour with leading zero if needed
-        minutes   : luxonDateTime.minute.toString().padStart(2, '0'), // Pad minute with leading zero if needed
-        tz        : tz,
-        monthName : monthNames[luxonDateTime.month],
+        yy: luxonDateTime.year.toString().slice(-2),
+        ccyy: luxonDateTime.year, // Full year
+        month: month,
+        day: luxonDateTime.day.toString().padStart(2, '0'), // Pad day with leading zero if needed
+        weekday: luxonDateTime.weekdayShort,
+        hours: luxonDateTime.hour.toString().padStart(2, '0'), // Pad hour with leading zero if needed
+        minutes: luxonDateTime.minute.toString().padStart(2, '0'), // Pad minute with leading zero if needed
+        tz: tz,
+        monthName: monthNames[luxonDateTime.month],
     };
 }
 
@@ -256,14 +256,14 @@ function toLuxonDateTime(inputDate) {
         return DateTime.fromJSDate(inputDate, { zone: getHotelTimezone() });
     } else if (typeof inputDate === "string") {
         const formats = generateDateFormats();
-        for(const format of formats) {
+        for (const format of formats) {
             const luxonDateTime = DateTime.fromFormat(inputDate, format, { zone: getHotelTimezone() });
-            if(luxonDateTime.isValid) {
+            if (luxonDateTime.isValid) {
                 return luxonDateTime;
             }
         }
 
-        throw new Error(`Invalid date string format: ${inputDate}`);      
+        throw new Error(`Invalid date string format: ${inputDate}`);
     } else {
         throw new Error(`Invalid date type. Expected DateTime, Timestamp, Date, or string: ${inputDate}`);
     }
@@ -272,7 +272,7 @@ function toLuxonDateTime(inputDate) {
 function toJsDate(inputDate) {
     // Convert Luxon DateTime to JavaScript Date
     if (inputDate instanceof DateTime) {
-        return inputDate.toJSDate(); 
+        return inputDate.toJSDate();
     }
     // Convert Firestore Timestamp to JavaScript Date 
     else if (inputDate instanceof Timestamp) {
@@ -282,20 +282,20 @@ function toJsDate(inputDate) {
         return luxonDateTime.toJSDate();
     } else if (typeof inputDate === "string") {
         let parsedDate = null;
-        
+
         const formats = generateDateFormats();
-        for(const format of formats) {
+        for (const format of formats) {
             const luxonDateTime = DateTime.fromFormat(inputDate, format, { zone: getHotelTimezone() });
-            if(luxonDateTime.isValid) {
+            if (luxonDateTime.isValid) {
                 parsedDate = luxonDateTime.toJSDate();
                 break;
             }
         }
 
         if (!parsedDate) {
-            throw new Error(`Invalid date string format: ${inputDate}`); 
+            throw new Error(`Invalid date string format: ${inputDate}`);
         }
-        
+
         return parsedDate;
     } else {
         throw new Error(`Invalid date type. Expected DateTime, Timestamp, Date, or string: ${inputDate}`);
@@ -303,51 +303,39 @@ function toJsDate(inputDate) {
 }
 
 export function toFireStoreTime(inputDate) {
-    if(isEmpty(inputDate)) return null;
+    if (isEmpty(inputDate)) return null;
     const luxonDateTime = toLuxonDateTime(inputDate);
     const jsDate = toJsDate(luxonDateTime);
     return Timestamp.fromDate(jsDate);
 }
 
 export function toDateTime(inputDate) {
-    if(isEmpty(inputDate)) return null;
+    if (isEmpty(inputDate)) return null;
     return toLuxonDateTime(inputDate);
 }
 
 export function isToday(inputDate) {
-    if(!inputDate) return false;
-    const luxonDateTime = toLuxonDateTime(inputDate);
-    const todayDateTime = today(0, false);
-    return luxonDateTime.day === todayDateTime.day;
+    const inputDt = toLuxonDateTime(inputDate);
+    const todayDt = today(0, false);
+    return inputDt.startOf('day').equals(todayDt.startOf('day'));
 }
 
 export function isTomorrow(inputDate) {
-    if(!inputDate) return false;
-    const luxonDateTime = toLuxonDateTime(inputDate);
-    const tomorrow = today(0, false).plus({days: 1});
-    return luxonDateTime.day === tomorrow.day;
+    const inputDt = toLuxonDateTime(inputDate);
+    const tomorrowDt = today(0, false).plus({ days: 1 });
+    return inputDt.startOf('day').equals(tomorrowDt.startOf('day'));
 }
 
 export function isBeforeToday(inputDate) {
-    if(!inputDate) return false;
-    const luxonDateTime = toLuxonDateTime(inputDate);
-    const todayDateTime = today(0, false);
-    return luxonDateTime.day < todayDateTime.day;
+    const inputDt = toLuxonDateTime(inputDate);
+    const todayDt = today(0, false);
+    return inputDt.startOf('day') < todayDt.startOf('day');
 }
 
-export function isAfterToday(inputDate) {
-    if(!inputDate) return false;
-    const luxonDateTime = toLuxonDateTime(inputDate);
-    const todayDateTime = today(0, false);
-    return luxonDateTime.day > todayDateTime.day;
-}
-
-export function dateDiffNow(inputDate) {
-    if(!inputDate) return false;
-    const luxonDateTime = toLuxonDateTime(inputDate);
-    const nowTime = now(0, false);
-    const diff = luxonDateTime.toMillis() - nowTime.toMillis();
-    return diff;
+export function isPast(inputDate) {
+    const inputDt = toLuxonDateTime(inputDate);
+    const nowDt = now(0, false);
+    return inputDt.toMillis() < nowDt.toMillis();
 }
 
 export function isPast(inputDate) {
@@ -358,40 +346,40 @@ export function isPast(inputDate) {
 export function isFuture(inputDate) {
     const diff = dateDiffNow(inputDate);
     return diff > 0;
-}  
+}
 
 export function dateIsSame(oldDate, newDate, ignoreTimeOfDay = false) {
-    if(isEmpty(oldDate)) {
+    if (isEmpty(oldDate)) {
         return isEmpty(newDate);
     }
-    if(isEmpty(newDate)) {
+    if (isEmpty(newDate)) {
         return isEmpty(oldDate);
     }
 
     try {
         const oldDateTime = toDateTime(oldDate);
         const newDateTime = toDateTime(newDate);
-        if(ignoreTimeOfDay) {
+        if (ignoreTimeOfDay) {
             return oldDateTime.startOf('day').equals(newDateTime.startOf('day'));
         } else {
             return oldDateTime.equals(newDateTime);
         }
-    } catch(e) {
+    } catch (e) {
         return false;
     }
 }
 
 export function allToTimestamp(data, level = 0) {
-    for(const [key, value] of Object.entries(data)) {
-        if(isDate(value)) {
+    for (const [key, value] of Object.entries(data)) {
+        if (isDate(value)) {
             data[key] = toFireStoreTime(value);
         } //else if(isJsonObject(value)) {}
     }
 }
 
 export function allToDateTime(data, level = 0) {
-    for(const [key, value] of Object.entries(data)) {
-        if(isDate(value)) {
+    for (const [key, value] of Object.entries(data)) {
+        if (isDate(value)) {
             data[key] = toDateTime(value);
         } //else if(isJsonObject(value)) {}
     }
@@ -402,7 +390,7 @@ export function allToDateTime(data, level = 0) {
  */
 export function monthStart(date = null, addDays = 0) {
     date = date ? toDateTime(date) : now();
-    date = date.startOf('month').plus({days: addDays});
+    date = date.startOf('month').plus({ days: addDays });
     return date
 }
 
@@ -411,7 +399,7 @@ export function monthStart(date = null, addDays = 0) {
  */
 export function monthEnd(date = null, addDays = 0) {
     date = date ? toDateTime(date) : now();
-    return date.endOf('month').plus({days: addDays});
+    return date.endOf('month').plus({ days: addDays });
 }
 
 /**
@@ -420,21 +408,21 @@ export function monthEnd(date = null, addDays = 0) {
  */
 export function monthRange(monthInt = 0) {
     let selectedMonthDate = now();
-    if(monthInt !== 0) {
-        selectedMonthDate = selectedMonthDate.set({month : monthInt});
+    if (monthInt !== 0) {
+        selectedMonthDate = selectedMonthDate.set({ month: monthInt });
     }
     return {
-        after  : monthStart(selectedMonthDate),
-        before : monthEnd(selectedMonthDate),
+        after: monthStart(selectedMonthDate),
+        before: monthEnd(selectedMonthDate),
     };
 }
 
 export function beginning() {
-    return DateTime.now().set({year : 2000});
+    return DateTime.now().set({ year: 2000 });
 }
 
 export function end() {
-    return DateTime.now().set({year : 2100});
+    return DateTime.now().set({ year: 2100 });
 }
 
 /**
@@ -450,11 +438,11 @@ export function today(addDays = 0, keepLocalTime = false) {
 export function now(addDays = 0, keepLocalTime = false) {
     const now = DateTime.now();
     const nowHotelTz = setZone(now, keepLocalTime);
-    return nowHotelTz.plus({days: addDays});
+    return nowHotelTz.plus({ days: addDays });
 }
 
 export function setZone(date, keepLocalTime = false) {
-    if(!date) return null;
+    if (!date) return null;
     date = toDateTime(date);
     date = date.setZone(getHotelTimezone(), { keepLocalTime: keepLocalTime });
     return date;
@@ -465,17 +453,17 @@ export function getHotelTimezone() {
 }
 
 export function isLink(value) {
-    if(!isString(value)) return false;
-    if(value.includes("https://")) {
+    if (!isString(value)) return false;
+    if (value.includes("https://")) {
         return true;
-    } else if(value.includes("http://")) {
+    } else if (value.includes("http://")) {
         return true;
     }
     return false;
 }
 
 export function getHouseColor(house) {
-    house  = house ? house.toLowerCase() : "";
+    house = house ? house.toLowerCase() : "";
     switch (house) {
         case 'the jungle nook':
             return 'bg-jn'; // Tailwind CSS class for light blue
@@ -505,12 +493,12 @@ export function formatDisplayPrice(price, useCurrencyPrefix = false) {
 
 function generateDateFormats() {
     let formats = [];
-    for(const d of ["d", "dd"]) {
-        for(const M of ["M", "MM"]) {
-            for(const y of ["yy", "yyyy"]) {
-                for(const sep of ["-", "/"]) {
+    for (const d of ["d", "dd"]) {
+        for (const M of ["M", "MM"]) {
+            for (const y of ["yy", "yyyy"]) {
+                for (const sep of ["-", "/"]) {
                     formats.push(`${d}${sep}${M}${sep}${y}`);
-                } 
+                }
             }
         }
     }
@@ -522,7 +510,7 @@ function generateDateFormats() {
 export function groupBy(elements, createKey) {
     return Object.values(elements).reduce((map, element) => {
         const group = createKey(element);
-        if(!map[group]) map[group] = [];
+        if (!map[group]) map[group] = [];
         map[group].push(element);
         return map;
     }, {});
@@ -530,18 +518,18 @@ export function groupBy(elements, createKey) {
 
 export function deepCopy(obj) {
     if (isEmpty(obj)) return obj;
-    if(!isJsonObject(obj)) return obj;
-        
+    if (!isJsonObject(obj)) return obj;
+
     if (obj.constructor.name === 'Timestamp' && typeof obj.toDate === 'function') {
         return obj;
     }
 
-    if(obj instanceof DateTime) {
+    if (obj instanceof DateTime) {
         return obj;
     }
 
     // Firestore DocumentReference, a hugely complex object, which should not be deep copied
-    if(obj instanceof DocumentReference) {
+    if (obj instanceof DocumentReference) {
         return obj;
     }
 
@@ -549,7 +537,7 @@ export function deepCopy(obj) {
     if (obj instanceof Date) {
         return new Date(obj.getTime());
     }
-    
+
     if (Array.isArray(obj)) {
         const copy = [];
         for (const item of obj) {

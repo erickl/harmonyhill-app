@@ -4,7 +4,7 @@ import { XIcon } from 'lucide-react';
 import { RefreshCw, Camera, FolderOpen} from 'lucide-react';
 import Spinner from './Spinner.js';
 
-export default function CapturePhotoScreen({ onCaptureSuccess, onConfirmPhoto, useCamera, useAlbum, onClose }) {
+export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onConfirmPhoto, useCamera, useAlbum, onClose }) {
     const [previewImage, setPreviewImage] = useState(null);
     const [previewImageFullScreen, setPreviewImageFullScreen] = useState(false);
     const [videoStream, setVideoStream] = useState(null);
@@ -139,9 +139,15 @@ export default function CapturePhotoScreen({ onCaptureSuccess, onConfirmPhoto, u
                 </>)}
             </div>
 
+            {instructions && (
+                <div style={{ marginTop: '0.5rem' }}>
+                    <span>{instructions}</span>
+                </div>
+            )}
+
             {/* Preview and Upload Captured Photo */}
             {previewImage && !videoStream && (
-                <div style={{ marginTop: '2rem' }}>
+                <div style={{ marginTop: '0.5rem' }}>
                     <img 
                         src={previewImage} 
                         alt="Preview" 

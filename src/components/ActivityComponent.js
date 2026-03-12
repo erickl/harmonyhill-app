@@ -6,7 +6,7 @@ import * as minibarService from "../services/minibarService.js";
 import * as inventoryService from "../services/inventoryService.js";
 import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
-import {getParent} from "../daos/dao.js";
+import { getParent } from "../daos/dao.js";
 import * as userService from "../services/userService.js";
 import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy, Camera, Image } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
@@ -26,45 +26,45 @@ import { motion } from "framer-motion";
 const assigneeStyles = [
     { backgroundColor: "#E12C2C", color: "white" },
     { backgroundColor: "#FFA500", color: "black" },
-    { backgroundColor: "green",     color: "white" }
-];  
+    { backgroundColor: "green", color: "white" }
+];
 
 export default function ActivityComponent({ inputCustomer, activity, onActivityChange, onNavigate, onClose, handleDeleteActivity, users, user }) {
     const useActivityStartedStatus = true;
-    
+
     const assignedUser = users && activity ? users.find(user => user.name === activity.assignedTo) : null;
     const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
     const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
-    
-    const [customer,                setCustomer               ] = useState(null );
-    const [showCustomerInfo,        setShowCustomerInfo       ] = useState(false);
-    const [activityInfo,            setActivityInfo           ] = useState(null );
-    const [isManagerOrAdmin,        setIsManagerOrAdmin       ] = useState(false);
-    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
-    const [expanded,                setExpanded               ] = useState(false);
-    const [dishes,                  setDishes                 ] = useState([]   );
-    const [dishesPrice,             setDishesPrice            ] = useState(null );
-    const [status,                  setStatus                 ] = useState(null );
-    const [alert,                   setAlert                  ] = useState(null );
-    const [assigneeStyleIndex,      setAssigneeStyleIndex     ] = useState(0    );
-    const [minuteTicker,            setMinuteTicker           ] = useState(0    );
-    const [photos,                  setPhotos                 ] = useState([]   );   
-    const [photoUploading,          setPhotoUploading         ] = useState(false);  
-    const [requiredPhotosUploaded,  setRequiredPhotosUploaded ] = useState(false);
-    const [minibarCount,            setMinibarCount           ] = useState(null );
 
-    const { onError               } = useNotification();
-    const { onSuccess             } = useSuccessNotification();
-    const { onConfirm             } = useConfirmationModal();
-    const { onOpenCamera          } = useCameraModal();
-    const { onDisplayImages       } = useImageCarousel();
+    const [customer, setCustomer] = useState(null);
+    const [showCustomerInfo, setShowCustomerInfo] = useState(false);
+    const [activityInfo, setActivityInfo] = useState(null);
+    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
+    const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const [dishes, setDishes] = useState([]);
+    const [dishesPrice, setDishesPrice] = useState(null);
+    const [status, setStatus] = useState(null);
+    const [alert, setAlert] = useState(null);
+    const [assigneeStyleIndex, setAssigneeStyleIndex] = useState(0);
+    const [minuteTicker, setMinuteTicker] = useState(0);
+    const [photos, setPhotos] = useState([]);
+    const [photoUploading, setPhotoUploading] = useState(false);
+    const [requiredPhotosUploaded, setRequiredPhotosUploaded] = useState(false);
+    const [minibarCount, setMinibarCount] = useState(null);
+
+    const { onError } = useNotification();
+    const { onSuccess } = useSuccessNotification();
+    const { onConfirm } = useConfirmationModal();
+    const { onOpenCamera } = useCameraModal();
+    const { onDisplayImages } = useImageCarousel();
     const { onDisplayMinibarTable } = useMinibarTableModal();
 
     const getAssigneeStyleIndex = () => {
         let newAssigneeStyleIndex = 0;
-        if(assignedUserShortName !== "?") {
+        if (assignedUserShortName !== "?") {
             newAssigneeStyleIndex = 1;
-            if(activity.assigneeAccept === true) {
+            if (activity.assigneeAccept === true) {
                 newAssigneeStyleIndex = 2;
             }
         }
@@ -74,13 +74,13 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     const countMinibarNow = minibarCount === null && activity && ActivityStatus.Started.equals(activity.status) && utils.isToday(activity.startingAt);
     const minibarCountAnimation = countMinibarNow ? { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] } : {};
-    const minibarCountTransition = countMinibarNow ? { duration: 1.5, ease: "easeInOut", repeat: Infinity } : {};                      
+    const minibarCountTransition = countMinibarNow ? { duration: 1.5, ease: "easeInOut", repeat: Infinity } : {};
 
-    const getAndSetActivityInfo = async() => {
-        if(!activity) return null;
+    const getAndSetActivityInfo = async () => {
+        if (!activity) return null;
 
         let thisActivityInfo = activityInfo;
-        if(!thisActivityInfo) {
+        if (!thisActivityInfo) {
             thisActivityInfo = await activityService.getActivityType(activity.category, activity.subCategory, activity.house);
             setActivityInfo(thisActivityInfo);
         }
@@ -91,7 +91,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const onConfirmPhoto = async (photo) => {
         setPhotoUploading(true);
         const photoRecord = await activityService.uploadPhoto(activity, photo, onError);
-        if(photoRecord !== false) {
+        if (photoRecord !== false) {
             let newPhotos = [...photos, photoRecord];
             setPhotos(newPhotos);
             onSuccess();
@@ -100,47 +100,47 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     }
 
     const canStartActivity = () => {
-        if(!useActivityStartedStatus) return false;
+        if (!useActivityStartedStatus) return false;
 
         const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
-        if(!isGoodToGo) {
+        if (!isGoodToGo) {
             return false;
         }
-       
+
         return utils.isToday(activity.startingAt);
     }
 
     const requiresMinibarCount = () => {
-        if(minibarCount !== null) return false;
-        if(activity.subCategory === "checkin-prep") return true;
-        if(activity.subCategory === "housekeeping") return true;
-        if(activity.subCategory === "checkout") return true;
+        if (minibarCount !== null) return false;
+        if (activity.subCategory === "checkin-prep") return true;
+        if (activity.subCategory === "housekeeping") return true;
+        if (activity.subCategory === "checkout") return true;
         return false;
     }
 
     const canAddPhotos = () => {
         const isCompleted = ActivityStatus.Completed.equals(status);
-        if(isCompleted) return false;
+        if (isCompleted) return false;
 
         const isStarted = ActivityStatus.Started.equals(status);
-        if(isStarted) return true;
+        if (isStarted) return true;
 
         const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
-        if(!isGoodToGo) return false;
-        
+        if (!isGoodToGo) return false;
+
         // If it's already past the 'Started' stage, we can go from 'Good To Go' to 'Completed', if required photos has been uploaded
         const now = utils.now();
         const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
         const tooLateToStart = minutesLeft < -60;
-        
+
         return tooLateToStart && isGoodToGo;
     }
 
     const canCompleteActivity = () => {
-        if(!useActivityStartedStatus) return false;
+        if (!useActivityStartedStatus) return false;
 
         const activityRequiresMinibarCount = requiresMinibarCount();
-        if(activityRequiresMinibarCount) {
+        if (activityRequiresMinibarCount) {
             return false;
         }
 
@@ -151,28 +151,28 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         // Cannot Complete 15 minutes before the activity is scheduled to start
         const now = utils.now();
         const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
-        if(minutesLeft > 15) {
+        if (minutesLeft > 15) {
             return false;
         }
 
         // If photos are required, see that they've been uploaded
-        if(isStarted && requiredPhotosUploaded) {
+        if (isStarted && requiredPhotosUploaded) {
             return true;
-        } else if(!isStarted && canStillStart) {
+        } else if (!isStarted && canStillStart) {
             return false;
-        } else if(isGoodToGo && requiredPhotosUploaded) {
+        } else if (isGoodToGo && requiredPhotosUploaded) {
             return true;
         }
 
         return false;
     }
 
-    const calculateActivityStatus = async(newStatus = null) => {
-        if(!activity) return;
+    const calculateActivityStatus = async (newStatus = null) => {
+        if (!activity) return;
 
         let thisActivityInfo = await getAndSetActivityInfo();
 
-        if(!newStatus) {
+        if (!newStatus) {
             newStatus = await activityService.getStatus(activity, thisActivityInfo, onError);
         }
         setStatus(newStatus);
@@ -180,63 +180,63 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         const currentAlert = await activityService.getAlert(activity, newStatus, thisActivityInfo, onError);
         setAlert(currentAlert);
 
-        return {activityInfo: thisActivityInfo, status: newStatus, alert: currentAlert};
+        return { activityInfo: thisActivityInfo, status: newStatus, alert: currentAlert };
     }
 
     const handleSetActivityStatusManually = async (newStatus) => {
-        if(newStatus == null) return;
+        if (newStatus == null) return;
 
         let confirmationText = `Set activity status to ${newStatus.name}?`;
         const minutesLeft = activity.startingAt.diff(utils.now(), 'minutes').minutes;
 
-        if(ActivityStatus.Started.equals(newStatus)) {
-            if(minutesLeft > 30) {
+        if (ActivityStatus.Started.equals(newStatus)) {
+            if (minutesLeft > 30) {
                 confirmationText = `Are you sure you want set activity status to ${newStatus.name}? It's still a bit early?`;
             }
         }
 
         onConfirm(confirmationText, async () => {
             const result = await activityService.setActivityStatus(activity, newStatus.name, onError);
-            if(result !== false) {
+            if (result !== false) {
                 const updatedActivity = {
                     ...(activity || {}),
                     ...result
                 };
                 const updateActivityListResult = onActivityChange(updatedActivity);
-                if(updateActivityListResult !== false) onSuccess();
+                if (updateActivityListResult !== false) onSuccess();
             }
         });
     }
 
     const handleAssigneeStatusChange = async (accept) => {
         const result = await activityService.changeAssigneeStatus(accept, activity.bookingId, activity.id, onError);
-        if(result !== false) {
-            const updatedActivity = { 
+        if (result !== false) {
+            const updatedActivity = {
                 ...(activity || {}),
                 ...result
             };
-            
+
             const updateActivityListResult = onActivityChange(updatedActivity);
-            if(updateActivityListResult !== false) onSuccess();
+            if (updateActivityListResult !== false) onSuccess();
         }
     }
 
     const onSubmitStockCount = async (stockCountList) => {
-        const inventory = { 
-            items : stockCountList,
-            activityId : activity.id,
-            bookingId : customer.id,
+        const inventory = {
+            items: stockCountList,
+            activityId: activity.id,
+            bookingId: customer.id,
         };
 
-        if(activity.subCategory === "checkin-prep") inventory.type = "start";
-        if(activity.subCategory === "housekeeping") inventory.type = "refill";
-        if(activity.subCategory === "checkout") inventory.type = "end"; 
+        if (activity.subCategory === "checkin-prep") inventory.type = "start";
+        if (activity.subCategory === "housekeeping") inventory.type = "refill";
+        if (activity.subCategory === "checkout") inventory.type = "end";
 
-        const result = await minibarService.addOrEdit(activity, inventory, onError); 
-        if(result !== false) {
-            if(result.minibarMeal) {
+        const result = await minibarService.addOrEdit(activity, inventory, onError);
+        if (result !== false) {
+            if (result.minibarMeal) {
                 const updateActivityListResult = onActivityChange(result.minibarMeal);
-                if(updateActivityListResult === false) return false;
+                if (updateActivityListResult === false) return false;
             }
             setMinibarCount(inventory.items);
             onSuccess();
@@ -247,26 +247,26 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     const onDisplayMinibarCount = async () => {
         //const stockList = await minibarService.getSelection(onError);
-        const stockList = await inventoryService.get({type: "minibar"});
-        
-        if(stockList === false) return false;
+        const stockList = await inventoryService.get({ type: "minibar" });
+
+        if (stockList === false) return false;
         const houseShortLowerCase = houseShortName.toLowerCase();
 
         const stockListItems = stockList.reduce((map, stockListItem) => {
-            const minStockLevel = utils.exists(stockListItem, "minimumStock") && 
-                utils.exists(stockListItem.minimumStock, houseShortLowerCase) ? 
+            const minStockLevel = utils.exists(stockListItem, "minimumStock") &&
+                utils.exists(stockListItem.minimumStock, houseShortLowerCase) ?
                 stockListItem.minimumStock[houseShortLowerCase] : 0;
-            let data = { 
-                name     : stockListItem.name,
-                count    : activity.subCategory === "checkout" ? null : 0,
-                reserved : 0,
-                total    : 0,
-                minStock : minStockLevel,
+            let data = {
+                name: stockListItem.name,
+                count: activity.subCategory === "checkout" ? null : 0,
+                reserved: 0,
+                total: 0,
+                minStock: minStockLevel,
             };
 
-            if(minibarCount && utils.exists(minibarCount, stockListItem.name)) {
+            if (minibarCount && utils.exists(minibarCount, stockListItem.name)) {
                 const counts = minibarCount[stockListItem.name];
-                data = { ...data, ...counts}
+                data = { ...data, ...counts }
             }
 
             map[stockListItem.name] = data;
@@ -276,29 +276,29 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         const headers = ["name", "count", "reserved"];
         const values = Object.values(stockListItems);
 
-        if(activity.subCategory !== "checkout") {
+        if (activity.subCategory !== "checkout") {
             headers.push("minimum stock", "total");
         }
 
-        if(activity.subCategory !== "checkin-prep") {
+        if (activity.subCategory !== "checkin-prep") {
             // Get total provided items up until this current activity
             const totalProvided = await minibarService.getTotalProvided(customer, activity.startingAt, onError);
             headers.push("provided");
-            for(let i = 0; i < values.length; i++) {
+            for (let i = 0; i < values.length; i++) {
                 const row = values[i];
                 values[i].provided = utils.exists(totalProvided, row.name) ? totalProvided[row.name] : 0;
             }
         }
 
         // If this is a checkout activity, and there's an existing minibar count, we can calculate the minibar sale
-        if(activity.subCategory === "checkout" && minibarCount !== null) {
+        if (activity.subCategory === "checkout" && minibarCount !== null) {
             headers.push("sold");
-            for(let i = 0; i < values.length; i++) {
+            for (let i = 0; i < values.length; i++) {
                 const row = values[i];
                 values[i].sold = row.provided - row.count;
             }
         }
-        
+
         onDisplayMinibarTable("Minibar Count", activity, headers, stockListItems, onSubmitStockCount);
     }
 
@@ -309,12 +309,12 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     }
 
     const loadExpandedActivityInfo = async () => {
-        if(!activity) return;
+        if (!activity) return;
 
         const expand = !expanded;
 
-        if(expand) {
-            if(activity.category === "meal") {
+        if (expand) {
+            if (activity.category === "meal") {
                 // If this list is displayed for all customers, get the customer for each activity 
                 const mealCustomer = customer ? customer : await getParent(activity);
                 const dishes = await mealService.getMealDishes(mealCustomer.id, activity.id, {}, onError);
@@ -333,7 +333,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     useEffect(() => {
         calculateActivityStatus();
 
-        if(activityInfo && photos)  {
+        if (activityInfo && photos) {
             const photosDone = !activityInfo.photosRequired || photos.length > 0;
             setRequiredPhotosUploaded(photosDone);
         }
@@ -342,11 +342,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         setAssigneeStyleIndex(newAssigneeStyleIndex);
     }, [activity, activityInfo, photos, minuteTicker]);
 
-    useEffect(() => { 
+    useEffect(() => {
         // Blinking effect on staff assign component, for when their attention is needed, as they need to re-confirm
         let timerId = null;
-        if(!utils.isEmpty(activity.changeDescription)) {
-            const toggleColor = () => {    
+        if (!utils.isEmpty(activity.changeDescription)) {
+            const toggleColor = () => {
                 setAssigneeStyleIndex(prevIndex => prevIndex === 1 ? 2 : 1);
             };
 
@@ -357,14 +357,14 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         // E.g. only possible to complete activity when it's past its deadline, counted in minutes
         const tick = () => {
             // Incrementing the ticker forces the component (and the other useEffect) to rerun
-            setMinuteTicker(prev => prev + 1); 
+            setMinuteTicker(prev => prev + 1);
         };
 
         const intervalId = setInterval(tick, 60000); //60k ms = 1min
 
-        const setInitialData = async() => {
+        const setInitialData = async () => {
             let activityCustomer = inputCustomer;
-            if(!activityCustomer) {
+            if (!activityCustomer) {
                 // This means, this component is used in the activity list for all customers. Thus each activity needs to display customer name
                 setShowCustomerInfo(true);
                 activityCustomer = await getParent(activity);
@@ -372,11 +372,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
             setCustomer(activityCustomer);
 
-            const existingMinibarCount = await minibarService.get(activityCustomer, {"activityId": activity.id}, onError);
+            const existingMinibarCount = await minibarService.get(activityCustomer, { "activityId": activity.id }, onError);
             setMinibarCount(existingMinibarCount && existingMinibarCount.length > 0 ? existingMinibarCount[0].items : null);
         }
-        
-        const setUserRole = async() => {
+
+        const setUserRole = async () => {
             const userRole = await userService.isManagerOrAdmin();
             setIsManagerOrAdmin(userRole);
         }
@@ -386,7 +386,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         getAndSetActivityInfo();
 
         return () => {
-            if(timerId) clearInterval(timerId);
+            if (timerId) clearInterval(timerId);
             clearInterval(intervalId);
         }
     }, []);
@@ -394,7 +394,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const showProvider = activity && activity.category !== "meal" && activity.internal !== true && !utils.isEmpty(activity.provider);
     const houseColor = houseShortName === "HH" ? "darkcyan" : "rgb(2, 65, 116)";
 
-    if(!activity) {
+    if (!activity) {
         return <p>Loading...</p>;
     }
 
@@ -403,9 +403,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     return (
         <div>
             <div className="activity-header" onClick={(e) => {
-                    e.stopPropagation();
-                    handleActivityClick(activity);
-                }}>
+                e.stopPropagation();
+                handleActivityClick(activity);
+            }}>
                 <div className="activity-header-left">
                     <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
                         {houseShortName}
@@ -422,26 +422,26 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 <div className="activity-header-right">
                     <div className="activity-header-name">
                         {activity.displayName}
-                    </div>  
+                    </div>
                     <div className="activity-header-provider">
                         {activity.provider}
-                    </div>  
+                    </div>
                     <div className="activity-header-guest">
                         {showCustomerInfo === true ? activity.name : ""}
-                    </div>  
+                    </div>
                 </div>
 
                 {/* Display ongoing status of the activity */}
                 {status && (<div className="activity-header-status">
-                    <StatusCircle 
-                        status={status.name} 
+                    <StatusCircle
+                        status={status.name}
                     />
                 </div>)}
-                
+
                 {/* Display alert when something needs to be fixed urgently  */}
                 {alert && (<div className="activity-header-status">
-                    <AlertCircle 
-                        status={alert.category} 
+                    <AlertCircle
+                        status={alert.category}
                     />
                 </div>)}
 
@@ -453,7 +453,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 {/* Red out the activity header to show it's OVERDUE to be started/completed */}
                 {alert && alert.category === activityService.Alert.OVERDUE && (
                     <motion.div
-                    className="activity-delayed-overlay"
+                        className="activity-delayed-overlay"
                         animate={{ scale: [1, 1, 1], opacity: [0.5, 0.1, 0.5] }}
                         transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
                     />
@@ -463,12 +463,12 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
             {loadingExpandedActivity ? (
                 <Spinner />
-            ) : expanded ? ( 
+            ) : expanded ? (
                 <div className="activity-details">
                     {alert && !utils.isEmpty(alert.message) && (
                         <p>
                             <span className="detail-label">Alert: </span>
-                            <span className="important-badge">{alert.message}</span> 
+                            <span className="important-badge">{alert.message}</span>
                         </p>
                     )}
                     {activity.category === "meal" && customer && !utils.isEmpty(customer.dietaryRestrictions) && (
@@ -480,15 +480,15 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
                     {activity.comments && (
                         <p className="preserve-whitespaces">
-                            <span className="detail-label">Comments: </span> 
-                                {activity.comments}
+                            <span className="detail-label">Comments: </span>
+                            {activity.comments}
                         </p>
                     )}
 
                     {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
                     {activity.specialRequests && (
                         <p className="preserve-whitespaces">
-                            <span className="detail-label">Special Requests: </span> 
+                            <span className="detail-label">Special Requests: </span>
                             <span className="important-badge">{activity.specialRequests}</span>
                         </p>
                     )}
@@ -496,7 +496,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
                     {activity.promotions && (
                         <p className="preserve-whitespaces">
-                            <span className="detail-label">Promotions: </span> 
+                            <span className="detail-label">Promotions: </span>
                             <span className="important-badge">{activity.promotions}</span>
                         </p>
                     )}
@@ -504,37 +504,37 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
                     {activity.customerInfo && (
                         <p className="preserve-whitespaces">
-                            <span className="detail-label">Customer Info: </span> 
-                                {activity.customerInfo}
+                            <span className="detail-label">Customer Info: </span>
+                            {activity.customerInfo}
                         </p>
                     )}
 
                     {/* Check In activities might have special requests, customer info and promos copied from the booking object */}
                     {activity.arrivalInfo && (
                         <p className="preserve-whitespaces">
-                            <span className="detail-label">Arrival Info: </span> 
-                                {activity.arrivalInfo}
+                            <span className="detail-label">Arrival Info: </span>
+                            {activity.arrivalInfo}
                         </p>
                     )}
-                    
+
                     <p><span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}</p>
-                    
-                    { showProvider && (<>
+
+                    {showProvider && (<>
                         <p><span className="detail-label">Provider: </span> {activity.provider}</p>
-                        { isManagerOrAdmin && ( <p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p> )}
+                        {isManagerOrAdmin && (<p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p>)}
                     </>)}
 
-                    { activity.isFree !== true && (<>
+                    {activity.isFree !== true && (<>
                         {activity.customerPrice !== 0 && (<p>
-                                <span className="detail-label">Customer Price: </span> 
-                                {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0 }
-                            </p>
+                            <span className="detail-label">Customer Price: </span>
+                            {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0}
+                        </p>
                         )}
 
                         {dishesPrice && dishesPrice > 0 && (
                             <p>
-                                <span className="detail-label">Dishes Total: </span> 
-                                {utils.formatDisplayPrice(dishesPrice, true) ?? 0 }
+                                <span className="detail-label">Dishes Total: </span>
+                                {utils.formatDisplayPrice(dishesPrice, true) ?? 0}
                             </p>
                         )}
                     </>)}
@@ -544,10 +544,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         <DishesSummaryComponent dishes={dishes} />
                     )}
 
-                    { !utils.isEmpty(activity.changeDescription) && (
-                        <div style={{color:"red"}}>
+                    {!utils.isEmpty(activity.changeDescription) && (
+                        <div style={{ color: "red" }}>
                             <p className="preserve-whitespaces">
-                                <span className="detail-label">Change:</span> 
+                                <span className="detail-label">Change:</span>
                                 {activity.changeDescription.map((change) => {
                                     return (<p>• {change}</p>)
                                 })}
@@ -557,14 +557,14 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
                     <div className="activity-component-footer">
                         <div className="activity-component-footer-icon">
-                            <Pencil   
+                            <Pencil
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    if(!utils.isEmpty(dishes)) {
+                                    if (!utils.isEmpty(dishes)) {
                                         activity.dishes = dishes;
                                     }
                                     onNavigate("edit-customer-purchase", {
-                                        customer : customer,
+                                        customer: customer,
                                         activityToEdit: activity,
                                     });
                                 }}
@@ -573,7 +573,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         </div>
                         {isManagerOrAdmin && (
                             <div className="activity-component-footer-icon">
-                                <Trash2  
+                                <Trash2
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleDeleteActivity();
@@ -583,15 +583,15 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        { user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (<>
-                            { (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
+                        {user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (<>
+                            {(utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
 
                                 <div className="activity-component-footer-icon">
                                     <motion.div
                                         animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
                                         transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
                                     >
-                                        <ThumbsUp  
+                                        <ThumbsUp
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleAssigneeStatusChange(true);
@@ -602,7 +602,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                 </div>
                             ) : (
                                 <div className="activity-component-footer-icon">
-                                    <ThumbsUp  
+                                    <ThumbsUp
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onError("Only available from 1 day before, and if all activity info is provided");
@@ -613,28 +613,28 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             )}
                         </>)}
 
-                        { user && user.shortName === assignedUserShortName && 
-                            activity.assigneeAccept && 
+                        {user && user.shortName === assignedUserShortName &&
+                            activity.assigneeAccept &&
                             ActivityStatus.Started.equals(activity.status) === false &&
                             (!utils.isPast(activity.startingAt)) && (
 
-                            <div className="activity-component-footer-icon">
-                                <ThumbsDown  
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAssigneeStatusChange(false);
-                                    }}
-                                />
-                                <p>Decline task?</p>
-                            </div>
-                        )}
+                                <div className="activity-component-footer-icon">
+                                    <ThumbsDown
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAssigneeStatusChange(false);
+                                        }}
+                                    />
+                                    <p>Decline task?</p>
+                                </div>
+                            )}
 
                         {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                         {/* Mark activity started */}
-                        { canStartActivity() && (
+                        {canStartActivity() && (
                             <div className="activity-component-footer-icon">
-                                <StatusCircle 
-                                    status={ActivityStatus.Started.name} 
+                                <StatusCircle
+                                    status={ActivityStatus.Started.name}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleSetActivityStatusManually(ActivityStatus.Started);
@@ -646,10 +646,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
                         {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                         {/* Mark activity started */}
-                        { canCompleteActivity() && (
+                        {canCompleteActivity() && (
                             <div className="activity-component-footer-icon">
-                                <StatusCircle 
-                                    status={ActivityStatus.Completed.name} 
+                                <StatusCircle
+                                    status={ActivityStatus.Completed.name}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleSetActivityStatusManually(ActivityStatus.Completed);
@@ -659,13 +659,13 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        { canAddPhotos() && (
-                            <div className="activity-component-footer-icon">   
+                        {canAddPhotos() && (
+                            <div className="activity-component-footer-icon">
                                 <motion.div
                                     animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
                                     transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
                                 >
-                                    <Camera 
+                                    <Camera
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onOpenCamera(true, false, () => onConfirmPhoto);
@@ -676,9 +676,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        { !photoUploading && photos.length > 0 && (
+                        {!photoUploading && photos.length > 0 && (
                             <div className="activity-component-footer-icon">
-                                <Image 
+                                <Image
                                     onClick={async (e) => {
                                         e.stopPropagation();
                                         onDisplayImages(photos);
@@ -688,21 +688,21 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        { photoUploading && (
+                        {photoUploading && (
                             <div className="activity-component-footer-icon">
-                                <Spinner size={15}/>
+                                <Spinner size={15} />
                                 <p>Uploading...</p>
                             </div>
                         )}
 
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
-                        { activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "checkin-prep" && (
+                        {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "checkin-prep" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
                                     animate={minibarCountAnimation}
                                     transition={minibarCountTransition}
                                 >
-                                    <Candy  
+                                    <Candy
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDisplayMinibarCount();
@@ -714,13 +714,13 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
-                        { activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "checkout" && (
+                        {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "checkout" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
                                     animate={minibarCountAnimation}
                                     transition={minibarCountTransition}
                                 >
-                                    <Candy  
+                                    <Candy
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDisplayMinibarCount();
@@ -731,13 +731,13 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        { activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
+                        {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">
                                 <motion.div
                                     animate={minibarCountAnimation}
                                     transition={minibarCountTransition}
                                 >
-                                    <Candy  
+                                    <Candy
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDisplayMinibarCount();
@@ -747,10 +747,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                 <p>Minibar Refill</p>
                             </div>
                         )}
-                    </div> 
-                    <MetaInfo document={activity}/>
+                    </div>
+                    <MetaInfo document={activity} />
                 </div>
-            ) : ( 
+            ) : (
                 <></>
             )}
         </div>

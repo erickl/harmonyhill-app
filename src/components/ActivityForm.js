@@ -10,18 +10,18 @@ import { useNotification } from "../context/NotificationContext.js";
 import { Checkbox, FormControlLabel } from '@mui/material';
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
-    const [teamMembers,   setTeamMembers  ] = useState([]   );
-    
+    const [teamMembers, setTeamMembers] = useState([]);
+
     const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
-            
+
     const { onError } = useNotification();
 
     const onProviderSelect = (provider) => {
         const name = provider ? provider.name : '';
         const price = provider ? provider.price : 0;
         handleFormDataChange("_batch", {
-            "provider"      : name,
-            "providerPrice" : price,
+            "provider": name,
+            "providerPrice": price,
         });
     }
 
@@ -35,28 +35,28 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     }
 
     const statuses = {
-        "pending guest confirmation" : {"name" : "Pending Guest Confirmation"},
-        "guest confirmed" : {"name" : "Guest Confirmed"},
+        "pending guest confirmation": { "name": "Pending Guest Confirmation" },
+        "guest confirmed": { "name": "Guest Confirmed" },
     };
 
     const onGuestConfirmed = (checked) => {
-        if(checked) {
-            if(formData.status === "pending guest confirmation") {
+        if (checked) {
+            if (formData.status === "pending guest confirmation") {
                 handleFormDataChange("status", "guest confirmed");
             }
         } else {
             // If status is further along, e.g. "started" or "completed", no sense in letting it go back to "pending"
-            if(formData.status === "guest confirmed") {
+            if (formData.status === "guest confirmed") {
                 handleFormDataChange("status", "pending guest confirmation");
             }
-        }   
+        }
     }
 
     // Transform object from {"Rena": 500000}  to  {"Rena - Rp 500000": {"name": Rena, "price": 500000}}
     const providers = selectedActivity ? Object.entries(selectedActivity.providerPrices).reduce((m, activity) => {
         const name = utils.capitalizeWords(activity[0]);
         //const price = utils.formatDisplayPrice(activity[1], true);
-        m[`${name}`] = { "name" : name, "price" : activity[1] };
+        m[`${name}`] = { "name": name, "price": activity[1] };
         return m;
     }, {}) : [];
 
@@ -76,7 +76,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     return (
         <div className='card-content'>
             <h3>Confirm Purchase Details:</h3>
-            
+
             {selectedActivity.description && (
                 <div>
                     <h4 style={{ marginBottom: '0.25rem' }}>Description</h4>
@@ -90,7 +90,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     <p style={{ marginTop: '0' }}>{selectedActivity.instructions}</p>
                 </div>
             )}
-            
+
             <TextInput
                 type="text"
                 name="displayName"
@@ -98,7 +98,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 value={formData.displayName}
                 onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
             />
-        
+
             <TextInput
                 type="amount"
                 name="customerPrice"
@@ -106,11 +106,11 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 value={formData.customerPrice}
                 onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
             />
- 
-            <Dropdown 
-                current={formData.assignedTo} 
-                label={"Assign to team member"} 
-                options={teamMembers} 
+
+            <Dropdown
+                current={formData.assignedTo}
+                label={"Assign to team member"}
+                options={teamMembers}
                 onSelect={onTeamMemberSelect}
             />
 
@@ -120,7 +120,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                     <Checkbox
                         checked={formData["status"] !== "pending guest confirmation"}
                         onChange={(e) => {
-                            onGuestConfirmed(e.target.checked);               
+                            onGuestConfirmed(e.target.checked);
                         }}
                     />
                 }
@@ -128,9 +128,9 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
             />
 
             {/* (External) providers are not needed for activities organized by internal staff */}
-            { (selectedActivity.internal !== true || custom === true) && (<> 
-                { formData.needsProvider !== false && (
-                   
+            {(selectedActivity.internal !== true || custom === true) && (<>
+                {formData.needsProvider !== false && (
+
                     <div className="provider-row">
                         <div className="provider-name">
                             <TextInput
@@ -154,16 +154,16 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
                         {!utils.isEmpty(providers) && (
                             <div className="last-child">
-                                <ProviderDropdown 
-                                    currentName={formData.provider} 
-                                    currentPrice={formData.providerPrice} 
-                                    label={"Providers"} 
-                                    options={providers} 
+                                <ProviderDropdown
+                                    currentName={formData.provider}
+                                    currentPrice={formData.providerPrice}
+                                    label={"Providers"}
+                                    options={providers}
                                     onSelect={onProviderSelect}
                                 />
                             </div>
                         )}
-                    </div>                
+                    </div>
                 )}
 
                 <FormControlLabel
@@ -172,22 +172,22 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                         <Checkbox
                             checked={formData.needsProvider}
                             onChange={(e) => {
-                                onSetNeedsProviderChecked(e.target.checked)               
+                                onSetNeedsProviderChecked(e.target.checked)
                             }}
                         />
                     }
                     label="Needs provider?"
                 />
             </>)}
-            
-            <MyDatePicker 
-                name={"startingAt"} 
+
+            <MyDatePicker
+                name={"startingAt"}
                 label="Start"
-                date={formData.startingAt} 
-                time={formData.startingTime} 
-                onChange={handleFormDataChange} 
+                date={formData.startingAt}
+                time={formData.startingTime}
+                onChange={handleFormDataChange}
             />
-        
+
             <TextInput
                 type="text"
                 name="comments"

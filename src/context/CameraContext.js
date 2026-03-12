@@ -9,6 +9,7 @@ export function CameraProvider({ children }) {
     const [useAlbum, setUseAlbum] = useState(false);
     const [open, setOpen] = useState(false);
     const [onConfirmPhoto, setOnConfirmPhoto] = useState(null);
+    const [instructions, setInstructions] = useState(null);
 
     const handleChange = (photo) => {
         setPhoto(photo);
@@ -18,7 +19,8 @@ export function CameraProvider({ children }) {
         setOpen(false);
     }
 
-    const onOpenCamera = (useCamera, useAlbum, onConfirmPhoto) => {
+    const onOpenCamera = (instructions, useCamera, useAlbum, onConfirmPhoto) => {
+        setInstructions(instructions);
         setUseAlbum(useAlbum);
         setUseCamera(useCamera);
         setOnConfirmPhoto(onConfirmPhoto);
@@ -32,6 +34,7 @@ export function CameraProvider({ children }) {
                 <div className="modal-overlay">
                     <div className="modal-box">
                         <CapturePhotoScreen 
+                            instructions={instructions}
                             useCamera={useCamera}
                             useAlbum={useAlbum}
                             onConfirmPhoto={onConfirmPhoto}

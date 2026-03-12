@@ -297,7 +297,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                         />
                     </div>
                     
-                    <button onClick={() => onOpenCamera(true, true, () => onConfirmPhoto)}>
+                    <button onClick={() => onOpenCamera(null, true, true, () => onConfirmPhoto)}>
                         Edit photo
                     </button>
 
@@ -383,7 +383,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                         onChange={(e) => handleChange(e.target.name, e.target.value)}
                     />
                 </>) : (  
-                    <button onClick={() => onOpenCamera(true, true, () => onConfirmPhoto)}>
+                    <button onClick={() => onOpenCamera(null, true, true, () => onConfirmPhoto)}>
                         Add photo
                     </button>
                 )}

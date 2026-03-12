@@ -7,28 +7,28 @@ import { saveAs } from "file-saver";
 
 export async function upload(filename, dataUrl, options = {}, onError = null, writes = []) {
     try {
-        if(dataUrl instanceof Blob) {
+        if (dataUrl instanceof Blob) {
             dataUrl = await blobToBase64(dataUrl);
         }
-        
-        if(!utils.isEmpty(options)) {
+
+        if (!utils.isEmpty(options)) {
             dataUrl = await compressImage(dataUrl, options, onError);
         }
 
-        if(dataUrl === false) return false;
-        
+        if (dataUrl === false) return false;
+
         const storageRef = ref(storage, filename);
-        
+
         const snapshot = await uploadString(storageRef, dataUrl, 'data_url');
         if (!snapshot) {
-            if(onError) onError(`Unknown file upload error! Result: ${snapshot}`);
+            if (onError) onError(`Unknown file upload error! Result: ${snapshot}`);
             return false;
         }
 
         const downloadURL = await getDownloadURL(snapshot.ref);
         return downloadURL;
     } catch (e) {
-        if(onError) onError(`Unexpected file upload error: ${e.message}`);
+        if (onError) onError(`Unexpected file upload error: ${e.message}`);
         return false;
     }
 }
@@ -37,21 +37,21 @@ export async function compressImage(fileData, compressionOptions, onError) {
     try {
         const maxSize = utils.isEmpty(compressionOptions.maxSize) ? 0.3 : compressionOptions.maxSize;
         const options = {
-            maxSizeMB: maxSize,        
+            maxSizeMB: maxSize,
             maxWidthOrHeight: 800, // in unit px
             useWebWorker: true
         };
 
         let file = null;
         const type = determineUrlType(fileData);
-        
-        if(type === "data-url") {
+
+        if (type === "data-url") {
             file = dataUrlToFile(fileData);
-        } else if(type === "http-url") {
-            file = await urlToFile(fileData); 
+        } else if (type === "http-url") {
+            file = await urlToFile(fileData);
         }
 
-        if(file === "unknown") {
+        if (file === "unknown") {
             throw new Error(`Unknown file type: ${fileData}`);
         }
 
@@ -70,7 +70,7 @@ export async function getPhotoUrl(filePath) {
         const fileRef = ref(storage, filePath); // e.g. "images/myPhoto.png"
         const url = await getDownloadURL(fileRef);
         return url;
-    } catch(e) {
+    } catch (e) {
         return null
     }
 }
@@ -92,10 +92,10 @@ export async function getFiles(folderPath) {
 
         // Wait for all promises to resolve to get all URLs
         const urls = await Promise.all(urlPromises);
-        
+
         return urls;
 
-    } catch(e) {
+    } catch (e) {
         console.error("Error listing photos in folder:", e);
         // Return an empty array or handle the error as needed
         return [];
@@ -106,8 +106,8 @@ export async function removeFile(fileName, onError, writes = []) {
     try {
         const fileRef = ref(storage, fileName);
         writes.push(async () => await deleteObject(fileRef));
-    } catch(e) {
-        if(onError) onError(`Couldn't remove file ${fileName}: ${e.message}`);
+    } catch (e) {
+        if (onError) onError(`Couldn't remove file ${fileName}: ${e.message}`);
         return false;
     }
     return true;
@@ -116,7 +116,7 @@ export async function removeFile(fileName, onError, writes = []) {
 export function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result); 
+        reader.onloadend = () => resolve(reader.result);
         reader.onerror = reject;
         reader.readAsDataURL(blob);
     });
@@ -144,13 +144,13 @@ function dataUrlToFile(dataURL, filename) {
 async function urlToFile(url, filename) {
     // 1. Fetch the remote resource
     const response = await fetch(url);
-    
+
     // 2. Get the content as a binary Blob
     const blob = await response.blob();
-    
+
     // 3. Extract the correct MIME type from the response headers
     const mime = response.headers.get('content-type');
-    
+
     // 4. Create the File object from the Blob
     // The File constructor is: new File([Blob|BufferSource|string], filename, [options])
     return new File([blob], filename, { type: mime });
@@ -170,14 +170,14 @@ export async function downloadAllZipped(toFilename, paths, onProgress, onError) 
             const filedata = await res.blob();
             const filename = path.split("/").pop();
             zip.file(filename, filedata);
-            onProgress(i/fileCount);
+            onProgress(i / fileCount);
         }
 
         const content = await zip.generateAsync({ type: "blob" });
         saveAs(content, `${toFilename}.zip`);
-        
+
         onProgress(100);
-    } catch(e) {
+    } catch (e) {
         onError(`Could not download all files: ${e.message}`);
         return false;
     }
