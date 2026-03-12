@@ -4,7 +4,7 @@ import * as activityService from "./activityService.js";
 import * as utils from "../utils.js";
 
 export async function getMealCategories() {
-    return await activityDao.getTypes({"category" : "meal"});
+    return await activityDao.getTypes({ "category": "meal" });
 }
 
 // Group by e.g. mains, starters, drinks, etc...
@@ -12,7 +12,7 @@ export function groupByCourse(dishes) {
     // Group by e.g. mains, starters, drinks, etc...
     const groupedByCourse = Object.values(dishes).reduce((m, dish) => {
         const group = utils.isString(dish.course) && utils.isNumber(dish.priority) ? `${dish.priority},${dish.course}` : "9999,misc";
-        if(!m[group]) m[group] = [];
+        if (!m[group]) m[group] = [];
         m[group].push(dish);
         return m;
     }, {});
@@ -26,7 +26,7 @@ export async function addMeal(bookingId, mealData, onError) {
     // Atomic transaction: either all DB adds/updates happen, or none does
     const addMealSuccess = await activityDao.transaction(async () => {
         const booking = await bookingDao.getOne(bookingId);
-        if(!booking) {
+        if (!booking) {
             throw new Error(`Booking ${bookingId} not found`)
         }
 
@@ -37,13 +37,13 @@ export async function addMeal(bookingId, mealData, onError) {
 
         mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
         const mealRecord = await activityDao.add(bookingId, mealId, meal, onError);
-        if(mealRecord === false) {
+        if (mealRecord === false) {
             throw new Error(`Could not add meal ${mealId}`)
         }
 
-        if(!utils.isEmpty(mealData.dishes)) {
+        if (!utils.isEmpty(mealData.dishes)) {
             const returnedDishIds = await addDishes(bookingId, mealId, Object.values(mealData.dishes), onError);
-            if(returnedDishIds.length !== Object.keys(mealData.dishes).length) {
+            if (returnedDishIds.length !== Object.keys(mealData.dishes).length) {
                 throw new Error(`Not all dishes were successfully uploaded for meal ${mealId}`)
             }
         }
@@ -57,15 +57,15 @@ export async function addMeal(bookingId, mealData, onError) {
 export async function removeMeal(meal, onError) {
     const success = await activityDao.transaction(async () => {
         const dishes = await getMealDishes(meal.bookingId, meal.id);
-        for(const dish of dishes) {
+        for (const dish of dishes) {
             const deleteDishResult = await deleteDish(meal.bookingId, meal.id, dish.id, onError);
-            if(deleteDishResult === false) {
+            if (deleteDishResult === false) {
                 throw new Error(`Unexpected error when deleting dish ${dish.id}`);
             }
         }
 
         const success = await activityService.remove(meal, onError);
-        if(success === false) {
+        if (success === false) {
             throw new Error(`Unexpected error when deleting meal ${meal.id}`);
         }
 
@@ -93,34 +93,34 @@ export function makeDishId(startingAt, house, meal, dishName) {
 
 async function addDishes(bookingId, mealId, dishesData, onError) {
     const meal = await activityDao.getOne(bookingId, mealId);
-    if(!meal) {
+    if (!meal) {
         onError(`Meal ${bookingId}/${mealId} not found`);
         return false;
     }
     let runningTotalMealPrice = meal.customerPrice ? meal.customerPrice : 0;
 
     // Add each meal item to DB
-    let dishes = [];   
-    for(const dishData of dishesData) {
+    let dishes = [];
+    for (const dishData of dishesData) {
         const dish = await mapDishObject(dishData);
         const dishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dish.name);
-             
+
         // Add meal item to the meal
         const addDishSuccess = await activityDao.addDish(bookingId, mealId, dishId, dish, onError);
-        if(!addDishSuccess) {
+        if (!addDishSuccess) {
             throw new Error(`Cannot add dish ${dishId}`);
         }
 
         // Update the total meal customerPrice
-        if(!meal.isFree && !dish.isFree) {
+        if (!meal.isFree && !dish.isFree) {
             runningTotalMealPrice += dish.isFree ? 0 : dish.customerPrice * dish.quantity;
             const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: runningTotalMealPrice }, false, onError);
-            if(!updateMealPriceSuccess) {
+            if (!updateMealPriceSuccess) {
                 throw new Error(`Cannot update total meal price for meal with dish ${dishId}`);
             }
         }
-       
-        if(addDishSuccess) {
+
+        if (addDishSuccess) {
             dishes.push(dishId);
         }
     }
@@ -130,34 +130,34 @@ async function addDishes(bookingId, mealId, dishesData, onError) {
 export async function update(bookingId, mealId, mealUpdateData, onError) {
     const updateMealSuccess = await activityDao.transaction(async () => {
         const existing = await getMeal(bookingId, mealId);
-        if(!existing) {
+        if (!existing) {
             throw new Error(`Cannot find meal ${bookingId}/${mealId}`);
-        } 
+        }
 
         // When changing assignee 
-        if(utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && existing.assignedTo !== mealUpdateData.assignedTo) {
+        if (utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && existing.assignedTo !== mealUpdateData.assignedTo) {
             mealUpdateData.assigneeAccept = false;
         }
 
         // Update meal data
         const mealUpdate = await mapMealObject(mealUpdateData);
         const updateMealRecord = await activityDao.update(bookingId, mealId, mealUpdate, true, onError);
-        if(!updateMealRecord) {
+        if (!updateMealRecord) {
             throw new Error(`Cannot update meal ${bookingId}/${mealId}`);
         }
-        
+
         let updateDishesSuccess = false;
 
         // Update dishes data, if there are any updates to them
-        if(!utils.isEmpty(mealUpdateData.dishes)) {
+        if (!utils.isEmpty(mealUpdateData.dishes)) {
             const dishesData = Object.values(mealUpdateData.dishes);
             updateDishesSuccess = await updateDishes(bookingId, mealId, dishesData, onError);
         }
 
-        if(!updateDishesSuccess) {
+        if (!updateDishesSuccess) {
             throw new Error(`Cannot update dishes for ${bookingId}/${mealId}`);
         }
-        
+
         return updateMealRecord;
     });
 
@@ -169,7 +169,7 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
     let priceDiff = 0;
 
     const meal = await getMeal(bookingId, mealId);
-    if(!meal) {
+    if (!meal) {
         onError(`Cannot find meal ${bookingId}/${mealId} in database`);
         return false;
     }
@@ -177,11 +177,11 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
     const existingDishes = await getMealDishes(bookingId, mealId);
 
     // If any existingDishes are no longer part of the meal, delete dish
-    for(const existingDish of Object.values(existingDishes)) {
+    for (const existingDish of Object.values(existingDishes)) {
         const dishUpdate = dishesUpdateData.find((dish) => dish.name === existingDish.name);
-        if(!dishUpdate) {
+        if (!dishUpdate) {
             const deleteDishResult = await deleteDish(bookingId, mealId, existingDish.id);
-            if(deleteDishResult === false) {
+            if (deleteDishResult === false) {
                 onError(`Unexpected error when deleting dish ${existingDish.id}. Contact admin, please`);
                 return false;
             }
@@ -189,19 +189,19 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
             dishesUpdated.push(`Deleted: ${existingDish.id}`);
         }
     }
-    
-    for(const dishUpdateData of dishesUpdateData) {
-        if(utils.isEmpty(dishUpdateData.name)) {// || dishUpdateData.quantity === 0) {
+
+    for (const dishUpdateData of dishesUpdateData) {
+        if (utils.isEmpty(dishUpdateData.name)) {// || dishUpdateData.quantity === 0) {
             continue;
         }
 
         const dishUpdate = await mapDishObject(dishUpdateData);
         const existingDish = existingDishes.find((dish) => dish.name === dishUpdate.name);
-        
-        if(!existingDish) {
+
+        if (!existingDish) {
             const newDishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dishUpdate.name);
             const addNewDishResult = await activityDao.addDish(bookingId, mealId, newDishId, dishUpdate, onError);
-            if(addNewDishResult !== false) {
+            if (addNewDishResult !== false) {
                 priceDiff += dishUpdate.isFree ? 0 : dishUpdate.quantity * dishUpdate.customerPrice;
                 dishesUpdated.push(newDishId);
             } else {
@@ -209,30 +209,33 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
             }
         } else {
             const updateExistingDishResult = await activityDao.updateDish(bookingId, mealId, existingDish.id, dishUpdate, onError);
-            if(updateExistingDishResult !== false) {
-                if(dishUpdate.isFree && !existingDish.isFree) {
-                    priceDiff -= existingDish.quantity * existingDish.customerPrice;
-                } else if(!dishUpdate.isFree && existingDish.isFree) {
-                    priceDiff += dishUpdate.quantity * dishUpdate.customerPrice;
-                } else if(!dishUpdate.isFree && !existingDish.isFree) {
-                    priceDiff += (dishUpdate.quantity-existingDish.quantity) * existingDish.customerPrice;
-                } else if(dishUpdate.isFree && existingDish.isFree) {
-                    priceDiff += 0
-                }
-                
+            if (updateExistingDishResult !== false) {
+                priceDiff -= existingDish.quantity * existingDish.customerPrice * !existingDish.isFree;
+                priceDiff += dishUpdate.quantity * dishUpdate.customerPrice * !dishUpdate.isFree;
+
+                // if (dishUpdate.isFree && !existingDish.isFree) {
+                //     priceDiff -= existingDish.quantity * existingDish.customerPrice;
+                // } else if (!dishUpdate.isFree && existingDish.isFree) {
+                //     priceDiff += dishUpdate.quantity * dishUpdate.customerPrice;
+                // } else if (!dishUpdate.isFree && !existingDish.isFree) {
+                //     priceDiff += (dishUpdate.quantity - existingDish.quantity) * existingDish.customerPrice;
+                // } else if (dishUpdate.isFree && existingDish.isFree) {
+                //     priceDiff += 0
+                // }
+
                 dishesUpdated.push(existingDish.id);
             } else {
                 throw new Error(`Cannot update existing dish ${existingDish.id} to meal ${bookingId}/${mealId}`);
             }
         }
     }
-    
+
     const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: meal.customerPrice + priceDiff }, true, onError);
-    
-    if(!updateMealPriceSuccess) {
+
+    if (!updateMealPriceSuccess) {
         throw new Error(`Cannot update total meal price for meal with dish ${mealId}`);
     }
-    
+
     return dishesUpdated;
 }
 
@@ -244,7 +247,7 @@ async function updateDishes(bookingId, mealId, dishesUpdateData, onError) {
 export async function getMeals(options) {
     const bookings = await bookingDao.get(options);
     let meals = [];
-    for(const booking of bookings) {
+    for (const booking of bookings) {
         const bookingId = booking.id;
         const meal = await activityDao.getMeals(bookingId, options);
         const enhancedMeal = await activityService.enhanceActivities(meal);
@@ -255,7 +258,7 @@ export async function getMeals(options) {
 
 export async function getMeal(bookingId, mealId) {
     const meal = await activityDao.getOne(bookingId, mealId);
-    const enhancedMeal = await activityService.enhanceActivities(meal); 
+    const enhancedMeal = await activityService.enhanceActivities(meal);
     return enhancedMeal;
 }
 
@@ -285,41 +288,41 @@ export async function deleteDish(bookingId, mealId, dishId, onError) {
 
 export function validate(customer, data, isUpdate, onError) {
     try {
-        if(utils.isEmpty(data)) {
+        if (utils.isEmpty(data)) {
             onError("Fill in all required fields to submit");
             return false;
         }
-        if(utils.isEmpty(data.startingAt)) {
+        if (utils.isEmpty(data.startingAt)) {
             onError("Meal date required");
             return false;
         }
 
-        if(utils.isDateTime(customer.checkInAt) && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
+        if (utils.isDateTime(customer.checkInAt) && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
             onError(`Meal date too early. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
             return false;
         }
 
-        if(utils.isDateTime(customer.checkOutAt) && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
+        if (utils.isDateTime(customer.checkOutAt) && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
             onError(`Meal date too late. Must be within ${utils.to_ddMMM(customer.checkInAt)} - ${utils.to_ddMMM(customer.checkOutAt)}`);
             return false;
         }
 
         // todo: get other lunches/dinners on this date. If this is not an update, we should decline?
 
-        if(!utils.isEmpty(data.dishes)) {
+        if (!utils.isEmpty(data.dishes)) {
             const dishes = Object.values(data.dishes);
-            for(const dish of dishes) {
-                if(dish.quantity === 0) {
+            for (const dish of dishes) {
+                if (dish.quantity === 0) {
                     onError(`All ordered dishes must have at least quantity of 1`);
                     return false;
                 }
-                if(utils.isEmpty(dish.name)) {
+                if (utils.isEmpty(dish.name)) {
                     onError(`All dishes must be named`);
                     return false;
                 }
             }
         }
-    } catch(e) {
+    } catch (e) {
         onError(`Unexpected error in meal form: ${e.message}`);
         return true; // A bug shouldn't prevent you from submitting a meal?
     }
@@ -332,40 +335,40 @@ async function mapMealObject(mealData) {
 
     meal.category = utils.isString(mealData?.category) ? mealData.category : "meal";
 
-    if(utils.isString(mealData?.subCategory)) meal.subCategory = mealData.subCategory;
+    if (utils.isString(mealData?.subCategory)) meal.subCategory = mealData.subCategory;
 
-    if(utils.isString(mealData?.displayName)) meal.displayName = mealData.displayName;
+    if (utils.isString(mealData?.displayName)) meal.displayName = mealData.displayName;
 
     // The startingAt date might be entered later. It's usually how the guests want it
-    if(utils.isDate(mealData?.startingAt)) {
+    if (utils.isDate(mealData?.startingAt)) {
         meal.startingAt = utils.toFireStoreTime(mealData.startingAt);
     }
 
     // Date is obligatory, but time might be set later, so might be null
-    if(utils.exists(mealData, "startingTime")) {
+    if (utils.exists(mealData, "startingTime")) {
         meal.startingTime = utils.isDate(mealData?.startingTime) ? utils.toFireStoreTime(mealData.startingTime) : null;
     }
 
     // Provider might not make sense here. I think we should use assignedTo instead, to assign to a staff member
-    if(utils.isString(mealData?.provider)) meal.provider = mealData.provider;
+    if (utils.isString(mealData?.provider)) meal.provider = mealData.provider;
 
-    if(utils.isString(mealData?.assignedTo)) {
+    if (utils.isString(mealData?.assignedTo)) {
         meal.assignedTo = mealData.assignedTo;
     }
 
-    if(utils.isBoolean(mealData?.assigneeAccept)) meal.assigneeAccept = mealData.assigneeAccept;
+    if (utils.isBoolean(mealData?.assigneeAccept)) meal.assigneeAccept = mealData.assigneeAccept;
 
-    if(utils.exists(mealData, "status")) {
+    if (utils.exists(mealData, "status")) {
         meal.status = utils.isString(mealData?.status) ? mealData.status : "pending guest confirmation";
     }
 
-    if(utils.isString(mealData?.comments)) meal.comments = mealData.comments;
+    if (utils.isString(mealData?.comments)) meal.comments = mealData.comments;
 
-    if(utils.isBoolean(mealData?.isFree)) meal.isFree = mealData.isFree;
-    
-    if(utils.isAmount(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
+    if (utils.isBoolean(mealData?.isFree)) meal.isFree = mealData.isFree;
 
-    if(utils.exists(mealData, "changeDescription")) {
+    if (utils.isAmount(mealData?.customerPrice)) meal.customerPrice = mealData.customerPrice;
+
+    if (utils.exists(mealData, "changeDescription")) {
         meal.changeDescription = mealData.changeDescription;
     }
 
@@ -375,16 +378,16 @@ async function mapMealObject(mealData) {
 async function mapDishObject(data) {
     let object = {};
 
-    if(utils.isString(data?.name))          object.name          = data.name;
-    if(!utils.isEmpty(data?.quantity))      object.quantity      = data.quantity;
-    if(utils.isAmount(data?.customerPrice)) object.customerPrice = data.customerPrice;
-    if(utils.isString(data?.comments))      object.comments      = data.comments;
-    if(utils.isBoolean(data?.isFree))       object.isFree        = data.isFree;
-    if(utils.isBoolean(data?.custom))       object.custom        = data.custom;
-    
+    if (utils.isString(data?.name)) object.name = data.name;
+    if (!utils.isEmpty(data?.quantity)) object.quantity = data.quantity;
+    if (utils.isAmount(data?.customerPrice)) object.customerPrice = data.customerPrice;
+    if (utils.isString(data?.comments)) object.comments = data.comments;
+    if (utils.isBoolean(data?.isFree)) object.isFree = data.isFree;
+    if (utils.isBoolean(data?.custom)) object.custom = data.custom;
+
     // Needed to sort the meals by course when displaying meal receipts
-    if(utils.isNumber(data?.priority))      object.priority      = data.priority;
-    if(utils.isString(data?.course))        object.course        = data.course;
+    if (utils.isNumber(data?.priority)) object.priority = data.priority;
+    if (utils.isString(data?.course)) object.course = data.course;
 
     return object;
 }
@@ -397,19 +400,19 @@ export async function toArrays(filters, onProgress, onError) {
     onProgress(20);
 
     let rows = [["startingAt", "dish", "quantity", "course", "guestName", "house", "price", "mealFree", "dishFree", "assignedTo", "comments", "shouldBeFree"]];
-    
+
     const mealCount = meals.length;
-    const mealPercentagePoint = 0.8/mealCount;
+    const mealPercentagePoint = 0.8 / mealCount;
     let progress = 0.2;
-    
-    for(let i = 0; i < mealCount; i++) {
+
+    for (let i = 0; i < mealCount; i++) {
         const meal = meals[i];
         const dishes = await getMealDishes(meal.bookingId, meal.id, filters);
-        
+
         progress += mealPercentagePoint;
         onProgress(progress);
-        
-        for(const dish of dishes) {
+
+        for (const dish of dishes) {
             const x = meal.isFree && !dish.isFree ? "x" : "";
             //             startingAt, dish                                   guestName    house      price
             let row = [meal.startingAt, dish.name, dish.quantity, dish.course, meal.name, meal.house, dish.customerPrice, meal.isFree, dish.isFree, meal.assignedTo, dish.comments, x];
@@ -425,13 +428,13 @@ export async function toArrays(filters, onProgress, onError) {
 
 export function getNewCustomDish(id, name) {
     return {
-        "id"            : `custom-dish-id-${id}`,
-        "name"          : `${name}`,
-        "custom"        : true,
-        "isFree"        : false,
-        "quantity"      : 0,
-        "customerPrice" : 0,
-        "course"        : "custom",
-        "priority"      : 900
+        "id": `custom-dish-id-${id}`,
+        "name": `${name}`,
+        "custom": true,
+        "isFree": false,
+        "quantity": 0,
+        "customerPrice": 0,
+        "course": "custom",
+        "priority": 900
     };
 }
