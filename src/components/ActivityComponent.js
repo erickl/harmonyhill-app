@@ -316,8 +316,13 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         if (expand) {
             if (activity.category === "meal") {
                 // If this list is displayed for all customers, get the customer for each activity 
-                const mealCustomer = customer ? customer : await getParent(activity);
-                const dishes = await mealService.getMealDishes(mealCustomer.id, activity.id, {}, onError);
+                const bookingId = activity.bookingId;
+                if(utils.isEmpty(bookingId)) {
+                    const mealCustomer = customer ? customer : await getParent(activity);
+                    bookingId = utils.isEmpty(mealCustomer) ? "missing" : mealCustomer.id;
+                }
+               
+                const dishes = await mealService.getMealDishes(bookingId, activity.id, {}, onError);
                 const dishesPrice = dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice, 0);
                 setDishesPrice(dishesPrice);
                 setDishes(dishes);
@@ -668,7 +673,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                     <Camera
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            onOpenCamera(true, false, () => onConfirmPhoto);
+                                            onOpenCamera(activityInfo.photoInstructions, true, false, () => onConfirmPhoto);
                                         }}
                                     />
                                 </motion.div>

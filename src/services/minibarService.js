@@ -222,6 +222,7 @@ export async function getTotalProvided(booking, beforeDate, onError) {
  * @returns 
  */
 export async function get(booking, filters, onError) {
+    if(!booking || !booking.id) return null;
     return await bookingDao.getMinibarCounts(booking.id, filters, onError);
 }
 

@@ -16,7 +16,7 @@ export function exists(obj, fieldName) {
         return false;
     } else if (Array.isArray(obj)) {
         return obj.includes(fieldName);
-    } else if (isObject(obj)) {
+    } else if (isJsonObject(obj)) {
         return Object.hasOwn(obj, fieldName) && obj[fieldName] !== undefined;
     } else {
         return false;

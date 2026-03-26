@@ -184,53 +184,6 @@ async function updateDishes(updatedMeal, mealId, dishesUpdateData, onError, writ
         }
     }
 
-    if (!dishUpdate) {
-        const deleteDishResult = await deleteDish(bookingId, mealId, existingDish.id);
-        if (deleteDishResult === false) {
-            onError(`Unexpected error when deleting dish ${existingDish.id}. Contact admin, please`);
-            return false;
-        }
-        priceDiff -= existingDish.isFree ? 0 : existingDish.quantity * existingDish.customerPrice;
-        dishesUpdated.push(`Deleted: ${existingDish.id}`);
-    }
-
-
-    for (const dishUpdateData of dishesUpdateData) {
-        if (utils.isEmpty(dishUpdateData.name)) {// || dishUpdateData.quantity === 0) {
-            continue;
-        }
-
-        const dishUpdate = await mapDishObject(dishUpdateData);
-        const existingDish = existingDishes.find((dish) => dish.name === dishUpdate.name);
-
-        if (!existingDish) {
-            const newDishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dishUpdate.name);
-            const addNewDishResult = await activityDao.addDish(bookingId, mealId, newDishId, dishUpdate, onError);
-            if (addNewDishResult !== false) {
-                priceDiff += dishUpdate.isFree ? 0 : dishUpdate.quantity * dishUpdate.customerPrice;
-                dishesUpdated.push(newDishId);
-            } else {
-                throw new Error(`Cannot add new dish ${newDishId} to meal ${bookingId}/${mealId}`);
-            }
-        } else {
-            const updateExistingDishResult = await activityDao.updateDish(bookingId, mealId, existingDish.id, dishUpdate, onError);
-            if (updateExistingDishResult !== false) {
-                priceDiff -= existingDish.quantity * existingDish.customerPrice * !existingDish.isFree;
-                priceDiff += dishUpdate.quantity * dishUpdate.customerPrice * !dishUpdate.isFree;
-
-                dishesUpdated.push(existingDish.id);
-            } else {
-                throw new Error(`Cannot update existing dish ${existingDish.id} to meal ${bookingId}/${mealId}`);
-            }
-        }
-    }
-
-    const updateMealPriceSuccess = await activityDao.update(bookingId, mealId, { customerPrice: meal.customerPrice + priceDiff }, true, onError);
-
-    if (!updateMealPriceSuccess) {
-        throw new Error(`Cannot update total meal price for meal with dish ${mealId}`);
-    }
-
     return dishesUpdated;
 }
 

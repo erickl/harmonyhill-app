@@ -332,20 +332,22 @@ export function isBeforeToday(inputDate) {
     return inputDt.startOf('day') < todayDt.startOf('day');
 }
 
+export function isAfterToday(inputDate) {
+    const inputDt = toLuxonDateTime(inputDate);
+    const todayDt = today(0, false);
+    return inputDt.startOf('day') > todayDt.startOf('day');
+}
+
 export function isPast(inputDate) {
     const inputDt = toLuxonDateTime(inputDate);
     const nowDt = now(0, false);
     return inputDt.toMillis() < nowDt.toMillis();
 }
 
-export function isPast(inputDate) {
-    const diff = dateDiffNow(inputDate);
-    return diff < 0;
-}
-
 export function isFuture(inputDate) {
-    const diff = dateDiffNow(inputDate);
-    return diff > 0;
+    const inputDt = toLuxonDateTime(inputDate);
+    const nowDt = now(0, false);
+    return inputDt.toMillis() > nowDt.toMillis();
 }
 
 export function dateIsSame(oldDate, newDate, ignoreTimeOfDay = false) {

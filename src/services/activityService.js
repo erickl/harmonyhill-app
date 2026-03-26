@@ -369,19 +369,11 @@ export async function uploadPhoto(activity, photo, onError, writes = []) {
 
     const filePath = getActivityPhotoFilePath(activity);
     const filename = `${filePath}/${Date.now()}`;
-<<<<<<< HEAD
-    const options = {maxSize : 0.05};
-
-    const downloadUrl = await storageDao.upload(filename, photo, options, onError, writes);
-    if(downloadUrl === false) return;
-    
-=======
     const options = {maxSize : 0.15};
     const downloadUrl = await storageDao.upload(filename, photo, options, onError);
     if(downloadUrl === false) {
         return;
     }
->>>>>>> 6033e2589f416ca55f2cf7a52ba2dbe521627c2b
     const id = `activity-photo-${Date.now()}`;
     const data = {
         fileName   : filename,

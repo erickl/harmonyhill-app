@@ -234,7 +234,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
 
         // For start and refill count, the current count is about how much stock to ADD/REFILL.
         // And we can't add more than we have in storage
-        if(subCategory === "checkin" || subCategory === "housekeeping") {
+        if(subCategory === "checkin-prep" || subCategory === "housekeeping") {
             if(totalStock !== null && reservedStock !== null) {
                 const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
                 const total = utils.exists(totalStock, item.name) ? totalStock[item.name] : 0;
@@ -247,7 +247,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
 
             // Put at least as many items as required by our minimum stock standards
             // Cannot compare against minStock in house keeping, because we don't know how many is left when refilling
-            if(subCategory === "checkin" && newCount < item.minStock) {
+            if(subCategory === "checkin-prep" && newCount < item.minStock) {
                 errorMessage_ = `Error: Provide minimum ${item.minStock} ${item.name}`;
             }
         }
@@ -296,7 +296,8 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             } else if(header === "available") {
                 const totalLoaded = totalStock && utils.exists(totalStock, item.name);
                 const reserved = reservedStock && utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0;
-                item[header] = value = totalLoaded ? totalStock[item.name] - reserved - item.provided : "-";
+                const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
+                item[header] = value = totalLoaded ? totalStock[item.name] - reserved - provided : "-";
             }else if(header === "count") {
                 value = state.updatedCount[item.name];
             } else if(header === "minimum stock") {
