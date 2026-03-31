@@ -286,6 +286,14 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onClose }) {
                 )}
 
                 <TextInput
+                    type="amount"
+                    name="duration"
+                    label={"Duration (minutes)"}
+                    value={formData.duration}
+                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                />
+
+                <TextInput
                     type="text"
                     name="description"
                     label={"Description"}

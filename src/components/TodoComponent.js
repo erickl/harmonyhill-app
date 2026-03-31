@@ -14,20 +14,20 @@ import TodoStepComponent from './TodoStepComponent.js';
 import "./TodoComponent.css";
 
 export default function TodoComponent({ todo, handleDelete, onNavigate, onClose }) {
-    const [expanded,         setExpanded        ] = useState(false);
-    const [loading,          setLoading         ] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
-    const [isAdmin,          setIsAdmin         ] = useState(false);
-    const [steps,            setSteps           ] = useState([]);
-    const [addStepToTodo,    setAddStepToTodo   ] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [steps, setSteps] = useState([]);
+    const [addStepToTodo, setAddStepToTodo] = useState(null);
 
     const { onOpenCamera } = useCameraModal();
-    const { onError    } = useNotification();
-    const { onConfirm  } = useConfirmationModal();
-    const { onSuccess  } = useSuccessNotification();
+    const { onError } = useNotification();
+    const { onConfirm } = useConfirmationModal();
+    const { onSuccess } = useSuccessNotification();
 
-     useEffect(() => {
-        const load = async() => {
+    useEffect(() => {
+        const load = async () => {
             const userIsAdmin = await userService.isAdmin();
             setIsAdmin(userIsAdmin);
 
@@ -40,15 +40,15 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
         load();
     }, []);
 
-    const onTodoStepCreated = async(newTodoStep) => {
+    const onTodoStepCreated = async (newTodoStep) => {
         const newSteps = [...(steps || [])];
         newSteps.push(newTodoStep);
         setSteps(newSteps);
     }
 
-    const handleSetExpanded = async() => {
+    const handleSetExpanded = async () => {
         setLoading((prev) => !prev);
-        
+
         // todo: fetch todo steps and other info
         const steps_ = await todoService.getTodoSteps(todo.id, {}, onError);
         setSteps(steps_);
@@ -74,8 +74,8 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                         {expanded ? '▼' : '▶'}
                     </div>
                 </div>
-            </div>  
-            
+            </div>
+
             <div>
                 {utils.to_ddMMYY(todo.deadlineAt, "/")}
             </div>
@@ -86,6 +86,9 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                 <div className="todo-body">
                     <div>
                         Description: {todo.description}
+                    </div>
+                    <div>
+                        Duration: {todo.duration} minutes
                     </div>
                     <div>
                         Category: {utils.capitalizeWords(todo.category)}
@@ -113,7 +116,7 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                     </div>
                     <div className="todo-body-footer">
                         <div className="todo-body-footer-icon">
-                            <Plus   
+                            <Plus
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setAddStepToTodo(todo);
@@ -122,17 +125,17 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                             <p>Add step</p>
                         </div>
                         <div className="todo-body-footer-icon">
-                            <Pencil   
+                            <Pencil
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onNavigate("add-todo", {todoToEdit:todo})
+                                    onNavigate("add-todo", { todoToEdit: todo })
                                 }}
                             />
                             <p>Edit</p>
                         </div>
                         {isManagerOrAdmin && (
                             <div className="todo-body-footer-icon">
-                                <Trash2  
+                                <Trash2
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleDelete(todo);
@@ -142,7 +145,7 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                             </div>
                         )}
                     </div>
-                    <MetaInfo document={todo}/>
+                    <MetaInfo document={todo} />
                 </div>
             ) : (<></>)}
 

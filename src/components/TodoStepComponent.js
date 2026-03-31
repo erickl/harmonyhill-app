@@ -35,6 +35,7 @@ export default function TodoStepComponent({todoStep}) {
                             <Checkbox
                                 checked={completed}
                                 onChange={(e) => {
+                                    e.stopPropagation();
                                     setCompleted(e.target.checked);               
                                 }}
                             />
@@ -56,7 +57,10 @@ export default function TodoStepComponent({todoStep}) {
             ) : expanded ? (
                 <div className="todo-step-body">
                     <div>
-                        {utils.to_ddMMM(todoStep.deadlineAt)}
+                        Duration: {todoStep.duration}
+                    </div>
+                    <div>
+                        Deadline: {utils.to_ddMMM(todoStep.deadlineAt)}
                     </div>
                     <div className="todo-body-footer">
                         <div className="todo-body-footer-icon">
