@@ -329,24 +329,28 @@ export function toDateTime(inputDate) {
 }
 
 export function isToday(inputDate) {
+    if(!inputDate) return false;
     const inputDt = toLuxonDateTime(inputDate);
     const todayDt = today(0, false);
     return inputDt.startOf('day').equals(todayDt.startOf('day'));
 }
 
 export function isTomorrow(inputDate) {
+    if(!inputDate) return false;
     const inputDt = toLuxonDateTime(inputDate);
     const tomorrowDt = today(0, false).plus({ days: 1 });
     return inputDt.startOf('day').equals(tomorrowDt.startOf('day'));
 }
 
 export function isBeforeToday(inputDate) {
+    if(!inputDate) return false;
     const inputDt = toLuxonDateTime(inputDate);
     const todayDt = today(0, false);
     return inputDt.startOf('day') < todayDt.startOf('day');
 }
 
 export function isPast(inputDate) {
+    if(!inputDate) return false;
     const inputDt = toLuxonDateTime(inputDate);
     const nowDt = now(0, false);
     return inputDt.toMillis() < nowDt.toMillis();
