@@ -31,10 +31,13 @@ export function NotificationProvider({ children }) {
         <NotificationContext.Provider value={{ onError, onWarning, onInfo }}>
             {children}
             {message && (
-                <div className="modal-overlay" onClick={() => hidePopup()}>
+                <div className="modal-overlay">
                     <div className="modal-box">
                         <h2>{header}</h2>
                         <p className="preserve-whitespaces">{message}</p>
+                        <button onClick={() => hidePopup()}>
+                            OK
+                        </button>
                     </div>
                 </div>
             )}
