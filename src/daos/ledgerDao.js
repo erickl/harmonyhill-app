@@ -43,9 +43,26 @@ export async function getPettyCashBalance(onError) {
     return balanceDocument;
 }
 
-export async function getLastClosedPettyCashRecord(onError) {
+export async function getClosedPettyCashRecord(year, month, onError) {
+    const path = [dao.constant.COMPANY, "petty-cash", "closed"];
+    const filters = [
+        where("year", "==", year), 
+        where("month", "==", month)
+    ];
+    const pettyCashRecords = await dao.get(path, filters, [], -1, onError);
+    if(!pettyCashRecords || pettyCashRecords.length === 0) {
+        return false
+    }
+    const pettyCashRecord = pettyCashRecords[0];
+    return pettyCashRecord;
+}
+
+export async function getLastClosedPettyCashRecord(before, onError) {
     const path = [dao.constant.COMPANY, "petty-cash", "closed"];
     const filters = [];
+    if(utils.isDate(before)) {
+        filters.push(where("closedAt", "<=", utils.toFireStoreTime(before)));
+    }
     const ordering = [orderBy("closedAt", "desc")];
     const pettyCashRecords = await dao.get(path, filters, ordering, 1, onError);
     if(!pettyCashRecords || pettyCashRecords.length === 0) {
