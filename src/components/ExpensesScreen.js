@@ -110,7 +110,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
             const userIsAdminOrManager = await userService.isManagerOrAdmin();
             setIsManagerOrAdmin(userIsAdminOrManager);
 
-            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(onError);
+            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);
 
             const filter = lastClosedPettyCashRecord ? { "after" : lastClosedPettyCashRecord.closedAt} : {};
             

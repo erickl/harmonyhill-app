@@ -92,7 +92,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
             if(customer) {
                 filter["bookingId"] = customer.id;
             } else {
-                const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(onError);
+                const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);
                 filter["after"] = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : null;
             }
             
