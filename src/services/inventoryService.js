@@ -13,10 +13,11 @@ export async function getOne(nameOrId, onError) {
 
 export async function remove(activity, reason, itemName, quantity, comments, onError, writes = []) {
     const commit = decideCommit(writes);
-
-    const currentQuantity = await getCurrentQuantity(itemName, onError);
-    // Don't stop users from withdrawing more than exists. It might just be a purchase wasn't recorded, and we actually can sell more of this item
-    //if(currentQuantity < quantity) return onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
+ 
+    // Don't stop users from withdrawing more than exists. It might just be that a purchase wasn't recorded, 
+    // and we actually can sell more of this item
+    // const currentQuantity = await getCurrentQuantity(itemName, onError);
+    // if(currentQuantity < quantity) return onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
 
     const stock = {
         bookingId      : activity ? activity.bookingId : null,
@@ -25,7 +26,6 @@ export async function remove(activity, reason, itemName, quantity, comments, onE
         doneAt         : activity ? activity.startingAt : utils.now(),
         name           : itemName,
         quantity       : quantity,
-        quantityBefore : currentQuantity,
         type           : "removal",
         reason         : reason,
     };
@@ -112,13 +112,10 @@ export async function refillMany(expense, quantities, onError, writes = []) {
 export async function refill(expense, itemName, quantity, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const currentQuantity = await getCurrentQuantity(itemName, onError);
-
     const refill = {
         expenseId        : expense.id,
         name             : itemName,
         quantity         : quantity,
-        quantityBefore   : currentQuantity,
         doneAt           : expense.purchasedAt,
         seller           : utils.isEmpty(expense.seller) ? "" : expense.seller,
         type             : "supply",
@@ -154,8 +151,8 @@ export async function getSales(name, filters, onError) {
 
 export async function getRefills(name, filters, onError) {
     const filters_ = {...filters, reason: "refill"};
-    const purchases = await inventoryDao.getInventoryChanges(name, filters_, onError);
-    return purchases;
+    const refills = await inventoryDao.getInventoryChanges(name, filters_, onError);
+    return refills;
 }
 
 export async function removeSaleIfExists(name, activityId, onError, writes) {

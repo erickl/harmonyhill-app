@@ -82,7 +82,7 @@ If needed, if this is your first time developing with firebase on this computer
 
 - How to start debugging firebase functions
     - node --inspect=9229 ./node_modules/.bin/firebase emulators:start --import=./emulator-data 
-        - lately, that didn't work so well. An alternative is this: firebase emulators:start --inspect-functions --import=./emulator-data
+        - lately, that didn't work so well. An alternative is this: node --inspect=9229 ./node_modules/.bin/firebase emulators:start --import=./emulator-data
 
 How to trigger scheduled functions
 - firebase functions:shell, then hourlyJob()

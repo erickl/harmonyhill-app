@@ -274,9 +274,9 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         return (
             <td style={cellStyle_} key={`${index}-value`}>
                 <div style={{display:"flex", justifyContent:"space-evenly", alignItems:"center"}}>
-                    {plusButton}
-                    {displayedValue} 
                     {minusButton}
+                    {displayedValue}  
+                    {plusButton}
                 </div>
             </td>
         );
@@ -298,7 +298,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 const reserved = reservedStock && utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0;
                 const provided = utils.isEmpty(item.provided) ? 0 : item.provided;
                 item[header] = value = totalLoaded ? totalStock[item.name] - reserved - provided : "-";
-            }else if(header === "count") {
+            } else if(header === "count") {
                 value = state.updatedCount[item.name];
             } else if(header === "minimum stock") {
                 value = item["minStock"];    

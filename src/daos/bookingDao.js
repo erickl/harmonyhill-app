@@ -35,13 +35,18 @@ export async function get(filterOptions = {}, onError = null) {
         queryFilter.push(where("checkOutAt", ">=", checkOutAfterFireStore));
     }
 
-    if (utils.exists(filterOptions, "checkOutBefore")) {
+    if (utils.exists(filterOptions, "checkOutBefore") || utils.exists(filterOptions, "before")) {
         const checkOutBeforeFireStore = utils.toFireStoreTime(filterOptions.checkOutBefore);
         queryFilter.push(where("checkOutAt", "<=", checkOutBeforeFireStore));
     }
 
-    if (utils.exists(filterOptions, "checkInAfter")) {
-        const checkInAfterFireStore = utils.toFireStoreTime(filterOptions.checkInAfter);
+    if (utils.exists(filterOptions, "before")) {
+        const checkOutBeforeFireStore = utils.toFireStoreTime(filterOptions.before);
+        queryFilter.push(where("checkOutAt", "<=", checkOutBeforeFireStore));
+    }
+
+    if (utils.exists(filterOptions, "after")) {
+        const checkInAfterFireStore = utils.toFireStoreTime(filterOptions.after);
         queryFilter.push(where("checkInAt", ">=", checkInAfterFireStore));
     }
 

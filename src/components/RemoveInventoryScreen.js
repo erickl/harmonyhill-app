@@ -3,6 +3,7 @@ import ButtonsFooter from "./ButtonsFooter.js";
 import TextInput from "./TextInput.js";
 import Dropdown from "./Dropdown.js";
 import * as activityService from "../services/activityService.js";
+import * as bookingService from "../services/bookingService.js";
 import * as inventoryService from "../services/inventoryService.js"
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
@@ -25,6 +26,7 @@ export default function RemoveInventoryScreen({onNavigate, item, onClose}) {
 
     const [form,            setForm           ] = useState(initialForm);
     const [activities,      setActivities     ] = useState([]);
+    const [bookings,        setBookings       ] = useState([]);
     const [validated,       setValidated      ] = useState(false);
     const [validationError, setValidationError] = useState(null);
 
@@ -86,6 +88,10 @@ export default function RemoveInventoryScreen({onNavigate, item, onClose}) {
         handleInputChange("activity", activity);
     }
 
+    const onBookingSelect = (booking) => {
+        handleInputChange("booking", booking);
+    }
+
     const onReasonSelect = (reason) => {
         const name = reason ? reason.name : '';
         handleInputChange("reason", name);
@@ -103,7 +109,19 @@ export default function RemoveInventoryScreen({onNavigate, item, onClose}) {
             setActivities(formattedActivities);
         };
 
-        getActivities();
+        const getBookings = async() => {
+            const filter = { after: utils.today(-7) }; 
+            const bookings_ = await bookingService.get(filter, onError);
+            const formattedBookings = bookings_.reduce((m, booking) => {
+                const date = utils.to_ddMMM(booking.checkInAt);
+                m[`${date}, ${booking.name}`] = booking;
+                return m;
+            }, {})
+            setBookings(formattedBookings);
+        }
+
+        getActivities(); 
+        //getBookings();
 
         validateFormData(initialForm);
     }, []);
@@ -136,14 +154,14 @@ export default function RemoveInventoryScreen({onNavigate, item, onClose}) {
                     />
                 </div>
 
-                <div>
+                { form.reason !== "expired" && (<div>
                     <Dropdown 
-                        label={"Booking"}
+                        label={"Activity/Booking"}
                         current={form.activity ? form.activity.name : null}
                         options={activities}
                         onSelect={onActivitySelect}
                     />
-                </div>
+                </div> )}
 
                 <div>
                     <TextInput 
