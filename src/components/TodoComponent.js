@@ -9,7 +9,9 @@ import * as todoService from "../services/todoService.js";
 import * as userService from "../services/userService.js";
 import * as utils from "../utils.js";
 import Spinner from "./Spinner.js";
-import AddTodoStepModal from './AddTodoStepModal.js';
+import { Checkbox, FormControlLabel } from '@mui/material';
+import AddTodoModal from './AddTodoModal.js';
+import AddTodoScreen from './AddTodoScreen.js';
 import TodoStepComponent from './TodoStepComponent.js';
 import "./TodoComponent.css";
 
@@ -19,7 +21,7 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [steps, setSteps] = useState([]);
-    const [addStepToTodo, setAddStepToTodo] = useState(null);
+    const [isCompleted, setIsCompleted] = useState(todo.isCompleted);
 
     const { onOpenCamera } = useCameraModal();
     const { onError } = useNotification();
@@ -46,11 +48,28 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
         setSteps(newSteps);
     }
 
+    const onTodoStepRemoved = async (todoToDelete) => {
+        onConfirm(`Are you sure you want to delete todo ${todoToDelete.id}?`, async () => {
+            const result = await todoService.remove(todoToDelete, onError);
+            if(result !== false) {
+                let newSteps = [...(steps || [])];
+                newSteps = newSteps.filter((step) => step.id !== todoToDelete.id);
+                setSteps(newSteps);
+                onSuccess();
+            }
+        });
+    }
+
+    const onSetStatus = async(isCompleted_) => {
+        setIsCompleted(isCompleted_);
+        const result = await todoService.setStatus(todo, isCompleted_, onError);
+    }
+
     const handleSetExpanded = async () => {
         setLoading((prev) => !prev);
 
         // todo: fetch todo steps and other info
-        const steps_ = await todoService.getTodoSteps(todo.id, {}, onError);
+        const steps_ = await todoService.get(todo, {}, onError);
         setSteps(steps_);
 
         setExpanded((prev) => !prev)
@@ -59,9 +78,24 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
     }
 
     return (
-        <div className="todo-box" onClick={() => handleSetExpanded()}>
+        <div className="todo-box" onClick={(e) => {
+            e.stopPropagation(); 
+            handleSetExpanded()
+        }}>
             <div className="todo-header">
                 <div className="todo-header-left">
+                    <FormControlLabel
+                        onClick={(e) => e.stopPropagation()}
+                        control={
+                            <Checkbox
+                                checked={isCompleted}
+                                onChange={(e) => {
+                                    onSetStatus(e.target.checked);               
+                                }}
+                            />
+                        }
+                        label=""
+                    />
                     <div className="todo-title">
                         {`${utils.capitalizeWords(todo.title)}`}
                     </div>
@@ -109,7 +143,12 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                         {steps.map((step) => {
                             return (
                                 <React.Fragment key={step.id}>
-                                    <TodoStepComponent todoStep={step} />
+                                    <TodoComponent 
+                                        todo={step} 
+                                        handleDelete={onTodoStepRemoved} 
+                                        onNavigate={onNavigate} 
+                                        onClose={null}
+                                    />
                                 </React.Fragment>
                             );
                         })}
@@ -118,8 +157,11 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                         <div className="todo-body-footer-icon">
                             <Plus
                                 onClick={(e) => {
-                                    e.stopPropagation();
-                                    setAddStepToTodo(todo);
+                                    e.stopPropagation(); 
+                                    onNavigate("add-todo", {
+                                        parent:todo, 
+                                        onCreated:onTodoStepCreated
+                                    })
                                 }}
                             />
                             <p>Add step</p>
@@ -148,15 +190,6 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                     <MetaInfo document={todo} />
                 </div>
             ) : (<></>)}
-
-            {addStepToTodo && (
-                <AddTodoStepModal
-                    todo={addStepToTodo}
-                    onNavigate={onNavigate}
-                    onCreated={(newTodoStep) => onTodoStepCreated(newTodoStep)}
-                    onClose={() => setAddStepToTodo(null)}
-                />
-            )}
         </div>
     );
 }

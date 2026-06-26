@@ -7,11 +7,11 @@ import { useSuccessNotification } from "../context/SuccessContext.js";
 import MyDatePicker from "./MyDatePicker.js";
 import * as utils from "../utils.js";
 
-export default function AddTodoStepModal({todo, todoStepToEdit, onCreated, onNavigate, onClose}) {
+export default function AddTodoModal({todoToEdit, parent, onCreated, onNavigate, onClose}) {
     const emptyForm = { 
-        title      : todoStepToEdit ? todoStepToEdit.title : "",
-        deadlineAt : todoStepToEdit ? todoStepToEdit.deadlineAt : null,
-        duration   : todoStepToEdit ? todoStepToEdit.deadlineAt : null,
+        title      : todoToEdit ? todoToEdit.title : "",
+        deadlineAt : todoToEdit ? todoToEdit.deadlineAt : null,
+        duration   : todoToEdit ? todoToEdit.deadlineAt : null,
     };
 
     const [formData, setFormData] = useState(emptyForm);
@@ -28,10 +28,10 @@ export default function AddTodoStepModal({todo, todoStepToEdit, onCreated, onNav
             
             let result = false;
             
-            if(todoStepToEdit) {
-                result = await todoService.updateTodoStep(todo.id, todoStepToEdit.id, formData, onError);
+            if(todoToEdit) {
+                result = await todoService.update(todoToEdit, formData, onError);
             } else {
-                result = await todoService.addTodoStep(todo.id, formData, onError);
+                result = await todoService.add(formData, parent, onError);
             }         
 
             if(result !== false) { 
@@ -46,7 +46,7 @@ export default function AddTodoStepModal({todo, todoStepToEdit, onCreated, onNav
     };
 
     const validateFormData = async (newFormData) => {
-        const validationResult = await todoService.validateStep(newFormData, setValidationError);
+        const validationResult = await todoService.validate(newFormData, setValidationError);
 
         setReadyToSubmit(validationResult);
 
@@ -80,6 +80,7 @@ export default function AddTodoStepModal({todo, todoStepToEdit, onCreated, onNav
         validateFormData(emptyForm);
     }, []);
 
+    // Here the AddTodoForm should be
     return (
         <div className="modal-overlay">
             <div className="modal-box">

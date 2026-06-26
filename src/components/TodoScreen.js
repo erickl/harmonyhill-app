@@ -27,10 +27,10 @@ export default function TodoScreen({ onNavigate, onClose }) {
         if(!todoToDelete || utils.isEmpty(todoToDelete.id)) return;
         
         onConfirm(`Are you sure you want to delete todo ${todoToDelete.id}?`, async () => {
-            const result = await todoService.remove(todoToDelete.id, onError);
+            const result = await todoService.remove(todoToDelete, onError);
             if(result !== false) {
                 let newTodos = utils.deepCopy(todos);
-                newTodos = newTodos.filter((expense) => expense.id !== todoToDelete.id);
+                newTodos = newTodos.filter((todo) => todo.id !== todoToDelete.id);
                 setTodos(newTodos);
                 onSuccess();
             }
@@ -46,7 +46,7 @@ export default function TodoScreen({ onNavigate, onClose }) {
             setIsManagerOrAdmin(userIsAdminOrManager);
 
             const filter = {};
-            const todos_ = await todoService.get(filter, onError);
+            const todos_ = await todoService.get(null, filter, onError);
             setTodos(todos_);
             
             setLoading(false);

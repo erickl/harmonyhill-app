@@ -11,7 +11,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import TextInput from './TextInput.js';
 
-export default function AddTodoScreen({ todoToEdit, onNavigate, onClose }) {
+export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClose, parent }) {
     const emptyForm = {
         title         : todoToEdit ? todoToEdit.title         : '',
         deadlineAt    : todoToEdit ? todoToEdit.deadlineAt    : '',
@@ -23,6 +23,7 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onClose }) {
         bookingId     : todoToEdit ? todoToEdit.bookingId     : '',
         description   : todoToEdit ? todoToEdit.description   : '',
         comments      : todoToEdit ? todoToEdit.comments      : '',
+        isCompleted   : todoToEdit ? todoToEdit.isCompleted   : false,
     };
 
     const [bookings,          setBookings         ] = useState([]       );
@@ -199,12 +200,15 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onClose }) {
             if(todoToEdit) {
                 result = await todoService.update(todoToEdit.id, formData, onError);
             } else {
-                result = await todoService.add(formData, onError);
+                result = await todoService.add(formData, parent, onError);
             }         
 
             if(result !== false) {
                 if(todoToEdit) onClose();
                 else setFormData(emptyForm);
+
+                if(onCreated) onCreated(result);
+                
                 onSuccess();
             }
         } catch(e) {

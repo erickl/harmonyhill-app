@@ -70,7 +70,7 @@ export default function SideMenu({onNavigate}) {
                         style={{ color: 'white' }}>Inventory</p>
                     </li>
 
-                    {false && (<li><p onClick={() => {
+                    {true && (<li><p onClick={() => {
                             onNavigate('todo-list');
                             close();
                         }} 
