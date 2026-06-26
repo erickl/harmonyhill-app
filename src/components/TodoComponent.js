@@ -84,6 +84,11 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
         setLoading((prev) => !prev);
     }
 
+    
+    const deadlineDate = utils.isDate(todo.deadlineAt) ? utils.to_ddMMYY(todo.deadlineAt, "/") : "";
+    const deadlineTime = utils.isDate(todo.deadlineTime) ? utils.to_HHmm(todo.deadlineTime) : "";
+    const deadlineDateTime = `${deadlineDate} ${deadlineTime}`.trim();
+
     return (
         <div className="todo-box" onClick={(e) => {
             e.stopPropagation(); 
@@ -118,7 +123,7 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
             </div>
 
             <div>
-                {utils.to_ddMMYY(todo.deadlineAt, "/")}
+                {deadlineDateTime}
             </div>
 
             {loading === true ? (

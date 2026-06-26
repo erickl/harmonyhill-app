@@ -2,6 +2,7 @@ import * as todoDao from "../daos/todoDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
+import { duration } from "@mui/material";
 
 export async function getOne(parent, id, onError) {
     return await todoDao.getOne(parent, id, onError);
@@ -75,6 +76,9 @@ export function validate(data, onError) {
     }
     if(!utils.isDateTime(data.deadlineAt)) {
         return onError(`Pick a deadline`);
+    }
+    if(!utils.isEmpty(duration)) {
+        return onError(`Set estimated duration (in minutes)`)
     }
     return true;
 }

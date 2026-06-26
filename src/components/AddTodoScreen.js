@@ -15,7 +15,7 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
     const emptyForm = {
         title         : todoToEdit ? todoToEdit.title         : '',
         deadlineAt    : todoToEdit ? todoToEdit.deadlineAt    : '',
-        //deadlineTime: todoToEdit ? todoToEdit.deadlineTime  : '', // DatePicker not ready yet for custom time fields
+        deadlineTime  : todoToEdit ? todoToEdit.deadlineTime  : '', 
         assignedTo    : todoToEdit ? todoToEdit.assignedTo    : '',
         duration      : todoToEdit ? todoToEdit.duration      : '',
         category      : todoToEdit ? todoToEdit.category      : '',
@@ -263,8 +263,8 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
                     label={"Deadline"}
                     date={formData.deadlineAt} 
                     onChange={handleChange}
-                    time={null}
-                    useTime={false}
+                    time={formData.deadlineTime}
+                    useTime={true}
                 />
 
                 {needsGuestInfo(formData.category) && (

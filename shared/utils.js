@@ -219,7 +219,7 @@ export function to_HHmm(date = null) {
         const data = getData(date);
         return `${data.hours}:${data.minutes}`;
     } catch (e) {
-        return "Invalid date";
+        return "Invalid time";
     }
 }
 
