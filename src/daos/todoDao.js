@@ -1,3 +1,4 @@
+import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 
@@ -25,7 +26,15 @@ export async function getOne(parent, id, onError) {
 
 export async function get(parent, filter, onError) {
     const path = await getPath(parent);
-    return await dao.get(path, filter, [], -1, onError);
+    
+    const queryFilter = [];
+    if(utils.exists(filter, "isCompleted")) {
+        queryFilter.push(where("isCompleted", "==", filter.isCompleted));
+    }
+    
+    let ordering = [ orderBy("deadlineAt", "asc") ];
+
+    return await dao.get(path, queryFilter, ordering, -1, onError);
 }
 
 export async function add(todo, parent, onError, writes) {

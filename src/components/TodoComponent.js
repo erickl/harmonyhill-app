@@ -15,7 +15,7 @@ import AddTodoScreen from './AddTodoScreen.js';
 import TodoStepComponent from './TodoStepComponent.js';
 import "./TodoComponent.css";
 
-export default function TodoComponent({ todo, handleDelete, onNavigate, onClose }) {
+export default function TodoComponent({ todo, handleDelete, onToggleFromParent, onNavigate, onClose }) {
     const [expanded, setExpanded] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
@@ -60,9 +60,16 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
         });
     }
 
-    const onSetStatus = async(isCompleted_) => {
+    const onToggleChild = async() => {
+
+    }
+
+    const onToggle = async(isCompleted_) => {
         setIsCompleted(isCompleted_);
         const result = await todoService.setStatus(todo, isCompleted_, onError);
+        if(result !== false) {
+            onToggleFromParent(todo, isCompleted_);
+        }
     }
 
     const handleSetExpanded = async () => {
@@ -90,7 +97,7 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                             <Checkbox
                                 checked={isCompleted}
                                 onChange={(e) => {
-                                    onSetStatus(e.target.checked);               
+                                    onToggle(e.target.checked);               
                                 }}
                             />
                         }
@@ -145,6 +152,7 @@ export default function TodoComponent({ todo, handleDelete, onNavigate, onClose 
                                 <React.Fragment key={step.id}>
                                     <TodoComponent 
                                         todo={step} 
+                                        onToggleFromParent={onToggleChild}
                                         handleDelete={onTodoStepRemoved} 
                                         onNavigate={onNavigate} 
                                         onClose={null}
