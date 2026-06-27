@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as incomeService from "../services/incomeService.js";
-import * as userService from "../services/userService.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as bookingService from "../services/bookingService.js";
 import { useNotification } from "../context/NotificationContext.js";
 import * as ledgerService from "../services/ledgerService.js";
@@ -19,14 +19,13 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
     const [loadingExpanded,     setLoadingExpanded     ] = useState({}   );
     const [incomes,             setIncomes             ] = useState([]   );
     const [loading,             setLoading             ] = useState(true );
-    const [isManagerOrAdmin,    setIsManagerOrAdmin    ] = useState(false);
-    const [isAdmin,             setIsAdmin             ] = useState(false);
     const [pettyCash,           setPettyCash           ] = useState(null );
     const [incomeSum,           setIncomeSum           ] = useState(null );
 
     const { onError   } = useNotification();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
+    const { permissions } = useUserPermissions();
 
     const filterHeaders = {
         "after"  : "date",
@@ -79,14 +78,6 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
     }
 
     useEffect(() => {
-        const getUserPermissions = async() => {
-            const userIsAdminOrManager = await userService.isManagerOrAdmin();
-            setIsManagerOrAdmin(userIsAdminOrManager);
-
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
-        }
-
         const fetchIncomes = async() => {
             const filter = {};
             if(customer) {
@@ -108,8 +99,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
             const incomeSum = await ledgerService.getCurrentTotalIncomes(onError);
             setIncomeSum(incomeSum);
         }
-    
-        getUserPermissions();
+
         fetchIncomes();
         getCashFlow();
     }, []);
@@ -134,7 +124,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                 <div className="card-header-right">
                     <div>
                         <div className="card-header-right-top-row">
-                            {isAdmin && (<>
+                            {permissions.isAdmin && (<>
                                 <SheetUploader label={"Incomes"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
                             <button className="add-button" onClick={() => onNavigate("add-income", {customer:customer})}>

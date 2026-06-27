@@ -1,21 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
-import * as userService from "../services/userService.js";
+import React from 'react';
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { Users, List, Upload, Download } from 'lucide-react';
 import '../App.css';
 
 export default function BottomNavigation({ activeTab, onTabChange }) {
-
-    const [isAdminOrManager, setIsAdminOrManager] = useState(false);
-
-    useEffect(() => {
-        const loadPermissions = async() => {
-            const userIsAdminOrManager = await userService.isManagerOrAdmin();
-            setIsAdminOrManager(userIsAdminOrManager);
-        };
-
-        loadPermissions();
-    });
+    const { permissions } = useUserPermissions();
 
     return (
         <nav className="bottom-navigation">
@@ -33,7 +23,7 @@ export default function BottomNavigation({ activeTab, onTabChange }) {
                 <List className="h-5 w-5 mb-1" />
                 Activities
             </button>
-            {isAdminOrManager && (
+            {permissions.isAdminOrManager && (
                 <>
                     <button
                         className={`nav-button ${activeTab === 'expenses' ? 'active' : ''}`}

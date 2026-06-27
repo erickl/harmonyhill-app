@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, ShoppingCart, Trash2, CreditCard } from 'lucide-react';
 import * as bookingService from '../services/bookingService.js';
-import * as userService from '../services/userService.js';
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as utils from '../utils.js';
 import MetaInfo from './MetaInfo.js';
 import { useNotification } from "../context/NotificationContext.js";
@@ -15,12 +15,12 @@ export default function BookingList({ onNavigate, onClose, title, filter, expand
     const [loading,                    setLoading                ] = useState(true );
     const [hasEditBookingsPermissions, setEditBookingsPermissions] = useState(false);
     const [canSeeAllBookings,          setCanSeeAllBookings      ] = useState(false);
-    const [isAdmin,                    setIsAdmin                ] = useState(false);
     const [expandedBookings,           setExpandedBookings       ] = useState({}   );
     
     const { onError } = useNotification();
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
+    const { permissions } = useUserPermissions();
         
     const fetchCustomers = async () => {  
         const customers_ = await bookingService.get(filter, onError);
@@ -58,9 +58,6 @@ export default function BookingList({ onNavigate, onClose, title, filter, expand
             await userService.logLastActive(onError);
             const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
             setEditBookingsPermissions(userHasEditBookingsPermissions);
-
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
 
             const canSeeAllBookings_ = await userService.canSeeAllBookings();
             setCanSeeAllBookings(canSeeAllBookings_)
@@ -150,7 +147,7 @@ export default function BookingList({ onNavigate, onClose, title, filter, expand
                                                 <p><span className="detail-label">Source:</span> {utils.capitalizeWords(customer.source)}</p>
                                                 { customer.phoneNumber && (<p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>)}
                                                 { customer.email && ( <p><span className="detail-label">Email:</span> {customer.email}</p> )}
-                                                { isAdmin && (<>
+                                                { permissions.isAdmin && (<>
                                                     <p><span className="detail-label">Guest Paid:</span> {customer.guestPaid}</p>
                                                     <p><span className="detail-label">Host Payout:</span> {customer.hostPayout}</p>
                                                 </>)}

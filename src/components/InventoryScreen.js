@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as inventoryService from "../services/inventoryService.js";
-import * as userService from "../services/userService.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as bookingService from "../services/bookingService.js";
 import * as expenseService from "../services/expenseService.js";
 import * as utils from "../utils.js";
@@ -20,14 +20,13 @@ export default function InventoryScreen({onNavigate, onClose}) {
     const [expandedItems,    setExpandedItems   ] = useState({}   );
     const [itemInfo,         setItemInfo        ] = useState({}   );
     const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
-    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
-    const [isAdmin,          setIsAdmin         ] = useState(false);
 
     const { onError } = useNotification();
     const { onProgress } = useProgressCounter();
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
     const { onDisplayDataTable } = useDataTableModal();
+    const { permissions } = useUserPermissions();
 
     const handleSetExpanded = async(item) => {
         setLoadingExpanded((prev) => ({...prev, [item.id]: true}));
@@ -143,15 +142,6 @@ export default function InventoryScreen({onNavigate, onClose}) {
             setItemInfo(newItemInfo);
         };
 
-        const getUserPermissions = async() => {
-            const userIsAdminOrManager = await userService.isManagerOrAdmin();
-            setIsManagerOrAdmin(userIsAdminOrManager);
-            
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
-        } 
-
-        getUserPermissions();
         getInventory();
     }, []);
 
@@ -166,7 +156,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                     <h2 className="card-title">Inventory</h2>
                 </div>
                 <div className="card-header-right-top-row">
-                    {isAdmin && (<>
+                    {permissions.isAdmin && (<>
                         <button onClick={onCloseMonth}>Close</button>
                     </>)}
                     <button className="add-button" onClick={() => onNavigate('addInventory', {inventory:inventory})}>

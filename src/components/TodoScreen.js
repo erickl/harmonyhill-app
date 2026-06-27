@@ -2,14 +2,11 @@ import React, { useState, useEffect } from 'react';
 import * as todoService from "../services/todoService.js";
 import { useNotification } from "../context/NotificationContext.js";
 import * as utils from "../utils.js";
-import * as userService from "../services/userService.js";
 import "./TodoScreen.css";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
-
 import { useFilters } from "../context/FilterContext.js";
-
 import TodoComponent from './TodoComponent.js';
 
 export default function TodoScreen({ onNavigate, onClose }) {
@@ -17,8 +14,6 @@ export default function TodoScreen({ onNavigate, onClose }) {
     const [completedTodos,     setCompletedTodos     ] = useState([]   );
     const [loading,            setLoading            ] = useState(true );
     const [showCompletedTodos, setShowCompletedTodos ] = useState(false );
-    const [isManagerOrAdmin,   setIsManagerOrAdmin   ] = useState(false);
-    const [isAdmin,            setIsAdmin            ] = useState(false);
 
     const { onFilter   } = useFilters();
     const { onError    } = useNotification();
@@ -67,21 +62,11 @@ export default function TodoScreen({ onNavigate, onClose }) {
     }
 
     useEffect(() => {
-        const fetchPermissions = async() => {
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
-
-            const userIsAdminOrManager = await userService.isManagerOrAdmin();
-            setIsManagerOrAdmin(userIsAdminOrManager);
-        };
-
         const fetchTodos = async(isCompleted) => {
             const todos_ = await todoService.get(null, {isCompleted : isCompleted}, onError);
             setTodos(todos_);
             setLoading(false);
         };
-
-        fetchPermissions();
 
         fetchTodos(false);
     }, []);

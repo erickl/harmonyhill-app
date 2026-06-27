@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as expenseService from "../services/expenseService.js";
-import * as userService from "../services/userService.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import MyDatePicker from "./MyDatePicker.js";
@@ -9,7 +9,6 @@ import ButtonsFooter from './ButtonsFooter.js';
 import * as utils from "../utils.js";
 import "./AddExpenseScreen.css";
 import { useNotification } from "../context/NotificationContext.js";
-import ExpensesScreen from './ExpensesScreen.js';
 import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useCameraModal } from "../context/CameraContext.js";
@@ -38,11 +37,11 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
     const [validationError,   setValidationError  ] = useState(null     );
     const [formData,          setFormData         ] = useState(emptyForm);
     const [imageResetTrigger, setImageResetTrigger] = useState(0        );
-    const [isAdmin,           setIsAdmin          ] = useState(false    );
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
     const { onOpenCamera } = useCameraModal();
+    const { permissions } = useUserPermissions();
 
     // todo: put in database
     const categories = {
@@ -91,11 +90,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         // Initial validation
         validateFormData(emptyForm);
 
-        const getUserPermissions = async() => {
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
-        } 
-
         const fetchTeamMembers = async () => {
             const teamMembers = await userService.getUsers();
             const formattedTeamMembers = teamMembers.reduce((m, teamMember) => {
@@ -106,7 +100,6 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         };
 
         fetchTeamMembers();
-        getUserPermissions();
     }, []);
 
     
@@ -263,7 +256,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
         'Cash' : {"name" : "Cash" },
     };
 
-    if(isAdmin) {
+    if(permissions.isAdmin) {
         paymentMethods['Transfer'] = {"name" : "Transfer"};
     }
 

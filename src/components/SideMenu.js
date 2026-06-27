@@ -1,6 +1,6 @@
 import React, { useState, useEffect, use } from 'react';
 import { useMenu } from '../context/MenuContext.js';
-import * as userService from "../services/userService.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { useNotification } from "../context/NotificationContext.js";
 import packageJson from '../../package.json';
 import * as utils from "../utils.js";
@@ -9,11 +9,10 @@ import "./SideMenu.css";
 
 export default function SideMenu({onNavigate}) {
     const [user, setUser] = useState(null);
-    const [isAdmin, setIsAdmin] = useState(false);
 
     const { open, close } = useMenu();
-
     const { onError } = useNotification();
+    const { permissions } = useUserPermissions();
 
     const logout = async () => {
         const success = await userService.logout();
@@ -28,9 +27,6 @@ export default function SideMenu({onNavigate}) {
         const getUser = async() => {
             const thisUser = await userService.getCurrentUserName();
             setUser(thisUser);
-            
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
         }
         getUser();
     }, []);
@@ -55,7 +51,7 @@ export default function SideMenu({onNavigate}) {
             <XIcon onClick={close} style={{ color: 'white', marginBottom: '1rem' }} />
             
             <ul className='menu-list'> 
-                {isAdmin && (<>
+                {permissions.isAdmin && (<>
                     <li><p onClick={() => {
                             onNavigate('admin');
                             close();

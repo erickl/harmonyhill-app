@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as todoService from "../services/todoService.js";
-import * as userService from "../services/userService.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import MyDatePicker from "./MyDatePicker.js";
@@ -32,10 +32,10 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
     const [readyToSubmit,     setReadyToSubmit    ] = useState(false    );
     const [validationError,   setValidationError  ] = useState(null     );
     const [formData,          setFormData         ] = useState(emptyForm);
-    const [isAdmin,           setIsAdmin          ] = useState(false    );
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
+    const { permissions } = useUserPermissions();
 
     const categories = {
         'Food'             : {"name" : "Food"             },
@@ -70,11 +70,6 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
         // Initial validation
         validateFormData(emptyForm);
 
-        const getUserPermissions = async() => {
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
-        } 
-
         const fetchTeamMembers = async () => {
             const teamMembers = await userService.getUsers();
             const formattedTeamMembers = teamMembers.reduce((m, teamMember) => {
@@ -84,7 +79,6 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
             setTeamMembers(formattedTeamMembers);
         };
 
-        getUserPermissions();
         fetchTeamMembers();
     }, []);
 

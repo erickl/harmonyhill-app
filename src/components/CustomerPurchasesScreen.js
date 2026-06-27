@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import * as userService from "../services/userService.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as invoiceService from '../services/invoiceService.js'; 
 import * as utils from "../utils.js";
 import './CustomerPurchasesScreen.css'; 
@@ -8,21 +8,12 @@ import { useNotification } from "../context/NotificationContext.js";
 import PdfViewer from './PdfViewer.js';
 
 export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
-    const [userIsAdmin,        setUserIsAdmin       ] = useState(false);
     const [showInvoice,        setShowInvoice       ] = useState(false);
     const [total,              setTotal             ] = useState(0);
     const [triggerRerender,    setTriggerRerender   ] = useState(0);
 
     const { onError } = useNotification();
-
-    useEffect(() => {
-        const setUserRole = async() => {
-            const thisUserIsAdmin = await userService.isAdmin();
-            setUserIsAdmin(thisUserIsAdmin);
-        };
-
-        setUserRole();
-    }, []);
+    const { permissions } = useUserPermissions();
 
     useEffect(() => {
         const getTotal = async() => {
@@ -49,7 +40,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                 </div>
                 <div>   
                     {/* Only admins can add purchases to checked out customers */}
-                    {(customer.checkOutAt >= today || userIsAdmin) &&  (
+                    {(customer.checkOutAt >= today || permissions.isAdmin) &&  (
                         <button 
                             className="add-button"  
                             onClick={(e) => {

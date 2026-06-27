@@ -5,21 +5,16 @@ import { useCameraModal } from "../context/CameraContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useNotification } from "../context/NotificationContext.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as todoService from "../services/todoService.js";
-import * as userService from "../services/userService.js";
 import * as utils from "../utils.js";
 import Spinner from "./Spinner.js";
 import { Checkbox, FormControlLabel } from '@mui/material';
-import AddTodoModal from './AddTodoModal.js';
-import AddTodoScreen from './AddTodoScreen.js';
-import TodoStepComponent from './TodoStepComponent.js';
 import "./TodoComponent.css";
 
 export default function TodoComponent({ todo, handleDelete, onToggleFromParent, onNavigate, onClose }) {
     const [expanded, setExpanded] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
     const [steps, setSteps] = useState([]);
     const [isCompleted, setIsCompleted] = useState(todo.isCompleted);
 
@@ -27,20 +22,7 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
     const { onError } = useNotification();
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
-
-    useEffect(() => {
-        const load = async () => {
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
-
-            const userIsAdminOrManager = await userService.isManagerOrAdmin();
-            setIsManagerOrAdmin(userIsAdminOrManager);
-
-            setLoading(false);
-        }
-
-        load();
-    }, []);
+    const { permissions } = useUserPermissions();
 
     const onTodoStepCreated = async (newTodoStep) => {
         const newSteps = [...(steps || [])];
@@ -188,7 +170,7 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
                             />
                             <p>Edit</p>
                         </div>
-                        {isManagerOrAdmin && (
+                        {permissions.isManagerOrAdmin && (
                             <div className="todo-body-footer-icon">
                                 <Trash2
                                     onClick={(e) => {

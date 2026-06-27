@@ -4,7 +4,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import * as utils from "../utils.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
-import * as userService from "../services/userService.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as ledgerService from "../services/ledgerService.js";
 import "./ExpensesScreen.css";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
@@ -26,7 +26,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [displayedReceipt, setDisplayedReceipt] = useState(null );
     const [loading,          setLoading         ] = useState(true );
     const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
-    const [isAdmin,          setIsAdmin         ] = useState(false);
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
 
@@ -35,6 +34,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const { onProgress } = useProgressCounter();
     const { onConfirm  } = useConfirmationModal();
     const { onSuccess  } = useSuccessNotification();
+    const { permissions} = useUserPermissions();
 
     const filterHeaders = {
         "after"  : "date",
@@ -104,17 +104,11 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
 
     useEffect(() => {
         const fetchExpenses = async() => {
-            const userIsAdmin = await userService.isAdmin();
-            setIsAdmin(userIsAdmin);
-
-            const userIsAdminOrManager = await userService.isManagerOrAdmin();
-            setIsManagerOrAdmin(userIsAdminOrManager);
-
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);
 
             const filter = lastClosedPettyCashRecord ? { "after" : lastClosedPettyCashRecord.closedAt} : {};
             
-            if(!userIsAdmin) {
+            if(!permissions.sAdmin) {
                 // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
                 filter["paymentMethod"] = "cash";
             } 
@@ -151,7 +145,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                 <div className="card-header-right">
                     <div>
                         <div className="card-header-right-top-row">
-                            {isAdmin && (<>
+                            {permissions.isAdmin && (<>
                                 <SheetUploader label={"Expenses"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                                 <ImageDown style={{margin:"1rem"}} onClick={() => handleReceiptsDownloadFilter()} />
                             </>)}
