@@ -83,7 +83,6 @@ export async function getPettyCashBalance(date, onError) {
 
     if (!utils.isEmpty(date)) {
         ledgerFilter["before"] = date;
-        ledgerFilter["before"] = until;
     }
 
     const incomes = await incomeService.get(ledgerFilter, onError);

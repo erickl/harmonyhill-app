@@ -23,7 +23,7 @@ export default function BottomNavigation({ activeTab, onTabChange }) {
                 <List className="h-5 w-5 mb-1" />
                 Activities
             </button>
-            {permissions.isAdminOrManager && (
+            {permissions.isManagerOrAdmin && (
                 <>
                     <button
                         className={`nav-button ${activeTab === 'expenses' ? 'active' : ''}`}

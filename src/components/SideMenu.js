@@ -8,11 +8,10 @@ import { XIcon } from 'lucide-react';
 import "./SideMenu.css";
 
 export default function SideMenu({onNavigate}) {
-    const [user, setUser] = useState(null);
 
     const { open, close } = useMenu();
     const { onError } = useNotification();
-    const { permissions } = useUserPermissions();
+    const { permissions, user } = useUserPermissions();
 
     const logout = async () => {
         const success = await userService.logout();
@@ -22,14 +21,6 @@ export default function SideMenu({onNavigate}) {
             onError("Couldn't logout");
         }
     }
-
-    useEffect(() => {
-        const getUser = async() => {
-            const thisUser = await userService.getCurrentUserName();
-            setUser(thisUser);
-        }
-        getUser();
-    }, []);
 
     return (
         <div
@@ -84,7 +75,7 @@ export default function SideMenu({onNavigate}) {
             </ul>
 
             <div className="side-menu-footer">
-                <p>User: {permissions.user.name}</p>
+                {user && (<p>User: {user.name}</p>)}
                 <p>v{packageJson.version}</p>
             </div>
         </div>
