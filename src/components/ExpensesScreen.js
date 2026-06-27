@@ -25,7 +25,6 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
     const [expenses,         setExpenses        ] = useState([]   );
     const [displayedReceipt, setDisplayedReceipt] = useState(null );
     const [loading,          setLoading         ] = useState(true );
-    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
 
@@ -214,7 +213,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                                 />
                                                 <p>Edit</p>
                                             </div>
-                                            {isManagerOrAdmin && (
+                                            {permissions.isManagerOrAdmin && (
                                                 <div className="expense-body-footer-icon">
                                                     <Trash2  
                                                         onClick={(e) => {

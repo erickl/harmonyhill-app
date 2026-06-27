@@ -7,6 +7,7 @@ import MetaInfo from './MetaInfo.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import * as userService from "../services/userService.js";
 import './BookingList.css';
 
 export default function BookingList({ onNavigate, onClose, title, filter, expand}) {

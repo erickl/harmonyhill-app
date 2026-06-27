@@ -3,6 +3,7 @@ import * as todoService from "../services/todoService.js";
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
+import * as userService from "../services/userService.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';

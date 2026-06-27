@@ -1,9 +1,9 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMenu } from '../context/MenuContext.js';
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { useNotification } from "../context/NotificationContext.js";
+import * as userService from "../services/userService.js";
 import packageJson from '../../package.json';
-import * as utils from "../utils.js";
 import { XIcon } from 'lucide-react';
 import "./SideMenu.css";
 
@@ -84,7 +84,7 @@ export default function SideMenu({onNavigate}) {
             </ul>
 
             <div className="side-menu-footer">
-                <p>User: {user}</p>
+                <p>User: {permissions.user.name}</p>
                 <p>v{packageJson.version}</p>
             </div>
         </div>

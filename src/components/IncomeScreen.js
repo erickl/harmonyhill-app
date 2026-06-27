@@ -187,7 +187,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                                                 />
                                                 <p>Edit</p>
                                             </div>
-                                            {isManagerOrAdmin && (
+                                            {permissions.isManagerOrAdmin && (
                                                 <div className="income-body-footer-icon">
                                                     <Trash2  
                                                         onClick={(e) => {

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import * as utils from "../utils.js";
 import * as inventoryService from "../services/inventoryService.js";
 import * as minibarService from "../services/minibarService.js";
-import * as userService from "../services/userService.js";
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
@@ -39,6 +39,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
+    const { permissions} = useUserPermissions();
 
     const selectDisplayedErrorMessage = () => {
         const displayedErrorMessage = errorMessages.find((errMsg) => !utils.isEmpty(errMsg));
@@ -52,11 +53,9 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                 map[item.name] = item.count;
                 return map;
             }, {});
-
-            const isManagerOrAdmin = await userService.isManagerOrAdmin();
             
             // // Remove some table columns for staff members
-            if(isManagerOrAdmin === false) {
+            if(permissions.isManagerOrAdmin === false) {
                 for(const header of ["total", "reserved"]) {
                     const indexToRemove = headers.indexOf(header);
                     if(indexToRemove !== -1) headers.splice(indexToRemove, 1);

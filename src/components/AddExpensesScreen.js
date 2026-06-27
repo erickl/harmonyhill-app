@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as expenseService from "../services/expenseService.js";
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import * as userService from "../services/userService.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import MyDatePicker from "./MyDatePicker.js";

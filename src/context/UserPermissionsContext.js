@@ -6,6 +6,7 @@ const UserPermissionsContext = createContext();
 
 export function UserPermissionProvider({ children }) {
     const [permissions, setPermissions] = useState({});
+    const [user,        setUser       ] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -14,11 +15,14 @@ export function UserPermissionProvider({ children }) {
                 try {
                     const isAdmin = await userService.isAdmin();
                     const isManagerOrAdmin = await userService.isManagerOrAdmin();
+                    const thisUser = await userService.getCurrentUser();
                     
                     setPermissions({
                         isAdmin : isAdmin,
                         isManagerOrAdmin : isManagerOrAdmin,
                     });
+
+                    setUser(thisUser);
                 } catch (error) {
                     console.error("Error fetching permissions:", error);
                 } finally {
@@ -34,7 +38,7 @@ export function UserPermissionProvider({ children }) {
     }, []);
 
     return (
-        <UserPermissionsContext.Provider value={{ permissions, loading }}>
+        <UserPermissionsContext.Provider value={{ permissions, user, loading }}>
             {children}
         </UserPermissionsContext.Provider>
     );
