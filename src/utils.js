@@ -533,6 +533,7 @@ export function deepCopy(obj) {
     if (!isJsonObject(obj)) return obj;
 
     if (obj instanceof Timestamp) {
+        // return new Timestamp(obj.seconds, obj.nanoseconds); creates a copy
         return obj;
     }
 
@@ -541,6 +542,7 @@ export function deepCopy(obj) {
     }
 
     if (obj instanceof DateTime) {
+        // DateTime is immutable. Safe to return
         return obj;
     }
 

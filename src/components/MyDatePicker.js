@@ -72,7 +72,7 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
 
     return (
         <div className="date-time-input">
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", marginTop: "1rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "center", marginTop: "1rem" }}>
                 <LocalizationProvider dateAdapter={AdapterLuxon} adapterLocale="en-gb">
                     <MobileDateTimePicker
                         slotProps={slotProps}  
@@ -85,21 +85,22 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
                         views={["year", "month", "day"]}
                     />
                 </LocalizationProvider>
-
-                <button
-                    onClick={() => handleDateChange(utils.today())}
-                    style={{marginLeft: "1rem", padding:"0.5rem", width: 'fit-content'}}>
-                        Today
-                </button>
-                <button 
-                    onClick={() => handleDateChange(utils.today(1))}
-                    style={{marginLeft: "1rem", padding:"0.5rem", width: 'fit-content'}}>
-                        Tomorrow
-                </button>
+                <div style={{ display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "start", marginTop: "0.1rem" }}>
+                    <button
+                        onClick={() => handleDateChange(utils.today())}
+                        style={{marginLeft: "1rem", padding:"0.5rem", width: 'fit-content'}}>
+                            Today
+                    </button>
+                    <button 
+                        onClick={() => handleDateChange(utils.today(1))}
+                        style={{marginLeft: "1rem", padding:"0.5rem", width: 'fit-content'}}>
+                            Tomorrow
+                    </button>
+                </div>
             </div>
 
             {useTime !== false && (
-                <div style={{display:"flex", flexDirection: "row", alignItems: "center",marginTop:"1rem"}}>
+                <div style={{display:"flex", flexDirection: "column", alignItems: "center",marginTop:"1rem"}}>
                     <div className="time-input" />
                     <LocalizationProvider dateAdapter={AdapterLuxon}>
                         <MobileTimePicker
@@ -113,16 +114,18 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
                             slotProps={slotProps} 
                         />
                     </LocalizationProvider>
-                    <button 
-                        onClick={() => handleTimeChange(utils.now())}
-                        style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
-                            Now
-                    </button>
-                    <button 
-                        onClick={() => handleTimeChange(null)}
-                        style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
-                            TBD
-                    </button>
+                    <div style={{display:"flex", flexDirection: "row", alignItems: "left",marginTop:"0.1rem"}}>
+                        <button 
+                            onClick={() => handleTimeChange(utils.now())}
+                            style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
+                                Now
+                        </button>
+                        <button 
+                            onClick={() => handleTimeChange(null)}
+                            style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
+                                TBD
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
