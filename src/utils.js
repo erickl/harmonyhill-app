@@ -532,7 +532,11 @@ export function deepCopy(obj) {
     if (isEmpty(obj)) return obj;
     if (!isJsonObject(obj)) return obj;
 
-    if (obj.constructor.name === 'Timestamp' && typeof obj.toDate === 'function') {
+    if (obj instanceof Timestamp) {
+        return obj;
+    }
+
+    if (typeof obj.toDate === 'function') {
         return obj;
     }
 
