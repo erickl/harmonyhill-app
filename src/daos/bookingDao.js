@@ -25,9 +25,10 @@ export async function get(filterOptions = {}, onError = null) {
     }
     
     if (utils.exists(filterOptions, "date")) {
-        const fireStoreDate = utils.toFireStoreTime(filterOptions.date);
-        queryFilter.push(where("checkInAt", "<=", fireStoreDate));
-        queryFilter.push(where("checkOutAt", ">=", fireStoreDate));
+        const fireStoreDateBefore = utils.toFireStoreTime(filterOptions.date.endOf('day'));
+        const fireStoreDateAfter = utils.toFireStoreTime(filterOptions.date.startOf('day'));
+        queryFilter.push(where("checkInAt", "<=", fireStoreDateBefore));
+        queryFilter.push(where("checkOutAt", ">=", fireStoreDateAfter));
     }
 
     if (utils.exists(filterOptions, "checkOutAfter")) {
