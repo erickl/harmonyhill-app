@@ -254,6 +254,10 @@ function toLuxonDateTime(inputDate) {
         return DateTime.fromJSDate(date, { zone: getHotelTimezone() });
     } else if (inputDate instanceof Date) {
         return DateTime.fromJSDate(inputDate, { zone: getHotelTimezone() });
+    // todo: i don't know why this would happen, but it does since the update of 2026-06-27
+    } else if(isObject(inputDate) && exists(inputDate, "seconds") && exists(inputDate, "nanoseconds")) {
+        const date = new Timestamp(inputDate.seconds, inputDate.nanoseconds).toDate();
+        return DateTime.fromJSDate(date, { zone: getHotelTimezone() });
     } else if (typeof inputDate === "string") {
         const formats = generateDateFormats();
         for (const format of formats) {
