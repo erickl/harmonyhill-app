@@ -136,7 +136,7 @@ export async function enhanceActivities(activities) {
             newActivity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
             newActivity.updatedAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.updatedAt); 
         } catch(e) {
-            throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
+            //throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
         }
 
         return newActivity;
@@ -315,7 +315,7 @@ export async function update(bookingId, activityId, activityUpdateData, onError,
     return result;
 }
 
-function getActivityPhotoFilePath(activity) {
+export function getActivityPhotoFilePath(activity) {
     if(!activity) return "";
     const activityDate = utils.to_yyMMM(activity.startingAt, "-");
     const filePath = `activities/photos/${activityDate}/${activity.id}`;
@@ -364,20 +364,20 @@ async function removePhotos(activity, onError, writes = []) {
     return true;
 }
 
-export async function uploadPhoto(activity, photo, onError, writes = []) {
+export async function uploadPhoto(activity, fileData, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const filePath = getActivityPhotoFilePath(activity);
-    const filename = `${filePath}/${Date.now()}`;
-    const options = {maxSize : 0.15};
-    const downloadUrl = await storageDao.upload(filename, photo, options, onError);
-    if(downloadUrl === false) {
+    //const filePath = getActivityPhotoFilePath(activity);
+    //const filename = `${filePath}/${Date.now()}`;
+    //const options = {maxSize : 0.15};
+    //const downloadUrl = await storageDao.upload(filename, photo, options, onError);
+    if(fileData.downloadUrl === false) {
         return;
     }
     const id = `activity-photo-${Date.now()}`;
     const data = {
-        fileName   : filename,
-        url        : downloadUrl,
+        fileName   : fileData.filename,
+        url        : fileData.url,
         activityId : activity.id,
     };
 

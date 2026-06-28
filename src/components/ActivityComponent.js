@@ -1,4 +1,4 @@
-import React, { useState, useEffect, act } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
@@ -19,6 +19,7 @@ import { useCameraModal } from '../context/CameraContext.js';
 import { useImageCarousel } from '../context/ImageCarouselContext.js';
 import { useMinibarTableModal } from '../context/MinibarTableContext.js';
 import MetaInfo from './MetaInfo.js';
+import PhotoUploadButton from "./PhotoUploadButton.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 
 import { motion } from "framer-motion";
@@ -48,16 +49,13 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const [alert, setAlert] = useState(null);
     const [assigneeStyleIndex, setAssigneeStyleIndex] = useState(0);
     const [minuteTicker, setMinuteTicker] = useState(0);
-    const [photos, setPhotos] = useState([]);
-    const [photoUploading, setPhotoUploading] = useState(false);
     const [requiredPhotosUploaded, setRequiredPhotosUploaded] = useState(false);
     const [minibarCount, setMinibarCount] = useState(null);
+    const [photos, setPhotos] = useState([]);
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
-    const { onOpenCamera } = useCameraModal();
-    const { onDisplayImages } = useImageCarousel();
     const { onDisplayMinibarTable } = useMinibarTableModal();
 
     const getAssigneeStyleIndex = () => {
@@ -87,17 +85,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         return thisActivityInfo;
     };
-
-    const onConfirmPhoto = async (photo) => {
-        setPhotoUploading(true);
-        const photoRecord = await activityService.uploadPhoto(activity, photo, onError);
-        if (photoRecord !== false) {
-            let newPhotos = [...photos, photoRecord];
-            setPhotos(newPhotos);
-            onSuccess();
-        }
-        setPhotoUploading(false);
-    }
 
     const canStartActivity = () => {
         if (!useActivityStartedStatus) return false;
@@ -302,6 +289,14 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         onDisplayMinibarTable("Minibar Count", activity, headers, stockListItems, onSubmitStockCount);
     }
 
+    const onUploadPhoto = async(fileData) => {
+        const photoRecord = await activityService.uploadPhoto(activity, fileData, onError);
+        if(photoRecord !== false) {
+            setRequiredPhotosUploaded(true);
+        }
+        return photoRecord
+    }
+
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
         await loadExpandedActivityInfo();
@@ -337,15 +332,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     useEffect(() => {
         calculateActivityStatus();
-
-        if (activityInfo && photos) {
-            const photosDone = !activityInfo.photosRequired || photos.length > 0;
-            setRequiredPhotosUploaded(photosDone);
-        }
-
         const newAssigneeStyleIndex = getAssigneeStyleIndex();
         setAssigneeStyleIndex(newAssigneeStyleIndex);
-    }, [activity, activityInfo, photos, minuteTicker]);
+    }, [activity, activityInfo, requiredPhotosUploaded, minuteTicker]);
 
     useEffect(() => {
         // Blinking effect on staff assign component, for when their attention is needed, as they need to re-confirm
@@ -664,42 +653,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        {canAddPhotos() && (
-                            <div className="activity-component-footer-icon">
-                                <motion.div
-                                    animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
-                                    transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-                                >
-                                    <Camera
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onOpenCamera(activityInfo.photoInstructions, true, false, () => onConfirmPhoto);
-                                        }}
-                                    />
-                                </motion.div>
-                                <p>Take photo</p>
-                            </div>
-                        )}
-
-                        {!photoUploading && photos.length > 0 && (
-                            <div className="activity-component-footer-icon">
-                                <Image
-                                    onClick={async (e) => {
-                                        e.stopPropagation();
-                                        onDisplayImages(photos);
-                                    }}
-                                />
-                                <p>See photos</p>
-                            </div>
-                        )}
-
-                        {photoUploading && (
-                            <div className="activity-component-footer-icon">
-                                <Spinner size={15} />
-                                <p>Uploading...</p>
-                            </div>
-                        )}
-
                         {/* Can see minibar count always, but only edit if date is today, and it's not completed (see in MinibarTableContext) */}
                         {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "checkin-prep" && (
                             <div className="activity-component-footer-icon">
@@ -735,6 +688,17 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                 <p>Count Minibar</p>
                             </div>
                         )}
+
+                        {canAddPhotos() && (
+                            <PhotoUploadButton 
+                                instructions={activityInfo.photoInstructions} 
+                                photos={photos}
+                                onUpload={onUploadPhoto}
+                                path={activityService.getActivityPhotoFilePath(activity)}
+                                isRequired={true}
+                            /> 
+                        )}
+
 
                         {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">
