@@ -35,7 +35,7 @@ export async function get(filterOptions = {}, onError = null) {
         queryFilter.push(where("checkOutAt", ">=", checkOutAfterFireStore));
     }
 
-    if (utils.exists(filterOptions, "checkOutBefore") || utils.exists(filterOptions, "before")) {
+    if (utils.exists(filterOptions, "checkOutBefore")) {
         const checkOutBeforeFireStore = utils.toFireStoreTime(filterOptions.checkOutBefore);
         queryFilter.push(where("checkOutAt", "<=", checkOutBeforeFireStore));
     }
