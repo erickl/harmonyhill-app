@@ -23,8 +23,8 @@ export default function BookingList({ onNavigate, onClose, title, filter, expand
     const { onSuccess } = useSuccessNotification();
     const { permissions } = useUserPermissions();
         
-    const fetchCustomers = async () => {  
-        const customers_ = await bookingService.get(filter, onError);
+    const fetchCustomers = async (getAll = false) => {  
+        const customers_ = await bookingService.get(getAll ? {} : filter, onError);
         setCustomers(customers_);
         setLoading(false);
     };

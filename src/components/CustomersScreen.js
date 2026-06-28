@@ -18,10 +18,8 @@ export default function CustomersScreen({ onNavigate, onClose }) {
         const userHasAddBookingsPermissions = await userService.hasAddBookingsPermissions();
         setAddBookingsPermissions(userHasAddBookingsPermissions)
 
-        const canSeeAllBookings = await userService.canSeeAllBookings();
-
         setPreviousInterval({
-            checkOutAfter  : canSeeAllBookings ? utils.beginning() : utils.today(-5),
+            checkOutAfter  : utils.today(-5),
             checkOutBefore : utils.today(-1).endOf('day'),
         });
 
@@ -58,7 +56,7 @@ export default function CustomersScreen({ onNavigate, onClose }) {
             
             <div className="card-content">
                 {previousInterval && (<BookingList onNavigate={onNavigate} onClose={onClose} title={"Previous"} filter={previousInterval} /> )}
-                <BookingList onNavigate={onNavigate} title={"Current"} onClose={onClose} filter={{date: utils.today()}} expand={true} />
+                <BookingList onNavigate={onNavigate} title={"Current"} onClose={onClose} filter={{date: utils.today().endOf('day')}} expand={true} />
                 {futureInterval && (<BookingList onNavigate={onNavigate} onClose={onClose} title={"Future"} filter={futureInterval} /> )}
             </div>
         </div>
