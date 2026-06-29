@@ -1,6 +1,8 @@
 import * as todoDao from "../daos/todoDao.js"; 
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
+import * as ActivityStatus from "../models/ActivityStatus.js";
+import {Alert} from "../models/Alert.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 import { duration } from "@mui/material";
 
@@ -47,10 +49,10 @@ export async function assigneeAccept(todo, isAccepted, onError, writes = []) {
     return result;
 }
 
-export async function setStatus(todo, isCompleted, onError, writes = []) {
+export async function setStatus(todo, newStatus, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await update(todo, {isCompleted : isCompleted}, onError, writes);
+    const result = await update(todo, {status : newStatus}, onError, writes);
 
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;
@@ -94,7 +96,7 @@ export async function uploadPhoto(todo, fileData, onError, writes = []) {
         todoId     : todo.id,
     };
 
-    const result = await todoDao.addPhoto(todo, data, onError, writes);
+    const result = await todoDao.addPhoto(todo, id, data, onError, writes);
     if(result === false) return false;
 
     if(commit) {
@@ -115,12 +117,43 @@ export function getTodoPhotoFilePath(todo) {
     return filePath;
 }
 
-export async function getStatus() {
-    //todo
+export async function getStatus(todo, onError) {
+    if(todo == null) return ActivityStatus.None;
+
+    if(utils.isEmpty(todo.assignedTo)) {
+        if(utils.isBeforeToday(todo.deadlineAt)) {
+            return ActivityStatus.AssignStaff.withMessage("Staff assignment overdue!");
+        // If activity is today, assigning staff
+        } else if(utils.isToday(todo.deadlineAt)) {
+            return ActivityStatus.AssignStaff;
+        // Start assigning staff after 17:00 the day before the activity
+        } else if(utils.isTomorrow(todo.deadlineAt)) {
+            const todayAtFivePm = utils.today().set({hour: 17});
+            if(utils.isPast(todayAtFivePm)) {
+                return ActivityStatus.AssignStaff;
+            }
+        } 
+    }
+
+    if(utils.isEmpty(todo.deadlineTime)) {
+        return ActivityStatus.DetailsMissing.withMessage("Set starting time");
+    }
+
+    if(todo.assigneeAccept !== true) {
+        if(utils.isTomorrow(todo.deadlineAt) || utils.isToday(todo.deadlineAt)) {
+            return ActivityStatus.StaffNotConfirmed;
+        }
+    }
+
+    if(ActivityStatus.Started.equals(todo.status)) {
+        return ActivityStatus.Started;
+    }
+
+    return ActivityStatus.None;
 }
 
 export async function getAlert() {
-    //todo
+    return Alert.None; // todo
 }
 
 export function validate(data, onError) {

@@ -10,6 +10,9 @@ import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 
 export default function MyDatePicker({ name, label, date, time, onChange, useTime }) {
     //const isMidnight = (dt) => dt !== null && dt.hour === 0 && dt.minute === 0 && dt.second === 0 && dt.millisecond === 0;
+    const name_ = name.replace("At", "");
+    const dateName = `${name_}At`;
+    const timeName = `${name_}Time`;
 
     date = utils.toDateTime(date);
     time = utils.toDateTime(time);
@@ -40,8 +43,8 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
         setTime(newTimeCopy);
 
         onChange("_batch", {
-            [name]: newStartingDate,
-            "startingTime": newTimeCopy
+            [dateName]: newStartingDate,
+            [timeName]: newTimeCopy
         });
     }
 
@@ -58,7 +61,7 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
             }
 
             setDate(newDateCopy);
-            onChange(name, newDateCopy);
+            onChange(timeName, newDateCopy);
         }
     };
 

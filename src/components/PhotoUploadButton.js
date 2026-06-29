@@ -46,8 +46,8 @@ export default function PhotoUploadButton({path, photos, instructions, onUpload,
         setPhotoUploading(false);
     }
 
-    const animation = animateButton ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] };
-    const transition = animateButton ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity };
+    const animation = animateButton ? { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] } : {};
+    const transition = animateButton ? { duration: 1.5, ease: "easeInOut", repeat: Infinity } : {};
 
     return (
         <div className="main-style">
@@ -81,7 +81,7 @@ export default function PhotoUploadButton({path, photos, instructions, onUpload,
             )}
 
             {photoUploading && (
-                <div>
+                <div className="footer-icon">
                     <Spinner size={15} />
                     <p>Uploading...</p>
                 </div>

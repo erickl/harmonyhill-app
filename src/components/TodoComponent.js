@@ -5,7 +5,7 @@ import { useCameraModal } from "../context/CameraContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useNotification } from "../context/NotificationContext.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import StatusCircle from "./StatusCircle.js";
 import AlertCircle from "./AlertCircle.js";
 import PhotoUploadButton from "./PhotoUploadButton.js";
@@ -13,25 +13,18 @@ import TaskAcceptButton from "./TaskAcceptButton.js";
 import TaskAssigneeComponent from './TaskAssigneeComponent.js';
 import * as todoService from "../services/todoService.js";
 import * as utils from "../utils.js";
-import {Alert} from "../models/Alert.js";
+import { Alert } from "../models/Alert.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import Spinner from "./Spinner.js";
 import "./TodoComponent.css";
 import { motion } from "framer-motion";
 
-const assigneeStyles = [
-    { backgroundColor: "#E12C2C", color: "white" },
-    { backgroundColor: "#FFA500", color: "black" },
-    { backgroundColor: "green", color: "white" }
-];
-
-export default function TodoComponent({ todo, handleDelete, onToggleFromParent, onNavigate, onClose }) {
+export default function TodoComponent({ todo, handleDelete, onCompleteFromParent, onNavigate, onClose }) {
     const [expanded, setExpanded] = useState(false);
     const [loading, setLoading] = useState(false);
     const [steps, setSteps] = useState([]);
-    const [isCompleted, setIsCompleted] = useState(todo.isCompleted);
     const [assigneeStyleIndex, setAssigneeStyleIndex] = useState(0);
-    const [status, setStatus] = useState(null);
+    const [status, setStatus] = useState(todo.status);
     const [alert, setAlert] = useState(null);
     const [requiredPhotosUploaded, setRequiredPhotosUploaded] = useState(false);
     const [photos, setPhotos] = useState([]);
@@ -44,7 +37,11 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
     const { permissions } = useUserPermissions();
 
     const canStart = () => {
-        return true; // todo?
+        const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
+        if (!isGoodToGo) {
+            return false;
+        }
+        return true;
     }
 
     const canAddPhotos = () => {
@@ -60,7 +57,7 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
         return isGoodToGo;
     }
 
-     const canComplete = () => {
+    const canComplete = () => {
         const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
         const isStarted = ActivityStatus.Started.equals(status);
         const canStillStart = canStart();
@@ -96,14 +93,14 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
 
     const handleAssigneeStatusChange = async (isAccepted) => {
         const result = await todoService.assigneeAccept(todo, isAccepted, onError);
-        if(result !== false) {
+        if (result !== false) {
             setAssigneeAccept(isAccepted);
         }
     }
 
-    const onUploadPhoto = async(fileData) => {
+    const onUploadPhoto = async (fileData) => {
         const photoRecord = await todoService.uploadPhoto(todo, fileData, onError);
-        if(photoRecord !== false) {
+        if (photoRecord !== false) {
             setRequiredPhotosUploaded(true);
         }
         return photoRecord
@@ -118,7 +115,7 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
     const onTodoStepRemoved = async (todoToDelete) => {
         onConfirm(`Are you sure you want to delete todo ${todoToDelete.id}?`, async () => {
             const result = await todoService.remove(todoToDelete, onError);
-            if(result !== false) {
+            if (result !== false) {
                 let newSteps = [...(steps || [])];
                 newSteps = newSteps.filter((step) => step.id !== todoToDelete.id);
                 setSteps(newSteps);
@@ -127,16 +124,8 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
         });
     }
 
-    const onToggleChild = async() => {
-
-    }
-
-    const onToggle = async(isCompleted_) => {
-        setIsCompleted(isCompleted_);
-        const result = await todoService.setStatus(todo, isCompleted_, onError);
-        if(result !== false) {
-            onToggleFromParent(todo, isCompleted_);
-        }
+    const onToggleChild = () => {
+        // todo
     }
 
     const handleSetExpanded = async () => {
@@ -152,12 +141,33 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
         setLoading((prev) => !prev);
     }
 
-    
+    const handleSetStatusManually = async (newStatus) => {
+        if (newStatus == null) return;
+
+        let confirmationText = `Set todo status to ${newStatus.name}?`;
+        //const minutesLeft = todo.startingAt.diff(utils.now(), 'minutes').minutes;
+
+        onConfirm(confirmationText, async () => {
+            const result = await todoService.setStatus(todo, newStatus.name, onError);
+            if (result !== false) {
+                setStatus(newStatus);
+                if (ActivityStatus.Completed.equals(newStatus)) {
+                    onCompleteFromParent(todo, true);
+                } else {
+                    onCompleteFromParent(todo, false);
+                }
+                onSuccess();
+            }
+        });
+    }
+
+    useEffect(() => {
+        calculateTodoStatus();
+    }, []);
+
     const deadlineDate = utils.isDate(todo.deadlineAt) ? utils.to_ddMMYY(todo.deadlineAt, "/") : "";
     const deadlineTime = utils.isDate(todo.deadlineTime) ? utils.to_HHmm(todo.deadlineTime) : "";
     const deadlineDateTime = `${deadlineDate} ${deadlineTime}`.trim();
-
-    const finalAssigneeStyle = assigneeStyles[assigneeStyleIndex];
 
     const deadlineTime_HHmm = utils.to_HHmm(todo.deadlineTime);
 
@@ -173,8 +183,8 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
                     <div className="activity-header-house">
                         {"PH"}
                     </div>
-                    <TaskAssigneeComponent 
-                        assigneeName={todo.assignedTo} 
+                    <TaskAssigneeComponent
+                        assigneeName={todo.assignedTo}
                         assigneeAccept={assigneeAccept}
                         hasChanged={false}
                     />
@@ -227,7 +237,7 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
                 )}
 
             </div>
-            
+
 
             {loading === true ? (
                 <Spinner />
@@ -252,25 +262,37 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
                         {steps.map((step) => {
                             return (
                                 <React.Fragment key={step.id}>
-                                    <TodoComponent 
-                                        todo={step} 
+                                    <TodoComponent
+                                        todo={step}
                                         onToggleFromParent={onToggleChild}
-                                        handleDelete={onTodoStepRemoved} 
-                                        onNavigate={onNavigate} 
+                                        handleDelete={onTodoStepRemoved}
+                                        onNavigate={onNavigate}
                                         onClose={null}
                                     />
                                 </React.Fragment>
                             );
                         })}
                     </div>
+
+                    {!utils.isEmpty(todo.changeDescription) && (
+                        <div style={{ color: "red" }}>
+                            <p className="preserve-whitespaces">
+                                <span className="detail-label">Change:</span>
+                                {todo.changeDescription.map((change) => {
+                                    return (<p>• {change}</p>)
+                                })}
+                            </p>
+                        </div>
+                    )}
+
                     <div className="todo-body-footer">
                         <div className="todo-body-footer-icon">
                             <Plus
                                 onClick={(e) => {
-                                    e.stopPropagation(); 
+                                    e.stopPropagation();
                                     onNavigate("add-todo", {
-                                        parent:todo, 
-                                        onCreated:onTodoStepCreated
+                                        parent: todo,
+                                        onCreated: onTodoStepCreated
                                     })
                                 }}
                             />
@@ -285,6 +307,7 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
                             />
                             <p>Edit</p>
                         </div>
+
                         {permissions.isManagerOrAdmin && (
                             <div className="todo-body-footer-icon">
                                 <Trash2
@@ -297,7 +320,7 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
                             </div>
                         )}
 
-                        <TaskAcceptButton 
+                        <TaskAcceptButton
                             taskDate={todo.deadlineAt}
                             status={todo.status}
                             assignedTo={todo.assignedTo}
@@ -305,16 +328,45 @@ export default function TodoComponent({ todo, handleDelete, onToggleFromParent, 
                             handleClick={handleAssigneeStatusChange}
                         />
 
+                        {/* Mark activity started */}
+                        {canStart() && (
+                            <div className="todo-body-footer-icon">
+                                <StatusCircle
+                                    status={ActivityStatus.Started.name}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSetStatusManually(ActivityStatus.Started);
+                                    }}
+                                />
+                                <p>Start it</p>
+                            </div>
+                        )}
+
+                        {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
+                        {/* Mark activity started */}
+                        {canComplete() && (
+                            <div className="todo-body-footer-icon">
+                                <StatusCircle
+                                    status={ActivityStatus.Completed.name}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSetStatusManually(ActivityStatus.Completed);
+                                    }}
+                                />
+                                <p>Complete it</p>
+                            </div>
+                        )}
+
                         {canAddPhotos() && (
-                            <PhotoUploadButton 
-                                instructions={todo.photoInstructions} 
+                            <PhotoUploadButton
+                                instructions={todo.photoInstructions}
                                 photos={photos}
                                 onUpload={onUploadPhoto}
                                 path={todoService.getTodoPhotoFilePath(todo)}
                                 isRequired={true}
-                            /> 
+                            />
                         )}
-                        
+
                     </div>
                     <MetaInfo document={todo} />
                 </div>

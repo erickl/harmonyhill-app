@@ -641,10 +641,6 @@ export async function getStatus(activity, activityInfo, onError) {
         return ActivityStatus.DetailsMissing.withMessage("Provide provider price");
     }
 
-    // Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded
-    // if(activity.category === "meal" && utils.isEmpty(activity.dishes)) {
-    //     return status(Status.DETAILS_MISSING, "Dishes missing");
-    // }
     if(activity.assigneeAccept !== true) {
         if(utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) {
             return ActivityStatus.StaffNotConfirmed;

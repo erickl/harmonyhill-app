@@ -413,7 +413,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         className="activity-delayed-overlay"
                         animate={{ scale: [1, 1, 1], opacity: [0.5, 0.1, 0.5] }}
                         transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-                    />
+                    />  
                 )}
 
             </div>
@@ -549,7 +549,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             handleClick={handleAssigneeStatusChange}
                         />
 
-                        {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                         {/* Mark activity started */}
                         {canStartActivity() && (
                             <div className="activity-component-footer-icon">

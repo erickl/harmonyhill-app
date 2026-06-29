@@ -29,7 +29,11 @@ export async function get(parent, filter, onError) {
     
     const queryFilter = [];
     if(utils.exists(filter, "isCompleted")) {
-        queryFilter.push(where("isCompleted", "==", filter.isCompleted));
+        if(filter.isCompleted) {
+            queryFilter.push(where("status", "==", "completed"));
+        } else {
+            queryFilter.push(where("status", "!=", "completed"));
+        }
     }
     
     let ordering = [ orderBy("deadlineAt", "asc") ];
@@ -60,16 +64,16 @@ function createTodoId(todo) {
     return `${todo.assignedTo}-${deadlineAt}-${Date.now()}`;
 }
 
-export async function addPhoto(todo, activityId, id, data, onError, writes = []) {
+export async function addPhoto(todo, id, data, onError, writes = []) {
     const parent = await dao.getParent(todo);
-    const parentPath = await getPath(parent);
-    const path = [parentPath, todo.id, "todo-photos"];
+    const path = await getPath(parent);
+    path.push(todo.id, "todo-photos");
     return await dao.add(path, id, data, onError, writes);
 }
 
 export async function getPhotos(todo, activityId, onError) {
     const parent = await dao.getParent(todo);
-    const parentPath = await getPath(parent);
-    const path = [parentPath, todo.id, "todo-photos"];
+    const path = await getPath(parent);
+    path.push(todo.id, "todo-photos");
     return await dao.get(path, [], [], -1, onError);
 }

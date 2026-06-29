@@ -193,7 +193,7 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
             let result = false;
             
             if(todoToEdit) {
-                result = await todoService.update(todoToEdit.id, formData, onError);
+                result = await todoService.update(todoToEdit, formData, onError);
             } else {
                 result = await todoService.add(formData, parent, onError);
             }         
