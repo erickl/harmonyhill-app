@@ -59,3 +59,17 @@ function createTodoId(todo) {
     const deadlineAt = utils.to_YYMMdd(todo.deadlineAt);
     return `${todo.assignedTo}-${deadlineAt}-${Date.now()}`;
 }
+
+export async function addPhoto(todo, activityId, id, data, onError, writes = []) {
+    const parent = await dao.getParent(todo);
+    const parentPath = await getPath(parent);
+    const path = [parentPath, todo.id, "todo-photos"];
+    return await dao.add(path, id, data, onError, writes);
+}
+
+export async function getPhotos(todo, activityId, onError) {
+    const parent = await dao.getParent(todo);
+    const parentPath = await getPath(parent);
+    const path = [parentPath, todo.id, "todo-photos"];
+    return await dao.get(path, [], [], -1, onError);
+}

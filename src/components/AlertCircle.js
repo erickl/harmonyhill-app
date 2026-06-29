@@ -1,5 +1,5 @@
 import "./AlertCircle.css";
-import { Alert } from "../services/activityService.js";
+import { Alert } from "../models/Alert.js";
 import * as utils from "../utils.js";
 
 export default function AlertCircle({status, message, onClick}) {

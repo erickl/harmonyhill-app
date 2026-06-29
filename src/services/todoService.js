@@ -36,6 +36,17 @@ export async function update(todo, updateData, onError, writes = []) {
     return result;
 }
 
+export async function assigneeAccept(todo, isAccepted, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const result = await update(todo, {assigneeAccept : isAccepted}, onError, writes);
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+    return result;
+}
+
 export async function setStatus(todo, isCompleted, onError, writes = []) {
     const commit = decideCommit(writes);
 
@@ -70,6 +81,48 @@ export async function remove(todo, onError, writes = []) {
     return result;
 }
 
+export async function uploadPhoto(todo, fileData, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    if(fileData.downloadUrl === false) {
+        return;
+    }
+    const id = `todo-photo-${Date.now()}`;
+    const data = {
+        fileName   : fileData.filename,
+        url        : fileData.url,
+        todoId     : todo.id,
+    };
+
+    const result = await todoDao.addPhoto(todo, data, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
+}
+
+export async function getPhotos(todo, onError) {
+    return await todoDao.getPhotos(todo, onError);
+} 
+
+export function getTodoPhotoFilePath(todo) {
+    if(!todo) return "";
+    const date = utils.to_yyMMM(todo.deadlineAt, "-");
+    const filePath = `todos/photos/${date}/${todo.id}`;
+    return filePath;
+}
+
+export async function getStatus() {
+    //todo
+}
+
+export async function getAlert() {
+    //todo
+}
+
 export function validate(data, onError) {
     if(utils.isEmpty(data.title)) {
         return onError(`Choose title`);
@@ -77,7 +130,7 @@ export function validate(data, onError) {
     if(!utils.isDateTime(data.deadlineAt)) {
         return onError(`Pick a deadline`);
     }
-    if(!utils.isEmpty(duration)) {
+    if(utils.isEmpty(data.duration)) {
         return onError(`Set estimated duration (in minutes)`)
     }
     return true;

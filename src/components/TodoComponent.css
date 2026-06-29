@@ -1,29 +1,93 @@
-.todo-header {
+
+.activity-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    margin-top: 0.5rem;
+    background: #f5f5f5;   /* subtle header background */
+    /* border: 1px solid #ddd; */
+    cursor: pointer; /* if clickable */
+}
+
+.activity-header-left {
   display: flex;
-  align-items: center; 
+  flex-direction: column;
   justify-content: space-between;
 }
 
-.todo-header-left {
+.activity-header-right {
   display: flex;
+  flex-direction: column; /* stack name + provider + guest */
+  flex: 1; /* take up the remaining space */
+  background-color: lightgrey;
+  padding: 0.5rem;
 }
 
-.todo-header-right {
-  display: flex;
-  align-items: center; 
+.activity-header-status {
+    background-color: lightgrey;
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;  
+    padding: 0.5rem; 
+    z-index:10000;
+}
+
+.activity-header-house {
+    flex: 1;                    
+    display: flex;              
+    align-items: center;        
+    justify-content: center;    
+    color: white;    
+    padding: 0.5rem;           
+}
+
+.activity-header-assignee {
+    flex: 1;                    
+    display: flex;              
+    align-items: center;        
+    justify-content: center;    
+    color: white; 
+    padding: 0.5rem;
+}
+
+.activity-header-time {
+    background-color: grey;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;  
+    white-space: nowrap; 
+    padding: 0.5rem;
+}
+
+.activity-header-name {
+    display: flex;              
+    align-items: center;        
+    justify-content: left; 
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.activity-header-provider {
+    display: flex;              
+    align-items: center;        
+    justify-content: left; 
+}
+
+.activity-header-guest {
+    display: flex;              
+    align-items: center;        
+    justify-content: left; 
 }
 
 .todo-box {
-  padding: 1rem;
-  border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.todo-title {
-  font-size: 1rem;
-  font-weight: bold;
 }
 
 .todo-body {
@@ -41,4 +105,18 @@
     margin-top: 0rem;
     cursor: pointer;
     align-items: center;
+}
+
+.activity-completed-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* dim background */
+  z-index: 10000; /* make sure it's on top */
+}
+
+.activity-delayed-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(238, 102, 102, 0.978); /* dim background */
+  z-index: 10000; /* make sure it's on top */
 }

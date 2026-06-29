@@ -19,19 +19,13 @@ import { useMinibarTableModal } from '../context/MinibarTableContext.js';
 import MetaInfo from './MetaInfo.js';
 import PhotoUploadButton from "./PhotoUploadButton.js";
 import TaskAcceptButton from "./TaskAcceptButton.js";
+import TaskAssigneeComponent from './TaskAssigneeComponent.js';
 import * as ActivityStatus from "../models/ActivityStatus.js";
+import {Alert} from "../models/Alert.js";
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { motion } from "framer-motion";
 
-const assigneeStyles = [
-    { backgroundColor: "#E12C2C", color: "white" },
-    { backgroundColor: "#FFA500", color: "black" },
-    { backgroundColor: "green", color: "white" }
-];
-
-export default function ActivityComponent({ inputCustomer, activity, onActivityChange, onNavigate, onClose, handleDeleteActivity, users }) {
-    const useActivityStartedStatus = true;
-
+export default function ActivityComponent({ inputCustomer, activity, onActivityChange, onNavigate, onClose, handleDeleteActivity }) {
     const [customer, setCustomer] = useState(null);
     const [showCustomerInfo, setShowCustomerInfo] = useState(false);
     const [activityInfo, setActivityInfo] = useState(null);
@@ -42,7 +36,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const [dishesPrice, setDishesPrice] = useState(null);
     const [status, setStatus] = useState(null);
     const [alert, setAlert] = useState(null);
-    const [assigneeStyleIndex, setAssigneeStyleIndex] = useState(0);
     const [minuteTicker, setMinuteTicker] = useState(0);
     const [requiredPhotosUploaded, setRequiredPhotosUploaded] = useState(false);
     const [minibarCount, setMinibarCount] = useState(null);
@@ -54,23 +47,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const { onDisplayMinibarTable } = useMinibarTableModal();
     const { user } = useUserPermissions();
 
-    const assignedUser = users && activity ? users.find(user => user.name === activity.assignedTo) : null;
-    const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
     const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
-
-
-    const getAssigneeStyleIndex = () => {
-        let newAssigneeStyleIndex = 0;
-        if (assignedUserShortName !== "?") {
-            newAssigneeStyleIndex = 1;
-            if (activity.assigneeAccept === true) {
-                newAssigneeStyleIndex = 2;
-            }
-        }
-
-        return newAssigneeStyleIndex;
-    };
-
     const countMinibarNow = minibarCount === null && activity && ActivityStatus.Started.equals(activity.status) && utils.isToday(activity.startingAt);
     const minibarCountAnimation = countMinibarNow ? { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] } : {};
     const minibarCountTransition = countMinibarNow ? { duration: 1.5, ease: "easeInOut", repeat: Infinity } : {};
@@ -88,8 +65,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     };
 
     const canStartActivity = () => {
-        if (!useActivityStartedStatus) return false;
-
         const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
         if (!isGoodToGo) {
             return false;
@@ -125,8 +100,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     }
 
     const canCompleteActivity = () => {
-        if (!useActivityStartedStatus) return false;
-
         const activityRequiresMinibarCount = requiresMinibarCount();
         if (activityRequiresMinibarCount) {
             return false;
@@ -333,21 +306,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     useEffect(() => {
         calculateActivityStatus();
-        const newAssigneeStyleIndex = getAssigneeStyleIndex();
-        setAssigneeStyleIndex(newAssigneeStyleIndex);
     }, [activity, activityInfo, requiredPhotosUploaded, minuteTicker]);
 
     useEffect(() => {
-        // Blinking effect on staff assign component, for when their attention is needed, as they need to re-confirm
-        let timerId = null;
-        if (!utils.isEmpty(activity.changeDescription)) {
-            const toggleColor = () => {
-                setAssigneeStyleIndex(prevIndex => prevIndex === 1 ? 2 : 1);
-            };
-
-            timerId = setInterval(toggleColor, 500);
-        }
-
         // Increment the ticker state every minute. Activity statuses changes depends on time
         // E.g. only possible to complete activity when it's past its deadline, counted in minutes
         const tick = () => {
@@ -381,7 +342,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         getAndSetActivityInfo();
 
         return () => {
-            if (timerId) clearInterval(timerId);
             clearInterval(intervalId);
         }
     }, []);
@@ -393,21 +353,23 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         return <p>Loading...</p>;
     }
 
-    const finalAssigneeStyle = assigneeStyles[assigneeStyleIndex];
+    const activityHasChanged = !utils.isEmpty(activity.changeDescription)
 
     return (
         <div>
             <div className="activity-header" onClick={(e) => {
                 e.stopPropagation();
-                handleActivityClick(activity);
+                handleActivityClick();
             }}>
                 <div className="activity-header-left">
                     <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
                         {houseShortName}
                     </div>
-                    <div className="activity-header-assignee" style={finalAssigneeStyle}>
-                        {assignedUserShortName}
-                    </div>
+                    <TaskAssigneeComponent 
+                        assigneeName={activity.assignedTo} 
+                        assigneeAccept={activity.assigneeAccept}
+                        hasChanged={activityHasChanged}
+                    />
                 </div>
 
                 <div className="activity-header-time">
@@ -446,7 +408,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 )}
 
                 {/* Red out the activity header to show it's OVERDUE to be started/completed */}
-                {alert && alert.category === activityService.Alert.OVERDUE && (
+                {alert && alert.category === Alert.OVERDUE && (
                     <motion.div
                         className="activity-delayed-overlay"
                         animate={{ scale: [1, 1, 1], opacity: [0.5, 0.1, 0.5] }}

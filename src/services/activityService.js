@@ -9,14 +9,7 @@ import * as storageDao from "../daos/storageDao.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 import {removeCounts as removeMinibarCounts} from "./minibarService.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
-
-export const Alert = Object.freeze({
-    ATTENTION  : "attention",
-    URGENT     : "urgent",
-    EMERGENCY  : "emergency",
-    OVERDUE    : "overdue",
-    NONE       : "",
-});
+import {Alert} from "../models/Alert.js";
 
 /**
  * @param {*} filterOptions = {category=transport|yoga|etc.., house=harmony hill|the jungle nook}
@@ -136,7 +129,7 @@ export async function enhanceActivities(activities) {
             newActivity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
             newActivity.updatedAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.updatedAt); 
         } catch(e) {
-            //throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
+            throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
         }
 
         return newActivity;
@@ -367,10 +360,6 @@ async function removePhotos(activity, onError, writes = []) {
 export async function uploadPhoto(activity, fileData, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    //const filePath = getActivityPhotoFilePath(activity);
-    //const filename = `${filePath}/${Date.now()}`;
-    //const options = {maxSize : 0.15};
-    //const downloadUrl = await storageDao.upload(filename, photo, options, onError);
     if(fileData.downloadUrl === false) {
         return;
     }

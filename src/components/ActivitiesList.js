@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as utils from "../utils.js";
-import * as userService from "../services/userService.js";
 import ActivityComponent from './ActivityComponent.js';
 import EditPurchaseScreen from './EditPurchaseScreen.js';
 import * as activityService from "../services/activityService.js";
@@ -14,7 +13,6 @@ import {getParent} from "../daos/dao.js";
 export default function ActivitiesList({onNavigate, onClose, from, to, customer, expandAllDates}) {
     const [expandedDates,           setExpandedDates    ] = useState({}   ); 
     const [activitiesByDate,        setActivitiesByDate ] = useState({}   );
-    const [users,                   setUsers            ] = useState([]   );
     const [loading,                 setLoading          ] = useState(true );
 
     const todaysHeader = useRef(null);
@@ -78,15 +76,6 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
     };
 
     const today_ddMMM = utils.to_ddMMM(utils.today(0, false));
-
-    useEffect(() => {
-        const getUsers = async() => {
-            const allUsers = await userService.getUsers();
-            setUsers(allUsers);
-        };
-
-        getUsers();
-    }, []);
 
     useEffect(() => {
         if (todaysHeader.current) {
@@ -176,7 +165,6 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
                                                     onNavigate={onNavigate}
                                                     onClose={onClose}
                                                     handleDeleteActivity={() => handleDeleteActivity(activity)}
-                                                    users={users}
                                                 />
                                             </React.Fragment>
                                         )
