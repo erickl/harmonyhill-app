@@ -8,20 +8,19 @@ import "./ActivityComponent.css";
 import Spinner from './Spinner.js';
 import { getParent } from "../daos/dao.js";
 import * as userService from "../services/userService.js";
-import { Pencil, Trash2, ThumbsUp, ThumbsDown, Candy, Camera, Image } from 'lucide-react';
+import { Pencil, Trash2, Candy } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle from './StatusCircle.js';
 import AlertCircle from './AlertCircle.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
-import { useCameraModal } from '../context/CameraContext.js';
-import { useImageCarousel } from '../context/ImageCarouselContext.js';
 import { useMinibarTableModal } from '../context/MinibarTableContext.js';
 import MetaInfo from './MetaInfo.js';
 import PhotoUploadButton from "./PhotoUploadButton.js";
+import TaskAcceptButton from "./TaskAcceptButton.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
-
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { motion } from "framer-motion";
 
 const assigneeStyles = [
@@ -30,12 +29,8 @@ const assigneeStyles = [
     { backgroundColor: "green", color: "white" }
 ];
 
-export default function ActivityComponent({ inputCustomer, activity, onActivityChange, onNavigate, onClose, handleDeleteActivity, users, user }) {
+export default function ActivityComponent({ inputCustomer, activity, onActivityChange, onNavigate, onClose, handleDeleteActivity, users }) {
     const useActivityStartedStatus = true;
-
-    const assignedUser = users && activity ? users.find(user => user.name === activity.assignedTo) : null;
-    const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
-    const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
 
     const [customer, setCustomer] = useState(null);
     const [showCustomerInfo, setShowCustomerInfo] = useState(false);
@@ -57,6 +52,12 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
     const { onDisplayMinibarTable } = useMinibarTableModal();
+    const { user } = useUserPermissions();
+
+    const assignedUser = users && activity ? users.find(user => user.name === activity.assignedTo) : null;
+    const assignedUserShortName = assignedUser ? assignedUser.shortName : "?";
+    const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
+
 
     const getAssigneeStyleIndex = () => {
         let newAssigneeStyleIndex = 0;
@@ -565,6 +566,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             />
                             <p>Edit</p>
                         </div>
+
                         {isManagerOrAdmin && (
                             <div className="activity-component-footer-icon">
                                 <Trash2
@@ -577,51 +579,13 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        {user && user.shortName === assignedUserShortName && !activity.assigneeAccept && (<>
-                            {(utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) ? (
-
-                                <div className="activity-component-footer-icon">
-                                    <motion.div
-                                        animate={requiredPhotosUploaded ? {} : { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
-                                        transition={requiredPhotosUploaded ? {} : { duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-                                    >
-                                        <ThumbsUp
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleAssigneeStatusChange(true);
-                                            }}
-                                        />
-                                    </motion.div>
-                                    <p>Accept task?</p>
-                                </div>
-                            ) : (
-                                <div className="activity-component-footer-icon">
-                                    <ThumbsUp
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onError("Only available from 1 day before, and if all activity info is provided");
-                                        }}
-                                    />
-                                    <p>Unavailable</p>
-                                </div>
-                            )}
-                        </>)}
-
-                        {user && user.shortName === assignedUserShortName &&
-                            activity.assigneeAccept &&
-                            ActivityStatus.Started.equals(activity.status) === false &&
-                            (!utils.isPast(activity.startingAt)) && (
-
-                                <div className="activity-component-footer-icon">
-                                    <ThumbsDown
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAssigneeStatusChange(false);
-                                        }}
-                                    />
-                                    <p>Decline task?</p>
-                                </div>
-                            )}
+                        <TaskAcceptButton 
+                            taskDate={activity.startingAt}
+                            status={activity.status}
+                            assignedTo={activity.assignedTo}
+                            isAccepted={activity.assigneeAccept}
+                            handleClick={handleAssigneeStatusChange}
+                        />
 
                         {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                         {/* Mark activity started */}
@@ -698,7 +662,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                 isRequired={true}
                             /> 
                         )}
-
 
                         {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">

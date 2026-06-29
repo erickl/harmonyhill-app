@@ -15,7 +15,6 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
     const [expandedDates,           setExpandedDates    ] = useState({}   ); 
     const [activitiesByDate,        setActivitiesByDate ] = useState({}   );
     const [users,                   setUsers            ] = useState([]   );
-    const [user,                    setUser             ] = useState(null );
     const [loading,                 setLoading          ] = useState(true );
 
     const todaysHeader = useRef(null);
@@ -84,9 +83,6 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
         const getUsers = async() => {
             const allUsers = await userService.getUsers();
             setUsers(allUsers);
-
-            const thisUser = await userService.getCurrentUser();
-            setUser(thisUser);
         };
 
         getUsers();
@@ -181,7 +177,6 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
                                                     onClose={onClose}
                                                     handleDeleteActivity={() => handleDeleteActivity(activity)}
                                                     users={users}
-                                                    user={user}
                                                 />
                                             </React.Fragment>
                                         )
