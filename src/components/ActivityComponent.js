@@ -292,7 +292,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 }
                
                 const dishes = await mealService.getMealDishes(bookingId, activity.id, {}, onError);
-                const dishesPrice = dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice, 0);
+                const dishesPrice = dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice * dish.quantity, 0);
                 setDishesPrice(dishesPrice);
                 setDishes(dishes);
             }
@@ -482,10 +482,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     </>)}
 
                     {activity.isFree !== true && (<>
-                        {activity.customerPrice !== 0 && (<p>
-                            <span className="detail-label">Customer Price: </span>
-                            {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0}
-                        </p>
+                        {activity.customerPrice !== 0 && (
+                            <p>
+                                <span className="detail-label">Customer Price: </span>
+                                {utils.formatDisplayPrice(activity.customerPrice, true) ?? 0}
+                            </p>
                         )}
 
                         {dishesPrice && dishesPrice > 0 && (

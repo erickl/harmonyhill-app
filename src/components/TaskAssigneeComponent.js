@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUserPermissions } from '../context/UserPermissionsContext.js';
 import "./TaskAssigneeComponent.css";
+import * as utils from "../utils.js";
 
 const assigneeStyles = [
     { backgroundColor: "#E12C2C", color: "white" },
@@ -17,7 +18,7 @@ export default function TaskAssigneeComponent({assigneeName, assigneeAccept, has
 
     const getAssigneeStyleIndex = () => {
         let newAssigneeStyleIndex = 0;
-        if (assigneeName !== "?") {
+        if (assigneeName !== "?" && !utils.isEmpty(assigneeName)) {
             newAssigneeStyleIndex = 1;
             if (assigneeAccept === true) {
                 newAssigneeStyleIndex = 2;

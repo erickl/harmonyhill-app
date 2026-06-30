@@ -25,6 +25,8 @@ import CustomerPurchasesScreen from './components/CustomerPurchasesScreen.js';
 import TodoScreen from './components/TodoScreen.js';
 import AddTodoScreen from './components/AddTodoScreen.js';
 
+//import * as migrationService from './services/dataMigrationService.js';
+
 function App() {
     const [isLoggedIn, setIsLoggedIn         ] = useState(false      );
     const [loading,    setLoading            ] = useState(true       );
@@ -55,6 +57,8 @@ function App() {
 
             setLoading(false);
         });
+
+        //migrationService.activitiesMigration();
 
         // cleanup to avoid multiple listeners
         return () => unsubscribe();
