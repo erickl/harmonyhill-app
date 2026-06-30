@@ -59,7 +59,8 @@ export async function getTotal(bookingId, onError) {
 
     const totalList = [...itemizedActivityList, ...itemizedMealList];
 
-    const payments = await incomeService.get({bookingId : bookingId}, onError);
+    const incomeFilter = {bookingId : bookingId, category : "guest payment"};
+    const payments = await incomeService.get(incomeFilter, onError);
     const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
     return {
