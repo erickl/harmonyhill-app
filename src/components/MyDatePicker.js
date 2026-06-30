@@ -61,7 +61,7 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
             }
 
             setDate(newDateCopy);
-            onChange(timeName, newDateCopy);
+            onChange(dateName, newDateCopy);
         }
     };
 
