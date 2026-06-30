@@ -28,6 +28,22 @@ export async function add(todo, parent, onError, writes = []) {
 
 export async function update(todo, updateData, onError, writes = []) {
     const commit = decideCommit(writes);
+    const currentUser = await userService.getCurrentUser();
+
+    const changeAssignee = utils.exists(updateData, "assignedTo") && utils.isString(updateData.assignedTo) && todo.assignedTo !== updateData.assignedTo;
+    const assignee = changeAssignee ? updateData.assignedTo : todo.assignedTo;
+    const selfUpdate = currentUser.shortName === assignee;
+
+    if(changeAssignee) {
+        // If updated yourself, accepting task not needed, since it counts as you noticing the task anyway
+        updateData.assigneeAccept = selfUpdate;
+        updateData.changeDescription = null;
+    } else { // same assignee
+        const changeLog = makeChangeLog(todo, updateData);
+        if(!utils.isEmpty(changeLog)) {
+            updateData.assigneeAccept = selfUpdate;
+        }
+    }
        
     const result = await todoDao.update(todo, updateData, onError, writes);
     if(result === false) return false;
@@ -41,7 +57,11 @@ export async function update(todo, updateData, onError, writes = []) {
 export async function assigneeAccept(todo, isAccepted, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await update(todo, {assigneeAccept : isAccepted}, onError, writes);
+    const updateData = {
+        assigneeAccept : isAccepted,
+        changeDescription : null
+    };
+    const result = await update(todo, updateData, onError, writes);
 
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;
@@ -149,11 +169,15 @@ export async function getStatus(todo, onError) {
         return ActivityStatus.Started;
     }
 
+    if(ActivityStatus.Completed.equals(todo.status)) {
+        return ActivityStatus.Completed;
+    }
+
     return ActivityStatus.None;
 }
 
 export async function getAlert() {
-    return Alert.None; // todo
+    return Alert.NONE; // todo
 }
 
 export function validate(data, onError) {
@@ -167,4 +191,30 @@ export function validate(data, onError) {
         return onError(`Set estimated duration (in minutes)`)
     }
     return true;
+}
+
+export function makeChangeLog(oldData, newData) {
+    let changeLog = [];
+    
+    if(!utils.dateIsSame(oldData.deadlineAt, newData.startingAt)) {
+        changeLog.push(`New deadline date: from ${utils.to_yyMMddHHmm(oldData.deadlineAt, "/")} to ${utils.to_yyMMddHHmm(newData.deadlineAt, "/")}`);
+    }
+
+    if(!utils.dateIsSame(oldData.deadlineTime, newData.deadlineTime)) {
+        changeLog.push(`New deadline time: from ${utils.to_HHmm(oldData.deadlineTime)} to ${utils.to_HHmm(newData.deadlineTime)}`);
+    }
+
+    if(oldData.duration !== newData.duration) {
+        changeLog.push(`New duration: from ${oldData.duration} to ${newData.duration}`);
+    }
+
+    if(oldData.comments !== newData.comments) {
+        changeLog.push(`Comments update: from ${oldData.comments} to ${newData.comments}`);
+    }
+
+    if(oldData.comments !== newData.comments) {
+        changeLog.push(`Description update: from ${oldData.description} to ${newData.description}`);
+    }
+    
+    return changeLog;
 }

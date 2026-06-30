@@ -180,8 +180,8 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                 handleSetExpanded();
             }}>
                 <div className="activity-header-left">
-                    <div className="activity-header-house">
-                        {"PH"}
+                    <div className="todo-header-top-left">
+                        {"TODO"}
                     </div>
                     <TaskAssigneeComponent
                         assigneeName={todo.assignedTo}
@@ -199,10 +199,10 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                         {todo.title}
                     </div>
                     <div className="activity-header-provider">
-                        {"Placeholder 1"}
+                        {""}
                     </div>
                     <div className="activity-header-guest">
-                        {"Placeholder 2"}
+                        {""}
                     </div>
                 </div>
 
@@ -235,7 +235,6 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                         transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
                     />
                 )}
-
             </div>
 
 
@@ -243,6 +242,15 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                 <Spinner />
             ) : expanded ? (
                 <div className="todo-body">
+                    <p><
+                        span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}
+                    </p>
+                    {alert && !utils.isEmpty(alert.message) && (
+                        <p>
+                            <span className="detail-label">Alert: </span>
+                            <span className="important-badge">{alert.message}</span>
+                        </p>
+                    )}
                     <div>
                         Description: {todo.description}
                     </div>

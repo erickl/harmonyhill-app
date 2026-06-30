@@ -132,6 +132,7 @@ export async function update(bookingId, mealId, mealUpdateData, onError, writes 
     // When changing assignee 
     if (utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && existing.assignedTo !== mealUpdateData.assignedTo) {
         mealUpdateData.assigneeAccept = false;
+        mealUpdateData.changeDescription = null;
     }
 
     // Update meal data

@@ -34,12 +34,13 @@
     z-index:10000;
 }
 
-.activity-header-house {
+.todo-header-top-left {
     flex: 1;                    
     display: flex;              
     align-items: center;        
     justify-content: center;    
-    color: white;    
+    color: white;
+    background-color: rgb(224, 123, 140);    
     padding: 0.5rem;           
 }
 
@@ -119,4 +120,9 @@
   inset: 0;
   background-color: rgba(238, 102, 102, 0.978); /* dim background */
   z-index: 10000; /* make sure it's on top */
+}
+
+.activity-details .detail-label {
+    color: black;
+    font-weight: 600;
 }

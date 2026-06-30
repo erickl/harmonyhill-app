@@ -288,6 +288,7 @@ export async function update(bookingId, activityId, activityUpdateData, onError,
     // When changing assignee 
     if(utils.exists(activityUpdate, "assignedTo") && utils.isString(activityUpdate.assignedTo) && existing.assignedTo !== activityUpdate.assignedTo) {
         activityUpdate.assigneeAccept = false;
+        activityUpdate.changeDescription = null;
     }
     
     // Don't try to update booking name or house

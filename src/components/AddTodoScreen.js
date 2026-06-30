@@ -5,6 +5,7 @@ import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import * as userService from "../services/userService.js";
 import MyDatePicker from "./MyDatePicker.js";
+import * as ActivityStatus from "../models/ActivityStatus.js";
 import Dropdown from "./Dropdown.js";
 import ButtonsFooter from './ButtonsFooter.js';
 import * as utils from "../utils.js";
@@ -24,7 +25,7 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
         bookingId     : todoToEdit ? todoToEdit.bookingId     : '',
         description   : todoToEdit ? todoToEdit.description   : '',
         comments      : todoToEdit ? todoToEdit.comments      : '',
-        isCompleted   : todoToEdit ? todoToEdit.isCompleted   : false,
+        status        : todoToEdit ? todoToEdit.status        : ActivityStatus.None,
     };
 
     const [bookings,          setBookings         ] = useState([]       );
