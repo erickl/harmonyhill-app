@@ -9,7 +9,7 @@ import { useProgressCounter } from "../context/ProgressContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import MetaInfo from './MetaInfo.js';
-import { Receipt, ShoppingCart, PlusCircle, MinusCircle } from 'lucide-react';
+import { Receipt, ShoppingCart, PlusCircle, MinusCircle, CheckCircle } from 'lucide-react';
 import "./InventoryScreen.css";
 import Spinner from "./Spinner.js";
 import { useDataTableModal } from '../context/DataTableContext.js';
@@ -53,6 +53,15 @@ export default function InventoryScreen({onNavigate, onClose}) {
         item.reserved = reservedCount;   
     };
 
+    const onCloseItemInventory = async(item) => {
+        onConfirm(`Close count for ${item.name}?`, async () => {
+            const result = await inventoryService.closeItemCount(item.name, null, onError);
+            if(result !== false) {
+                onSuccess(`Closed ${item.name}`);
+            }
+        })
+    }
+
     const onAddStock = async(item) => {
         const inventory = [item];
         onNavigate("addInventory", {inventory: inventory});
@@ -60,15 +69,6 @@ export default function InventoryScreen({onNavigate, onClose}) {
 
     const onRemoveStock = async(item) => {
         onNavigate("removeInventory", {item: item});
-    }
-
-    const onCloseMonth = async() => {
-        onConfirm("Are you sure you want to close month on all inventory?", async() => {
-            const result = await inventoryService.closeMonthAllItems(null, null, onProgress, onError);
-            if(result !== false) {
-                onSuccess();
-            }
-        });
     }
 
     const onDisplayRemovalsData = async(item) => {    
@@ -156,9 +156,6 @@ export default function InventoryScreen({onNavigate, onClose}) {
                     <h2 className="card-title">Inventory</h2>
                 </div>
                 <div className="card-header-right-top-row">
-                    {permissions.isAdmin && (<>
-                        <button onClick={onCloseMonth}>Close</button>
-                    </>)}
                     <button className="add-button" onClick={() => onNavigate('addInventory', {inventory:inventory})}>
                         +
                     </button> 
@@ -248,6 +245,18 @@ export default function InventoryScreen({onNavigate, onClose}) {
                                                 />
                                                 <p>Refills</p>
                                             </div>
+
+                                            {permissions.isAdmin && (
+                                                <div className="inv-item-body-footer-icon">
+                                                    <CheckCircle   
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onCloseItemInventory(item);
+                                                        }}
+                                                    />
+                                                    <p>Lock</p>
+                                                </div>
+                                            )}
                                         </div>
                                         
                                         <MetaInfo document={item}/>
