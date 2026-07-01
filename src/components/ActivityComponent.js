@@ -305,6 +305,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     };
 
     useEffect(() => {
+        setRequiredPhotosUploaded(photos.length >0)
+    }, [photos]);
+
+    useEffect(() => {
         calculateActivityStatus();
     }, [activity, activityInfo, requiredPhotosUploaded, minuteTicker]);
 
