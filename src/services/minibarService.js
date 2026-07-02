@@ -228,7 +228,7 @@ export async function get(booking, filters, onError) {
 
 export async function getCount(booking, type, onError) {
     const counts = await get(booking, {"type": type}, onError);
-    if(!counts || counts.length === 0) return null;
+    if(!counts || counts.length === 0) return {items:[]};
     return counts[0];
 }
 

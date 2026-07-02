@@ -32,6 +32,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     const [totalStock,            setTotalStock            ] = useState(null);
     const [reservedStock,         setReservedStock         ] = useState(null);
     const [editable,              setEditable              ] = useState(false);
+    const [uneditableReason,      setUneditableReason      ] = useState("");
     const [countIsValid,          setCountIsValid          ] = useState(Array(itemCount).fill(true));
     const [errorMessages,         setErrorMessages         ] = useState(Array(itemCount).fill(""));
     const [displayedErrorMessage, setDisplayedErrorMessage ] = useState("");
@@ -102,8 +103,15 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
     }, [errorMessages]);
 
     useEffect(() => {
+        if(editable) {
+            setUneditableReason("");
+        }
+    }, [editable])
+
+    useEffect(() => {
         const isEditable_ = state.activity && ActivityStatus.Started.equals(state.activity.status) && utils.isToday(state.activity.startingAt);
         setEditable(isEditable_);
+        if(!isEditable_ && state.activity) setUneditableReason(`To edit, the activity has to be started and it can only be edited on ${utils.to_ddMMM(state.activity.startingAt)}`);
     }, [state.activity]);
 
     useEffect(() => {
@@ -421,6 +429,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
                     />)}
                 </div>
                 <h2>{state.title}</h2>
+                <h4>{uneditableReason || "\u00A0"}</h4>
                 <h4 style={{color:"red"}}>{displayedErrorMessage || "\u00A0"}</h4>
                 <table style={tableStyle}>
                     <thead>
