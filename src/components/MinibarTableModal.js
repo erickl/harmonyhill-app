@@ -163,11 +163,23 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
 
         // If activity is ongoing, fetch new total stock count
         if(ActivityStatus.Completed.greaterThan(activity.status)) {
-            for(const item of Object.values(items)) {
-                const itemTotalStock = newTotalStock[item.name] = await inventoryService.getCurrentQuantity(item.name, onError);
-                if(itemTotalStock === false) return false;
-                newTotalStock[item.name] = itemTotalStock;
-            }
+            const result = await Promise.all(
+                 Object.values(items).map(async function(item) {
+                    const itemTotal = await inventoryService.getCurrentQuantity(item.name, onError);
+                    if(itemTotal === false) {
+                        return false;
+                    }
+                    newTotalStock[item.name] = itemTotal;
+                })
+            );
+
+            // for(const item of Object.values(items)) {
+            //     const itemTotalStock = newTotalStock[item.name] = await inventoryService.getCurrentQuantity(item.name, onError);
+            //     if(itemTotalStock === false) {
+            //         return false;
+            //     }
+            //     newTotalStock[item.name] = itemTotalStock;
+            // }
         // If activity completed, display the total as it was when it was completed. Don't fetch it anew
         } else {
             for(const item of Object.values(items)) {
@@ -297,7 +309,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             let value = "";
 
             if(header === "total") {
-                item[header] = value = totalStock && utils.exists(totalStock, item.name) ? totalStock[item.name] : 0; 
+                item[header] = value = totalStock && utils.exists(totalStock, item.name) ? totalStock[item.name] : "..."; 
             } else if(header === "reserved") {
                 item[header] = value = reservedStock && utils.exists(reservedStock, item.name) ? reservedStock[item.name] : 0; 
             } else if(header === "available") {
