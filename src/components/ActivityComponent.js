@@ -37,7 +37,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const [status, setStatus] = useState(null);
     const [alert, setAlert] = useState(null);
     const [minuteTicker, setMinuteTicker] = useState(0);
-    const [requiredPhotosUploaded, setRequiredPhotosUploaded] = useState(false);
+    const [stillRequirePhotos, setStillRequirePhotos] = useState(false);
     const [minibarCount, setMinibarCount] = useState(null);
     const [photos, setPhotos] = useState([]);
 
@@ -105,6 +105,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
             return false;
         }
 
+        if(stillRequirePhotos) {
+            return false;
+        }
+
         const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
         const isStarted = ActivityStatus.Started.equals(status);
         const canStillStart = canStartActivity();
@@ -117,17 +121,18 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         }
 
         // If photos are required, see that they've been uploaded
-        if (isStarted && requiredPhotosUploaded) {
+        if (isStarted) {
             return true;
         } else if (!isStarted && canStillStart) {
             return false;
-        } else if (isGoodToGo && requiredPhotosUploaded) {
+        } else if (isGoodToGo) {
             return true;
         }
 
         return false;
     }
 
+    // Calculates status for the activity header (un-expanded activity component)
     const calculateActivityStatus = async (newStatus = null) => {
         if (!activity) return;
 
@@ -266,7 +271,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const onUploadPhoto = async(fileData) => {
         const photoRecord = await activityService.uploadPhoto(activity, fileData, onError);
         if(photoRecord !== false) {
-            setRequiredPhotosUploaded(true);
+            setStillRequirePhotos(false);
         }
         return photoRecord
     }
@@ -283,6 +288,14 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         const expand = !expanded;
 
         if (expand) {
+            // Check if photos already exist, and get their download URLs
+            const activityPhotos = await activityService.getPhotos(activity, onError);
+            setPhotos(activityPhotos);
+            
+            if(activityInfo) {
+                setStillRequirePhotos(activityInfo.photosRequired && activityPhotos.length === 0);
+            }
+
             if (activity.category === "meal") {
                 // If this list is displayed for all customers, get the customer for each activity 
                 const bookingId = activity.bookingId;
@@ -295,22 +308,19 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 const dishesPrice = dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice * dish.quantity, 0);
                 setDishesPrice(dishesPrice);
                 setDishes(dishes);
-            }
-
-            // Check if photos already exist, and get their download URLs
-            const activityPhotos = await activityService.getPhotos(activity, onError);
-            setPhotos(activityPhotos);
+            } 
         }
         setExpanded(expand);
     };
 
     useEffect(() => {
-        setRequiredPhotosUploaded(photos.length >0)
+        if(activityInfo) setStillRequirePhotos(activityInfo.photosRequired)
+        else setStillRequirePhotos(photos.length > 0)
     }, [photos]);
 
     useEffect(() => {
         calculateActivityStatus();
-    }, [activity, activityInfo, requiredPhotosUploaded, minuteTicker]);
+    }, [activity, activityInfo, stillRequirePhotos, minuteTicker]);
 
     useEffect(() => {
         // Increment the ticker state every minute. Activity statuses changes depends on time
@@ -619,16 +629,14 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-    
                         <PhotoUploadButton 
                             instructions={activityInfo.photoInstructions} 
                             photos={photos}
                             onUpload={onUploadPhoto}
                             enableUpload={canAddPhotos()}
                             path={activityService.getActivityPhotoFilePath(activity)}
-                            isRequired={true}
+                            isRequired={stillRequirePhotos}
                         /> 
-                        
 
                         {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">
