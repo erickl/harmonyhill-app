@@ -365,15 +365,14 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                             </div>
                         )}
 
-                        {canAddPhotos() && (
-                            <PhotoUploadButton
-                                instructions={todo.photoInstructions}
-                                photos={photos}
-                                onUpload={onUploadPhoto}
-                                path={todoService.getTodoPhotoFilePath(todo)}
-                                isRequired={true}
-                            />
-                        )}
+                        <PhotoUploadButton
+                            instructions={todo.photoInstructions}
+                            photos={photos}
+                            onUpload={onUploadPhoto}
+                            enableUpload={canAddPhotos()}
+                            path={todoService.getTodoPhotoFilePath(todo)}
+                            isRequired={true}
+                        />
 
                     </div>
                     <MetaInfo document={todo} />

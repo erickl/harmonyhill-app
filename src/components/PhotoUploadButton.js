@@ -9,7 +9,7 @@ import * as storageDao from "../daos/storageDao.js";
 import { Camera, Image } from 'lucide-react';
 import "./PhotoUploadButton.css";
 
-export default function PhotoUploadButton({path, photos, instructions, onUpload, isRequired}) {
+export default function PhotoUploadButton({path, photos, instructions, onUpload, enableUpload, isRequired}) {
     const [photos_, setPhotos] = useState(photos);
     const [photoUploading, setPhotoUploading] = useState(false);
     const [animateButton, setAnimateButton] = useState(isRequired);
@@ -33,17 +33,21 @@ export default function PhotoUploadButton({path, photos, instructions, onUpload,
     }
 
     const onConfirmPhoto = async (photo) => {
-        setPhotoUploading(true);
+        try {
+            setPhotoUploading(true);
 
-        const fileData = await uploadPhoto(photo);
-        const result = await onUpload(fileData);
-        
-        if (result !== false) {
-            let newPhotos = [...photos_, result];
-            setPhotos(newPhotos);
-            onSuccess();
+            const fileData = await uploadPhoto(photo);
+            const result = await onUpload(fileData);
+            
+            if (result !== false) {
+                let newPhotos = [...photos_, result];
+                setPhotos(newPhotos);
+                onSuccess();
+            }
+            
+        } finally {
+            setPhotoUploading(false);
         }
-        setPhotoUploading(false);
     }
 
     const animation = animateButton ? { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] } : {};
@@ -51,7 +55,7 @@ export default function PhotoUploadButton({path, photos, instructions, onUpload,
 
     return (
         <div className="main-style">
-            {!photoUploading && (
+            {!photoUploading && enableUpload && (
                 <div className="footer-icon">
                     <motion.div
                         animate={animation}

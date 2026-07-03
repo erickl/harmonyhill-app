@@ -619,15 +619,16 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        {canAddPhotos() && (
-                            <PhotoUploadButton 
-                                instructions={activityInfo.photoInstructions} 
-                                photos={photos}
-                                onUpload={onUploadPhoto}
-                                path={activityService.getActivityPhotoFilePath(activity)}
-                                isRequired={true}
-                            /> 
-                        )}
+    
+                        <PhotoUploadButton 
+                            instructions={activityInfo.photoInstructions} 
+                            photos={photos}
+                            onUpload={onUploadPhoto}
+                            enableUpload={canAddPhotos()}
+                            path={activityService.getActivityPhotoFilePath(activity)}
+                            isRequired={true}
+                        /> 
+                        
 
                         {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">
