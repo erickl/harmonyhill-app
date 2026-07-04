@@ -147,6 +147,12 @@ export async function getUserRole() {
     return user.role;
 }
 
+export async function getPermissions(user, onError) {
+    if(!user) user = await getCurrentUser();
+    const permissions = await userDao.getPermissions(user, onError);
+    return permissions;
+}
+
 export async function isManagerOrAdmin() {
     const role = await getUserRole();
     return !utils.isEmpty(role) && (role === "manager" || role === "admin");

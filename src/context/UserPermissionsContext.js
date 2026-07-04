@@ -15,28 +15,22 @@ export function UserPermissionProvider({ children }) {
             if (user) {
                 try {
                     const [
-                        isAdmin,
-                        isManagerOrAdmin,
+                        permissions,
                         user_,
                         users_,
-                        userHasEditBookingsPermissions,
-                        userHasAddBookingsPermissions
                     ] = await Promise.all([
-                        userService.isAdmin(),
-                        userService.isManagerOrAdmin(),
+                        userService.getPermissions(),
                         userService.getCurrentUser(),
                         userService.getUsers(),
-                        userService.hasEditBookingsPermissions(),
-                        userService.hasAddBookingsPermissions(),
                     ]);
 
                     setUsers(users_);
                     
                     setPermissions({
-                        isAdmin : isAdmin,
-                        isManagerOrAdmin : isManagerOrAdmin,
-                        canEditBookings : userHasEditBookingsPermissions,
-                        canAddBookings : userHasAddBookingsPermissions,
+                        isAdmin : permissions.isAdmin === true,
+                        isManagerOrAdmin : permissions.isAdmin === true || permissions.isManager === true,
+                        canEditBookings : permissions["bookings-u"] === true,
+                        canAddBookings : permissions["bookings-c"] === true,
                     });
 
                     setUser(user_);

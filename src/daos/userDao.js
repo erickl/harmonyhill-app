@@ -42,3 +42,11 @@ export async function update(id, userData, onError, writes) {
 export async function updateLastLoggedIn(id, writes) {
     return await update(id, { lastLoginAt: new Date()}, writes);
 }
+
+export async function getPermissions(user, onError) {
+    const shortName = user.shortName.toLowerCase();
+    const path = ['users', user.id, "permissions"];
+    const id = `permissions-${shortName}`;
+    const permissions = await dao.getOne(path, id, onError);
+    return permissions;
+}
