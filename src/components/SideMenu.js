@@ -7,7 +7,7 @@ import packageJson from '../../package.json';
 import { XIcon } from 'lucide-react';
 import "./SideMenu.css";
 
-export default function SideMenu({onNavigate}) {
+export default function SideMenu({context}) {
 
     const { open, close } = useMenu();
     const { onError } = useNotification();
@@ -44,28 +44,28 @@ export default function SideMenu({onNavigate}) {
             <ul className='menu-list'> 
                 {permissions.isAdmin && (<>
                     <li><p onClick={() => {
-                            onNavigate('admin');
+                            context.onNavigate('admin');
                             close();
                         }} 
                         style={{ color: 'white' }}>Admin</p>
                     </li>
 
                     <li><p onClick={() => {
-                            onNavigate('inventory');
+                            context.onNavigate('inventory');
                             close();
                         }} 
                         style={{ color: 'white' }}>Inventory</p>
                     </li>
 
                     {true && (<li><p onClick={() => {
-                            onNavigate('todo-list');
+                            context.onNavigate('todo-list');
                             close();
                         }} 
                         style={{ color: 'white' }}>Todo</p>
                     </li>)}
 
                     <li><p onClick={() => {
-                            onNavigate('userLogs');
+                            context.onNavigate('userLogs');
                             close();
                         }} 
                         style={{ color: 'white' }}>User Logs</p>

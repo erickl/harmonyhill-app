@@ -9,7 +9,7 @@ import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useFilters } from "../context/FilterContext.js";
 import TodoComponent from './TodoComponent.js';
 
-export default function TodoScreen({ onNavigate, onClose }) {
+export default function TodoScreen({ context }) {
     const [todos,              setTodos              ] = useState([]   );
     const [completedTodos,     setCompletedTodos     ] = useState([]   );
     const [loading,            setLoading            ] = useState(true );
@@ -88,7 +88,7 @@ export default function TodoScreen({ onNavigate, onClose }) {
                 <div className="card-header-right">
                     <div>
                         <div className="card-header-right-top-row">
-                            <button className="add-button" onClick={() => onNavigate("add-todo")}>
+                            <button className="add-button" onClick={() => context.onNavigate("add-todo")}>
                                 + 
                             </button>
                         </div>
@@ -103,8 +103,7 @@ export default function TodoScreen({ onNavigate, onClose }) {
                                 todo={todo}
                                 handleDelete={handleDelete}
                                 onToggleFromParent={toggleTodo}
-                                onNavigate={onNavigate} 
-                                onClose={onClose}
+                                context={context}
                             />
                         </React.Fragment>
                     )
@@ -125,8 +124,7 @@ export default function TodoScreen({ onNavigate, onClose }) {
                                     todo={todo}
                                     onToggleFromParent={toggleTodo}
                                     handleDelete={handleDelete}
-                                    onNavigate={onNavigate} 
-                                    onClose={onClose}
+                                    context={context}
                                 />
                             </React.Fragment>
                         )

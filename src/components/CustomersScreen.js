@@ -8,7 +8,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import BookingList from "./BookingList.js";
 
-export default function CustomersScreen({ onNavigate, onClose }) {
+export default function CustomersScreen({ context }) {
     const [previousInterval,           setPreviousInterval      ] = useState(null);
     const [futureInterval,             setFutureInterval        ] = useState(null);
     
@@ -42,7 +42,7 @@ export default function CustomersScreen({ onNavigate, onClose }) {
                 </div>
                 <div>
                     { permissions.canAddBookings && (
-                        <button className="add-button" onClick={() => onNavigate('add-customer')}>
+                        <button className="add-button" onClick={() => context.onNavigate('add-customer')}>
                             +
                         </button>
                     )}
@@ -50,9 +50,9 @@ export default function CustomersScreen({ onNavigate, onClose }) {
             </div>
             
             <div className="card-content">
-                {previousInterval && (<BookingList onNavigate={onNavigate} onClose={onClose} title={"Previous"} filter={previousInterval} /> )}
-                <BookingList onNavigate={onNavigate} title={"Current"} onClose={onClose} filter={{date: utils.today().endOf('day')}} expand={true} />
-                {futureInterval && (<BookingList onNavigate={onNavigate} onClose={onClose} title={"Future"} filter={futureInterval} /> )}
+                {previousInterval && (<BookingList context={context} title={"Previous"} filter={previousInterval} /> )}
+                <BookingList context={context} title={"Current"} filter={{date: utils.today().endOf('day')}} expand={true} />
+                {futureInterval && (<BookingList context={context} title={"Future"} filter={futureInterval} /> )}
             </div>
         </div>
     );

@@ -14,7 +14,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
 
-export default function IncomeScreen({ customer, onNavigate, onClose }) {
+export default function IncomeScreen({ customer, context }) {
     const [expandedIncomes,     setExpandedIncomes     ] = useState({}   );
     const [loadingExpanded,     setLoadingExpanded     ] = useState({}   );
     const [incomes,             setIncomes             ] = useState([]   );
@@ -127,7 +127,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                             {permissions.isAdmin && (<>
                                 <SheetUploader label={"Incomes"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
-                            <button className="add-button" onClick={() => onNavigate("add-income", {customer:customer})}>
+                            <button className="add-button" onClick={() => context.onNavigate("add-income", {customer:customer})}>
                                 + 
                             </button>
                         </div>
@@ -182,7 +182,7 @@ export default function IncomeScreen({ customer, onNavigate, onClose }) {
                                                 <Pencil   
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        onNavigate("edit-income", {customer:customer, incomeToEdit:income});
+                                                        context.onNavigate("edit-income", {customer:customer, incomeToEdit:income});
                                                     }}
                                                 />
                                                 <p>Edit</p>

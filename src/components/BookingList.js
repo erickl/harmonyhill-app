@@ -9,7 +9,7 @@ import * as userService from "../services/userService.js";
 import BookingComponent from './BookingComponent.js';
 import './BookingList.css';
 
-export default function BookingList({ onNavigate, onClose, title, filter, expand }) {
+export default function BookingList({ context, title, filter, expand }) {
     const [sectionIsExpanded, setSectionIsExpanded] = useState(expand || false);
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -104,7 +104,7 @@ export default function BookingList({ onNavigate, onClose, title, filter, expand
                                     <BookingComponent
                                         customer={customer}
                                         handleDeleteBooking={handleDeleteBooking}
-                                        onNavigate={onNavigate}
+                                        context={context}
                                     />
                                 </React.Fragment>
                             )

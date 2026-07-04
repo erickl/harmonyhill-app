@@ -7,7 +7,7 @@ import { useSuccessNotification } from "../context/SuccessContext.js";
 import MyDatePicker from "./MyDatePicker.js";
 import * as utils from "../utils.js";
 
-export default function AddTodoModal({todoToEdit, parent, onCreated, onNavigate, onClose}) {
+export default function AddTodoModal({todoToEdit, parent, onCreated, context}) {
     const emptyForm = { 
         title      : todoToEdit ? todoToEdit.title : "",
         deadlineAt : todoToEdit ? todoToEdit.deadlineAt : null,
@@ -37,7 +37,7 @@ export default function AddTodoModal({todoToEdit, parent, onCreated, onNavigate,
             if(result !== false) { 
                 onCreated(result);
                 setFormData(emptyForm);
-                onClose();
+                context.onClose();
                 onSuccess();
             }
         } catch(e) {
@@ -112,7 +112,7 @@ export default function AddTodoModal({todoToEdit, parent, onCreated, onNavigate,
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 
                 <ButtonsFooter
-                    onCancel={onClose}
+                    onCancel={context.onClose}
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />

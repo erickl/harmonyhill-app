@@ -4,7 +4,7 @@ import "./ActivitiesList.css";
 import ActivitiesList from './ActivitiesList.js';
 import * as userService from "../services/userService.js";
 
-export default function ActivitiesAllLists({onNavigate, onClose, futureExpanded}) {
+export default function ActivitiesAllLists({context, futureExpanded}) {
     const [interval, setInterval] = useState(null);
     const [expandPrevious, setExpandPrevious] = useState(false);
     const [expandFuture, setExpandFuture] = useState(futureExpanded || false);
@@ -36,8 +36,7 @@ export default function ActivitiesAllLists({onNavigate, onClose, futureExpanded}
             {/* Past activities */}
             {interval && expandPrevious && (
                 <ActivitiesList
-                    onNavigate={onNavigate}
-                    onClose={onClose}
+                    context={context}
                     from={interval.from}
                     to={utils.today(-1).endOf('day')}
                     customer={null}
@@ -55,8 +54,7 @@ export default function ActivitiesAllLists({onNavigate, onClose, futureExpanded}
 
             {/* Today's activities */}
             <ActivitiesList
-                onNavigate={onNavigate}
-                onClose={onClose}
+                context={context}
                 from={utils.today()}
                 to={utils.today().endOf('day')}
                 customer={null} 
@@ -78,8 +76,7 @@ export default function ActivitiesAllLists({onNavigate, onClose, futureExpanded}
 
             {interval && expandFuture && (
                 <ActivitiesList
-                    onNavigate={onNavigate}
-                    onClose={onClose}
+                    context={context}
                     from={utils.today(1)}
                     to={interval.to.endOf('day')}
                     customer={null}

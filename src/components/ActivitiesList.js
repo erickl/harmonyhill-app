@@ -10,7 +10,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import {getParent} from "../daos/dao.js";
 
-export default function ActivitiesList({onNavigate, onClose, from, to, customer, expandAllDates}) {
+export default function ActivitiesList({context, from, to, customer, expandAllDates}) {
     const [expandedDates,           setExpandedDates    ] = useState({}   ); 
     const [activitiesByDate,        setActivitiesByDate ] = useState({}   );
     const [loading,                 setLoading          ] = useState(true );
@@ -162,8 +162,7 @@ export default function ActivitiesList({onNavigate, onClose, from, to, customer,
                                                     inputCustomer={customer}
                                                     activity={activity}
                                                     onActivityChange={(newActivity) => onActivityChange(newActivity)}
-                                                    onNavigate={onNavigate}
-                                                    onClose={onClose}
+                                                    context={context}
                                                     handleDeleteActivity={() => handleDeleteActivity(activity)}
                                                 />
                                             </React.Fragment>

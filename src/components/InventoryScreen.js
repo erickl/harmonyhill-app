@@ -14,7 +14,7 @@ import "./InventoryScreen.css";
 import Spinner from "./Spinner.js";
 import { useDataTableModal } from '../context/DataTableContext.js';
 
-export default function InventoryScreen({onNavigate, onClose}) {
+export default function InventoryScreen({context}) {
     const [inventory,        setInventory       ] = useState([]   );
     const [isLoading,        setIsLoading       ] = useState(true );
     const [expandedItems,    setExpandedItems   ] = useState({}   );
@@ -64,11 +64,11 @@ export default function InventoryScreen({onNavigate, onClose}) {
 
     const onAddStock = async(item) => {
         const inventory = [item];
-        onNavigate("addInventory", {inventory: inventory});
+        context.onNavigate("addInventory", {inventory: inventory});
     }
 
     const onRemoveStock = async(item) => {
-        onNavigate("removeInventory", {item: item});
+        context.onNavigate("removeInventory", {item: item});
     }
 
     const onDisplayRemovalsData = async(item) => {    
@@ -156,7 +156,7 @@ export default function InventoryScreen({onNavigate, onClose}) {
                     <h2 className="card-title">Inventory</h2>
                 </div>
                 <div className="card-header-right-top-row">
-                    <button className="add-button" onClick={() => onNavigate('addInventory', {inventory:inventory})}>
+                    <button className="add-button" onClick={() => context.onNavigate('addInventory', {inventory:inventory})}>
                         +
                     </button> 
                 </div>

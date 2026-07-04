@@ -15,7 +15,7 @@ import ExpenseComponent from "./ExpenseComponent.js";
 import { useFilters } from "../context/FilterContext.js";
 import { useProgressCounter } from "../context/ProgressContext.js";
 
-export default function ExpensesScreen({ onNavigate, onClose }) {
+export default function ExpensesScreen({ context }) {
 
     const [expandedExpenses, setExpandedExpenses] = useState({}   );
     const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
@@ -128,7 +128,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                 <SheetUploader label={"Expenses"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                                 <ImageDown style={{margin:"1rem"}} onClick={() => handleReceiptsDownloadFilter()} />
                             </>)}
-                            <button className="add-button" onClick={() => onNavigate("add-expense")}>
+                            <button className="add-button" onClick={() => context.onNavigate("add-expense")}>
                                 + 
                             </button>
                         </div>
@@ -146,7 +146,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                     expense={expense} 
                                     handleDelete={handleDeleteExpense}
                                     onFlagIssue={onFlagIssue}
-                                    onNavigate={onNavigate}
+                                    context={context}
                                 />
                             </React.Fragment>
                         )
@@ -161,7 +161,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                                 expense={expense} 
                                 handleDelete={handleDeleteExpense}
                                 onFlagIssue={onFlagIssue}
-                                onNavigate={onNavigate}
+                                context={context}
                             />
                         </React.Fragment>
                     )

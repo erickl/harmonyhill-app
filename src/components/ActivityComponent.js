@@ -25,7 +25,7 @@ import {Alert} from "../models/Alert.js";
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { motion } from "framer-motion";
 
-export default function ActivityComponent({ inputCustomer, activity, onActivityChange, onNavigate, onClose, handleDeleteActivity }) {
+export default function ActivityComponent({ inputCustomer, activity, onActivityChange, context, handleDeleteActivity }) {
     const [customer, setCustomer] = useState(null);
     const [showCustomerInfo, setShowCustomerInfo] = useState(false);
     const [activityInfo, setActivityInfo] = useState(null);
@@ -534,7 +534,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                     if (!utils.isEmpty(dishes)) {
                                         activity.dishes = dishes;
                                     }
-                                    onNavigate("edit-customer-purchase", {
+                                    context.onNavigate("edit-customer-purchase", {
                                         customer: customer,
                                         activityToEdit: activity,
                                     });

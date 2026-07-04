@@ -7,7 +7,7 @@ import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
 import { useNotification } from "../context/NotificationContext.js";
 
-export default  function ActivitiesScreen({onNavigate, onClose}) { 
+export default  function ActivitiesScreen({context}) { 
 
     const { onError } = useNotification();
     const { permissions } = useUserPermissions();
@@ -42,7 +42,7 @@ export default  function ActivitiesScreen({onNavigate, onClose}) {
                     </div>)}
                 </div>
             </div> 
-            <ActivitiesAllLists onNavigate={onNavigate} onClose={onClose} futureExpanded={true} />   
+            <ActivitiesAllLists context={context} futureExpanded={true} />   
         </div>
     );
 };

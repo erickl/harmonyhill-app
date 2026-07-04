@@ -13,7 +13,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import TextInput from './TextInput.js';
 
-export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClose, parent }) {
+export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }) {
     const emptyForm = {
         title         : todoToEdit ? todoToEdit.title         : '',
         deadlineAt    : todoToEdit ? todoToEdit.deadlineAt    : '',
@@ -200,7 +200,7 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
             }         
 
             if(result !== false) {
-                if(todoToEdit) onClose();
+                if(todoToEdit) context.onClose();
                 else setFormData(emptyForm);
 
                 if(onCreated) onCreated(result);
@@ -221,7 +221,7 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
             
                 <div>
                     {!todoToEdit && (
-                        <button className="add-button" onClick={() => onClose()}>
+                        <button className="add-button" onClick={() => context.onClose()}>
                             ☰
                         </button>
                     )}
@@ -312,7 +312,7 @@ export default function AddTodoScreen({ todoToEdit, onNavigate, onCreated, onClo
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 
                 <ButtonsFooter
-                    onCancel={onClose}
+                    onCancel={context.onClose}
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />

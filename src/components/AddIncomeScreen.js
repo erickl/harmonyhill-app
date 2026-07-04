@@ -12,7 +12,7 @@ import ButtonsFooter from './ButtonsFooter.js';
 import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-export default function AddIncomeScreen({ customer, incomeToEdit, onNavigate, onClose }) {
+export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
     let bookingId = '';
     let category = '';
     if(incomeToEdit) {
@@ -145,7 +145,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, onNavigate, on
             }
            
             if(result !== false) {
-                if(incomeToEdit) onClose();
+                if(incomeToEdit) context.onClose();
                 else resetForm();
                 onSuccess();
             } else {
@@ -221,7 +221,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, onNavigate, on
             
                 <div>
                     {!incomeToEdit && (
-                        <button className="add-button" onClick={() => onClose()}>
+                        <button className="add-button" onClick={() => context.onClose()}>
                             ☰
                         </button>
                     )}
@@ -300,7 +300,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, onNavigate, on
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 
                 <ButtonsFooter
-                    onCancel={onClose}
+                    onCancel={context.onClose}
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 /> 

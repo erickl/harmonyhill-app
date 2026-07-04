@@ -40,7 +40,7 @@ function App() {
     const currentScreen = history[history.length - 1];
 
     // Push a new screen onto the stack
-    const navigate = (screenName, screenData = {}) => {
+    const onNavigate = (screenName, screenData = {}) => {
         setHistory((prev) => [...prev, { name: screenName, data: screenData }]);
     };
 
@@ -107,44 +107,45 @@ function App() {
     const ScreenToDisplay = SCREENS[currentScreen.name];
     const isBottomNavTab = bottomNavTabs.includes(currentScreen.name);
 
+    const context = {
+        onNavigate : onNavigate,
+        onClose : onClose
+    }
+
     return (
         <div className="app-container">   
             {isLoggedIn ? (<>                     
-                <SideMenu onNavigate={navigate}/>
+                <SideMenu context={context} />
                 
                 {/* Active screen is not one of the bottom nav tabs */}
                 {!isBottomNavTab && (
                     <div className="content">
                         <ScreenToDisplay
-                            onNavigate={navigate} 
-                            onClose={onClose}
+                            context={context}
                             {...currentScreen.data}
                         />
                     </div> 
                 )}
                 
-                {/* Always keep the bottom nav tabs in cache */}
+                {/* Always keep the bottom nav tabs (main screens) in cache */}
                 <div className="content" style={{ display: isBottomNavTab && activeTab === 'customers' ? 'block' : 'none' }}>
                     {visitedTabs.has('customers') && 
-                        <CustomersScreen 
-                            onNavigate={navigate}
-                            onClose={onClose}   
+                        <CustomersScreen
+                            context={context}
                         />
                     }
                 </div>
                 <div className="content" style={{ display: isBottomNavTab && activeTab === 'activities' ? 'block' : 'none' }}>
                     {visitedTabs.has('activities') && 
                         <ActivitiesScreen 
-                            onNavigate={navigate}
-                            onClose={onClose}   
+                            context={context} 
                         />
                     }
                 </div>
                 <div className="content" style={{ display: isBottomNavTab && activeTab === 'expenses' ? 'block' : 'none' }}>
                     {visitedTabs.has('expenses') && 
                         <ExpensesScreen 
-                            onNavigate={navigate}
-                            onClose={onClose}   
+                            context={context}
                         />
                     }
                 </div>
@@ -152,8 +153,7 @@ function App() {
                 <div className="content" style={{ display: isBottomNavTab && activeTab === 'incomes' ? 'block' : 'none' }}>
                     {visitedTabs.has('incomes') && 
                         <IncomeScreen
-                            onNavigate={navigate}
-                            onClose={onClose}   
+                            context={context}
                         />
                     }
                 </div>

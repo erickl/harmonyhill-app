@@ -8,7 +8,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import ItemsCountList from './ItemCountList.js';
 
-export default function AddInventoryScreen({onNavigate, inventory, onClose}) {
+export default function AddInventoryScreen({context, inventory}) {
     const initialQuantities = inventory.reduce((map, item) => {
         map[item.name] = 0;
         return map;
@@ -78,7 +78,7 @@ export default function AddInventoryScreen({onNavigate, inventory, onClose}) {
             if(result !== false) {
                 setForm(initialForm);
                 onSuccess();
-                onClose();
+                context.onClose();
             }
         } catch(e) {
             onError(`Submit error: ${e.message}`);
@@ -143,7 +143,7 @@ export default function AddInventoryScreen({onNavigate, inventory, onClose}) {
             {(validationError && <p className="validation-error">{validationError}</p>)}
 
             <ButtonsFooter 
-                onCancel={onClose}
+                onCancel={context.onClose}
                 onSubmit={handleSubmit}
                 submitEnabled={validated}
             />

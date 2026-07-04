@@ -19,7 +19,7 @@ import Spinner from "./Spinner.js";
 import "./TodoComponent.css";
 import { motion } from "framer-motion";
 
-export default function TodoComponent({ todo, handleDelete, onCompleteFromParent, onNavigate, onClose }) {
+export default function TodoComponent({ todo, handleDelete, onCompleteFromParent, context }) {
     const [expanded, setExpanded] = useState(false);
     const [loading, setLoading] = useState(false);
     const [steps, setSteps] = useState([]);
@@ -274,8 +274,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                                         todo={step}
                                         onToggleFromParent={onToggleChild}
                                         handleDelete={onTodoStepRemoved}
-                                        onNavigate={onNavigate}
-                                        onClose={null}
+                                        context={context}
                                     />
                                 </React.Fragment>
                             );
@@ -298,7 +297,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                             <Plus
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onNavigate("add-todo", {
+                                    context.onNavigate("add-todo", {
                                         parent: todo,
                                         onCreated: onTodoStepCreated
                                     })
@@ -310,7 +309,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                             <Pencil
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onNavigate("add-todo", { todoToEdit: todo })
+                                    context.onNavigate("add-todo", { todoToEdit: todo })
                                 }}
                             />
                             <p>Edit</p>

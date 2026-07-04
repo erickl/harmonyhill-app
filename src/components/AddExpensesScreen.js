@@ -14,7 +14,7 @@ import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useCameraModal } from "../context/CameraContext.js";
 
-export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }) {
+export default function AddExpensesScreen({ expenseToEdit, context }) {
     const emptyForm = {
         photoUrl      : expenseToEdit ? expenseToEdit.photoUrl      : null,
         amount        : expenseToEdit ? expenseToEdit.amount        : '',
@@ -243,7 +243,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
             }         
 
             if(result !== false) {
-                if(expenseToEdit) onClose();
+                if(expenseToEdit) context.onClose();
                 else resetForm();
                 onSuccess();
             }
@@ -276,7 +276,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
             
                 <div>
                     {!expenseToEdit && (
-                        <button className="add-button" onClick={() => onClose()}>
+                        <button className="add-button" onClick={() => context.onClose()}>
                             ☰
                         </button>
                     )}
@@ -385,7 +385,7 @@ export default function AddExpensesScreen({ expenseToEdit, onNavigate, onClose }
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 
                 <ButtonsFooter
-                    onCancel={onClose}
+                    onCancel={context.onClose}
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
                 />

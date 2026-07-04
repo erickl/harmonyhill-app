@@ -7,7 +7,7 @@ import ActivitiesList from './ActivitiesList.js';
 import { useNotification } from "../context/NotificationContext.js";
 import PdfViewer from './PdfViewer.js';
 
-export default function CustomerPurchasesScreen({ customer, onClose, onNavigate }) {
+export default function CustomerPurchasesScreen({ customer, context }) {
     const [showInvoice,        setShowInvoice       ] = useState(false);
     const [total,              setTotal             ] = useState(0);
     const [triggerRerender,    setTriggerRerender   ] = useState(0);
@@ -45,7 +45,7 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
                             className="add-button"  
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onNavigate("add-customer-purchase", {customer:customer});
+                                context.onNavigate("add-customer-purchase", {customer:customer});
                             }}>
                             +
                         </button> 
@@ -56,14 +56,13 @@ export default function CustomerPurchasesScreen({ customer, onClose, onNavigate 
             
             <div className="card-content">
                 <ActivitiesList
-                    onNavigate={onNavigate}
-                    onClose={onClose}
+                    context={context}
                     customer={customer}
                     expandAllDates={true}
                     triggerRerender={() => setTriggerRerender(triggerRerender + 1)}
                 />  
             </div>
-            <button type="button" onClick={() => onClose() } className="cancel-button">
+            <button type="button" onClick={() => context.onClose() } className="cancel-button">
                 Back to customers
             </button>
         </div>

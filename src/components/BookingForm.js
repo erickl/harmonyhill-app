@@ -8,7 +8,7 @@ import TextInput from './TextInput.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-export default function BookingForm({ booking, onClose }) {
+export default function BookingForm({ booking, context }) {
     // for calculating the length of stay based on checkin and checkout date 
     const [nightsCount, setNightsCount] = useState('');
     const [readyToSubmit, setReadyToSubmit] = useState(false);
@@ -61,7 +61,7 @@ export default function BookingForm({ booking, onClose }) {
            
             if(result !== false) {
                 onSuccess();
-                onClose();
+                context.onClose();
             }
         } catch (error) {
             onError(`Error ${booking ? "editing" : "adding"} booking: ${error.message}`);
@@ -317,7 +317,7 @@ export default function BookingForm({ booking, onClose }) {
             {(validationError && <p className="validation-error">{`Error: ${validationError}`}</p>)}
 
             <ButtonsFooter 
-                onCancel={onClose} 
+                onCancel={context.onClose} 
                 onSubmit={handleSubmit}
                 submitEnabled={readyToSubmit}
             />

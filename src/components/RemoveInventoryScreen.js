@@ -9,7 +9,7 @@ import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-export default function RemoveInventoryScreen({onNavigate, item, onClose}) {
+export default function RemoveInventoryScreen({context, item}) {
     const initialForm = {
         quantity : 0,
         activity : null,
@@ -77,7 +77,7 @@ export default function RemoveInventoryScreen({onNavigate, item, onClose}) {
             if(result !== false) {
                 setForm(initialForm);
                 onSuccess();
-                onClose();
+                context.onClose();
             }
         } catch(e) {
             onError(`Submit error: ${e.message}`);
@@ -177,7 +177,7 @@ export default function RemoveInventoryScreen({onNavigate, item, onClose}) {
             {(validationError && <p className="validation-error">{validationError}</p>)}
 
             <ButtonsFooter 
-                onCancel={onClose}
+                onCancel={context.onClose}
                 onSubmit={handleSubmit}
                 submitEnabled={validated}
             />

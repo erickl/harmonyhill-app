@@ -10,7 +10,7 @@ import ButtonsFooter from './ButtonsFooter.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
+const AddPurchaseScreen = ({ customer, context }) => {
     
     // Show purchase summary and confirmation pop up modal
     const [showConfirm, setShowConfirm] = useState(false);
@@ -107,7 +107,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             handleCategorySelection(null);
             handleActivitySelection(null);
             setShowConfirm(false)
-            onClose();
+            context.onClose();
         }
     }
 
@@ -318,7 +318,7 @@ const AddPurchaseScreen = ({ customer, onClose, onNavigate }) => {
             </div>
 
             <div>
-                <button type="button" onClick={onClose} className="cancel-button">Cancel</button>
+                <button type="button" onClick={context.onClose} className="cancel-button">Cancel</button>
             </div>
         </div>
     );

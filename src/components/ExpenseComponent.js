@@ -12,7 +12,7 @@ import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { useNotification } from "../context/NotificationContext.js";
 import "./ExpenseComponent.css";
 
-export default function ExpenseComponent({expense, handleDelete, onFlagIssue, onNavigate}) {
+export default function ExpenseComponent({expense, handleDelete, onFlagIssue, context}) {
     const [displayedReceipt, setDisplayedReceipt] = useState(null );
     const [expanded,         setExpanded        ] = useState(false);
     const [loading,          setLoading         ] = useState(false);
@@ -103,7 +103,7 @@ export default function ExpenseComponent({expense, handleDelete, onFlagIssue, on
                             <Pencil   
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onNavigate("edit-expense", {expenseToEdit:expense})
+                                    context.onNavigate("edit-expense", {expenseToEdit:expense})
                                 }}
                             />
                             <p>Edit</p>

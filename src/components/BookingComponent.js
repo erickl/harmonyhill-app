@@ -7,7 +7,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import MetaInfo from './MetaInfo.js';
 import "./BookingComponent.css";
 
-export default function BookingComponent({customer, handleDeleteBooking, onNavigate}) {
+export default function BookingComponent({customer, handleDeleteBooking, context}) {
     const [expanded, setExpanded] = useState(false);
 
     const { permissions } = useUserPermissions();
@@ -30,7 +30,7 @@ export default function BookingComponent({customer, handleDeleteBooking, onNavig
                             className="cursor-pointer"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onNavigate('incomes', {customer:customer});
+                                context.onNavigate('incomes', {customer:customer});
                             }}
                         />
                         <ShoppingCart
@@ -38,7 +38,7 @@ export default function BookingComponent({customer, handleDeleteBooking, onNavig
                             className="cursor-pointer"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onNavigate('customer-purchases', {customer:customer});
+                                context.onNavigate('customer-purchases', {customer:customer});
                             }}
                         />
                     </div>
@@ -83,7 +83,7 @@ export default function BookingComponent({customer, handleDeleteBooking, onNavig
                                 <Pencil   
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onNavigate("edit-customer", {customer:customer});
+                                        context.onNavigate("edit-customer", {customer:customer});
                                     }}
                                 />
                                 <p>Edit</p>
