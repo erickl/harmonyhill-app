@@ -31,7 +31,11 @@ function App() {
     const [isLoggedIn, setIsLoggedIn         ] = useState(false      );
     const [loading,    setLoading            ] = useState(true       );
     const [history,    setHistory            ] = useState([{ name: 'activities', data: {} }]);
+    
     const [activeTab,  setActiveTab          ] = useState('activities');
+    const [visitedTabs, setVisitedTabs] = useState(new Set(['activities']));
+
+    const bottomNavTabs = ['customers', 'activities', 'expenses', 'incomes'];
 
     const currentScreen = history[history.length - 1];
 
@@ -66,6 +70,7 @@ function App() {
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
+        setVisitedTabs(prev => new Set([...prev, tab]));
         // Tabs are the top of hierarchy, so clear history
         setHistory([{ name: tab, data: {} }]);
     };
@@ -100,18 +105,59 @@ function App() {
     };
 
     const ScreenToDisplay = SCREENS[currentScreen.name];
+    const isBottomNavTab = bottomNavTabs.includes(currentScreen.name);
 
     return (
         <div className="app-container">   
             {isLoggedIn ? (<>                     
                 <SideMenu onNavigate={navigate}/>
-                <div className="content">
-                    <ScreenToDisplay
-                        onNavigate={navigate} 
-                        onClose={onClose}
-                        {...currentScreen.data}
-                    />
-                </div> { /* Use screenToDisplay */}
+                
+                {/* Active screen is not one of the bottom nav tabs */}
+                {!isBottomNavTab && (
+                    <div className="content">
+                        <ScreenToDisplay
+                            onNavigate={navigate} 
+                            onClose={onClose}
+                            {...currentScreen.data}
+                        />
+                    </div> 
+                )}
+                
+                {/* Always keep the bottom nav tabs in cache */}
+                <div className="content" style={{ display: isBottomNavTab && activeTab === 'customers' ? 'block' : 'none' }}>
+                    {visitedTabs.has('customers') && 
+                        <CustomersScreen 
+                            onNavigate={navigate}
+                            onClose={onClose}   
+                        />
+                    }
+                </div>
+                <div className="content" style={{ display: isBottomNavTab && activeTab === 'activities' ? 'block' : 'none' }}>
+                    {visitedTabs.has('activities') && 
+                        <ActivitiesScreen 
+                            onNavigate={navigate}
+                            onClose={onClose}   
+                        />
+                    }
+                </div>
+                <div className="content" style={{ display: isBottomNavTab && activeTab === 'expenses' ? 'block' : 'none' }}>
+                    {visitedTabs.has('expenses') && 
+                        <ExpensesScreen 
+                            onNavigate={navigate}
+                            onClose={onClose}   
+                        />
+                    }
+                </div>
+
+                <div className="content" style={{ display: isBottomNavTab && activeTab === 'incomes' ? 'block' : 'none' }}>
+                    {visitedTabs.has('incomes') && 
+                        <IncomeScreen
+                            onNavigate={navigate}
+                            onClose={onClose}   
+                        />
+                    }
+                </div>
+
                 <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />        
             </>) : (
                 <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
