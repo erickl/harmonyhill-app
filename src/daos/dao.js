@@ -31,6 +31,8 @@ export async function getOne(path, id, onError = null) {
 
 export async function get(path, filters = [], ordering = [], max = -1, onError = null) {
     try {
+        path = utils.isString(path) ? path.split("/") : path;
+        
         const collectionRef = collection(db, ...path);
         
         const constraints = [];
@@ -122,6 +124,8 @@ export async function getSubCollections(collectionName, filters = [], ordering =
  */
 export async function update(path, id, update, updateLogs, onError = null, writes = []) { 
     try {
+        path = utils.isString(path) ? path.split("/") : path;
+
         const update_ = utils.deepCopy(update);
         utils.allToTimestamp(update_);
 
@@ -197,6 +201,8 @@ async function getCurrentUsername() {
 
 export async function add(path, id, data, onError = null, writes = []) {
     try {
+        path = utils.isString(path) ? path.split("/") : path;
+
         const data_ = utils.deepCopy(data);
         utils.allToTimestamp(data_);
 
@@ -268,6 +274,18 @@ export async function remove(path, id, onError = null, writes = []) {
         if(onError) onError(`Error deleting document ${path}/${id}: ${e.message}`);
         return false;
     }
+}
+
+/**
+ * @param {*} existing database record 
+ * @returns path to record (excl ID) in an array
+ */
+export function getPath(record) {
+    const path = record.ref.path;
+    let pathArray = path.split("/");
+    // remove record ID, preserve only path to record
+    pathArray.pop(); 
+    return pathArray;
 }
 
 export async function getParent(child) {
