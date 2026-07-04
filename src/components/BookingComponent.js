@@ -9,7 +9,6 @@ import "./BookingComponent.css";
 
 export default function BookingComponent({customer, handleDeleteBooking, onNavigate}) {
     const [expanded, setExpanded] = useState(false);
-    const [hasEditBookingsPermissions, setEditBookingsPermissions] = useState(false);
 
     const { permissions } = useUserPermissions();
     const { onError } = useNotification();
@@ -17,15 +16,6 @@ export default function BookingComponent({customer, handleDeleteBooking, onNavig
     const handleCustomerClick = () => {
         setExpanded(prev => !prev);
     };
-
-    useEffect(() => {
-        const load = async () => {
-            await userService.logLastActive(onError);
-            const userHasEditBookingsPermissions = await userService.hasEditBookingsPermissions();
-            setEditBookingsPermissions(userHasEditBookingsPermissions);
-        }
-        load();
-    }, []);
 
     return (
         <div style={{marginBottom:"0.5rem"}}>
@@ -87,7 +77,7 @@ export default function BookingComponent({customer, handleDeleteBooking, onNavig
                         <p><span className="detail-label">Guest Paid:</span> {customer.guestPaid}</p>
                         <p><span className="detail-label">Host Payout:</span> {customer.hostPayout}</p>
                     </>)}
-                    { hasEditBookingsPermissions && (
+                    { permissions.canEditBookings && (
                         <div className="booking-component-footer">
                             <div className="booking-component-footer-icon">
                                 <Pencil   

@@ -5,18 +5,20 @@ import './CustomersScreen.css';
 import '../App.css';
 import VeganHamburgerButton from './VeganHamburgerButton.js';
 import { useNotification } from "../context/NotificationContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import BookingList from "./BookingList.js";
 
 export default function CustomersScreen({ onNavigate, onClose }) {
-    const [hasAddBookingsPermissions,  setAddBookingsPermissions] = useState(false );
     const [previousInterval,           setPreviousInterval      ] = useState(null);
     const [futureInterval,             setFutureInterval        ] = useState(null);
     
     const { onError } = useNotification();
-    
-    const loadPermissions = async () => {
-        const userHasAddBookingsPermissions = await userService.hasAddBookingsPermissions();
-        setAddBookingsPermissions(userHasAddBookingsPermissions)
+    const { permissions } = useUserPermissions();
+
+    useEffect(() => {
+        const load = async () => {
+            await userService.logLastActive(onError);
+        };
 
         setPreviousInterval({
             checkOutAfter  : utils.today(-5),
@@ -27,13 +29,6 @@ export default function CustomersScreen({ onNavigate, onClose }) {
             checkInAfter  : utils.today(1).startOf('day'),
             checkInBefore : utils.today(14),
         });
-    };
-
-    useEffect(() => {
-        const load = async () => {
-            await userService.logLastActive(onError);
-            await loadPermissions();    
-        };
 
         load();
     }, []);
@@ -46,7 +41,7 @@ export default function CustomersScreen({ onNavigate, onClose }) {
                     <h2 className="card-title">Customers</h2>    
                 </div>
                 <div>
-                    { hasAddBookingsPermissions && (
+                    { permissions.canAddBookings && (
                         <button className="add-button" onClick={() => onNavigate('add-customer')}>
                             +
                         </button>

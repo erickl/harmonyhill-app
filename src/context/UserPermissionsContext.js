@@ -14,16 +14,29 @@ export function UserPermissionProvider({ children }) {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (user) {
                 try {
-                    const isAdmin = await userService.isAdmin();
-                    const isManagerOrAdmin = await userService.isManagerOrAdmin();
-                    const user_ = await userService.getCurrentUser();
-                    const users_ = await userService.getUsers();
+                    const [
+                        isAdmin,
+                        isManagerOrAdmin,
+                        user_,
+                        users_,
+                        userHasEditBookingsPermissions,
+                        userHasAddBookingsPermissions
+                    ] = await Promise.all([
+                        userService.isAdmin(),
+                        userService.isManagerOrAdmin(),
+                        userService.getCurrentUser(),
+                        userService.getUsers(),
+                        userService.hasEditBookingsPermissions(),
+                        userService.hasAddBookingsPermissions(),
+                    ]);
 
                     setUsers(users_);
                     
                     setPermissions({
                         isAdmin : isAdmin,
                         isManagerOrAdmin : isManagerOrAdmin,
+                        canEditBookings : userHasEditBookingsPermissions,
+                        canAddBookings : userHasAddBookingsPermissions,
                     });
 
                     setUser(user_);
