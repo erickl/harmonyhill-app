@@ -22,13 +22,24 @@ export default function SideMenu({context}) {
         }
     }
 
-    return (
+    return (<>
+        {open && (
+            <div
+                onClick={() => close()}
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    backgroundColor: 'rgba(0,0,0,0.0)',
+                    zIndex: 2999, // just below the menu
+                }}
+            />
+        )}
         <div
             style={{
                 display: "flex",
                 flexDirection: "column",
                 height: "100vh",    
-                width: "20vw",         
+                width: "clamp(280px, 20vw, 400px)",
                 position: 'fixed',
                 top: 0,
                 transform: open ? 'translateX(0)' : 'translateX(-100%)',
@@ -79,5 +90,5 @@ export default function SideMenu({context}) {
                 <p>v{packageJson.version}</p>
             </div>
         </div>
-    );
+    </>);
 }
