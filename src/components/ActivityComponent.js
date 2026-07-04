@@ -314,8 +314,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     };
 
     useEffect(() => {
-        if(activityInfo) setStillRequirePhotos(activityInfo.photosRequired)
-        else setStillRequirePhotos(photos.length > 0)
+        setStillRequirePhotos(activityInfo && activityInfo.photosRequired && photos.length == 0)
     }, [photos]);
 
     useEffect(() => {
