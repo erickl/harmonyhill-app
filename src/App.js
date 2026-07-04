@@ -18,6 +18,7 @@ import ChangeLogsComponent from "./components/ChangeLogsComponent.js";
 import SideMenu from './components/SideMenu.js';
 import * as userService from './services/userService.js';
 import { auth } from "./firebase.js";
+import { useConfirmationModal } from './context/ConfirmationContext.js';
 import './App.css';
 import AddPurchaseScreen from './components/AddPurchaseScreen.js';
 import EditPurchaseScreen from './components/EditPurchaseScreen.js';
@@ -28,12 +29,15 @@ import AddTodoScreen from './components/AddTodoScreen.js';
 //import * as migrationService from './services/dataMigrationService.js';
 
 function App() {
-    const [isLoggedIn, setIsLoggedIn         ] = useState(false      );
-    const [loading,    setLoading            ] = useState(true       );
-    const [history,    setHistory            ] = useState([{ name: 'activities', data: {} }]);
+    const [isLoggedIn,        setIsLoggedIn         ] = useState(false      );
+    const [hasUnsavedChanges, setHasUnsavedChanges  ] = useState(false      );
+    const [loading,           setLoading            ] = useState(true       );
+    const [history,           setHistory            ] = useState([{ name: 'activities', data: {} }]);
     
     const [activeTab,  setActiveTab          ] = useState('activities');
     const [visitedTabs, setVisitedTabs] = useState(new Set(['activities']));
+
+    const { onConfirm } = useConfirmationModal();
 
     const bottomNavTabs = ['customers', 'activities', 'expenses', 'incomes'];
 
@@ -41,11 +45,13 @@ function App() {
 
     // Push a new screen onto the stack
     const onNavigate = (screenName, screenData = {}) => {
+        setHasUnsavedChanges(false);
         setHistory((prev) => [...prev, { name: screenName, data: screenData }]);
     };
 
     // Pop the top screen off to go back
     const onClose = () => {
+        setHasUnsavedChanges(false);
         if (history.length > 1) {
             setHistory((prev) => prev.slice(0, -1));
         }
@@ -69,10 +75,21 @@ function App() {
     }, []);
 
     const handleTabChange = (tab) => {
-        setActiveTab(tab);
-        setVisitedTabs(prev => new Set([...prev, tab]));
-        // Tabs are the top of hierarchy, so clear history
-        setHistory([{ name: tab, data: {} }]);
+        const onConfirmTabChange = () => {
+            setHasUnsavedChanges(false);
+            setActiveTab(tab);
+            setVisitedTabs(prev => new Set([...prev, tab]));
+            // Tabs are the top of hierarchy, so clear history
+            setHistory([{ name: tab, data: {} }]);
+        }
+
+        if(hasUnsavedChanges) {
+            onConfirm(`You have unsaved changes. Are you sure you want to close?`, () => {
+                onConfirmTabChange();
+            })
+        } else {
+            onConfirmTabChange();
+        }
     };
 
     if(loading) {
@@ -108,8 +125,9 @@ function App() {
     const isBottomNavTab = bottomNavTabs.includes(currentScreen.name);
 
     const context = {
-        onNavigate : onNavigate,
-        onClose : onClose
+        onNavigate           : onNavigate,
+        onClose              : onClose,
+        setHasUnsavedChanges : setHasUnsavedChanges
     }
 
     return (

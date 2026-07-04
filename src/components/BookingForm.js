@@ -69,6 +69,8 @@ export default function BookingForm({ booking, context }) {
     };
 
     const handleInputChange = (name, value, type) => {
+        context.setHasUnsavedChanges(true);
+        
         let nextFormData = {};
         
         if (name === "_batch" && typeof value === 'object' && value !== null) {

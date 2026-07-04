@@ -13,7 +13,7 @@ import "../App.css";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, triggerRerender }) => {
+const EditPurchaseScreen = ({ customer, activityToEdit, context, triggerRerender }) => {
 
     // Show purchase summary and confirmation pop up modal
     const [showConfirm,       setShowConfirm]       = useState(false);
@@ -64,6 +64,8 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
     }
 
     const handleFormDataChange = (name, value, type) => {
+        context.setHasUnsavedChanges(true);
+
         let nextFormData = {};
 
         if (name === "_batch" && typeof value === 'object' && value !== null) {
@@ -107,7 +109,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
             
             if(editActivitySuccess) {
                 onSuccess();
-                onClose();
+                context.onClose();
                 if(triggerRerender) triggerRerender();
             } else {
                 setShowConfirm(false);
@@ -200,7 +202,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, onClose, onNavigate, tri
                 {(validationError && <p className="validation-error">{`Error: ${validationError}`}</p>)}
                 
                 <ButtonsFooter 
-                    onCancel={onClose} 
+                    onCancel={context.onClose} 
                     onSubmit={() => setShowConfirm(true)}
                     submitEnabled={readyToSubmit}
                 />

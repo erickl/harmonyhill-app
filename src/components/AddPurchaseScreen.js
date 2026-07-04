@@ -133,6 +133,8 @@ const AddPurchaseScreen = ({ customer, context }) => {
     }
 
     const handleFormDataChange = (name, value, type) => {
+        context.setHasUnsavedChanges(true);
+        
         let nextFormData = {};
 
         if (name === "_batch" && typeof value === 'object' && value !== null) {

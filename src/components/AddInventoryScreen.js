@@ -39,6 +39,8 @@ export default function AddInventoryScreen({context, inventory}) {
     }
 
     const handleInputChange = (name, value, type) => {
+        context.setHasUnsavedChanges(true);
+        
         let nextFormData = {};
         
         if (name === "_batch" && typeof value === 'object' && value !== null) {

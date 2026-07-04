@@ -35,7 +35,7 @@ export default function ButtonsFooter({onCancel, onSubmit, submitEnabled }) {
                 onClick={ handleSubmit }
                 disabled={ submitDisabled }
             >
-                { loading ? "Processing..." : "Submit" }
+                { loading ? "Processing..." : "Confirm" }
             </button>
             { loading && <Spinner />} 
         </div>
