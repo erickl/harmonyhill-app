@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Flag } from 'lucide-react';
 import Spinner from './Spinner.js';
 import MetaInfo from './MetaInfo.js';
+import IssueFlagButton from './IssueFlagButton.js';
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
+import * as issuesService from "../services/issueService.js";
 import invoiceLogo from "../assets/invoice-icon.png";
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { useNotification } from "../context/NotificationContext.js";
 import "./ExpenseComponent.css";
 
-export default function ExpenseComponent({expense, handleDelete, onNavigate}) {
+export default function ExpenseComponent({expense, handleDelete, onFlagIssue, onNavigate}) {
     const [displayedReceipt, setDisplayedReceipt] = useState(null );
     const [expanded,         setExpanded        ] = useState(false);
     const [loading,          setLoading         ] = useState(false);
     const [booking,          setBooking         ] = useState(null);
     const [activity,         setActivity        ] = useState(null);
+    const [issue,            setIssue           ] = useState(null);
 
     const { permissions} = useUserPermissions();
     const { onError    } = useNotification();
@@ -34,9 +37,15 @@ export default function ExpenseComponent({expense, handleDelete, onNavigate}) {
     };
 
     const handleSetExpanded = async(expense) => {
-        setLoading(prev => !prev);     
-        await fetchBookingInfo(expense);
-        setLoading(prev => !prev);
+        if(!expanded) {
+            setLoading(prev => !prev);  
+            await fetchBookingInfo(expense);
+            if(expense.issue === "attention") {
+                const issue_ = await issuesService.getLastIssue(expense);
+                setIssue(issue_);
+            }
+            setLoading(prev => !prev);
+        }
         setExpanded(prev => !prev);
     }
 
@@ -66,6 +75,11 @@ export default function ExpenseComponent({expense, handleDelete, onNavigate}) {
                 <Spinner />
             ) : expanded && !loading ? (
                 <div className="expense-body">
+                    {issue && !utils.isEmpty(issue.comment) && (
+                        <div style={{color:"red"}}>
+                            Issue: {issue.comment}
+                        </div>
+                    )}
                     <div>
                         Payment Method: {utils.capitalizeWords(expense.paymentMethod)}
                     </div>
@@ -118,6 +132,14 @@ export default function ExpenseComponent({expense, handleDelete, onNavigate}) {
                             />
                             <p>Receipt</p>
                         </div>
+
+                        {false && permissions.isAdmin && (
+                            <IssueFlagButton 
+                                record={expense}
+                                onFlagIssue={onFlagIssue}
+                            />
+                        )}
+
                     </div>
                     <MetaInfo document={expense}/>
                 </div>

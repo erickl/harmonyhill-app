@@ -70,6 +70,14 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
         });
     }
 
+    const onFlagIssue = async(expenseToFlag, comment) => {
+        const result = await issueService.flagIssue(expenseToFlag, comment, onError);
+        if(result !== false) {
+            let newIssues = [...issues, expenseToFlag];
+            setIssues(newIssues)
+        }
+    }
+
     useEffect(() => {
         const fetchExpenses = async() => {
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);
@@ -128,6 +136,23 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                     </div>
                 </div>  
             </div>
+            {issues && issues.length > 0 && (<>
+                <h2 className="issues-header">Issues</h2>
+                <div className="card-content error-card-content">
+                    {issues.map((expense) => {
+                        return (
+                            <React.Fragment key={expense.id}>
+                                <ExpenseComponent 
+                                    expense={expense} 
+                                    handleDelete={handleDeleteExpense}
+                                    onFlagIssue={onFlagIssue}
+                                    onNavigate={onNavigate}
+                                />
+                            </React.Fragment>
+                        )
+                    })}
+                </div>
+            </>)}
             <div className="card-content">
                 {expenses.map((expense) => {
                     return (
@@ -135,6 +160,7 @@ export default function ExpensesScreen({ onNavigate, onClose }) {
                             <ExpenseComponent 
                                 expense={expense} 
                                 handleDelete={handleDeleteExpense}
+                                onFlagIssue={onFlagIssue}
                                 onNavigate={onNavigate}
                             />
                         </React.Fragment>
