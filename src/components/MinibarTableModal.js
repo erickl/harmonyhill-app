@@ -131,8 +131,9 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
 
         const allCountsValid = !Object.values(state.updatedCount).includes(null);
         
-        // For checkout, it's fine if all new counts are zero
-        setEnableSubmit((hasCountUpdate || subCategory === "checkout") && allCountsValid);
+        // For checkout and housekeeping, it's fine if all new counts are zero
+        const canSubmitDirectly = subCategory === "checkout" || subCategory === "housekeeping";
+        setEnableSubmit((hasCountUpdate || canSubmitDirectly) && allCountsValid);
     }, [countIsValid, state.updatedCount]);
 
     // todo: is there a need to get reserved stock, if we are counting the end stock, to calculate a sale?
