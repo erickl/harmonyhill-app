@@ -1,0 +1,44 @@
+.customer-sub-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.customer-details {
+    padding: 0.5rem;
+    margin: 0;
+    background: #fafafa;   /* light background for details */
+    border: 1px solid #ddd;
+    border-top: none; /* so it looks attached to the header */
+    border-radius: 0 0 6px 6px; /* rounded bottom corners */
+}
+
+.customer-details p {
+    margin: 0.5rem 0;
+}
+
+.customer-details .detail-label {
+    color: black;
+    font-weight: 600;
+}
+
+.important-badge {
+    background: red;
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.booking-component-footer {
+    margin-top: 2rem;
+    display: flex;
+    gap: 30px;
+}
+
+.booking-component-footer-icon p {
+    font-size: 10px; 
+    margin-top: 0rem;
+    cursor: pointer;
+    align-items: center;
+}
