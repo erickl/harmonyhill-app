@@ -60,7 +60,6 @@ export default class Inventory {
             new Inventory("Tempe Chips",                           "minibar",           50000,    0,               [],                {"hh" : 1,  "jn": 1}               ,null), 
             new Inventory("Black Thins",                           "minibar",           60000,    0,               [],                {"hh" : 1,  "jn": 1}               ,null), 
             new Inventory("Yava Granola",                          "minibar",           50000,    0,               [],                {"hh" : 2,  "jn": 2}               ,null), 
-            new Inventory("Casa Grata",                            "minibar",           60000,    0,               [],                {"hh" : 1,  "jn": 1}               ,null), 
             new Inventory("Biscoff Roll",                          "minibar",           60000,    0,               ["Delta Dewata"],  {"hh" : 1,  "jn": 1}               ,"gs://harmonyhill-1.firebasestorage.app/resources/minibar/biscoff-roll.jpeg"), 
             new Inventory("Krakakoa Chocolate",                    "minibar",           100000,   0,               [],                {"hh" : 2,  "jn": 2}               ,null), 
             new Inventory("Kombucha Small",                        "minibar",           50000,    0,               [],                {"hh" : 4,  "jn": 4}               ,null), 
