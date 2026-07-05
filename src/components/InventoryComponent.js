@@ -17,6 +17,9 @@ export default function InventoryComponent({context, item}) {
     const [expanded, setExpanded] = useState(false);
     const [loading, setLoading] = useState(false);
     const [quantity, setQuantity] = useState(null);
+    const [reserved, setReserved] = useState(null);
+    const [removals, setRemovals] = useState(null);
+    const [refills, setRefills] = useState(null);
 
     const { onError } = useNotification();
     const { onConfirm } = useConfirmationModal();
@@ -26,53 +29,58 @@ export default function InventoryComponent({context, item}) {
 
     const onDisplayRemovalsData = async(item) => {    
         const headers = ["#", "Reason", "Removed At", "Quantity", "Booking", "Villa", "Removed By", "Comments", "Created"];  
-        const enhancedRemovals = [];
+    
+        if(!removals) return;
 
-        for(let i = 0; i < item.removals.length; i++) {
-            const removal = item.removals[i];
-            const booking = await bookingService.getOne(removal.bookingId);
-            const bookingName = booking ? booking.name : "-";
-            const bookingHouse = booking ? (booking.house.trim().toLowerCase() === "harmony hill" ? "HH" : "JN") : "-";
+        const enhancedRemovals = await Promise.all(
+            removals.map(async (removal, i) => {
+                const booking = await bookingService.getOne(removal.bookingId);
+                const bookingName = booking ? booking.name : "-";
+                const bookingHouse = booking ? (booking.house.trim().toLowerCase() === "harmony hill" ? "HH" : "JN") : "-";
             
-            const enhancedRemoval = [
-                i+1,
-                removal.reason,
-                utils.to_ddMMM(removal.doneAt),
-                removal.quantity,
-                //removal.quantityBefore,
-                bookingName,
-                bookingHouse,
-                removal.createdBy,
-                removal.comments,
-                utils.to_ddMMM(removal.createdAt),
-            ];
-            
-            enhancedRemovals.push(enhancedRemoval);
-        }
+                const enchancedRemoval = [
+                    i+1,
+                    removal.reason,
+                    utils.to_ddMMM(removal.doneAt),
+                    removal.quantity,
+                    //removal.quantityBefore,
+                    bookingName,
+                    bookingHouse,
+                    removal.createdBy,
+                    removal.comments,
+                    utils.to_ddMMM(removal.createdAt),
+                ];
+                return enchancedRemoval;
+            })
+        );
+
         onDisplayDataTable("Removals", headers, enhancedRemovals);
     }
 
     const onDisplayRefillsData = async(item) => {
-        const headers = ["#", "Refill At", "Quantity", "expense", "Receipt", "Refill By", "Created" ];  
-        const enhancedRefills = [];
+        const headers = ["#", "Refill At", "Quantity", "expense", "Receipt", "Refill By", "Created" ];
+        
+        if(!refills) return;
+        
+        const enhancedRefills = await Promise.all(
+            refills.map(async (refill, i) => {
+                const expense = await expenseService.getOne(refill.expenseId);
+            
+                const enhancedRefill = [
+                    i+1,
+                    utils.to_ddMMM(refill.doneAt),
+                    refill.quantity,
+                    //refill.quantityBefore,
+                    `${expense.index}. ${expense.description}`,
+                    expense.photoUrl,
+                    refill.createdBy,
+                    utils.to_ddMMM(refill.createdAt),
+                ];
 
-        for(let i = 0; i < item.refills.length; i++) {
-            const refill = item.refills[i];
-            const expense = await expenseService.getOne(refill.expenseId);
-            
-            const enhancedRefill = [
-                i+1,
-                utils.to_ddMMM(refill.doneAt),
-                refill.quantity,
-                //refill.quantityBefore,
-                `${expense.index}. ${expense.description}`,
-                expense.photoUrl,
-                refill.createdBy,
-                utils.to_ddMMM(refill.createdAt),
-            ];
-            
-            enhancedRefills.push(enhancedRefill);
-        }
+                return enhancedRefill;
+            })  
+        );
+
         onDisplayDataTable("Refills", headers, enhancedRefills);
     }
 
@@ -93,23 +101,34 @@ export default function InventoryComponent({context, item}) {
     const handleSetExpanded = async(item) => {
         if(!expanded) {
             setLoading(prev => !prev);
-    
-            await fetchItemInfo(item);
-
-            setExpanded(prev => !prev);
+            await fetchItemInfo(item); 
             setLoading(prev => !prev);
-        }
+        } 
+        setExpanded(prev => !prev);
     }
 
-    const fetchItemInfo = async (item) => {  
-        item.refills = await inventoryService.getRefills(item.name, {}, onError);
-        item.removals = await inventoryService.getRemovals(item.name, {}, onError);
-        item.quantity = await inventoryService.getCurrentQuantity(item.name, onError);
-        
-        const futureRemovals = item.removals.filter((item) => utils.isAfterToday(item.doneAt));
-        const reservedCount = futureRemovals.reduce((count, removal) => removal.quantity + count, 0);
-        item.reserved = reservedCount;   
+    const fetchItemInfo = async (item) => { 
+        const getRefills = async() => {
+            const refills_ = await inventoryService.getRefills(item.name, {}, onError);
+            setRefills(refills_);
+        }
+
+        const getRemovals = async() => {
+            const removals_ = await inventoryService.getRemovals(item.name, {}, onError);
+            setRemovals(removals_);
+        }
+     
+        if(!refills) getRefills();
+        if(!removals) getRemovals();
     };
+
+    useEffect(() => {
+        if(removals) {
+            const futureRemovals = removals.filter((item) => utils.isAfterToday(item.doneAt));
+            const reservedCount = futureRemovals.reduce((count, removal) => removal.quantity + count, 0);
+            setReserved(reservedCount);
+        }
+    }, [removals]);
 
     const onCloseItemInventory = async(item) => {
         onConfirm(`Close count for ${item.name}?`, async () => {
@@ -153,23 +172,25 @@ export default function InventoryComponent({context, item}) {
                 {utils.capitalizeWords(item.type)} 
             </div>
 
-            {expanded && loading ? (
+            {loading ? (
                 <Spinner />
-            ) : expanded && !loading ? (
+            ) : expanded ? (
                 <div className="inv-item-body">
-                    {utils.exists(item, "quantity") && (
+
+                    {quantity !== null && (
                         <div>
-                            Quantity: {item.quantity}
+                            Quantity: {quantity}
                         </div>
                     )}
-                    {utils.exists(item, "reserved") && item.reserved > 0 && (
+
+                    {reserved !== null && (
                         <div>
-                            Reserved: {item.reserved}
+                            Reserved: {reserved}
                         </div>
                     )}
                 
                     <div className="inv-item-body-footer">
-                        {utils.exists(item, "quantity") && item.quantity > 0 && (
+                        {quantity !== null && quantity > 0 && (
                             <div className="inv-item-body-footer-icon">
                                 <MinusCircle   
                                     onClick={(e) => {
@@ -191,25 +212,29 @@ export default function InventoryComponent({context, item}) {
                             <p>Add</p>
                         </div>
 
-                        <div className="inv-item-body-footer-icon">
-                            <Receipt   
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDisplayRemovalsData(item);
-                                }}
-                            />
-                            <p>Removals</p>
-                        </div>
+                        {!utils.isEmpty(removals) && (
+                            <div className="inv-item-body-footer-icon">
+                                <Receipt   
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDisplayRemovalsData(item);
+                                    }}
+                                />
+                                <p>Removals</p>
+                            </div>
+                        )}
                     
-                        <div className="inv-item-body-footer-icon">
-                            <ShoppingCart   
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDisplayRefillsData(item);
-                                }}
-                            />
-                            <p>Refills</p>
-                        </div>
+                        {!utils.isEmpty(refills) && (
+                            <div className="inv-item-body-footer-icon">
+                                <ShoppingCart   
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDisplayRefillsData(item);
+                                    }}
+                                />
+                                <p>Refills</p>
+                            </div>
+                        )}
 
                         {permissions.isAdmin && (
                             <div className="inv-item-body-footer-icon">
