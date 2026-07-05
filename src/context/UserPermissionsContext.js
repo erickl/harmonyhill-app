@@ -29,13 +29,16 @@ export function UserPermissionProvider({ children }) {
                     setPermissions({
                         isAdmin : permissions.isAdmin === true,
                         isManagerOrAdmin : permissions.isAdmin === true || permissions.isManager === true,
+                        
                         canEditBookings : permissions["bookings-u"] === true,
                         canAddBookings : permissions["bookings-c"] === true,
                         canDeleteBookings : permissions["bookings-d"] === true,
+                        canReadBookings : permissions["bookings-r"] === true,
 
                         canEditActivities : permissions["activities-u"] === true,
                         canAddActivities : permissions["activities-c"] === true,
                         canDeleteActivities : permissions["activities-d"] === true,
+                        canReadActivities : permissions["activities-r"] === true,
                         
                         canReadExpenses : permissions["expenses-r"] === true,
                         canEditExpenses : permissions["expenses-u"] === true,
