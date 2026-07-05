@@ -127,9 +127,12 @@ export default function IncomeScreen({ customer, context }) {
                             {permissions.isAdmin && (<>
                                 <SheetUploader label={"Incomes"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
-                            <button className="add-button" onClick={() => context.onNavigate("add-income", {customer:customer})}>
-                                + 
-                            </button>
+
+                            {permissions.canAddIncomes && (
+                                <button className="add-button" onClick={() => context.onNavigate("add-income", {customer:customer})}>
+                                    + 
+                                </button>
+                            )}
                         </div>
                         {incomeSum && (<h4>Income (excl top ups): {utils.formatDisplayPrice(incomeSum, true)}</h4>)}
                     </div>
@@ -178,16 +181,20 @@ export default function IncomeScreen({ customer, context }) {
                                             Comments: {income.comments}
                                         </div>)}
                                         <div className="income-body-footer">
-                                            <div className="income-body-footer-icon">
-                                                <Pencil   
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        context.onNavigate("edit-income", {customer:customer, incomeToEdit:income});
-                                                    }}
-                                                />
-                                                <p>Edit</p>
-                                            </div>
-                                            {permissions.isManagerOrAdmin && (
+
+                                            { permissions.canEditIncomes && (
+                                                <div className="income-body-footer-icon">
+                                                    <Pencil   
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            context.onNavigate("edit-income", {customer:customer, incomeToEdit:income});
+                                                        }}
+                                                    />
+                                                    <p>Edit</p>
+                                                </div>
+                                            )}
+
+                                            {permissions.canDeleteIncomes && (
                                                 <div className="income-body-footer-icon">
                                                     <Trash2  
                                                         onClick={(e) => {

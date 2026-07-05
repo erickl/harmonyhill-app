@@ -16,13 +16,13 @@ import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useMinibarTableModal } from '../context/MinibarTableContext.js';
+import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import MetaInfo from './MetaInfo.js';
 import PhotoUploadButton from "./PhotoUploadButton.js";
 import TaskAcceptButton from "./TaskAcceptButton.js";
 import TaskAssigneeComponent from './TaskAssigneeComponent.js';
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import {Alert} from "../models/Alert.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { motion } from "framer-motion";
 
 export default function ActivityComponent({ inputCustomer, activity, onActivityChange, context, handleDeleteActivity }) {
@@ -45,7 +45,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
     const { onDisplayMinibarTable } = useMinibarTableModal();
-    const { user } = useUserPermissions();
+    const { user, permissions } = useUserPermissions();
 
     const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
     const countMinibarNow = minibarCount === null && activity && ActivityStatus.Started.equals(activity.status) && utils.isToday(activity.startingAt);
@@ -527,23 +527,26 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     )}
 
                     <div className="activity-component-footer">
-                        <div className="activity-component-footer-icon">
-                            <Pencil
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (!utils.isEmpty(dishes)) {
-                                        activity.dishes = dishes;
-                                    }
-                                    context.onNavigate("edit-customer-purchase", {
-                                        customer: customer,
-                                        activityToEdit: activity,
-                                    });
-                                }}
-                            />
-                            <p>Edit</p>
-                        </div>
+                        
+                        {permissions.canDeleteActivities && (
+                            <div className="activity-component-footer-icon">
+                                <Pencil
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!utils.isEmpty(dishes)) {
+                                            activity.dishes = dishes;
+                                        }
+                                        context.onNavigate("edit-customer-purchase", {
+                                            customer: customer,
+                                            activityToEdit: activity,
+                                        });
+                                    }}
+                                />
+                                <p>Edit</p>
+                            </div>
+                        )}
 
-                        {isManagerOrAdmin && (
+                        {permissions.canDeleteActivities && (
                             <div className="activity-component-footer-icon">
                                 <Trash2
                                     onClick={(e) => {

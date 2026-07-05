@@ -124,13 +124,17 @@ export default function ExpensesScreen({ context }) {
                 <div className="card-header-right">
                     <div>
                         <div className="card-header-right-top-row">
+                            
                             {permissions.isAdmin && (<>
                                 <SheetUploader label={"Expenses"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                                 <ImageDown style={{margin:"1rem"}} onClick={() => handleReceiptsDownloadFilter()} />
                             </>)}
-                            <button className="add-button" onClick={() => context.onNavigate("add-expense")}>
-                                + 
-                            </button>
+
+                            {permissions.canAddIncomes && (
+                                <button className="add-button" onClick={() => context.onNavigate("add-expense")}>
+                                    + 
+                                </button>
+                            )}
                         </div>
                         {expenseSum && (<h4>Expense: {utils.formatDisplayPrice(expenseSum, true)}</h4>)}
                     </div>

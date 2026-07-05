@@ -86,7 +86,7 @@ export default function SideMenu({context}) {
             </ul>
 
             <div className="side-menu-footer">
-                {user && (<p>User: {user.name}</p>)}
+                {user && (<p>User: {user.name}, {user.role}</p>)}
                 <p>v{packageJson.version}</p>
             </div>
         </div>

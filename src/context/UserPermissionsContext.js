@@ -31,6 +31,21 @@ export function UserPermissionProvider({ children }) {
                         isManagerOrAdmin : permissions.isAdmin === true || permissions.isManager === true,
                         canEditBookings : permissions["bookings-u"] === true,
                         canAddBookings : permissions["bookings-c"] === true,
+                        canDeleteBookings : permissions["bookings-d"] === true,
+
+                        canEditActivities : permissions["activities-u"] === true,
+                        canAddActivities : permissions["activities-c"] === true,
+                        canDeleteActivities : permissions["activities-d"] === true,
+                        
+                        canReadExpenses : permissions["expenses-r"] === true,
+                        canEditExpenses : permissions["expenses-u"] === true,
+                        canDeleteExpenses : permissions["expenses-d"] === true,
+                        canAddExpenses : permissions["expenses-c"] === true,
+
+                        canReadIncomes : permissions["incomes-r"] === true,
+                        canEditIncomes : permissions["incomes-u"] === true,
+                        canDeleteIncomes : permissions["incomes-d"] === true,
+                        canAddIncomes : permissions["incomes-c"] === true,
                     });
 
                     setUser(user_);

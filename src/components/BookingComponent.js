@@ -77,8 +77,8 @@ export default function BookingComponent({customer, handleDeleteBooking, context
                         <p><span className="detail-label">Guest Paid:</span> {customer.guestPaid}</p>
                         <p><span className="detail-label">Host Payout:</span> {customer.hostPayout}</p>
                     </>)}
-                    { permissions.canEditBookings && (
-                        <div className="booking-component-footer">
+                    <div className="booking-component-footer">
+                        { permissions.canEditBookings && (
                             <div className="booking-component-footer-icon">
                                 <Pencil   
                                     onClick={(e) => {
@@ -88,7 +88,9 @@ export default function BookingComponent({customer, handleDeleteBooking, context
                                 />
                                 <p>Edit</p>
                             </div>
-        
+                        )}
+
+                        { permissions.canDeleteBookings && (
                             <div className="booking-component-footer-icon">
                                 <Trash2  
                                     onClick={(e) => {
@@ -98,8 +100,8 @@ export default function BookingComponent({customer, handleDeleteBooking, context
                                 />
                                 <p>Delete</p>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                     <MetaInfo document={customer}/>
                 </div>
             )} 

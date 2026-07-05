@@ -99,16 +99,20 @@ export default function ExpenseComponent({expense, handleDelete, onFlagIssue, co
                         Purchased By: {utils.capitalizeWords(expense.purchasedBy)}
                     </div>
                     <div className="expense-body-footer">
-                        <div className="expense-body-footer-icon">
-                            <Pencil   
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    context.onNavigate("edit-expense", {expenseToEdit:expense})
-                                }}
-                            />
-                            <p>Edit</p>
-                        </div>
-                        {permissions.isManagerOrAdmin && (
+                        
+                        { permissions.canEditExpenses && (
+                            <div className="expense-body-footer-icon">
+                                <Pencil   
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        context.onNavigate("edit-expense", {expenseToEdit:expense})
+                                    }}
+                                />
+                                <p>Edit</p>
+                            </div>
+                        )}
+
+                        {permissions.canDeleteExpenses && (
                             <div className="expense-body-footer-icon">
                                 <Trash2  
                                     onClick={(e) => {
