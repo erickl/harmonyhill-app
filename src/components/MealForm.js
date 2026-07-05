@@ -137,6 +137,19 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     />
                 </div>
             </div>
+
+            <div className="purchase-form-group">
+                <div className="display-name-input-wrapper">
+                    <TextInput
+                        type="amount"
+                        name="customerPrice"
+                        label="Customer Price"
+                        // Apply formatting here for display inside the input
+                        value={formData.customerPrice}
+                        onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                    />
+                </div>
+            </div>
             
             {/* Display all dishes, inc/dec buttons, and how many of each dish */}
             {Object.entries(allDishes).length > 0 ? (
