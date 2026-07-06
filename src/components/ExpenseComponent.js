@@ -90,7 +90,7 @@ export default function ExpenseComponent({expense, handleDelete, onFlagIssue, co
                         Booking: {booking.name}
                     </div>)}
                     {activity && (<div>
-                        Activity: {activity.name}
+                        Activity: {activity.displayName}
                     </div>)}
                     {expense.comments && (<div>
                         Comments: {expense.comments}
