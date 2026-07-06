@@ -10,9 +10,15 @@ import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 
 export default function MyDatePicker({ name, label, date, time, onChange, useTime }) {
     //const isMidnight = (dt) => dt !== null && dt.hour === 0 && dt.minute === 0 && dt.second === 0 && dt.millisecond === 0;
-    const name_ = name.replace("At", "");
-    const dateName = `${name_}At`;
-    const timeName = `${name_}Time`;
+    let name_ = name;
+    let dateName = `${name_}`;
+    let timeName = `${name_}`;
+
+    if(name.endsWith("At")) {
+        name_ = name.replace("At", "");
+        dateName = `${name_}At`;
+        timeName = `${name_}Time`;
+    }
 
     date = utils.toDateTime(date);
     time = utils.toDateTime(time);
