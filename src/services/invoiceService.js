@@ -11,7 +11,7 @@ export async function getTotal(bookingId, onError) {
     const activities = await activityService.get(bookingId, {}, onError);
     
     // Get all meals, even with customerPrice = 0, because the dish prices are no longer summed up at meal level (since 2025-12)
-    const meals = activities.filter(activity => activity.category === "meal");
+    const meals = activities.filter(activity => activity.category === "meal" && activity.isFree === false);
     const nonFreeActivities = activities.filter(activity => activity.category !== "meal" && activity.isFree === false && activity.customerPrice > 0);
     
     const itemizedMealList = await Promise.all(
@@ -33,6 +33,9 @@ export async function getTotal(bookingId, onError) {
             return mealItem;  
         })
     );
+
+    // After summing dish prices, filter away all free meals (e.g. breakfasts)
+    const nonFreeMeals = itemizedMealList.filter(meal => meal.customerPrice > 0);
 
     const itemizedActivityList = nonFreeActivities.map((activity) => {
         let activityItem = {
@@ -57,7 +60,8 @@ export async function getTotal(bookingId, onError) {
         return sum + mealCost;// + dishesCost;
     }, 0);
 
-    const totalList = [...itemizedActivityList, ...itemizedMealList];
+    const totalList = [...itemizedActivityList, ...nonFreeMeals];
+    const totalListSorted = totalList.sort((item1, item2) => item1.date - item2.date);
 
     const incomeFilter = {bookingId : bookingId, category : "guest payment"};
     const payments = await incomeService.get(incomeFilter, onError);
