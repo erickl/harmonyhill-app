@@ -103,29 +103,31 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
 
     // Note: 'values' is a key word for the google sheets API. Keep the name
     const uploadData = async (values, token) => {
-        // the range or sheet name you want to append to
-        const sheetName = `${label} (Created ${utils.to_ddMMM_HHmm()})`;
-        const range = `${sheetName}!A1`;
-
-        const sheetExists = await ensureSheetExists(token, range);
-        if(!sheetExists) {
-            return;
-        }
-
-        const requestBody = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            // example: const rows = [["Name", "name@example.com", "data"]];
-            body: JSON.stringify({values}),
-        }
-
-        const sheetApiEndpoint = `${BASE_API}/${SPREADSHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED`;
-        
         try {
+            // the range or sheet name you want to append to
+            const sheetName = `${label} (Created ${utils.to_ddMMM_HHmm()})`;
+            const range = `${sheetName}!A1`;
+
+            const sheetExists = await ensureSheetExists(token, range);
+            if(!sheetExists) {
+                return;
+            }
+
+            const requestBody = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                // example: const rows = [["Name", "name@example.com", "data"]];
+                body: JSON.stringify({values}),
+            }
+
+            const sheetApiEndpoint = `${BASE_API}/${SPREADSHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED`;
+        
             const response = await fetch(sheetApiEndpoint, requestBody);
+            //console.log(`resp: ${JSON.stringify(response)}`);
+
             const result = await response.json();
             
             if(utils.exists(result, "error")) {

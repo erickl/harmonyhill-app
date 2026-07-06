@@ -177,12 +177,16 @@ export async function toArrays(filters, onProgress, onError) {
         const document = documents[i];
         if(utils.exists(document, "bookingId")) {
             const booking = await getBooking(document.bookingId);
-            document.bookingName = booking.name;
+            if(booking) {
+                document.bookingName = booking.name;
+            }
 
             if(utils.exists(document, "activityId")) {
                 const activity = await getActivity(document.bookingId, document.activityId);
-                document.activityCategory = activity.category;
-                document.activitySubCategory = activity.subCategory;
+                if(activity) {
+                    document.activityCategory = activity.category;
+                    document.activitySubCategory = activity.subCategory;
+                }
             }
         }
 
