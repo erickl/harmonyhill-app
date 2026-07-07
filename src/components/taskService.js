@@ -7,7 +7,7 @@ export async function makeChangeLog(existing, updateData) {
         
         // If the assignee herself is changing the data, no need to accept the task change again
         if(thisUser !== updateData.assignedTo) {
-            updateData.changeDescription = await activityService.getChangeDescription(existing, updateData);
+            updateData.changeDescription = activityService.getChangeDescription(existing, updateData);
         }
     }
     updateData.assigneeAccept = updateData.assigneeAccept && utils.isEmpty(updateData.changeDescription);

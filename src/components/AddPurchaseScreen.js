@@ -97,9 +97,9 @@ const AddPurchaseScreen = ({ customer, context }) => {
         formData.subCategory = selectedActivity.subCategory;
 
         if(selectedActivity.category === "meal") {         
-            addActivityResult = await mealService.addMeal(customer.id, formData, onError);
+            addActivityResult = await mealService.addMeal(customer, formData, onError);
         } else {
-            addActivityResult = await activityService.add(customer.id, formData, onError);
+            addActivityResult = await activityService.add(customer, formData, onError);
         }
         
         if(addActivityResult !== false) {

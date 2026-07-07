@@ -1,5 +1,4 @@
 import * as activityDao from "../daos/activityDao.js";
-import * as bookingDao from "../daos/bookingDao.js";
 import * as activityService from "./activityService.js";
 import * as inventoryService from "./inventoryService.js";
 import * as utils from "../utils.js";
@@ -22,25 +21,19 @@ export function groupByCourse(dishes) {
     return groupedByCourse;
 }
 
-export async function addMeal(bookingId, mealData, onError, writes = []) {
+export async function addMeal(booking, mealData, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const booking = await bookingDao.getOne(bookingId);
-    if (!booking) {
-        onError(`Booking ${bookingId} not found`)
-        return false;
-    }
-
-    const meal = await mapMealObject(mealData);
+    const meal = mapMealObject(mealData);
     meal.house = booking.house;
     meal.name = booking.name
-    meal.bookingId = bookingId;
+    meal.bookingId = booking.id;
 
     const dishes = Object.values(mealData.dishes);
 
     const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
     meal.id = mealId; //  needed by inventory sales
-    const mealRecord = await activityDao.add(bookingId, mealId, meal, onError, writes);
+    const mealRecord = await activityDao.add(booking.id, mealId, meal, onError, writes);
     if (mealRecord === false) return false;
 
     let addedDishes = [];
@@ -58,7 +51,7 @@ export async function addMeal(bookingId, mealData, onError, writes = []) {
     }
 
     mealRecord.dishes = addedDishes;
-    const enhancedMealRecord = await activityService.enhanceActivities(mealRecord);
+    const enhancedMealRecord = await activityService.enhanceActivities(mealRecord, booking);
     return enhancedMealRecord;
 }
 
@@ -66,10 +59,12 @@ export async function removeMeal(meal, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const dishes = await getMealDishes(meal.bookingId, meal.id);
-    for (const dish of dishes) {
-        const deleteDishResult = await deleteDish(meal, dish, onError, writes);
-        if (deleteDishResult === false) return false;
-    }
+    const deleteResults = await Promise.all(
+        dishes.map(dish => deleteDish(meal, dish, onError, writes))
+    );
+    
+    const anyFailed = deleteResults.includes(false);
+    if(anyFailed) return false;
 
     const result = await activityService.remove(meal, onError, writes);
     if (result === false) return false;
@@ -84,10 +79,12 @@ export async function removeMeal(meal, onError, writes = []) {
 async function deleteDish(meal, dish, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result1 = await activityDao.deleteDish(meal.bookingId, meal.id, dish.id, onError, writes);
-    if (result1 === false) return false;
+    const [removeDishResult, removeSaleResult] = await Promise.all([
+        activityDao.deleteDish(meal.bookingId, meal.id, dish.id, onError, writes),
+        inventoryService.removeSaleIfExists(dish.name, meal.id, onError, writes)
+    ]);
 
-    const removeSaleResult = await inventoryService.removeSaleIfExists(dish.name, meal.id, onError, writes);
+    if (removeDishResult === false) return false;
     if (removeSaleResult === false) return false;
 
     if (commit) return await commitTx(writes, onError);
@@ -111,51 +108,55 @@ export function makeDishId(startingAt, house, meal, dishName) {
     return `${startingAt}-${houseShort}-${meal}-${dishName}-${Date.now()}`;
 }
 
+/**
+ * Add each meal item (dish) to the database
+ * @param {*} meal 
+ * @param {*} mealId 
+ * @param {*} dishesData 
+ * @param {*} onError 
+ * @param {*} writes 
+ * @returns all dishes which successfully was added to the database
+ */
 async function addDishes(meal, mealId, dishesData, onError, writes) {
-    // Add each meal item to DB
-    let dishes = [];
-    for (const dishData of dishesData) {
-        const addDishSuccess = await addDish(meal, mealId, dishData, onError, writes);
-        if (addDishSuccess === false) return false;
-        dishes.push(addDishSuccess);
-    }
+    const dishes = await Promise.all(
+        dishesData.map(dishData => addDish(meal, mealId, dishData, onError, writes))
+    );
+
+    if(dishes.includes(false)) return false;
 
     return dishes;
 }
 
-export async function update(bookingId, mealId, mealUpdateData, onError, writes = []) {
+export async function update(booking, meal, mealUpdateData, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const existing = await getMeal(bookingId, mealId);
-    if (!existing) return onError(`Cannot find meal ${bookingId}/${mealId}`);
-
     // When changing assignee 
-    if (utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && existing.assignedTo !== mealUpdateData.assignedTo) {
+    if (utils.exists(mealUpdateData, "assignedTo") && utils.isString(mealUpdateData.assignedTo) && meal.assignedTo !== mealUpdateData.assignedTo) {
         mealUpdateData.assigneeAccept = false;
         mealUpdateData.changeDescription = null;
-    }
+    }       
 
     // Update meal data
-    const mealUpdate = await mapMealObject(mealUpdateData);
-    const updateMealRecord = await activityDao.update(bookingId, mealId, mealUpdate, true, onError, writes);
+    const mealUpdate = mapMealObject(mealUpdateData);
+    const updateMealRecord = await activityDao.update(booking.id, meal.id, mealUpdate, true, onError, writes);
     if (updateMealRecord === false) return false;
 
     // Update dishes data
     const dishesData = Object.values(mealUpdateData.dishes);
-    const updateDishesSuccess = await updateDishes(updateMealRecord, mealId, dishesData, onError, writes);
+    const updateDishesSuccess = await updateDishes(updateMealRecord, meal.id, dishesData, onError, writes);
     if (updateDishesSuccess === false) return false;
     updateMealRecord.dishes = updateDishesSuccess;
 
     if (commit) {
-        return await commitTx(writes, onError);
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
-    const enhancedMealRecord = await activityService.enhanceActivities(updateMealRecord);
+    const enhancedMealRecord = await activityService.enhanceActivities(updateMealRecord, booking);
     return enhancedMealRecord;
 }
 
 async function updateDishes(updatedMeal, mealId, dishesUpdateData, onError, writes) {
-    let dishesUpdated = [];
+    const promises = [];
 
     const existingDishes = await getMealDishes(updatedMeal.bookingId, mealId);
 
@@ -163,9 +164,7 @@ async function updateDishes(updatedMeal, mealId, dishesUpdateData, onError, writ
     for (const existingDish of Object.values(existingDishes)) {
         const dishUpdate = dishesUpdateData.find((dish) => dish.name === existingDish.name);
         if (!dishUpdate) {
-            const deleteDishResult = await deleteDish(updatedMeal, existingDish, onError, writes);
-            if (deleteDishResult === false) return false;
-            dishesUpdated.push(`Deleted: ${existingDish.id}`);
+            promises.push(deleteDish(updatedMeal, existingDish, onError, writes));
         }
     }
 
@@ -175,79 +174,65 @@ async function updateDishes(updatedMeal, mealId, dishesUpdateData, onError, writ
         const existingDish = existingDishes.find((dish) => dish.name === dishUpdateData.name);
 
         if (!existingDish) {
-            const addDishSuccess = await addDish(updatedMeal, mealId, dishUpdateData, onError, writes);
-            if (addDishSuccess === false) return false;
-            dishesUpdated.push(addDishSuccess);
+            promises.push(addDish(updatedMeal, mealId, dishUpdateData, onError, writes));
         } else {
-            const updateExistingDishResult = await updateDish(updatedMeal, existingDish, dishUpdateData, onError, writes);
-            if (updateExistingDishResult === false) return false;
-            dishesUpdated.push(updateExistingDishResult);
+            promises.push(updateDish(updatedMeal, existingDish, dishUpdateData, onError, writes));
         }
     }
 
-    return dishesUpdated;
+    const results = await Promise.all(promises);
+    
+    const anyFailedResult = results.includes(false);
+    if(anyFailedResult) return false;
+
+    return results;
 }
 
 async function updateDish(updatedMeal, existingDish, dishUpdateData, onError, writes) {
-    const dishUpdate = await mapDishObject(dishUpdateData);
-    const updateExistingDishResult = await activityDao.updateDish(updatedMeal.bookingId, updatedMeal.id, existingDish.id, dishUpdate, onError, writes);
-    if (updateExistingDishResult === false) return false;
+    const dishUpdate = mapDishObject(dishUpdateData);
+
+    const updateDishPromise = activityDao.updateDish(updatedMeal.bookingId, updatedMeal.id, existingDish.id, dishUpdate, onError, writes);
 
     // Check if inventory sale needs changing, if dish is changed
-    const sale = await inventoryService.getSale(existingDish.name, updatedMeal.id, onError);
-    if (sale) {
-        const saleUpdate = await inventoryService.updateSale(updatedMeal, dishUpdate, onError, writes);
-        if (saleUpdate === false) return false;
-    }
+    const checkInventorySale = async() => {
+        const sale = await inventoryService.getSale(existingDish.name, updatedMeal.id, onError);
+        if (sale) {
+            return await inventoryService.updateSale(updatedMeal, dishUpdate, onError, writes);
+        }
+        return true;
+    };
 
-    return updateExistingDishResult;
+    const results = await Promise.all([updateDishPromise, checkInventorySale()]);
+    if(results.includes(false)) return false;
+
+    return results[0]; // resolved update-dish promise
 }
 
 async function addDish(meal, mealId, dishData, onError, writes) {
-    const dish = await mapDishObject(dishData);
+    const dish = mapDishObject(dishData);
     const dishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dish.name);
 
     // Add meal item to the meal
-    const addDishSuccess = await activityDao.addDish(meal.bookingId, mealId, dishId, dish, onError, writes);
-    if (!addDishSuccess) {
-        return false;
+    const addDishPromise = activityDao.addDish(meal.bookingId, mealId, dishId, dish, onError, writes);
+    
+    // Check if the dish is part of our countable inventory (e.g a cookie)
+    const checkInventorySale = async() => {
+        const inventoryItem = await inventoryService.getOne(dish.name, onError);
+        if (inventoryItem) {
+            return await inventoryService.addSale(meal, dish.name, dish.quantity, onError, writes);
+        }
+        return true;
     }
+    
+    const results = await Promise.all([addDishPromise, checkInventorySale()]);
+    if(results.includes(false)) return false;
 
-    const inventoryItem = await inventoryService.getOne(dish.name, onError);
-    if (inventoryItem) {
-        const invItemSale = await inventoryService.addSale(meal, dish.name, dish.quantity, onError, writes);
-        if (invItemSale === false) return false;
-    }
-
-    return addDishSuccess;
+    return results[0]; // resolved add-dish promise
 }
 
-/**
- * @param {Object} options filters for the meal data
- *      house=Harmony Hill|Jungle Nook,
- *      date=Date object (new Date(...))
- */
-export async function getMeals(options) {
-    const bookings = await bookingDao.get(options);
-    let meals = [];
-    for (const booking of bookings) {
-        const bookingId = booking.id;
-        const meal = await activityDao.getMeals(bookingId, options);
-        const enhancedMeal = await activityService.enhanceActivities(meal);
-        meals.push(enhancedMeal);
-    }
-    return meals;
-}
-
-export async function getMeal(bookingId, mealId, onError) {
-    const meal = await activityDao.getOne(bookingId, mealId, onError);
-    const enhancedMeal = await activityService.enhanceActivities(meal);
-    return enhancedMeal;
-}
-
-export async function getMealsByBooking(bookingId, options = {}) {
-    const meals = await activityDao.getMeals(bookingId, options);
-    const enhancedMeals = await activityService.enhanceActivities(meals);
+export async function getMealsByBooking(booking, options = {}) {
+    const meals = await activityDao.getMeals(booking.id, options);
+    const enhancedMeals = await activityService.enhanceActivities(meals, booking);
     return enhancedMeals;
 }
 
@@ -319,7 +304,7 @@ export function validate(customer, data, isUpdate, onError, onWarning) {
     return true;
 }
 
-async function mapMealObject(mealData) {
+function mapMealObject(mealData) {
     let meal = {};
 
     meal.category = utils.isString(mealData?.category) ? mealData.category : "meal";
@@ -373,7 +358,7 @@ async function mapMealObject(mealData) {
     return meal;
 }
 
-async function mapDishObject(data) {
+function mapDishObject(data) {
     let object = {};
 
     if (utils.isString(data?.name)) object.name = data.name;

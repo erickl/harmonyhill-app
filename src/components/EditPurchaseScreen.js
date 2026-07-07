@@ -12,8 +12,9 @@ import "./EditPurchaseScreen.css";
 import "../App.css";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
-const EditPurchaseScreen = ({ customer, activityToEdit, context, triggerRerender }) => {
+const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => {
 
     // Show purchase summary and confirmation pop up modal
     const [showConfirm,       setShowConfirm]       = useState(false);
@@ -25,6 +26,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, triggerRerender
 
     const { onError, onWarning } = useNotification();
     const {onSuccess} = useSuccessNotification();
+    const { user } = useUserPermissions();
 
     const [formData, setFormData] = useState({
         startingAt       : activityToEdit.startingAt,
@@ -43,6 +45,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, triggerRerender
         status           : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
         dishes           : activityToEdit.dishes, // not null only for meal activities
         isFree           : activityToEdit.isFree,
+        changeDescription: activityToEdit.changeDescription, 
         
         // Auxiliary data
         house          : customer.house,
@@ -90,27 +93,28 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, triggerRerender
     const handleEditPurchaseSubmit = async() => {
         try {
             // If user already accepted the task, get and display change description
-            if(formData.assigneeAccept) {
-                const thisUser = await userService.getCurrentUserName();
-                
+            // Or if the user didn't see the existing change yet, and now there's another change, add to the existing change
+            if(formData.assigneeAccept || !utils.isEmpty(formData.changeDescription)) {
                 // If the assignee herself is changing the data, no need to accept the task change again
-                if(thisUser !== formData.assignedTo) {
-                    formData.changeDescription = await activityService.getChangeDescription(activityToEdit, formData);
+                if(user.name !== formData.assignedTo) {
+                    formData.changeDescription = activityService.getChangeDescription(activityToEdit, formData);
                 }
             }
             formData.assigneeAccept = formData.assigneeAccept && utils.isEmpty(formData.changeDescription);
 
             let editActivitySuccess = null;
             if(activityToEdit.category === "meal") {
-                editActivitySuccess = await mealService.update(customer.id, activityToEdit.id, formData, onError);
+                editActivitySuccess = await mealService.update(customer, activityToEdit, formData, onError);
             } else {
-                editActivitySuccess = await activityService.update(customer.id, activityToEdit.id, formData, onError);
+                editActivitySuccess = await activityService.update(customer, activityToEdit, formData, onError);
             }
             
             if(editActivitySuccess) {
                 onSuccess();
                 context.onClose();
-                if(triggerRerender) triggerRerender();
+                if(onSubmit) {
+                    onSubmit(editActivitySuccess);
+                }
             } else {
                 setShowConfirm(false);
             }

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as utils from "../utils.js";
 import ActivityComponent from './ActivityComponent.js';
-import EditPurchaseScreen from './EditPurchaseScreen.js';
 import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import "./ActivityComponent.css";
@@ -90,7 +89,7 @@ export default function ActivitiesList({context, from, to, customer, expandAllDa
             let activities = [];
 
             if(customer) {
-                activities = await activityService.get(customer.id);
+                activities = await activityService.get(customer);
             } else {    
                 const filter = {"after" : from, "before" : to};
                 activities = await activityService.getAll(filter);

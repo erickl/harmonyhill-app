@@ -95,7 +95,7 @@ async function addOrEditMinibarMeal(endCountEntry, booking, onError, writes = []
     } else {
         const existingMinibarMeal = existingMinibarMeals[0];
         existingMinibarMeal.dishes = dishes;
-        result = await mealService.update(booking.id, existingMinibarMeal.id, existingMinibarMeal, onError, writes);
+        result = await mealService.update(booking, existingMinibarMeal, existingMinibarMeal, onError, writes);
     }
        
     if(result === false) return false;

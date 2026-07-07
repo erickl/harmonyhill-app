@@ -17,7 +17,7 @@ export default function CustomerPurchasesScreen({ customer, context }) {
 
     useEffect(() => {
         const getTotal = async() => {
-            const total = await invoiceService.getTotal(customer.id, onError);
+            const total = await invoiceService.getTotal(customer, onError);
             setTotal(total.total);
         }
         getTotal();

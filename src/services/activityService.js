@@ -59,7 +59,7 @@ export async function getCategories() {
 }
 
 /**
- * @param {*} bookingId 
+ * @param {*} booking object
  * @param {*} filterOptions = {
  *      category=transport|yoga|etc.., 
  *      subCategory=from-airport|to-ubud|etc,
@@ -70,9 +70,9 @@ export async function getCategories() {
  * }
  * @returns activities array, ordered by date (oldest first)
  */
-export async function get(bookingId, filterOptions = {}, onError = null) {
-    const activities = await activityDao.getBookingActivities(bookingId, filterOptions, onError);
-    const enhancedActivities = await enhanceActivities(activities);
+export async function get(booking, filterOptions = {}, onError = null) {
+    const activities = await activityDao.getBookingActivities(booking.id, filterOptions, onError);
+    const enhancedActivities = await enhanceActivities(activities, booking);
     return enhancedActivities; 
 }
 
@@ -90,7 +90,7 @@ export async function getAll(filterOptions = {}, onError) {
  * @param {*} activities one object or an array of activity objects
  * @returns enhanced/enriched activity data, needed to properly display them to the user
  */
-export async function enhanceActivities(activities) {
+export async function enhanceActivities(activities, booking = null) {
     const enhance = async (activity) => {
         if(!activity) return;
 
@@ -122,7 +122,7 @@ export async function enhanceActivities(activities) {
             }
 
             if(utils.isEmpty(activity.name)) {
-                const booking = await getParent(activity);
+                const booking = !booking ? await getParent(activity) : booking;
                 newActivity.name = booking ? booking.name : null;
             }
             
@@ -142,9 +142,15 @@ export async function enhanceActivities(activities) {
     return activities; 
 }
 
-export async function getOne(bookingId, activityId) {
-    const activity = await activityDao.getOne(bookingId, activityId);
-    const enhancedActivity = await enhanceActivities(activity);
+/**
+ * 
+ * @param {*} booking object 
+ * @param {*} activityId 
+ * @returns the activity object or null if it wasn't found
+ */
+export async function getOne(booking, activityId) {
+    const activity = await activityDao.getOne(booking.id, activityId);
+    const enhancedActivity = await enhanceActivities(activity, booking);
     return enhancedActivity;
 }
 
@@ -164,30 +170,25 @@ export async function getOne(bookingId, activityId) {
  *  }
  * @returns activityId if successful, otherwise false
  */
-export async function add(bookingId, activityData, onError, writes = []) {
+export async function add(booking, activityData, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const booking = await bookingService.getOne(bookingId);
-    if(!booking) {
-        return onError(`Booking with ID ${bookingId} does not exist.`);
-    }
-
-    const activity = await mapObject(activityData);
+    const activity = mapObject(activityData);
     activity.assigneeAccept = false;
 
-    activity.bookingId = bookingId;
+    activity.bookingId = booking.id;
     activity.name = booking.name;
     activity.house = booking.house;
 
     const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
-    const result = await activityDao.add(bookingId, activityId, activity, onError, writes);
+    const result = await activityDao.add(booking.id, activityId, activity, onError, writes);
     if(result === false) return false;
     
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;
     }
     
-    const enhancedRecord = await enhanceActivities(result);
+    const enhancedRecord = await enhanceActivities(result, booking);
     return enhancedRecord;
 }
 
@@ -260,7 +261,7 @@ export async function assignStaff(bookingId, activityId, userId, onError, writes
     return result;
 }
 
-export async function changeAssigneeStatus(accept, bookingId, activityId, onError, writes = []) {
+export async function changeAssigneeStatus(accept, booking, activity, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const dataUpdate = { 
@@ -268,7 +269,7 @@ export async function changeAssigneeStatus(accept, bookingId, activityId, onErro
         changeDescription : null,
     };
 
-    const result = await update(bookingId, activityId, dataUpdate, onError, writes);
+    const result = await update(booking, activity, dataUpdate, onError, writes);
     if(result === false) return false;
 
     if(commit) {
@@ -278,15 +279,13 @@ export async function changeAssigneeStatus(accept, bookingId, activityId, onErro
     return result;
 }
 
-export async function update(bookingId, activityId, activityUpdateData, onError, writes = []) {
+export async function update(booking, activity, activityUpdateData, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const existing = await getOne(bookingId, activityId);
-
-    let activityUpdate = await mapObject(activityUpdateData, true);
+    let activityUpdate = mapObject(activityUpdateData, true);
 
     // When changing assignee 
-    if(utils.exists(activityUpdate, "assignedTo") && utils.isString(activityUpdate.assignedTo) && existing.assignedTo !== activityUpdate.assignedTo) {
+    if(utils.exists(activityUpdate, "assignedTo") && utils.isString(activityUpdate.assignedTo) && activity.assignedTo !== activityUpdate.assignedTo) {
         activityUpdate.assigneeAccept = false;
         activityUpdate.changeDescription = null;
     }
@@ -299,14 +298,15 @@ export async function update(bookingId, activityId, activityUpdateData, onError,
         delete activityUpdate.house;
     }
 
-    const result = await activityDao.update(bookingId, activityId, activityUpdate, true, onError, writes);
+    const result = await activityDao.update(activity.bookingId, activity.id, activityUpdate, true, onError, writes);
     if(result === false) return false;
 
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;
     }
 
-    return result;
+    const enhancedResult = await enhanceActivities(result, booking);
+    return enhancedResult;
 }
 
 export function getActivityPhotoFilePath(activity) {
@@ -408,7 +408,7 @@ export function makeId(startingAt, house, subCategory) {
     return `${startingAt}-${houseShort}-${subCategory}-${Date.now()}`;
 }
 
-async function mapObject(data) {
+function mapObject(data) {
     let activity = {};
 
     if(utils.isString(data?.category))      activity.category = data.category;
@@ -508,8 +508,12 @@ export function validate(customer, data, isUpdate, onError, onWarning) {
  * @param {*} newData 
  * @returns 
  */
-export async function getChangeDescription(oldData, newData) {
+export function getChangeDescription(oldData, newData) {
     let changeDescription = [];
+
+    if(utils.exists(oldData, "changeDescription")) {
+        changeDescription = oldData.changeDescription;
+    }
 
     if(!utils.dateIsSame(oldData.startingAt, newData.startingAt)) {
         changeDescription.push(`New start date: from ${utils.to_yyMMddHHmm(oldData.startingAt, "/")} to ${utils.to_yyMMddHHmm(newData.startingAt, "/")}`);
@@ -524,14 +528,8 @@ export async function getChangeDescription(oldData, newData) {
     }
 
     if(!utils.isEmpty(newData?.dishes)) {
-        if(utils.isEmpty(oldData.dishes)) {
-            changeDescription.push(`Dishes added to the meal`);
-        }
-
-        const oldDishes = await getMealDishes(oldData.bookingId, oldData.id);
-
         for(const newDish of newData.dishes) {         
-            const oldDish = oldDishes.find((dish) => dish.name === newDish.name);
+            const oldDish = oldData.dishes.find((dish) => dish.name === newDish.name);
             if(!oldDish) {
                 changeDescription.push(`New dish added: ${newDish.quantity}x ${newDish.name}`);
             }

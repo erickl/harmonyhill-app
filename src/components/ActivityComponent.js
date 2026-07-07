@@ -45,7 +45,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
     const { onDisplayMinibarTable } = useMinibarTableModal();
-    const { user, permissions } = useUserPermissions();
+    const { permissions } = useUserPermissions();
 
     const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
     const countMinibarNow = minibarCount === null && activity && ActivityStatus.Started.equals(activity.status) && utils.isToday(activity.startingAt);
@@ -163,28 +163,32 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         onConfirm(confirmationText, async () => {
             const result = await activityService.setActivityStatus(activity, newStatus.name, onError);
-            if (result !== false) {
-                const updatedActivity = {
-                    ...(activity || {}),
-                    ...result
-                };
-                const updateActivityListResult = onActivityChange(updatedActivity);
-                if (updateActivityListResult !== false) onSuccess();
-            }
-        });
-    }
-
-    const handleAssigneeStatusChange = async (accept) => {
-        const result = await activityService.changeAssigneeStatus(accept, activity.bookingId, activity.id, onError);
-        if (result !== false) {
+            if(result === false) return false;
+            
             const updatedActivity = {
                 ...(activity || {}),
                 ...result
             };
-
             const updateActivityListResult = onActivityChange(updatedActivity);
-            if (updateActivityListResult !== false) onSuccess();
-        }
+            if(updateActivityListResult === false) return false;
+            
+            return onSuccess();
+        });
+    }
+
+    const handleAssigneeStatusChange = async (accept) => {
+        const result = await activityService.changeAssigneeStatus(accept, null, activity, onError);
+        if(result === false) return false;
+       
+        const updatedActivity = {
+            ...(activity || {}),
+            ...result
+        };
+
+        const updateActivityListResult = onActivityChange(updatedActivity);
+        if (updateActivityListResult === false) return false;
+
+        return onSuccess();  
     }
 
     const onSubmitStockCount = async (stockCountList) => {
@@ -298,7 +302,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
             if (activity.category === "meal") {
                 // If this list is displayed for all customers, get the customer for each activity 
-                const bookingId = activity.bookingId;
+                let bookingId = activity.bookingId;
                 if(utils.isEmpty(bookingId)) {
                     const mealCustomer = customer ? customer : await getParent(activity);
                     bookingId = utils.isEmpty(mealCustomer) ? "missing" : mealCustomer.id;
@@ -314,7 +318,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     };
 
     useEffect(() => {
-        setStillRequirePhotos(activityInfo && activityInfo.photosRequired && photos.length == 0)
+        setStillRequirePhotos(activityInfo && activityInfo.photosRequired && photos.length === 0)
     }, [photos]);
 
     useEffect(() => {
@@ -539,6 +543,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                         context.onNavigate("edit-customer-purchase", {
                                             customer: customer,
                                             activityToEdit: activity,
+                                            onSubmit : onActivityChange,
                                         });
                                     }}
                                 />

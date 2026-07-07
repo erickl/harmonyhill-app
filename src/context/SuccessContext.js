@@ -10,6 +10,7 @@ export function SuccessNotificationProvider({ children }) {
     const onSuccess = (message = null) => {
         setMessage(message);
         setShow(true);
+        return true;
     } 
     
     const hidePopup = () => {

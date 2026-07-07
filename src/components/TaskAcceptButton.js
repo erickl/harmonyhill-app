@@ -16,8 +16,10 @@ export default function TaskAcceptButton({taskDate, status, assignedTo, isAccept
     const thisUserIsAssigned = user && (user.shortName === assignedTo || user.name === assignedTo);
 
     const handleClick_ = async(newIsAccepted) => {
-        await handleClick(newIsAccepted);
+        const result = await handleClick(newIsAccepted);
+        if(result === false) return false;
         setIsAccepted(newIsAccepted);
+        return true;
     }
 
     return (

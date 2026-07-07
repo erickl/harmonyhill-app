@@ -4,11 +4,11 @@ import * as utils from "../utils.js";
 import * as incomeService from "./incomeService.js";
 
 /**
- * @param {*} bookingId 
+ * @param {*} booking object
  * @returns json with itemized list of all a booking's activities and the total amount owed 
  */
-export async function getTotal(bookingId, onError) {
-    const activities = await activityService.get(bookingId, {}, onError);
+export async function getTotal(booking, onError) {
+    const activities = await activityService.get(booking, {}, onError);
     
     // Get all meals, even with customerPrice = 0, because the dish prices are no longer summed up at meal level (since 2025-12)
     const meals = activities.filter(activity => activity.category === "meal" && activity.isFree === false);
@@ -25,7 +25,7 @@ export async function getTotal(bookingId, onError) {
             }
             
             // E.g. even though a whole breakfast can be free, it can still include non-free, extra items
-            const dishes = await mealService.getMealDishes(bookingId, meal.id, {"isFree" : false}, onError);
+            const dishes = await mealService.getMealDishes(booking.id, meal.id, {"isFree" : false}, onError);
             mealItem.dishes = dishes;
             // Todo: should the meal total be displayed on meal level?
             mealItem.customerPrice += dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice * dish.quantity, 0);
@@ -63,7 +63,7 @@ export async function getTotal(bookingId, onError) {
     const totalList = [...itemizedActivityList, ...nonFreeMeals];
     const totalListSorted = totalList.sort((item1, item2) => item1.date - item2.date);
 
-    const incomeFilter = {bookingId : bookingId, category : "guest payment"};
+    const incomeFilter = {bookingId : booking.id, category : "guest payment"};
     const payments = await incomeService.get(incomeFilter, onError);
     const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
@@ -71,7 +71,7 @@ export async function getTotal(bookingId, onError) {
         total        : totalMealSum + totalActivitySum,
         paid         : totalPaid,
         balance      : totalMealSum + totalActivitySum - totalPaid,
-        itemizedList : totalList,
+        itemizedList : totalListSorted,
         payments     : payments
     }
 }
