@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, act } from 'react';
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
@@ -323,6 +323,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     useEffect(() => {
         calculateActivityStatus();
+        if(activity && Array.isArray(activity.dishes) && activity.dishes.length > 0) {
+            setDishes(activity.dishes);
+        }
     }, [activity, activityInfo, stillRequirePhotos, minuteTicker]);
 
     useEffect(() => {
