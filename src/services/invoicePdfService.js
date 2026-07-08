@@ -5,7 +5,7 @@ import * as invoiceService from "./invoiceService.js";
 
 export async function make(customer, onError) {
     if(!customer) return;
-    const invoice = await invoiceService.getTotal(customer.id, onError);
+    const invoice = await invoiceService.getTotal(customer, onError);
 
     const title = `Invoice: ${customer.name}`;
     let currentDate = "";
