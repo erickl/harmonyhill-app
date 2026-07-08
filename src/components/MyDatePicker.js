@@ -26,50 +26,47 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
     const [startingTime, setTime] = useState(time);
     const [startingDate, setDate] = useState(date);
 
-    const handleTimeChange = (newTime) => {
-        let newTimeCopy = newTime ? newTime.setZone(utils.getHotelTimezone(), { keepLocalTime: true }) : null;
-        let newStartingDate = startingDate;
+    const handleDateChange = (newDate, newTime) => {
+        const changeValues = {};
 
-        if (newTimeCopy && newStartingDate) {
-            newStartingDate = newStartingDate.set({
-                hour        : newTimeCopy.hour,
-                minute      : newTimeCopy.minute,
-                second      : newTimeCopy.second,
-                millisecond : newTimeCopy.millisecond,
+        newDate = newDate ? newDate.setZone(utils.getHotelTimezone(), { keepLocalTime: true }) : null;
+        newTime = newTime ? newTime.setZone(utils.getHotelTimezone(), { keepLocalTime: true }) : null;
+
+        if(!newDate) {
+            newTime = null;
+        } else if(newDate && !newTime) {
+            newDate = newDate.set({
+                hour: 0,
+                minute: 0,
+                second: 0,
+                millisecond: 0,
+            });
+        } else if(newDate && newTime) {
+            newDate = newDate.set({
+                hour: newTime.hour,
+                minute: newTime.minute,
+                second: newTime.second,
+                millisecond: newTime.millisecond,
             });
 
-            newTimeCopy = newTimeCopy.set({
-                year  : newStartingDate.year,
-                month : newStartingDate.month,
-                day   : newStartingDate.day,
+            newTime = newTime.set({
+                year : newDate.year,
+                month : newDate.month,
+                day : newDate.day,
             });
         }
 
-        setDate(newStartingDate);
-        setTime(newTimeCopy);
+        setDate(newDate);
+        setTime(newTime);
 
-        onChange("_batch", {
-            [dateName]: newStartingDate,
-            [timeName]: newTimeCopy
-        });
-    }
-
-    const handleDateChange = (newDate) => {
-        if (newDate) {
-            let newDateCopy = newDate.setZone(utils.getHotelTimezone(), { keepLocalTime: true });
-            if (startingTime) {
-                newDateCopy = newDateCopy.set({
-                    hour: startingTime.hour,
-                    minute: startingTime.minute,
-                    second: startingTime.second,
-                    millisecond: startingTime.millisecond,
-                });
-            }
-
-            setDate(newDateCopy);
-            onChange(dateName, newDateCopy);
-        }
+        changeValues[dateName] = newDate;
+        changeValues[timeName] = newTime;
+        onChange("_batch", changeValues); 
     };
+
+    const onHandleSetNow = async() => {
+        handleDateChange(utils.now(), utils.now());
+    }
 
     const slotProps = {
         textField: { fullWidth: true },
@@ -88,7 +85,7 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
                         label={`Select ${dateLabel}`}
                         value={date}
                         format="dd/MM/yyyy"
-                        onChange={(newDate) => handleDateChange(newDate)}
+                        onChange={(newDate) => handleDateChange(newDate, startingTime)}
                         renderInput={(params) => <TextField {...params} fullWidth />}
                         ampm={false}
                         views={["year", "month", "day"]}
@@ -96,12 +93,12 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
                 </LocalizationProvider>
                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "start", marginTop: "0.1rem" }}>
                     <button
-                        onClick={() => handleDateChange(utils.today())}
+                        onClick={() => handleDateChange(utils.today(), startingTime)}
                         style={{marginLeft: "1rem", padding:"0.5rem", width: 'fit-content'}}>
                             Today
                     </button>
                     <button 
-                        onClick={() => handleDateChange(utils.today(1))}
+                        onClick={() => handleDateChange(utils.today(1), startingTime)}
                         style={{marginLeft: "1rem", padding:"0.5rem", width: 'fit-content'}}>
                             Tomorrow
                     </button>
@@ -115,7 +112,7 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
                         <MobileTimePicker
                             label={`Select ${timeLabel}`}
                             value={startingTime}
-                            onChange={(newTime) => handleTimeChange(newTime)}
+                            onChange={(newTime) => handleDateChange(startingDate, newTime)}
                             renderInput={(params) => <TextField {...params} fullWidth />}
                             ampm={false}
                             views={["hours", "minutes"]}
@@ -124,13 +121,15 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
                         />
                     </LocalizationProvider>
                     <div style={{display:"flex", flexDirection: "row", alignItems: "left",marginTop:"0.1rem"}}>
+                        {(utils.isToday(startingDate) || !startingDate) && (<>
+                            <button 
+                                onClick={onHandleSetNow}
+                                style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
+                                    Now
+                            </button>
+                        </>)}
                         <button 
-                            onClick={() => handleTimeChange(utils.now())}
-                            style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
-                                Now
-                        </button>
-                        <button 
-                            onClick={() => handleTimeChange(null)}
+                            onClick={() => handleDateChange(startingDate, null)}
                             style={{marginLeft: "1rem", padding:"0.3rem", width: 'fit-content'}}>
                                 TBD
                         </button>
