@@ -4,6 +4,7 @@ import SheetUploader from './SheetUploader.js';
 import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import ActivitiesByDay from "./ActivitiesByDay.js";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
 import { useNotification } from "../context/NotificationContext.js";
 
@@ -42,6 +43,9 @@ export default  function ActivitiesScreen({context}) {
                     </div>)}
                 </div>
             </div> 
+            <div style={{margin: "0rem 1rem 0rem 1rem"}}>
+                <ActivitiesByDay context={context} date={null} />
+            </div>
             <ActivitiesAllLists context={context} futureExpanded={true} />   
         </div>
     );

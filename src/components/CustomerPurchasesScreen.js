@@ -4,6 +4,7 @@ import * as invoiceService from '../services/invoiceService.js';
 import * as utils from "../utils.js";
 import './CustomerPurchasesScreen.css'; 
 import ActivitiesList from './ActivitiesList.js';
+import ActivitiesByDay from "./ActivitiesByDay.js";
 import { useNotification } from "../context/NotificationContext.js";
 import PdfViewer from './PdfViewer.js';
 
@@ -55,6 +56,9 @@ export default function CustomerPurchasesScreen({ customer, context }) {
             </div>
             
             <div className="card-content">
+                <div style={{margin: "0rem 1rem 0rem 1rem"}}>
+                    <ActivitiesByDay context={context} date={null} />
+                </div>
                 <ActivitiesList
                     context={context}
                     customer={customer}

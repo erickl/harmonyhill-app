@@ -11,18 +11,17 @@ import { update } from '../daos/userDao.js';
 
 export default function ActivitiesByDay({ context, customer, date }) {
     const today = utils.today();
-    const isPast = utils.isPast(date.startOf('day'));
-    const isToday = utils.isToday(date);
-    const isAfterToday = utils.isAfterToday(date);
-    const isThisWeek = date > today && date < utils.today(7);
-    const dayEnd = date.endOf('day');
-    const dayStart = date.startOf('day');
-    const filter = { after: dayStart, before: dayEnd };
-    const dateFormatted = utils.to_ddMMM(date);
-    const doSubscribe = isToday || isThisWeek;
+    const isPast = date ? utils.isPast(date.startOf('day')) : false;
+    const isToday = date ? utils.isToday(date) : false;
+    const isThisWeek = date ? (date > today && date < utils.today(7)) : false;
+    const dayEnd = date ? date.endOf('day') : null;
+    const dayStart = date ? date.startOf('day') : null;
+    const filter = (dayStart && dayEnd) ? { after: dayStart, before: dayEnd } : {date : null};
+    const dateFormatted = date ? utils.to_ddMMM(date) : "Unscheduled";
+    const doSubscribe = isToday || isThisWeek || !date;
 
     const [expanded, setExpanded] = useState(isToday);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [activities, setActivities] = useState([]);
     const [lastUpdate, setLastUpdate] = useState(null);
 
@@ -78,13 +77,8 @@ export default function ActivitiesByDay({ context, customer, date }) {
                 }
             });
         }
-
-        // what to do if there's no existing activity, but a new one?
-        setActivities(prev =>
-            prev.map(activity =>
-                activity.id === updatedActivity.id ? updatedActivity : activity
-            )
-        );
+       
+        setActivities(newActivities);
 
         return true;
     };
@@ -105,11 +99,8 @@ export default function ActivitiesByDay({ context, customer, date }) {
     // Past activities reload when the date header is expanded
     useEffect(() => {
         if(expanded && !doSubscribe) {
-            setLoading(true);
-            if(isPast) {
-                setLoading(prev => !prev);
-                getActivities();
-            }
+            setLoading(prev => !prev);
+            getActivities();
         }
     }, [expanded]);
 
@@ -129,19 +120,20 @@ export default function ActivitiesByDay({ context, customer, date }) {
 
     return (
         <div>
-            <h3
-                className={'activity-group-header clickable-header'}
-                onClick={handleSetExpanded}
-            >
-                <div className='activity-group-header-left'>
-                    <div>
-                        {`${dateFormatted}${(isToday ? ` | ${utils.to_HHmm()}` : "")} | (${activities.length})`}
+            {/* If there's a data subscription, remove div if data is empty */}
+            {(doSubscribe === false || activities.length > 0) && (<>
+                <h3
+                    className={'activity-group-header clickable-header'}
+                    onClick={handleSetExpanded}
+                >
+                    <div className='activity-group-header-left'>
+                        <div>
+                            {`${dateFormatted}${(isToday ? ` | ${utils.to_HHmm()}` : "")}`}
+                        </div>
+                        
                     </div>
-                    
-                </div>
 
-                <div className='activity-group-header-right'>
-                    {activities.length > 0 &&  (<>
+                    <div className='activity-group-header-right'>
                         {lastUpdate && (<>
                             {doSubscribe && (
                                 <span className='subscription-notification'>•</span>
@@ -153,30 +145,30 @@ export default function ActivitiesByDay({ context, customer, date }) {
                         <span className="expand-icon">
                             {expanded ? ' ▼' : ' ▶'}
                         </span>
-                    </>)}
-                </div>
-            </h3>
-            {expanded && loading ? (
-                <Spinner />
-            ) : expanded && !loading ? (
-                <div>
-                    {activities.map((activity, index) => {
-                        return (
-                            <React.Fragment key={activity.id}>
-                                <ActivityComponent
-                                    inputCustomer={customer}
-                                    activity={activity}
-                                    onActivityChange={(newActivity) => onActivityChange(newActivity)}
-                                    context={context}
-                                    handleDeleteActivity={() => handleDeleteActivity(activity)}
-                                />
-                            </React.Fragment>
-                        )
-                    })}
-                </div>
-            ) : (
-                null
-            )}
+                    </div>
+                </h3>
+                {expanded && loading ? (
+                    <Spinner />
+                ) : expanded && !loading ? (
+                    <div>
+                        {activities.map((activity, index) => {
+                            return (
+                                <React.Fragment key={activity.id}>
+                                    <ActivityComponent
+                                        inputCustomer={customer}
+                                        activity={activity}
+                                        onActivityChange={(newActivity) => onActivityChange(newActivity)}
+                                        context={context}
+                                        handleDeleteActivity={() => handleDeleteActivity(activity)}
+                                    />
+                                </React.Fragment>
+                            )
+                        })}
+                    </div>
+                ) : (
+                    null
+                )}
+            </>)}
         </div>
     )
 }

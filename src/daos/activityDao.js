@@ -14,6 +14,10 @@ export function subscribe(bookingId, setDocs, options, onError) {
         filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
     }
 
+    if (utils.exists(options, "date")) {
+        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
+    }
+
     return dao.subscribe(path, setDocs, filters, onError);
 } 
 
@@ -26,6 +30,10 @@ export function subscribeAll(setDocs, options, onError) {
 
     if (utils.exists(options, "before")) {
         filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
+    }
+
+    if (utils.exists(options, "date")) {
+        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
     }
 
     return dao.subscribeAll(dao.constant.ACTIVITIES, setDocs, filters, onError);
@@ -130,6 +138,10 @@ export async function getBookingActivities(bookingId, options = {}, onError = nu
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
+    if (utils.exists(options, "date")) {
+        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
+    }
+
     if (utils.exists(options, "after")) {
         filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
     }
@@ -171,6 +183,10 @@ export async function getAllActivities(options = {}, onError) {
     if (utils.exists(options, "before")) {
         const before = utils.toFireStoreTime(options.before);
         filters.push(where("startingAt", "<=", before));
+    }
+
+    if (utils.exists(options, "date")) {
+        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
     }
     
     const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters, [], onError);
