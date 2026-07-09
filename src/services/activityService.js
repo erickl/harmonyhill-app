@@ -503,17 +503,17 @@ export function validate(customer, data, isUpdate, onError, onWarning) {
         }
 
         if(utils.isEmpty(data.startingAt)) {
-            onError("Activity date required");
-            return false;
+            warning = true;
+            onWarning("Activity date not set");
         }
 
-        if(data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
+        if(data.startingAt && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
             warning = true;
             onWarning(`Beware! Activity date is before checkin date ${utils.to_ddMMM(customer.checkInAt)}`);
             //return false; // We will allow this as there are exceptions, but display a warning
         }
 
-        if(data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
+        if(data.startingAt && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
             warning = true;
             onWarning(`Beware! Activity date is after checkout date ${utils.to_ddMMM(customer.checkOutAt)}`);
             //return false; // We will allow this as there are exceptions, but display a warning
@@ -577,11 +577,11 @@ export function getChangeDescription(oldData, newData) {
 }
 
 export function getAlert(activity, currentStatus, activityUnit, onError) {
-    try {
-        const alert = (category = Alert.NONE, message = "") => {
-            return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
-        };
+    const alert = (category = Alert.NONE, message = "") => {
+        return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
+    };
 
+    try {
         if(activity == null) return alert();
         if(activityUnit == null) return alert();
 
@@ -590,7 +590,7 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
             return alert(Alert.OVERDUE, "Activity should have been started already!");
         }
 
-        const timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
+        const timeLeft = activity.startingAt ? activity.startingAt.diff(utils.now(), ["hours"]) : 999;
         const hoursLeft = Math.floor(timeLeft.hours);
         const urgent = !utils.isEmpty(activityUnit.deadline1) && hoursLeft <= activityUnit.deadline1;
         const emergency = !utils.isEmpty(activityUnit.deadline2) && hoursLeft <= activityUnit.deadline2;

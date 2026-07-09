@@ -259,17 +259,17 @@ export function validate(customer, data, isUpdate, onError, onWarning) {
             return false;
         }
         if (utils.isEmpty(data.startingAt)) {
-            onError("Meal date required");
-            return false;
+            warning = true;
+            onWarning("Meal date not set");
         }
 
-        if (utils.isDateTime(customer.checkInAt) && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
+        if (data.startingAt && utils.isDateTime(customer.checkInAt) && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
             warning = true;
             onWarning(`Beware! Activity date is before checkin date ${utils.to_ddMMM(customer.checkInAt)}`);
             //return false; // We will allow this as there are exceptions, but display a warning
         }
 
-        if (utils.isDateTime(customer.checkOutAt) && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
+        if (data.startingAt && utils.isDateTime(customer.checkOutAt) && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
             warning = true;
             onWarning(`Beware! Activity date is after checkout date ${utils.to_ddMMM(customer.checkOutAt)}`);
             //return false; // We will allow this as there are exceptions, but display a warning
