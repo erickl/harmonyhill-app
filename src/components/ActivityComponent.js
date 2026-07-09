@@ -393,7 +393,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 </div>
 
                 <div className="activity-header-time">
-                    <span className="preserve-whitespaces">{activity.startingAt_HHmm}</span>
+                    <span className="preserve-whitespaces">
+                        {activity.startingAt_HHmm ? activity.startingAt_HHmm : "TBD"}
+                    </span>
                 </div>
 
                 <div className="activity-header-right">

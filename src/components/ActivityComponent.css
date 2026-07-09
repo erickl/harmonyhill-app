@@ -72,11 +72,11 @@
 }
 
 .activity-header-right {
-  display: flex;
-  flex-direction: column; /* stack name + provider + guest */
-  flex: 1; /* take up the remaining space */
-  background-color: lightgrey;
-  padding: 0.5rem;
+    display: flex;
+    flex-direction: column; /* stack name + provider + guest */
+    flex: 1; /* take up the remaining space */
+    background-color: lightgrey;
+    padding: 0.5rem;
 }
 
 .activity-header-status {
