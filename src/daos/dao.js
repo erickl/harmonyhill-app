@@ -4,6 +4,7 @@ import {
     doc,getDocs, getDoc, 
     runTransaction,
     setDoc, updateDoc, deleteDoc,
+    onSnapshot
 } from 'firebase/firestore';
 import { db, auth } from "../firebase.js";
 import * as constant from "./daoConst.js";
@@ -12,6 +13,41 @@ import * as userService from "../services/userService.js";
 import { DateTime } from 'luxon';
 
 export { constant }
+
+export function subscribe(path, setDocs, filters = [], onError = null) {
+    path = utils.isString(path) ? path.split("/") : path;    
+    const collectionRef = collection(db, ...path);
+
+    const constraints = [];
+    if(filters?.length > 0) constraints.push(...filters);  
+
+    const docQuery = query(collectionRef, ...constraints);
+
+    const unsubscribe = onSnapshot(docQuery, (snapshot) => {
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+        docs.forEach((doc) => utils.allToDateTime(doc));
+        setDocs(docs);
+    });
+
+    return unsubscribe;
+}
+
+export function subscribeAll(collectionName, setDocs, filters = [], onError = null) {
+    const collectionRef = collectionGroup(db, collectionName);
+
+    const constraints = [];
+    if(filters?.length > 0) constraints.push(...filters);  
+
+    const docQuery = query(collectionRef, ...constraints);
+
+    const unsubscribe = onSnapshot(docQuery, (snapshot) => {
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+        docs.forEach((doc) => utils.allToDateTime(doc));
+        setDocs(docs);
+    });
+
+    return unsubscribe;
+}
 
 export async function getOne(path, id, onError = null) {
     try {
