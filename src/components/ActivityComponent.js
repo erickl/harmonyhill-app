@@ -455,6 +455,13 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         </p>
                     )}
 
+                    {activity.instructions && (
+                        <p className="preserve-whitespaces">
+                            <span className="detail-label">Instructions: </span>
+                            {activity.instructions}
+                        </p>
+                    )}
+
                     {activity.comments && (
                         <p className="preserve-whitespaces">
                             <span className="detail-label">Comments: </span>
