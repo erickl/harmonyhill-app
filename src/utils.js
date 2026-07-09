@@ -460,6 +460,21 @@ export function setZone(date, keepLocalTime = false) {
     return date;
 }
 
+export function getDateRange(start, end) {
+    const dates = [];
+    if(!start || !end) return dates;
+    
+    let current = start.startOf('day');
+    const last = end.startOf('day');
+
+    while (current <= last) {
+        dates.push(current);
+        current = current.plus({ days: 1 });
+    }
+
+    return dates;
+};
+
 export function getHotelTimezone() {
     return 'Asia/Singapore';
 }
