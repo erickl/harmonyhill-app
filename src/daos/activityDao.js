@@ -2,6 +2,35 @@ import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js"
 import * as utils from "../utils.js";
 
+export function subscribe(bookingId, setDocs, options, onError) {
+    const filters = [];
+    const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
+
+    if (utils.exists(options, "after")) {
+        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
+    }
+
+    if (utils.exists(options, "before")) {
+        filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
+    }
+
+    return dao.subscribe(path, setDocs, filters, onError);
+} 
+
+export function subscribeAll(setDocs, options, onError) {
+    const filters = [];
+    
+    if (utils.exists(options, "after")) {
+        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
+    }
+
+    if (utils.exists(options, "before")) {
+        filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
+    }
+
+    return dao.subscribeAll(dao.constant.ACTIVITIES, setDocs, filters, onError);
+} 
+
 const getActivitiesPath = (bookingId) => {
     return [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];;
 }

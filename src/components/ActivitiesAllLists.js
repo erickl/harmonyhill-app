@@ -3,20 +3,20 @@ import * as utils from "../utils.js";
 import "./ActivitiesList.css";
 import ActivitiesList from './ActivitiesList.js';
 import * as userService from "../services/userService.js";
+import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
 export default function ActivitiesAllLists({context, futureExpanded}) {
     const [interval, setInterval] = useState(null);
     const [expandPrevious, setExpandPrevious] = useState(false);
     const [expandFuture, setExpandFuture] = useState(futureExpanded || false);
 
+    const {permissions} = useUserPermissions();
+
     useEffect(() => {
-        const getUserPermissions = async() => {
-            const userCanSeeAllBookings = await userService.canSeeAllBookings();
-            const after = userCanSeeAllBookings  ? utils.now(-7) : utils.now(-2);
-            const before = userCanSeeAllBookings ? utils.now(30) : utils.now(7);
-            setInterval({from : after, to : before});
-        }
-        getUserPermissions();
+        const userCanSeeAllBookings = permissions.isManagerOrAdmin;
+        const after = userCanSeeAllBookings  ? utils.now(-7) : utils.now(-2);
+        const before = userCanSeeAllBookings ? utils.now(30) : utils.now(7);
+        setInterval({from : after, to : before});
     }, []);
 
     return (

@@ -11,6 +11,18 @@ import {removeCounts as removeMinibarCounts} from "./minibarService.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import {Alert} from "../models/Alert.js";
 
+export const sortActivitiesByDate = (activities) => {
+    const enhancedActivities = enhanceActivities(activities);
+     const activitiesByDate = enhancedActivities.reduce((m, activity) => {     
+        const date = activity.startingAt_ddMMM ? activity.startingAt_ddMMM : "Date TBD";
+        if(!m[date]) m[date] = [];
+        m[date].push(activity);
+        return m;
+    }, {});
+
+    return activitiesByDate;
+}
+
 /**
  * @param {*} filterOptions = {category=transport|yoga|etc.., house=harmony hill|the jungle nook}
  * @returns list of all kinds of activities available (categories and subcategories)
@@ -70,10 +82,32 @@ export async function getCategories() {
  * }
  * @returns activities array, ordered by date (oldest first)
  */
-export async function get(booking, filterOptions = {}, onError = null) {
+export async function get(booking, filterOptions = {}, onError) {
     const activities = await activityDao.getBookingActivities(booking.id, filterOptions, onError);
-    const enhancedActivities = await enhanceActivities(activities, booking);
+    const enhancedActivities = enhanceActivities(activities);
     return enhancedActivities; 
+}
+
+/**
+ * Get an activities collection which is updated live as updates come in from other users
+ * @param {*} booking 
+ * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
+ * @param {*} filterOptions 
+ * @param {*} onError 
+ */
+export function subscribe(booking, setDocs, filterOptions = {}, onError) {
+    return activityDao.subscribe(booking.id, setDocs, filterOptions, onError);
+}
+
+/**
+ * Get an activities collection which is updated live as updates come in from other users
+ * @param {*} booking 
+ * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
+ * @param {*} filterOptions 
+ * @param {*} onError 
+ */
+export function subscribeAll(setDocs, filterOptions = {}, onError) {
+    return activityDao.subscribeAll(setDocs, filterOptions, onError);
 }
 
 /**
@@ -82,7 +116,7 @@ export async function get(booking, filterOptions = {}, onError = null) {
  */
 export async function getAll(filterOptions = {}, onError) {
     const activities = await activityDao.getAllActivities(filterOptions, onError);
-    const enhancedActivities = await enhanceActivities(activities);
+    const enhancedActivities = enhanceActivities(activities);
     return enhancedActivities; 
 }
 
@@ -90,9 +124,10 @@ export async function getAll(filterOptions = {}, onError) {
  * @param {*} activities one object or an array of activity objects
  * @returns enhanced/enriched activity data, needed to properly display them to the user
  */
-export async function enhanceActivities(activities, booking = null) {
-    const enhance = async (activity) => {
+export function enhanceActivities(activities) {
+    const enhance = (activity) => {
         if(!activity) return;
+        if(utils.exists(activity, "createdAt_ddMMM_HHmm")) return activity; // has already been enhanced
 
         const newActivity = utils.deepCopy(activity);
         try {
@@ -121,10 +156,10 @@ export async function enhanceActivities(activities, booking = null) {
                 newActivity.subCategory = `Custom: ${activity.displayName}`;
             }
 
-            if(utils.isEmpty(activity.name)) {
-                const booking = !booking ? await getParent(activity) : booking;
-                newActivity.name = booking ? booking.name : null;
-            }
+            // if(utils.isEmpty(activity.name)) {
+            //     const booking = !booking ? await getParent(activity) : booking;
+            //     newActivity.name = booking ? booking.name : null;
+            // }
             
             newActivity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
             newActivity.updatedAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.updatedAt); 
@@ -136,8 +171,8 @@ export async function enhanceActivities(activities, booking = null) {
     }
 
     activities = Array.isArray(activities)
-        ? await Promise.all(activities.map(enhance))
-        : await enhance(activities);
+        ? activities.map(enhance)
+        : enhance(activities);
         
     return activities; 
 }
@@ -150,7 +185,7 @@ export async function enhanceActivities(activities, booking = null) {
  */
 export async function getOne(booking, activityId) {
     const activity = await activityDao.getOne(booking.id, activityId);
-    const enhancedActivity = await enhanceActivities(activity, booking);
+    const enhancedActivity = enhanceActivities(activity);
     return enhancedActivity;
 }
 
@@ -188,7 +223,7 @@ export async function add(booking, activityData, onError, writes = []) {
         if((await commitTx(writes, onError)) === false) return false;
     }
     
-    const enhancedRecord = await enhanceActivities(result, booking);
+    const enhancedRecord = enhanceActivities(result);
     return enhancedRecord;
 }
 
@@ -305,7 +340,7 @@ export async function update(booking, activity, activityUpdateData, onError, wri
         if((await commitTx(writes, onError)) === false) return false;
     }
 
-    const enhancedResult = await enhanceActivities(result, booking);
+    const enhancedResult = enhanceActivities(result);
     return enhancedResult;
 }
 
@@ -542,62 +577,66 @@ export function getChangeDescription(oldData, newData) {
 }
 
 export function getAlert(activity, currentStatus, activityUnit, onError) {
-    const alert = (category = Alert.NONE, message = "") => {
-        return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
-    };
+    try {
+        const alert = (category = Alert.NONE, message = "") => {
+            return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
+        };
 
-    if(activity == null) return alert();
-    if(activityUnit == null) return alert();
+        if(activity == null) return alert();
+        if(activityUnit == null) return alert();
 
-    // Haven't started yet, and past startingTime ==> Overdue
-    if(ActivityStatus.Started.greaterThan(currentStatus) && utils.isPast(activity.startingTime)) {
-        return alert(Alert.OVERDUE, "Activity should have been started already!");
+        // Haven't started yet, and past startingTime ==> Overdue
+        if(ActivityStatus.Started.greaterThan(currentStatus) && utils.isPast(activity.startingTime)) {
+            return alert(Alert.OVERDUE, "Activity should have been started already!");
+        }
+
+        const timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
+        const hoursLeft = Math.floor(timeLeft.hours);
+        const urgent = !utils.isEmpty(activityUnit.deadline1) && hoursLeft <= activityUnit.deadline1;
+        const emergency = !utils.isEmpty(activityUnit.deadline2) && hoursLeft <= activityUnit.deadline2;
+        
+        if(ActivityStatus.PendingGuestConfirmation.equals(currentStatus)) {
+            if(emergency) {
+                return alert(Alert.EMERGENCY, "Confirm with guest immediately!");
+            }
+
+            if(urgent) {
+                return alert(Alert.URGENT, "Confirm with guest");
+            }
+        }
+
+        const needsProvider = activity.needsProvider === true && utils.isEmpty(activity.provider);
+        if(needsProvider) {
+            if(emergency) {
+                return alert(Alert.EMERGENCY, "Book activity now!");
+            }
+
+            if(urgent) {
+                return alert(Alert.URGENT, "Book activity!");
+            }
+        }
+
+        const isLaterToday = utils.isToday(activity.startingAt) && utils.isPast(activity.startingAt);
+        const isTodayOrTomorrow = utils.isTomorrow(activity.startingAt) || isLaterToday;
+        if(isTodayOrTomorrow) {
+            if(utils.isEmpty(activity.assignedTo)) {
+                return alert(Alert.URGENT, "Assign task to someone");
+            }
+            const assignedNotYetAccepted = (!utils.exists(activity, "assigneeAccept") || activity.assigneeAccept === false);
+            if(ActivityStatus.StaffNotConfirmed.equals(currentStatus) && assignedNotYetAccepted) {
+                return alert(Alert.URGENT, "Accept the task");
+            }
+        }
+
+        // Todo: use started status, when we have the ability to ask for photos via the app
+        // if(!utils.isEmpty(activity.startingTime) && hoursLeft < 0) {
+        //     if(currentStatus === Status.GOOD_TO_GO) {
+        //         return alert(Alert.URGENT, "Did it start?");
+        //     }
+        // } 
+    } catch(e) {
+        onError(`(getAlert) Error in activity ${activity.displayName}: ${e.message}`);
     }
-
-    const timeLeft = activity.startingAt.diff(utils.now(), ["hours"]);
-    const hoursLeft = Math.floor(timeLeft.hours);
-    const urgent = !utils.isEmpty(activityUnit.deadline1) && hoursLeft <= activityUnit.deadline1;
-    const emergency = !utils.isEmpty(activityUnit.deadline2) && hoursLeft <= activityUnit.deadline2;
-    
-    if(ActivityStatus.PendingGuestConfirmation.equals(currentStatus)) {
-        if(emergency) {
-            return alert(Alert.EMERGENCY, "Confirm with guest immediately!");
-        }
-
-        if(urgent) {
-            return alert(Alert.URGENT, "Confirm with guest");
-        }
-    }
-
-    const needsProvider = activity.needsProvider === true && utils.isEmpty(activity.provider);
-    if(needsProvider) {
-        if(emergency) {
-            return alert(Alert.EMERGENCY, "Book activity now!");
-        }
-
-        if(urgent) {
-            return alert(Alert.URGENT, "Book activity!");
-        }
-    }
-
-    const isLaterToday = utils.isToday(activity.startingAt) && utils.isPast(activity.startingAt);
-    const isTodayOrTomorrow = utils.isTomorrow(activity.startingAt) || isLaterToday;
-    if(isTodayOrTomorrow) {
-        if(utils.isEmpty(activity.assignedTo)) {
-            return alert(Alert.URGENT, "Assign task to someone");
-        }
-        const assignedNotYetAccepted = (!utils.exists(activity, "assigneeAccept") || activity.assigneeAccept === false);
-        if(ActivityStatus.StaffNotConfirmed.equals(currentStatus) && assignedNotYetAccepted) {
-            return alert(Alert.URGENT, "Accept the task");
-        }
-    }
-
-    // Todo: use started status, when we have the ability to ask for photos via the app
-    // if(!utils.isEmpty(activity.startingTime) && hoursLeft < 0) {
-    //     if(currentStatus === Status.GOOD_TO_GO) {
-    //         return alert(Alert.URGENT, "Did it start?");
-    //     }
-    // } 
 
     return alert(Alert.NONE);
 }

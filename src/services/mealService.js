@@ -51,7 +51,7 @@ export async function addMeal(booking, mealData, onError, writes = []) {
     }
 
     mealRecord.dishes = addedDishes;
-    const enhancedMealRecord = await activityService.enhanceActivities(mealRecord, booking);
+    const enhancedMealRecord = activityService.enhanceActivities(mealRecord);
     return enhancedMealRecord;
 }
 
@@ -151,7 +151,7 @@ export async function update(booking, meal, mealUpdateData, onError, writes = []
         if ((await commitTx(writes, onError)) === false) return false;
     }
 
-    const enhancedMealRecord = await activityService.enhanceActivities(updateMealRecord, booking);
+    const enhancedMealRecord = activityService.enhanceActivities(updateMealRecord);
     return enhancedMealRecord;
 }
 
@@ -232,7 +232,7 @@ async function addDish(meal, mealId, dishData, onError, writes) {
 
 export async function getMealsByBooking(booking, options = {}) {
     const meals = await activityDao.getMeals(booking.id, options);
-    const enhancedMeals = await activityService.enhanceActivities(meals, booking);
+    const enhancedMeals = activityService.enhanceActivities(meals);
     return enhancedMeals;
 }
 
