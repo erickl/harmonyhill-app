@@ -6,19 +6,37 @@ import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useNotification } from '../context/NotificationContext.js';
 import * as utils from "../utils.js";
 import Spinner from './Spinner.js';
-import "./ActivitiesByDay.css";
+import "./ActivitiesByDate.css";
 import { update } from '../daos/userDao.js';
 
-export default function ActivitiesByDay({ context, customer, date }) {
+export default function ActivitiesByDate({ context, customer, date, date1, date2 }) {
     const today = utils.today();
-    const isPast = date ? utils.isPast(date.startOf('day')) : false;
-    const isToday = date ? utils.isToday(date) : false;
-    const isThisWeek = date ? (date > today && date < utils.today(7)) : false;
-    const dayEnd = date ? date.endOf('day') : null;
-    const dayStart = date ? date.startOf('day') : null;
-    const filter = (dayStart && dayEnd) ? { after: dayStart, before: dayEnd } : {date : null};
-    const dateFormatted = date ? utils.to_ddMMM(date) : "Unscheduled";
-    const doSubscribe = isToday || isThisWeek || !date;
+    
+    let from = date1 ? date1.startOf('day') : null;
+    let to = date2 ? date2.endOf('day') : null;
+
+    // input date(s) define 1 particular day, not a range of dates
+    const singleDate = date || utils.dateIsSame(date1, date2, true); 
+
+    // Giving no dates means to get all the unscheduled activities
+    const noDates = !from && !to && !date;
+    const isPast = date && utils.isPast(date.startOf('day'));
+    const isToday = date && utils.isToday(date);
+    const isThisWeek = date && (date > today && date < utils.today(7));
+    
+    // if all input dates === null, then filter => {date: null}, which means getting unscheduled activities
+    const filter = (from && to) ? { after: from, before: to } : {date : date};
+    
+    let dateFormatted = "Unscheduled";
+    if(from || to) {
+        if(from && to) dateFormatted = `${utils.to_ddMMM(from)} - ${utils.to_ddMMM(to)}`;
+        if(from && !to) dateFormatted = `After checkout`;
+        if(!from && to) dateFormatted = `Before checkin`;
+    } else if(date) {
+        dateFormatted = `${utils.to_ddMMM(date)}`;
+    }
+
+    const doSubscribe = isToday || isThisWeek || noDates;
 
     const [expanded, setExpanded] = useState(isToday);
     const [loading, setLoading] = useState(true);
@@ -107,14 +125,14 @@ export default function ActivitiesByDay({ context, customer, date }) {
     // Today's activities and the rest of the week reload whenever there is a change in DB
     useEffect(() => {
         if(doSubscribe) {
-            const unsubscribe = activityService.subscribeAll((liveActivities) => {
-                const enhancedLveActivities = activityService.enhanceActivities(liveActivities);
-                setActivities(enhancedLveActivities);
+            const unsubscribe = activityService.subscribe(customer, (liveActivities) => {
+                const enhancedLiveActivities = activityService.enhanceActivities(liveActivities);
+                setActivities(enhancedLiveActivities);
                 setLastUpdate(`${utils.to_HHmm()}`);
                 setLoading(false);
             }, filter, onError);
 
-            return () => unsubscribe();
+            return () => unsubscribe !== null ? unsubscribe() : null;
         }
     }, []);
 

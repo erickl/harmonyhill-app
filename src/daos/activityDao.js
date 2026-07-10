@@ -6,14 +6,17 @@ export function subscribe(bookingId, setDocs, options, onError) {
     const filters = [];
     const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
 
-    if (utils.exists(options, "after")) {
+    // filtering for startingAt >= null doesn't make sense
+    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
         filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
     }
 
-    if (utils.exists(options, "before")) {
+    // filtering for startingAt <= null doesn't make sense
+    if (utils.exists(options, "before") && !utils.isEmpty(options.before)) {
         filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
     }
 
+    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
     if (utils.exists(options, "date")) {
         filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
     }
@@ -24,14 +27,17 @@ export function subscribe(bookingId, setDocs, options, onError) {
 export function subscribeAll(setDocs, options, onError) {
     const filters = [];
     
-    if (utils.exists(options, "after")) {
+    // filtering for startingAt >= null doesn't make sense
+    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
         filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
     }
 
-    if (utils.exists(options, "before")) {
+    // filtering for startingAt <= null also doesn't make sense
+    if (utils.exists(options, "before") && !utils.isEmpty(options.before)) {
         filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
     }
 
+    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
     if (utils.exists(options, "date")) {
         filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
     }
@@ -138,16 +144,19 @@ export async function getBookingActivities(bookingId, options = {}, onError = nu
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    if (utils.exists(options, "date")) {
-        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
-    }
-
-    if (utils.exists(options, "after")) {
+    // filtering for startingAt >= null doesn't make sense
+    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
         filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
     }
 
+    // filtering for startingAt <= null doesn't make sense
     if (utils.exists(options, "before")) {
         filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
+    }
+
+    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
+    if (utils.exists(options, "date")) {
+        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
     }
 
     if (utils.exists(options, "assignedTo")) {
@@ -175,16 +184,19 @@ export async function getAllActivities(options = {}, onError) {
         filters.push(where("subCategory", "==", options.subCategory));
     }
 
-    if (utils.exists(options, "after")) {
+    // filtering for startingAt >= null doesn't make sense
+    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
         const after = utils.toFireStoreTime(options.after);
         filters.push(where("startingAt", ">=", after));
     }
 
-    if (utils.exists(options, "before")) {
+    // filtering for startingAt <= null doesn't make sense
+    if (utils.exists(options, "before") && !utils.isEmpty(options.before)) {
         const before = utils.toFireStoreTime(options.before);
         filters.push(where("startingAt", "<=", before));
     }
 
+    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
     if (utils.exists(options, "date")) {
         filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
     }
@@ -234,12 +246,14 @@ export async function getDishes(filterOptions = {}, onError) {
         filters.push(where("name", "==", filterOptions.name));
     }
 
-    if (utils.exists(filterOptions, "after")) {
+    // filtering for startingAt >= null doesn't make sense
+    if (utils.exists(filterOptions, "after")  && !utils.isEmpty(filterOptions.after)) {
         const after = utils.toFireStoreTime(filterOptions.after);
         filters.push(where("createdAt", ">=", after));
     }
 
-    if (utils.exists(filterOptions, "before")) {
+    // filtering for startingAt <= null doesn't make sense
+    if (utils.exists(filterOptions, "before") && !utils.isEmpty(filterOptions.before)) {
         const before = utils.toFireStoreTime(filterOptions.before);
         filters.push(where("createdAt", "<=", before));
     }

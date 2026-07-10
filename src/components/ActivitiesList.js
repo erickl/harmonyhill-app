@@ -1,30 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as utils from "../utils.js";
 import "./ActivitiesList.css";
-import ActivitiesByDay from './ActivitiesByDay.js';
+import ActivitiesByDate from './ActivitiesByDate.js';
 
-export default function ActivitiesList({context, from, to, customer, expandAllDates}) {
+export default function ActivitiesList({ context, from, to, customer }) {
     const todaysHeader = useRef(null);
-
-    const from_ = from ? from : (customer ? customer.checkInAt : null);
-    const to_ = to ? to : (customer ? customer.checkOutAt : null);
-    const dateRange = utils.getDateRange(from_, to_);
+    const dateRange = utils.getDateRange(from, to);
 
     useEffect(() => {
         if (todaysHeader.current) {
             todaysHeader.current.scrollIntoView({ behavior: "instant" });
         }
-    }, []); 
+    }, []);
 
     return (
         <div className="card-content">
             {dateRange.map(date => {
                 return (
-                    <div 
+                    <div
                         key={`activities-${date}`}
                         ref={utils.isToday(date) ? todaysHeader : null}
                     >
-                        <ActivitiesByDay 
+                        <ActivitiesByDate
                             context={context}
                             customer={customer}
                             date={date}

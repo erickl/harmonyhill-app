@@ -90,24 +90,17 @@ export async function get(booking, filterOptions = {}, onError) {
 
 /**
  * Get an activities collection which is updated live as updates come in from other users
- * @param {*} booking 
+ * @param {*} booking the customer object. If null, get activities from all users
  * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
  * @param {*} filterOptions 
  * @param {*} onError 
  */
 export function subscribe(booking, setDocs, filterOptions = {}, onError) {
-    return activityDao.subscribe(booking.id, setDocs, filterOptions, onError);
-}
-
-/**
- * Get an activities collection which is updated live as updates come in from other users
- * @param {*} booking 
- * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
- * @param {*} filterOptions 
- * @param {*} onError 
- */
-export function subscribeAll(setDocs, filterOptions = {}, onError) {
-    return activityDao.subscribeAll(setDocs, filterOptions, onError);
+    if(booking) {
+        return activityDao.subscribe(booking.id, setDocs, filterOptions, onError);
+    } else {
+        return activityDao.subscribeAll(setDocs, filterOptions, onError);
+    }   
 }
 
 /**
