@@ -30,7 +30,10 @@ export default function BookingComponent({customer, handleDeleteBooking, context
                             className="cursor-pointer"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                context.onNavigate('incomes', {customer:customer});
+                                context.onNavigate('booking-incomes', {
+                                    customer : customer,
+                                    context : context
+                                });
                             }}
                         />
                         <ShoppingCart
@@ -38,7 +41,10 @@ export default function BookingComponent({customer, handleDeleteBooking, context
                             className="cursor-pointer"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                context.onNavigate('customer-purchases', {customer:customer});
+                                context.onNavigate('customer-purchases', {
+                                    customer : customer,
+                                    context : context
+                                });
                             }}
                         />
                     </div>

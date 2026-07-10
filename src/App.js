@@ -29,12 +29,12 @@ import AddTodoScreen from './components/AddTodoScreen.js';
 //import * as migrationService from './services/dataMigrationService.js';
 
 function App() {
-    const [isLoggedIn,        setIsLoggedIn         ] = useState(false      );
-    const [hasUnsavedChanges, setHasUnsavedChanges  ] = useState(false      );
-    const [loading,           setLoading            ] = useState(true       );
-    const [history,           setHistory            ] = useState([{ name: 'activities', data: {} }]);
-    
-    const [activeTab,  setActiveTab          ] = useState('activities');
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [history, setHistory] = useState([{ name: 'activities', data: {} }]);
+
+    const [activeTab, setActiveTab] = useState('activities');
     const [visitedTabs, setVisitedTabs] = useState(new Set(['activities']));
 
     const { onConfirm } = useConfirmationModal();
@@ -83,7 +83,7 @@ function App() {
             setHistory([{ name: tab, data: {} }]);
         }
 
-        if(hasUnsavedChanges) {
+        if (hasUnsavedChanges) {
             onConfirm(`You have unsaved changes. Are you sure you want to close?`, () => {
                 onConfirmTabChange();
             })
@@ -92,49 +92,51 @@ function App() {
         }
     };
 
-    if(loading) {
+    if (loading) {
         return (
             <p>Loading...</p>
         )
     }
 
     const SCREENS = {
-        'customers'              : CustomersScreen,
-        'add-customer'           : AddCustomerScreen,
-        'edit-customer'          : EditCustomerScreen,
-        'activities'             : ActivitiesScreen,
-        'expenses'               : ExpensesScreen,
-        'add-expense'            : AddExpensesScreen,
-        'edit-expense'           : AddExpensesScreen,
-        'incomes'                : IncomeScreen,
-        'add-income'             : AddIncomeScreen,
-        'edit-income'            : AddIncomeScreen,
-        'customer-purchases'     : CustomerPurchasesScreen,
-        'add-customer-purchase'  : AddPurchaseScreen,
-        'edit-customer-purchase' : EditPurchaseScreen,
-        'admin'                  : AdminScreen,
-        'userLogs'               : ChangeLogsComponent,
-        'inventory'              : InventoryScreen,
-        'addInventory'           : AddInventoryScreen,
-        'removeInventory'        : RemoveInventoryScreen,
-        'todo-list'              : TodoScreen,
-        'add-todo'               : AddTodoScreen,
+        'customers': CustomersScreen,
+        'add-customer': AddCustomerScreen,
+        'edit-customer': EditCustomerScreen,
+        'activities': ActivitiesScreen,
+        'expenses': ExpensesScreen,
+        'add-expense': AddExpensesScreen,
+        'edit-expense': AddExpensesScreen,
+        'incomes': IncomeScreen,
+        // Same income screen, but not entered from the bottom tab nav bar
+        'booking-incomes': IncomeScreen,
+        'add-income': AddIncomeScreen,
+        'edit-income': AddIncomeScreen,
+        'customer-purchases': CustomerPurchasesScreen,
+        'add-customer-purchase': AddPurchaseScreen,
+        'edit-customer-purchase': EditPurchaseScreen,
+        'admin': AdminScreen,
+        'userLogs': ChangeLogsComponent,
+        'inventory': InventoryScreen,
+        'addInventory': AddInventoryScreen,
+        'removeInventory': RemoveInventoryScreen,
+        'todo-list': TodoScreen,
+        'add-todo': AddTodoScreen,
     };
 
     const ScreenToDisplay = SCREENS[currentScreen.name];
     const isBottomNavTab = bottomNavTabs.includes(currentScreen.name);
 
     const context = {
-        onNavigate           : onNavigate,
-        onClose              : onClose,
-        setHasUnsavedChanges : setHasUnsavedChanges
+        onNavigate: onNavigate,
+        onClose: onClose,
+        setHasUnsavedChanges: setHasUnsavedChanges
     }
 
     return (
-        <div className="app-container">   
-            {isLoggedIn ? (<>                     
+        <div className="app-container">
+            {isLoggedIn ? (<>
                 <SideMenu context={context} />
-                
+
                 {/* Active screen is not one of the bottom nav tabs */}
                 {!isBottomNavTab && (
                     <div className="content">
@@ -142,41 +144,41 @@ function App() {
                             context={context}
                             {...currentScreen.data}
                         />
-                    </div> 
+                    </div>
                 )}
-                
+
                 {/* Always keep the bottom nav tabs (main screens) in cache */}
                 <div className="content" style={{ display: isBottomNavTab && activeTab === 'customers' ? 'block' : 'none' }}>
-                    {visitedTabs.has('customers') && 
+                    {visitedTabs.has('customers') &&
                         <CustomersScreen
                             context={context}
                         />
                     }
                 </div>
                 <div className="content" style={{ display: isBottomNavTab && activeTab === 'activities' ? 'block' : 'none' }}>
-                    {visitedTabs.has('activities') && 
-                        <ActivitiesScreen 
-                            context={context} 
+                    {visitedTabs.has('activities') &&
+                        <ActivitiesScreen
+                            context={context}
                         />
                     }
                 </div>
                 <div className="content" style={{ display: isBottomNavTab && activeTab === 'expenses' ? 'block' : 'none' }}>
-                    {visitedTabs.has('expenses') && 
-                        <ExpensesScreen 
+                    {visitedTabs.has('expenses') &&
+                        <ExpensesScreen
                             context={context}
                         />
                     }
                 </div>
 
                 <div className="content" style={{ display: isBottomNavTab && activeTab === 'incomes' ? 'block' : 'none' }}>
-                    {visitedTabs.has('incomes') && 
+                    {visitedTabs.has('incomes') &&
                         <IncomeScreen
                             context={context}
                         />
                     }
                 </div>
 
-                <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />        
+                <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
             </>) : (
                 <LoginScreen onLogin={userService.login} onLoginSuccess={setIsLoggedIn} />
             )}
