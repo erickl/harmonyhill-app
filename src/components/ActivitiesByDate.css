@@ -39,6 +39,11 @@
     align-items:  center;
 }
 
+.clickable-header {
+    display: flex;
+    justify-content: space-between;
+}
+
 .expand-icon {
     display: flex;
     align-items:  center;

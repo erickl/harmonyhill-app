@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as utils from "../utils.js";
-import "./ActivitiesList.css";
 import ActivitiesByDate from './ActivitiesByDate.js';
 
 export default function ActivitiesList({ context, from, to, customer }) {

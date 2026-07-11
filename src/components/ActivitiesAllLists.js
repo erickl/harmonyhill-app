@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
-import "./ActivitiesList.css";
+import "./ActivitiesAllLists.css";
 import ActivitiesList from './ActivitiesList.js';
 import ActivitiesByDate from './ActivitiesByDate.js';
 import * as userService from "../services/userService.js";
@@ -46,7 +46,7 @@ export default function ActivitiesAllLists({ context, customer }) {
 
             <h3
                 style={{ marginBottom: "0px" }}
-                className={'customer-group-header clickable-header'}
+                className={'activity-list-group-header clickable-header'}
                 onClick={() => setExpandPrevious(!expandPrevious)}
             >
                 Previous
@@ -69,7 +69,7 @@ export default function ActivitiesAllLists({ context, customer }) {
             {/* Today's activities */}
             <h3
                 style={{ marginBottom: "0px" }}
-                className={'customer-group-header clickable-header'}
+                className={'activity-list-group-header clickable-header'}
             >
                 Today
             </h3>
@@ -85,7 +85,7 @@ export default function ActivitiesAllLists({ context, customer }) {
             {/* Future activities */}
             <h3
                 style={{ marginBottom: "0px" }}
-                className={'customer-group-header clickable-header'}
+                className={'activity-list-group-header clickable-header'}
                 onClick={() => setExpandFuture(!expandFuture)}
             >
                 Future
