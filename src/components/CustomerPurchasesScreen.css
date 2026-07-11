@@ -22,20 +22,6 @@
     /*Remove default padding*/
 }
 
-.customer-group-header {
-    margin: 1rem 0;
-    padding: 1rem 1rem 1rem 1rem;
-    /* border: 1px solid black; */
-    background-color: rgb(247, 243, 243);
-    box-shadow: 5px 5px 10px -1px rgb(119, 179, 176);
-
-}
-
-.clickable-header {
-    display: flex;
-    justify-content: space-between;
-}
-
 .bg-jn {
     background-color: rgb(2, 65, 116);
 }

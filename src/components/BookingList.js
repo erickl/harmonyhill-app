@@ -13,6 +13,7 @@ export default function BookingList({ context, title, filter, expand }) {
     const [sectionIsExpanded, setSectionIsExpanded] = useState(expand || false);
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [lastUpdate, setLastUpdate] = useState(null);
     const [canSeeAllBookings, setCanSeeAllBookings] = useState(false);
 
     const seeAllRef = useRef(null);
@@ -22,10 +23,15 @@ export default function BookingList({ context, title, filter, expand }) {
     const { onSuccess } = useSuccessNotification();
     const { permissions } = useUserPermissions();
 
-    const isPrevious = title.toLowerCase() === "previous";
-    const isFuture = title.toLowerCase() === "future";
+    const title_ = title ? title.toLowerCase() : null;
+
+    const isPrevious = title_ === "previous";
+    const isFuture = title_ === "future";
+    const doSubscribe = title_ === "current" || title_ === "next month";
 
     const fetchCustomers = async (getAll = false) => {
+        if(doSubscribe) return;
+
         const filter_ = filter;
         if (getAll) {
             if (isPrevious) {
@@ -41,6 +47,7 @@ export default function BookingList({ context, title, filter, expand }) {
     };
 
     const handleGetAllCustomers = () => {
+        if(doSubscribe) return;
         fetchCustomers(true);
     };
 
@@ -50,6 +57,8 @@ export default function BookingList({ context, title, filter, expand }) {
 
             const deleteBookingResult = await bookingService.remove(bookingToDelete.id, onError);
             if (deleteBookingResult !== false) {
+                // manual deletion not needed if there's a subscription
+                if(doSubscribe) return; 
                 let newCustomers = utils.deepCopy(customers);
                 newCustomers = newCustomers.filter((customer) => customer.id !== bookingToDelete.id);
                 setCustomers(newCustomers);
@@ -67,7 +76,9 @@ export default function BookingList({ context, title, filter, expand }) {
 
     useEffect(() => {
         if (!sectionIsExpanded) return;
-        if (customers.length > 0) return;
+        
+        const refresh = isPrevious;
+        if (!refresh && customers.length > 0) return;
 
         const loadPermissions = async () => {
             const canSeeAllBookings_ = await userService.canSeeAllBookings();
@@ -79,17 +90,40 @@ export default function BookingList({ context, title, filter, expand }) {
         loadPermissions();
     }, [sectionIsExpanded]);
 
+    useEffect(() => {
+        if(doSubscribe) {
+            bookingService.subscribe((liveBookings) => {
+                const enhancedLiveBookings = bookingService.enhanceBookings(liveBookings);
+                setCustomers(enhancedLiveBookings);
+                setLastUpdate(utils.to_HHmm);
+                setLoading(false);
+            }, filter, onError);
+        }
+    }, []);
+
     return (
         <div>
             <h3
                 className={`customer-group-header clickable-header`}
                 onClick={() => setSectionIsExpanded(!sectionIsExpanded)}
             >
-                {title}
+                <div class="customer-group-header-right">
+                    {title}
+                </div>
 
-                <span className="expand-icon">
-                    {sectionIsExpanded ? ' ▼' : ' ▶'}
-                </span>
+                <div className="customer-group-header-right">
+                    {lastUpdate && (<>
+                        {doSubscribe && (
+                            <span className='subscription-notification'>•</span>
+                        )}
+                        <div className='last-updated-info'>
+                            Last updated {lastUpdate}
+                        </div>
+                    </>)}
+                    <span className="expand-icon">
+                        {sectionIsExpanded ? ' ▼' : ' ▶'}
+                    </span>
+                </div>
             </h3>
             {sectionIsExpanded && (<>
                 {loading ? (
@@ -110,7 +144,7 @@ export default function BookingList({ context, title, filter, expand }) {
                             )
                         })}
 
-                        {canSeeAllBookings && title !== "Current" && (
+                        {canSeeAllBookings && (title_ !== "current" && title_ !== "next month") && (
                             <button
                                 ref={seeAllRef}
                                 className="edit-booking"

@@ -63,9 +63,6 @@ export default function CustomerPurchasesScreen({ customer, context }) {
                 context={context}
                 customer={customer}
             />
-
-
-
         </div>
     );
 };

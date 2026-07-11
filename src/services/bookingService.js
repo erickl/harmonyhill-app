@@ -6,6 +6,16 @@ import * as mealService from "./mealService.js";
 import * as minibarService from "./minibarService.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 
+/**
+ * Get bookings collection which is updated live as updates come in from other users
+ * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
+ * @param {*} filterOptions 
+ * @param {*} onError 
+ */
+export function subscribe(setDocs, filterOptions = {}, onError) {
+    return bookingDao.subscribe(setDocs, filterOptions, onError);
+}
+
 export async function getOne(id) {
     const booking = await bookingDao.getOne(id);
     return booking;
@@ -24,16 +34,10 @@ export async function getPromotions() {
     return await bookingDao.getPromotions();
 }
 
-/**
- * house=Harmony Hill|Jungle Nook
- * date=Date object (new Date(...)) the date can be any date which is between checkInAt and checkOutAt (inclusive range)
- */
-export async function get(filterOptions = {}, onError = null) {
-    const bookings = await bookingDao.get(filterOptions, onError);
-    
-    // return dates of a few different formats
-    const formattedBookings = bookings.map((booking) => {
-        const newBooking = booking;
+export function enhanceBookings(bookings) {
+    const enhance = (booking) => {
+        const newBooking = utils.deepCopy(booking);
+
         newBooking.checkInAt_wwwddMMM = utils.to_www_ddMMM(booking.checkInAt);
         newBooking.checkOutAt_wwwddMMM = utils.to_www_ddMMM(booking.checkOutAt);
 
@@ -47,9 +51,20 @@ export async function get(filterOptions = {}, onError = null) {
         newBooking.checkOutAt = booking.checkOutAt.startOf('day');
 
         return newBooking;
-    });
-    
-    return formattedBookings;
+    }
+
+    const enhancedBookings = Array.isArray(bookings) ? bookings.map(enhance) : enhance(bookings);
+    return enhancedBookings;
+}
+
+/**
+ * house=Harmony Hill|Jungle Nook
+ * date=Date object (new Date(...)) the date can be any date which is between checkInAt and checkOutAt (inclusive range)
+ */
+export async function get(filterOptions = {}, onError = null) {
+    const bookings = await bookingDao.get(filterOptions, onError);
+    const enhancedBookings = enhanceBookings(bookings);
+    return enhancedBookings;
 }
 
 export async function getCurrent(filterOptions = {}, onError = null) {

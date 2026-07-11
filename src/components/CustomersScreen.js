@@ -9,8 +9,9 @@ import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import BookingList from "./BookingList.js";
 
 export default function CustomersScreen({ context }) {
-    const [previousInterval,           setPreviousInterval      ] = useState(null);
-    const [futureInterval,             setFutureInterval        ] = useState(null);
+    const [previousInterval,  setPreviousInterval  ] = useState(null);
+    const [nextMonthInterval, setNextMonthInterval ] = useState(null);
+    const [futureInterval,    setFutureInterval    ] = useState(null);
     
     const { onError } = useNotification();
     const { permissions } = useUserPermissions();
@@ -25,9 +26,14 @@ export default function CustomersScreen({ context }) {
             checkOutBefore : utils.today(-1).endOf('day'),
         });
 
-        setFutureInterval({
+        setNextMonthInterval({
             checkInAfter  : utils.today(1).startOf('day'),
-            checkInBefore : utils.today(14),
+            checkOutBefore : utils.today(30).endOf('day'),
+        });
+
+        setFutureInterval({
+            checkInAfter  : utils.today(30).startOf('day').plus({seconds:-1}),
+            checkInBefore : utils.today(90),
         });
 
         load();
@@ -50,9 +56,37 @@ export default function CustomersScreen({ context }) {
             </div>
             
             <div className="card-content">
-                {previousInterval && (<BookingList context={context} title={"Previous"} filter={previousInterval} /> )}
-                <BookingList context={context} title={"Current"} filter={{date: utils.today().endOf('day')}} expand={true} />
-                {futureInterval && (<BookingList context={context} title={"Future"} filter={futureInterval} /> )}
+                {previousInterval && (
+                    <BookingList 
+                        context={context} 
+                        title={"Previous"} 
+                        filter={previousInterval} 
+                    /> 
+                )}
+
+                <BookingList 
+                    context={context} 
+                    title={"Current"} 
+                    filter={{date: utils.today().endOf('day')}} 
+                    expand={true} 
+                />
+                
+                {nextMonthInterval && (
+                    <BookingList 
+                        context={context} 
+                        title={"Next Month"} 
+                        filter={nextMonthInterval} 
+                        expand={true} 
+                    /> 
+                )}
+
+                {futureInterval && (
+                    <BookingList 
+                        context={context} 
+                        title={"Future"} 
+                        filter={futureInterval} 
+                    /> 
+                )}
             </div>
         </div>
     );
