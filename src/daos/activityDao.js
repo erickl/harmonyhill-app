@@ -3,45 +3,13 @@ import * as dao from "./dao.js"
 import * as utils from "../utils.js";
 
 export function subscribe(bookingId, setDocs, options, onError) {
-    const filters = [];
+    const filters = createActivitiesQueryArray(options);
     const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
-
-    // filtering for startingAt >= null doesn't make sense
-    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
-        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
-    }
-
-    // filtering for startingAt <= null doesn't make sense
-    if (utils.exists(options, "before") && !utils.isEmpty(options.before)) {
-        filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
-    }
-
-    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
-    if (utils.exists(options, "date")) {
-        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
-    }
-
     return dao.subscribe(path, setDocs, filters, onError);
 } 
 
 export function subscribeAll(setDocs, options, onError) {
-    const filters = [];
-    
-    // filtering for startingAt >= null doesn't make sense
-    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
-        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
-    }
-
-    // filtering for startingAt <= null also doesn't make sense
-    if (utils.exists(options, "before") && !utils.isEmpty(options.before)) {
-        filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
-    }
-
-    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
-    if (utils.exists(options, "date")) {
-        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
-    }
-
+    const filters = createActivitiesQueryArray(options);
     return dao.subscribeAll(dao.constant.ACTIVITIES, setDocs, filters, onError);
 } 
 
@@ -105,25 +73,13 @@ export async function getProviders(category, subCategory) {
 
 // mealCategory = "breakfast", "lunch", "dinner", "snack", "afternoon tea", "floating breakfast"
 export async function getMeals(bookingId, options = {}) {  
-    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
-    let filters = [];
-
+    const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
+    
     if(!utils.exists(options, "category")) {
         options.category = "meal";
     }
 
-    // startingAt is a string in the format YYYY-MM-DD, without time
-    if (utils.exists(options, "startingAt")) {
-        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.startingAt)));
-    }
-
-    if (utils.exists(options, "category")) {
-        filters.push(where("category", "==", options.category));
-    }
-
-    if (utils.exists(options, "subCategory")) {
-        filters.push(where("subCategory", "==", options.subCategory));
-    }
+    const filters = createActivitiesQueryArray(options);
     
     const meals = await dao.get(path, filters);
     const sortedMeals = dao.sort(meals, "startingAt");
@@ -132,90 +88,17 @@ export async function getMeals(bookingId, options = {}) {
 }
 
 export async function getBookingActivities(bookingId, options = {}, onError = null) { 
-    let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
-
-    let filters = [];
-    
-    if (utils.exists(options, "category")) {
-        filters.push(where("category", "==", options.category));
-    }
-
-    if (utils.exists(options, "subCategory")) {
-        filters.push(where("subCategory", "==", options.subCategory));
-    }
-
-    // filtering for startingAt >= null doesn't make sense
-    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
-        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
-    }
-
-    // filtering for startingAt <= null doesn't make sense
-    if (utils.exists(options, "before")) {
-        filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
-    }
-
-    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
-    if (utils.exists(options, "date")) {
-        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
-    }
-
-    if (utils.exists(options, "assignedTo")) {
-        filters.push(where("assignedTo", "==", options.assignedTo));
-    }
-
-    if (utils.exists(options, "hasProvider")) {
-        filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
-    }
-
+    const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
+    const filters = createActivitiesQueryArray(options);
     const activities = await dao.get(path, filters, [], -1, onError);
     const sortedActivities = dao.sort(activities, "startingAt");
-
     return sortedActivities;
 }
 
 export async function getAllActivities(options = {}, onError) { 
-    let filters = [];
-    
-    if (utils.exists(options, "category")) {
-        filters.push(where("category", "==", options.category));
-    }
-
-    if (utils.exists(options, "subCategory")) {
-        filters.push(where("subCategory", "==", options.subCategory));
-    }
-
-    // filtering for startingAt >= null doesn't make sense
-    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
-        const after = utils.toFireStoreTime(options.after);
-        filters.push(where("startingAt", ">=", after));
-    }
-
-    // filtering for startingAt <= null doesn't make sense
-    if (utils.exists(options, "before") && !utils.isEmpty(options.before)) {
-        const before = utils.toFireStoreTime(options.before);
-        filters.push(where("startingAt", "<=", before));
-    }
-
-    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
-    if (utils.exists(options, "date")) {
-        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
-    }
-    
+    const filters = createActivitiesQueryArray(options);
     const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters, [], onError);
     const sortedActivities = dao.sort(allActivities, "startingAt");
-
-    // Can get parent from the activity, but might decide to duplicate booking data into the activity instead
-    // for (const activity of allActivities) {
-    //     const ref = activity.ref;
-    //     const parent = ref.parent;
-    //     const parentId = parent.id; 
-    //     const grandparent = parent.parent;
-    //     const grandparentId = grandparent.id;
-    //     const bookingDoc = await getDoc(grandparent);
-    //     const bookingData = doc.data();
-    //     let x = 1;
-    // }    
-    
     return sortedActivities;
 }
 
@@ -308,4 +191,46 @@ export async function getTypes(filterOptions = {}) {
     }
 
     return activityTypes;
+}
+
+function createActivitiesQueryArray(options = {}) {
+    const filters = [];
+
+    // filtering for startingAt >= null doesn't make sense
+    if (utils.exists(options, "after") && !utils.isEmpty(options.after)) {
+        filters.push(where("startingAt", ">=", utils.toFireStoreTime(options.after)));
+    }
+
+    // filtering for startingAt <= null also doesn't make sense
+    if (utils.exists(options, "before") && !utils.isEmpty(options.before)) {
+        filters.push(where("startingAt", "<=", utils.toFireStoreTime(options.before)));
+    }
+
+    // filtering for startingAt == null DOES make sense (getting unscheduled activities)
+    if (utils.exists(options, "date")) {
+        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
+    }
+
+    // startingAt is a string in the format YYYY-MM-DD, without time
+    if (utils.exists(options, "startingAt")) {
+        filters.push(where("startingAt", "==", utils.toFireStoreTime(options.startingAt)));
+    }
+
+    if (utils.exists(options, "category")) {
+        filters.push(where("category", "==", options.category));
+    }
+
+    if (utils.exists(options, "subCategory")) {
+        filters.push(where("subCategory", "==", options.subCategory));
+    }
+
+    if (utils.exists(options, "assignedTo")) {
+        filters.push(where("assignedTo", "==", options.assignedTo));
+    }
+
+    if (utils.exists(options, "hasProvider")) {
+        filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
+    }
+
+    return filters;
 }
