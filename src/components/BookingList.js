@@ -95,7 +95,7 @@ export default function BookingList({ context, title, filter, expand }) {
             bookingService.subscribe((liveBookings) => {
                 const enhancedLiveBookings = bookingService.enhanceBookings(liveBookings);
                 setCustomers(enhancedLiveBookings);
-                setLastUpdate(utils.to_HHmm);
+                setLastUpdate(utils.to_HHmm());
                 setLoading(false);
             }, filter, onError);
         }
