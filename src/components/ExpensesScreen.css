@@ -2,7 +2,7 @@
     margin-left: 1rem;
 }
 
-.error-card-content {
-    border: 0.3rem solid red;
-    margin: 1rem;
+.card-header-left-title {
+    display: flex;
+    flex-direction: column;
 }

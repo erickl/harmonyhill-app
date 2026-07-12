@@ -96,14 +96,18 @@ export async function uploadReceipt(filename, dataUrl, options, onError, writes 
     return result;
 }
 
+/**
+ * Get the collection which is updated live as updates come in from other users
+ * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
+ * @param {*} filterOptions 
+ * @param {*} onError 
+ */
+export function subscribe(setDocs, filterOptions = {}, onError) {
+    return expenseDao.subscribe(setDocs, filterOptions, onError);
+}
+
 export async function get(filterOptions, onError) {
-    const expenses = await expenseDao.get(filterOptions, {"purchasedAt":"desc"}, -1, onError);
-    const formattedExpenses = expenses.map((expense) => {
-        const formattedExpense = expense;
-        formattedExpense.purchasedAt = utils.toDateTime(expense.purchasedAt);
-        return formattedExpense;
-    });
-    return formattedExpenses;
+    return await expenseDao.get(filterOptions, {"purchasedAt":"desc"}, -1, onError);
 }
 
 export async function getOne(id, onError) {

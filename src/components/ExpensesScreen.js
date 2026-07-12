@@ -14,16 +14,20 @@ import SheetUploader from "./SheetUploader.js";
 import ExpenseComponent from "./ExpenseComponent.js";
 import { useFilters } from "../context/FilterContext.js";
 import { useProgressCounter } from "../context/ProgressContext.js";
+import ExpenseList from './ExpenseList.js';
 
 export default function ExpensesScreen({ context }) {
 
     const [expandedExpenses, setExpandedExpenses] = useState({}   );
     const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
     const [expenses,         setExpenses        ] = useState([]   );
-    const [issues,           setIssues          ] = useState([]   );
     const [loading,          setLoading         ] = useState(true );
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
+
+    const [recentFilter, setRecentFilter] = useState(null);
+    const [issuesFilter, setIssuesFilter] = useState(null);
+    const [pastFilter,   setPastFilter] = useState(null);
 
     const { onFilter   } = useFilters();
     const { onError    } = useNotification();
@@ -56,69 +60,56 @@ export default function ExpensesScreen({ context }) {
         const x = 1; // todo, if success = true, display onSuccess?
     }
 
-    const handleDeleteExpense = async(expenseToDelete) => {
-        if(!expenseToDelete || utils.isEmpty(expenseToDelete.id)) return;
-        
-        onConfirm(`Are you sure you want to delete expense ${expenseToDelete.id}?`, async () => {
-            const result = await expenseService.remove(expenseToDelete.id, onError);
-            if(result !== false) {
-                let newExpenses = utils.deepCopy(expenses);
-                newExpenses = newExpenses.filter((expense) => expense.id !== expenseToDelete.id);
-                setExpenses(newExpenses);
-                onSuccess();
-            }
-        });
-    }
-
-    const onFlagIssue = async(expenseToFlag, comment) => {
-        const result = await issueService.flagIssue(expenseToFlag, comment, onError);
-        if(result !== false) {
-            let newIssues = [...issues, expenseToFlag];
-            setIssues(newIssues)
-        }
-    }
-
     useEffect(() => {
-        const fetchExpenses = async() => {
-            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);
+        const loadData = async () => {
+            let filter = {};
 
-            const filter = lastClosedPettyCashRecord ? { "after" : lastClosedPettyCashRecord.closedAt} : {};
-            
             if(!permissions.isAdmin) {
                 // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
                 filter["paymentMethod"] = "cash";
             } 
 
-            const uploadedExpenses = await expenseService.get(filter, onError);
-            setExpenses(uploadedExpenses);
-            
             const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
             setPettyCash(pettyCashSum);
             const expenseSum = await ledgerService.getCurrentTotalExpenses(filter, onError);
             setExpenseSum(expenseSum);
 
-            setLoading(false);
+            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);       
+            
+            const weekAgo = utils.today(-7);
+            const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : weekAgo;
+            
+            let recentFilterAfter = weekAgo;
+            if(oldest >= weekAgo) {
+                recentFilterAfter = oldest;
+            } else {
+                const pastFilter = {...filter, after: oldest, before: utils.today(-7).plus({seconds : -1})};
+                setPastFilter(pastFilter);
+            }
 
-            const issues = await issueService.get("expenses", {}, onError);
-            setIssues(issues);
+            const recentFilter = {...filter, after : recentFilterAfter, before : utils.today(3)};
+            setRecentFilter(recentFilter);
+  
+            const issuesFilter = { ...filter, "issue" : "attention"};
+            setIssuesFilter(issuesFilter);
         }
 
-        fetchExpenses();
+        loadData();
     }, []);
 
-    if(loading) {
-        return (
-            <p>Loading...</p>
-        )
-    }
-     
     return (
         <div className="fullscreen">
             <div className="card-header">
                 <div className='card-header-left'>
                     <VeganHamburgerButton />
-                    <h2 className="card-title">Expenses</h2>
-                    {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}    
+                    <div className="card-header-left-title">
+                        <h2 className="card-title">Expenses</h2>
+                        {pettyCash && (
+                            <span>
+                                Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}
+                            </span>
+                        )}
+                    </div>    
                 </div>
             
                 <div className="card-header-right">
@@ -140,36 +131,34 @@ export default function ExpensesScreen({ context }) {
                     </div>
                 </div>  
             </div>
-            {issues && issues.length > 0 && (<>
-                <h2 className="issues-header">Issues</h2>
-                <div className="card-content error-card-content">
-                    {issues.map((expense) => {
-                        return (
-                            <React.Fragment key={expense.id}>
-                                <ExpenseComponent 
-                                    expense={expense} 
-                                    handleDelete={handleDeleteExpense}
-                                    onFlagIssue={onFlagIssue}
-                                    context={context}
-                                />
-                            </React.Fragment>
-                        )
-                    })}
-                </div>
-            </>)}
             <div className="card-content">
-                {expenses.map((expense) => {
-                    return (
-                        <React.Fragment key={expense.id}>
-                            <ExpenseComponent 
-                                expense={expense} 
-                                handleDelete={handleDeleteExpense}
-                                onFlagIssue={onFlagIssue}
-                                context={context}
-                            />
-                        </React.Fragment>
-                    )
-                })}
+                {false && issuesFilter && (
+                    <ExpenseList 
+                        context={context}
+                        title={"Issues"}
+                        filter={issuesFilter}
+                        expand={true}
+                        subscribe={true}
+                    />
+                )}
+
+                {recentFilter && (
+                    <ExpenseList 
+                        context={context}
+                        title={"Recent"}
+                        filter={recentFilter}
+                        expand={true}
+                        subscribe={true}
+                    />
+                )}
+
+                {pastFilter && (
+                    <ExpenseList 
+                        context={context}
+                        title={"Previous"}
+                        filter={recentFilter}
+                    />
+                )}
             </div>
         </div>
     )

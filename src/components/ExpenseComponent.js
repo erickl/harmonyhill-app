@@ -10,9 +10,10 @@ import * as issuesService from "../services/issueService.js";
 import invoiceLogo from "../assets/invoice-icon.png";
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { useNotification } from "../context/NotificationContext.js";
+import { useSuccessNotification } from '../context/SuccessContext.js';
 import "./ExpenseComponent.css";
 
-export default function ExpenseComponent({expense, handleDelete, onFlagIssue, context}) {
+export default function ExpenseComponent({expense, handleDelete, context}) {
     const [displayedReceipt, setDisplayedReceipt] = useState(null );
     const [expanded,         setExpanded        ] = useState(false);
     const [loading,          setLoading         ] = useState(false);
@@ -22,6 +23,7 @@ export default function ExpenseComponent({expense, handleDelete, onFlagIssue, co
 
     const { permissions} = useUserPermissions();
     const { onError    } = useNotification();
+    const { onSuccess  } = useSuccessNotification();
 
     const fetchBookingInfo = async (expense) => {
         if(!utils.isEmpty(expense.bookingId)) {
@@ -33,8 +35,14 @@ export default function ExpenseComponent({expense, handleDelete, onFlagIssue, co
                 setActivity(activity_)  
             }
         }
-        
     };
+
+    const onFlagIssue = async(expenseToFlag, comment) => {
+        const result = await issueService.flagIssue(expenseToFlag, comment, onError);
+        if(result !== false) {
+            onSuccess();
+        }
+    }
 
     const handleSetExpanded = async(expense) => {
         if(!expanded) {

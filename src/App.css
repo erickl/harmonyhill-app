@@ -96,8 +96,13 @@
 
 .card-content {
     padding: 1rem;
-    flex: 1;
+    /* flex: 1; */
     overflow-y: auto;
+}
+
+.error-card-content {
+    border: 0.3rem solid red;
+    margin: 1rem;
 }
 
 .purchase-form-group {

@@ -8,9 +8,27 @@ export async function getOne(id, onError) {
     return await dao.getOne(path, id, onError);
 }
 
+export function subscribe(setDocs, filterOptions, onError) {
+    const path = [dao.constant.EXPENSES];
+    const queryFilter = buildFirebaseQueryFilter(filterOptions);
+    return dao.subscribe(path, setDocs, queryFilter, onError);
+}
+
 export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, onError = null) {
     const path = [dao.constant.EXPENSES];
-    let queryFilter = [];
+    const queryFilter = buildFirebaseQueryFilter(filterOptions);
+
+    let ordering = [];
+    for(const orderKey of Object.keys(orderingOptions)) {
+        ordering.push(orderBy(orderKey, orderingOptions[orderKey]));
+    }
+
+    const expenses = await dao.get(path, queryFilter, ordering, limit, onError);
+    return expenses;
+}
+
+function buildFirebaseQueryFilter(filterOptions) {
+    const queryFilter = [];
 
     if (utils.exists(filterOptions, "activityId")) {
         queryFilter.push(where("activityId", "==", filterOptions.activityId));
@@ -45,13 +63,11 @@ export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, 
         queryFilter.push(where("purchasedAt", "<=", beforeDateFireStore));
     }
 
-    let ordering = [];
-    for(const orderKey of Object.keys(orderingOptions)) {
-        ordering.push(orderBy(orderKey, orderingOptions[orderKey]));
+    if (utils.exists(filterOptions, "issue")) {
+        queryFilter.push(where("issue", "==", filterOptions.issue));
     }
 
-    const expenses = await dao.get(path, queryFilter, ordering, limit, onError);
-    return expenses;
+    return queryFilter;
 }
 
 export async function add(data, onError, writes) {
