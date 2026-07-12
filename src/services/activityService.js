@@ -444,7 +444,10 @@ function mapObject(data) {
     if(utils.isString(data?.comments))      activity.comments = data.comments;
     if(utils.isString(data?.displayName))   activity.displayName = data.displayName;
 
-    if(utils.isDate(data?.startingAt))      activity.startingAt = utils.toFireStoreTime(data.startingAt);
+    // startingAt might be null if activity is still unscheduled
+    if(utils.exists(data, "startingAt")) {
+        activity.startingAt = utils.isDate(data?.startingAt) ? utils.toFireStoreTime(data.startingAt) : null;
+    }
     
     // Date is obligatory, but time might be set later, so startingTime might be null now
     if(utils.exists(data, "startingTime")) {

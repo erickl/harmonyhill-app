@@ -313,9 +313,9 @@ function mapMealObject(mealData) {
 
     if (utils.isString(mealData?.displayName)) meal.displayName = mealData.displayName;
 
-    // The startingAt date might be entered later. It's usually how the guests want it
-    if (utils.isDate(mealData?.startingAt)) {
-        meal.startingAt = utils.toFireStoreTime(mealData.startingAt);
+    // startingAt might be null if meal activity is still unscheduled
+    if(utils.exists(mealData, "startingAt")) {
+        meal.startingAt = utils.isDate(mealData?.startingAt) ? utils.toFireStoreTime(mealData.startingAt) : null;
     }
 
     // Date is obligatory, but time might be set later, so might be null
