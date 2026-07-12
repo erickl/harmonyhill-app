@@ -81,7 +81,7 @@ export default function ActivitiesAllLists({ context, customer }) {
                 className={'activity-list-group-header clickable-header'}
                 onClick={() => setExpandNextWeek(prev => !prev)}
             >
-                Next week
+                Next 7 Days
 
                 <span className="expand-icon">
                     {expandNextWeek ? ' ▼' : ' ▶'}

@@ -80,8 +80,8 @@ export default function BookingComponent({customer, handleDeleteBooking, context
                     { customer.phoneNumber && (<p><span className="detail-label">Phone number:</span> {customer.phoneNumber}</p>)}
                     { customer.email && ( <p><span className="detail-label">Email:</span> {customer.email}</p> )}
                     { permissions.isAdmin && (<>
-                        <p><span className="detail-label">Guest Paid:</span> {customer.guestPaid}</p>
-                        <p><span className="detail-label">Host Payout:</span> {customer.hostPayout}</p>
+                        <p><span className="detail-label">Guest Paid:</span> {utils.formatDisplayPrice(customer.guestPaid)}</p>
+                        <p><span className="detail-label">Host Payout:</span> {utils.formatDisplayPrice(customer.hostPayout)}</p>
                     </>)}
                     <div className="booking-component-footer">
                         { permissions.canEditBookings && (

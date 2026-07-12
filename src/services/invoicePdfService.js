@@ -17,7 +17,7 @@ export async function make(customer, onError) {
                     <Text style={styles.title}>{title}</Text>
                 </View>
                 <View style={styles.header}>
-                    <Text style={styles.subTitle}>Items</Text>
+                    <Text style={styles.subTitle}>Purchases</Text>
                 </View>
                 {invoice.itemizedList.map((item) => {
                     let dateView = (<></>);

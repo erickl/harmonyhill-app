@@ -7,7 +7,7 @@ import * as minibarService from "./minibarService.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 
 /**
- * Get bookings collection which is updated live as updates come in from other users
+ * Get the collection which is updated live as updates come in from other users
  * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
  * @param {*} filterOptions 
  * @param {*} onError 
