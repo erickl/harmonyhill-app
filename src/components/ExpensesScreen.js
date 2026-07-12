@@ -61,19 +61,20 @@ export default function ExpensesScreen({ context }) {
     }
 
     useEffect(() => {
-        const loadData = async () => {
-            let filter = {};
+        let filter = {};
+        if(!permissions.isAdmin) {
+            // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
+            filter["paymentMethod"] = "cash";
+        } 
 
-            if(!permissions.isAdmin) {
-                // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
-                filter["paymentMethod"] = "cash";
-            } 
-
+        const loadTotals = async() => {
             const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
             setPettyCash(pettyCashSum);
             const expenseSum = await ledgerService.getCurrentTotalExpenses(filter, onError);
             setExpenseSum(expenseSum);
+        }
 
+        const loadData = async () => {
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);       
             
             const weekAgo = utils.today(-7);
@@ -94,8 +95,13 @@ export default function ExpensesScreen({ context }) {
             setIssuesFilter(issuesFilter);
         }
 
+        loadTotals();
         loadData();
     }, []);
+
+    const downloadIconStyle = {
+        marginRight:"1rem"
+    }
 
     return (
         <div className="fullscreen">
@@ -103,10 +109,15 @@ export default function ExpensesScreen({ context }) {
                 <div className='card-header-left'>
                     <VeganHamburgerButton />
                     <div className="card-header-left-title">
-                        <h2 className="card-title">Expenses</h2>
+                        <h2 className="title">Expenses</h2>
                         {pettyCash && (
-                            <span>
+                            <span className="amounts-data">
                                 Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}
+                            </span>
+                        )}
+                        {expenseSum && (
+                            <span className="amounts-data">
+                                Expense: {utils.formatDisplayPrice(expenseSum, true)}
                             </span>
                         )}
                     </div>    
@@ -117,8 +128,8 @@ export default function ExpensesScreen({ context }) {
                         <div className="card-header-right-top-row">
                             
                             {permissions.isAdmin && (<>
-                                <SheetUploader label={"Expenses"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
-                                <ImageDown style={{margin:"1rem"}} onClick={() => handleReceiptsDownloadFilter()} />
+                                <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                                <ImageDown style={downloadIconStyle} onClick={() => handleReceiptsDownloadFilter()} />
                             </>)}
 
                             {permissions.canAddIncomes && (
@@ -127,7 +138,7 @@ export default function ExpensesScreen({ context }) {
                                 </button>
                             )}
                         </div>
-                        {expenseSum && (<h4>Expense: {utils.formatDisplayPrice(expenseSum, true)}</h4>)}
+                        
                     </div>
                 </div>  
             </div>

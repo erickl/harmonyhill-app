@@ -76,6 +76,9 @@
 
 .card-header-right-top-row {
     display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .card-header-right-bottom-row {

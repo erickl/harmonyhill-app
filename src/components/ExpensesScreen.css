@@ -5,4 +5,16 @@
 .card-header-left-title {
     display: flex;
     flex-direction: column;
+    text-align: start;
+    width: fit-content;
+}
+
+.title {
+    padding-bottom: 0rem;
+    margin-bottom: 0.4rem;
+}
+
+.amounts-data {
+    font-size: 0.7rem;
+    white-space: nowrap
 }
