@@ -6,7 +6,7 @@ import MetaInfo from './MetaInfo.js';
 import IssueFlagButton from './IssueFlagButton.js';
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
-import * as issuesService from "../services/issueService.js";
+import * as issueService from "../services/issueService.js";
 import invoiceLogo from "../assets/invoice-icon.png";
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { useNotification } from "../context/NotificationContext.js";
@@ -49,7 +49,7 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
             setLoading(prev => !prev);  
             await fetchBookingInfo(expense);
             if(expense.issue === "attention") {
-                const issue_ = await issuesService.getLastIssue(expense);
+                const issue_ = await issueService.getLastIssue(expense);
                 setIssue(issue_);
             }
             setLoading(prev => !prev);

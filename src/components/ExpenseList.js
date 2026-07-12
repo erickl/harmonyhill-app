@@ -53,6 +53,7 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
     useEffect(() =>{
         if(subscribe) {
             expenseService.subscribe((liveExpenses) => {
+                liveExpenses.sort((e1, e2) => e2.purchasedAt - e1.purchasedAt);
                 setExpenses(liveExpenses);
                 setLastUpdate(utils.to_HHmm());
                 setLoading(false);
