@@ -8,7 +8,8 @@ import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
 export default function ActivitiesAllLists({ context, customer }) {
     const [expandPrevious, setExpandPrevious] = useState(false);
-    const [expandFuture, setExpandFuture] = useState(true);
+    const [expandNextWeek, setExpandNextWeek] = useState(true);
+    const [expandFuture, setExpandFuture] = useState(false);
 
     const { permissions } = useUserPermissions();
 
@@ -47,7 +48,7 @@ export default function ActivitiesAllLists({ context, customer }) {
             <h3
                 style={{ marginBottom: "0px" }}
                 className={'activity-list-group-header clickable-header'}
-                onClick={() => setExpandPrevious(!expandPrevious)}
+                onClick={() => setExpandPrevious(prev => !prev)}
             >
                 Previous
 
@@ -67,14 +68,6 @@ export default function ActivitiesAllLists({ context, customer }) {
             )}
 
             {/* Today's activities */}
-            <h3
-                style={{ marginBottom: "0px" }}
-                className={'activity-list-group-header clickable-header'}
-            >
-                Today
-            </h3>
-
-            {/* Today's activities */}
             <ActivitiesList
                 context={context}
                 from={utils.today()}
@@ -86,7 +79,29 @@ export default function ActivitiesAllLists({ context, customer }) {
             <h3
                 style={{ marginBottom: "0px" }}
                 className={'activity-list-group-header clickable-header'}
-                onClick={() => setExpandFuture(!expandFuture)}
+                onClick={() => setExpandNextWeek(prev => !prev)}
+            >
+                Next week
+
+                <span className="expand-icon">
+                    {expandNextWeek ? ' ▼' : ' ▶'}
+                </span>
+            </h3>
+
+            {expandNextWeek && (
+                <ActivitiesList
+                    context={context}
+                    from={utils.today(1)}
+                    to={utils.today(7)}
+                    customer={customer}
+                />
+            )}
+
+            {/* Future activities */}
+            <h3
+                style={{ marginBottom: "0px" }}
+                className={'activity-list-group-header clickable-header'}
+                onClick={() => setExpandFuture(prev => !prev)}
             >
                 Future
 

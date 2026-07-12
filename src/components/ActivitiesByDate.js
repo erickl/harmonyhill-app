@@ -15,30 +15,39 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
     let from = date1 ? date1.startOf('day') : null;
     let to = date2 ? date2.endOf('day') : null;
 
+    if(date) {
+        from = date.startOf('day');
+        to = date.endOf('day');
+    }
+
     // input date(s) define 1 particular day, not a range of dates
-    const singleDate = date || utils.dateIsSame(date1, date2, true); 
+    const singleDate = utils.dateIsSame(to, from, true); 
 
     // Giving no dates means to get all the unscheduled activities
-    const noDates = !from && !to && !date;
-    const isPast = date && utils.isPast(date.startOf('day'));
-    const isToday = date && utils.isToday(date);
-    const isThisWeek = date && (date > today && date < utils.today(7));
+    const noDates = !from && !to;
+    const isBeforeToday = utils.isBeforeToday(from) && utils.isBeforeToday(to);
+    const isToday = singleDate && utils.isToday(from);
+    const isThisWeek = (from !== null && to !== null) ? (from > today && to < utils.today(8)) : false;
     
     // if all input dates === null, then filter => {date: null}, which means getting unscheduled activities
-    const filter = (from && to) ? { after: from, before: to } : {date : date};
+    const filter = (from && to) ? { after: from, before: to } : {date : null};
     
     let dateFormatted = "Unscheduled";
     if(from || to) {
-        if(from && to) dateFormatted = `${utils.to_ddMMM(from)} - ${utils.to_ddMMM(to)}`;
-        if(from && !to) dateFormatted = `After checkout`;
-        if(!from && to) dateFormatted = `Before checkin`;
+        if(from && to) {
+            if(isToday) dateFormatted = `Today, ${utils.to_ddMMM(from)}`;
+            else if(singleDate) dateFormatted = `${utils.to_www_ddMMM(from)}`;
+            else dateFormatted = `${utils.to_www_ddMMM(from)} - ${utils.to_www_ddMMM(to)}`;
+        }
+        else if(from && !to) dateFormatted = `After checkout`;
+        else if(!from && to) dateFormatted = `Before checkin`;
     } else if(date) {
         dateFormatted = `${utils.to_ddMMM(date)}`;
     }
 
     const doSubscribe = isToday || isThisWeek || noDates;
 
-    const [expanded, setExpanded] = useState(isToday);
+    const [expanded, setExpanded] = useState(isToday || doSubscribe);
     const [loading, setLoading] = useState(true);
     const [activities, setActivities] = useState([]);
     const [lastUpdate, setLastUpdate] = useState(null);
