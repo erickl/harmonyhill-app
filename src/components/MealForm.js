@@ -146,7 +146,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                         label="Customer Price"
                         // Apply formatting here for display inside the input
                         value={formData.customerPrice}
-                        onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                        onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
                     />
                 </div>
             </div>
