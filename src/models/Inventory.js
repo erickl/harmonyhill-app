@@ -71,7 +71,7 @@ export default class Inventory {
             new Inventory("Coke Zero",                             "minibar",           25000,    0,               [],                {"hh" : 4,  "jn": 2}               ,null), 
             new Inventory("Schweppes",                             "minibar",           25000,    0,               [],                {"hh" : 4,  "jn": 2}               ,null),           
             new Inventory("Scented Candle",                        "minibar",           90000,    0,               [],                {"hh" : 3,  "jn": 1}               ,null),
-            new Inventory("Umbrella",                              "minibar",           0,        0,               [],                {"hh" : 3,  "jn": 1}               ,null),
+            new Inventory("Umbrella",                              "minibar",          300000,    0,               [],                {"hh" : 3,  "jn": 1}               ,null),
             
             new Inventory("Peanut Butter Chocolate Cookie",        "dessert",           40000,    0,               [],                {"hh" : 0,  "jn": 0}               ,"gs://harmonyhill-1.firebasestorage.app/resources/menu/peanut-butter-cookie.png"     ), 
             new Inventory("Chocolate Chip Cookie",                 "dessert",           35000,    0,               [],                {"hh" : 0,  "jn": 0}               ,"gs://harmonyhill-1.firebasestorage.app/resources/menu/chocolate-chip-cookie.png"    ), 
