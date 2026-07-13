@@ -542,7 +542,7 @@ export function validate(customer, data, isUpdate, onError, onWarning) {
 export function getChangeDescription(oldData, newData) {
     let changeDescription = [];
 
-    if(utils.exists(oldData, "changeDescription")) {
+    if(utils.exists(oldData, "changeDescription") && !utils.isEmpty(oldData.changeDescription) && Array.isArray(oldData.changeDescription)) {
         changeDescription = oldData.changeDescription;
     }
 
