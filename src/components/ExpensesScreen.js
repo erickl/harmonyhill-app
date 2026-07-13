@@ -7,8 +7,6 @@ import * as ledgerService from "../services/ledgerService.js";
 import * as issueService from "../services/issueService.js";
 import "./ExpensesScreen.css";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
-import { useConfirmationModal } from "../context/ConfirmationContext.js";
-import { useSuccessNotification } from "../context/SuccessContext.js";
 import { ImageDown } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 import ExpenseComponent from "./ExpenseComponent.js";
@@ -17,11 +15,6 @@ import { useProgressCounter } from "../context/ProgressContext.js";
 import ExpenseList from './ExpenseList.js';
 
 export default function ExpensesScreen({ context }) {
-
-    const [expandedExpenses, setExpandedExpenses] = useState({}   );
-    const [loadingExpanded,  setLoadingExpanded ] = useState({}   );
-    const [expenses,         setExpenses        ] = useState([]   );
-    const [loading,          setLoading         ] = useState(true );
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
 
@@ -32,8 +25,6 @@ export default function ExpensesScreen({ context }) {
     const { onFilter   } = useFilters();
     const { onError    } = useNotification();
     const { onProgress } = useProgressCounter();
-    const { onConfirm  } = useConfirmationModal();
-    const { onSuccess  } = useSuccessNotification();
     const { permissions} = useUserPermissions();
 
     const filterHeaders = {
@@ -117,7 +108,7 @@ export default function ExpensesScreen({ context }) {
                         )}
                         {expenseSum && (
                             <span className="amounts-data">
-                                Expense: {utils.formatDisplayPrice(expenseSum, true)}
+                                Total: {utils.formatDisplayPrice(expenseSum, true)}
                             </span>
                         )}
                     </div>    
