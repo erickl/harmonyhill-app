@@ -546,7 +546,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
                     <div className="activity-component-footer">
                         
-                        {permissions.canDeleteActivities && (
+                        {permissions.canEditActivities && (
                             <div className="activity-component-footer-icon">
                                 <Pencil
                                     onClick={(e) => {
