@@ -1,0 +1,61 @@
+.income-box {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.income-title {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.income-thumbnail {
+  width: 25px;
+  height: auto;
+}
+
+.income-header {
+  display: flex;
+  align-items: center; 
+  justify-content: space-between;
+}
+
+.income-header-left {
+  display: flex;
+}
+
+.income-header-right {
+  display: flex;
+  align-items: center; 
+}
+
+.income-body {
+  padding: 1rem 1rem 0 1rem;
+}
+
+.income-body-footer {
+    margin-top: 2rem;
+    display: flex;
+    gap: 30px;
+}
+
+.income-body-footer-icon p {
+    font-size: 10px; 
+    margin-top: 0rem;
+    cursor: pointer;
+    align-items: center;
+}
+
+.income-photo {
+  position: fixed;        /* stays in place, even on scroll */
+  top: 0;
+  left: 0;
+  width: 100vw;           /* full screen width */
+  height: 100vh;          /* full screen height */
+  object-fit: contain;    /* keep aspect ratio, fit inside */
+  background: rgba(0,0,0,0.8); /* dimmed background */
+  z-index: 9999;          /* above everything */
+  cursor: pointer;        /* show it's clickable */
+}

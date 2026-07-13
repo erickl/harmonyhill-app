@@ -1,0 +1,38 @@
+.list-group-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    margin: 0rem;
+    padding: 0.2rem 0.8rem 0.2rem 0.8rem;
+    /* border: 1px solid black; */
+    background-color: rgb(247, 243, 243);
+    box-shadow: 5px 5px 10px -1px rgb(119, 179, 176);
+}
+
+.clickable-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.list-group-header-right {
+    display: flex;
+    flex-direction: row; /* stack name + provider + guest */
+    padding: 0.5rem;
+    text-align: end;
+}
+
+.last-updated-info {
+    display: flex;
+    margin-top: 0.3rem;
+    font-size: 0.5rem;
+    align-items:  center;
+}
+
+.subscription-notification {
+    display: flex;
+    padding: 0.5rem;
+    color: green;
+    align-items:  center;
+}

@@ -4,6 +4,16 @@ import {getOne as getBooking} from "./bookingService.js";
 import {getOne as getActivity} from "./activityService.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 
+/**
+ * Get the collection which is updated live as updates come in from other users
+ * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
+ * @param {*} filterOptions 
+ * @param {*} onError 
+ */
+export function subscribe(setDocs, filterOptions = {}, onError) {
+    return incomeDao.subscribe(setDocs, filterOptions, onError);
+}
+
 export async function get(filterOptions, onError) {
     const incomes = await incomeDao.get(filterOptions, {"receivedAt":"desc"}, -1, onError);
     const formattedIncomes = incomes.map((income) => {

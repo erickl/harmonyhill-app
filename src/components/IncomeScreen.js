@@ -13,14 +13,14 @@ import { useSuccessNotification } from "../context/SuccessContext.js";
 import { Pencil, Trash2 } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
+import IncomeList from './IncomeList.js';
 
 export default function IncomeScreen({ customer, context }) {
-    const [expandedIncomes,     setExpandedIncomes     ] = useState({}   );
-    const [loadingExpanded,     setLoadingExpanded     ] = useState({}   );
-    const [incomes,             setIncomes             ] = useState([]   );
-    const [loading,             setLoading             ] = useState(true );
     const [pettyCash,           setPettyCash           ] = useState(null );
     const [incomeSum,           setIncomeSum           ] = useState(null );
+    const [recentFilter,        setRecentFilter        ] = useState(null );
+    const [issuesFilter,        setIssuesFilter        ] = useState(null );
+    const [pastFilter,          setPastFilter          ] = useState(null );
 
     const { onError   } = useNotification();
     const { onSuccess } = useSuccessNotification();
@@ -33,64 +33,17 @@ export default function IncomeScreen({ customer, context }) {
         "paymentMethod" : "string",
     };
 
-    const handleSetExpanded = async(income) => {
-        setLoadingExpanded((prev) => ({...prev, [income.id]: true}));
-        await fetchBookingInfo(income);
-        setLoadingExpanded((prev) => ({...prev, [income.id]: false}));
-    }
-
-    const fetchBookingInfo = async (income) => {
-        if(!income) return;
-
-        let updatedExpandedList = { ...(expandedIncomes || {}) };
-
-        const expand = utils.isEmpty(updatedExpandedList[income.id]);
-
-        if(expand) {
-            if(!utils.isEmpty(income.bookingId)) {
-                const booking = await bookingService.getOne(income.bookingId);
-                income.bookingName = booking.name;
-            }
-            updatedExpandedList[income.id] = income;
-        } else {
-            updatedExpandedList[income.id] = null;
-        }
-
-        setExpandedIncomes(updatedExpandedList);
-    };
-
-    const handleDeleteIncome = async(incomeToDelete) => {
-        if(!incomeToDelete || utils.isEmpty(incomeToDelete.id)) return;
-        onConfirm(`Are you sure you want to delete income ${incomeToDelete.id}?`, async () => {
-            const result = await incomeService.remove(incomeToDelete.id, onError);
-            if(result !== false) {
-                let newIncomes = utils.deepCopy(incomes);
-                newIncomes = newIncomes.filter((income) => income.id !== incomeToDelete.id);
-                setIncomes(newIncomes);
-                onSuccess();
-            }
-        });
-    }
-
     const getDataForExport = async(filterValues, onProgress) => {
         const rows = await incomeService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 
     useEffect(() => {
-        const fetchIncomes = async() => {
-            const filter = {};
-            if(customer) {
-                filter["bookingId"] = customer.id;
-            } else {
-                const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);
-                filter["after"] = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : null;
-            }
-            
-            const uploadedIncomes = await incomeService.get(filter, onError);
-            setIncomes(uploadedIncomes);
-            setLoading(false);
-        }
+        let filter = {};
+        if(!permissions.isAdmin) {
+            // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
+            filter["paymentMethod"] = "cash";
+        } 
 
         const getCashFlow = async() => {
             const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
@@ -100,15 +53,30 @@ export default function IncomeScreen({ customer, context }) {
             setIncomeSum(incomeSum);
         }
 
-        fetchIncomes();
-        getCashFlow();
-    }, []);
+        const loadData = async () => {
+            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);       
+            
+            const weekAgo = utils.today(-7);
+            const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : weekAgo;
+            
+            let recentFilterAfter = weekAgo;
+            if(oldest >= weekAgo) {
+                recentFilterAfter = oldest;
+            } else {
+                const pastFilter = {...filter, after: oldest, before: utils.today(-7).plus({seconds : -1})};
+                setPastFilter(pastFilter);
+            }
 
-    if(loading) {
-        return (
-            <p>Loading...</p>
-        )
-    }
+            const recentFilter = {...filter, after : recentFilterAfter, before : utils.today(3)};
+            setRecentFilter(recentFilter);
+    
+            const issuesFilter = { ...filter, "issue" : "attention"};
+            setIssuesFilter(issuesFilter);
+        }
+
+        getCashFlow();
+        loadData();
+    }, []);
 
     const incomeFromText = customer ? `: ${customer.name}` : "";
      
@@ -117,15 +85,26 @@ export default function IncomeScreen({ customer, context }) {
             <div className="card-header">
                 <div className='card-header-left'>
                     <VeganHamburgerButton />
-                    <h2 className="card-title">Income {incomeFromText}</h2>
-                    {pettyCash && (<h4>Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}</h4>)}    
+                    <div className="card-header-left-title">
+                        <h2 className="title">Incomes</h2>
+                        {pettyCash && (
+                            <span className="amounts-data">
+                                Petty Cash: {utils.formatDisplayPrice(pettyCash, true)}
+                            </span>
+                        )}
+                        {incomeSum && (
+                            <span className="amounts-data">
+                                Total (excl top ups): {utils.formatDisplayPrice(incomeSum, true)}
+                            </span>
+                        )}
+                    </div>    
                 </div>
 
                 <div className="card-header-right">
                     <div>
                         <div className="card-header-right-top-row">
                             {permissions.isAdmin && (<>
-                                <SheetUploader label={"Incomes"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                                <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
 
                             {permissions.canAddIncomes && (
@@ -134,85 +113,23 @@ export default function IncomeScreen({ customer, context }) {
                                 </button>
                             )}
                         </div>
-                        {incomeSum && (<h4>Income (excl top ups): {utils.formatDisplayPrice(incomeSum, true)}</h4>)}
                     </div>
                 </div>  
             </div>
             <div className="card-content">
-                {incomes.map((income) => {
-                    return (
-                        <React.Fragment key={income.id}>
-                            <div className="income-box" onClick={() => handleSetExpanded(income)}>
-                                <div className="income-header">
-                                    <div className="income-header-left">
-                                        <div className="income-title">
-                                            {`${income.index}. ${utils.capitalizeWords(income.description)}`}
-                                        </div>
-                                    </div>
-                                    <div className="income-header-right">
-                                        <div>
-                                            {utils.formatDisplayPrice(income.amount, true)}
-                                            
-                                        </div>
-                                        <div className="expand-icon">
-                                            {expandedIncomes[income.id] ? '▼' : '▶'}
-                                        </div>
-                                    </div>
-                                </div>  
+                <IncomeList
+                    title={"Recent"}
+                    context={context}
+                    filter={recentFilter}
+                    subscribe={true}
+                    expand={true}
+                />
 
-                                <div>
-                                    {utils.to_ddMMYY(income.receivedAt, "/")}
-                                </div>
-                                
-                               {loadingExpanded?.[income.id] === true ? (
-                                    <Spinner />
-                                ) : expandedIncomes?.[income.id] ? (
-                                    <div className="income-body">
-                                        {income.bookingName && (<div>
-                                            Booking: {income.bookingName}
-                                        </div>)}
-                                        <div>
-                                            Category: {utils.capitalizeWords(income.category)}
-                                        </div>
-                                        <div>
-                                            Payment Method: {utils.capitalizeWords(income.paymentMethod)}
-                                        </div>
-                                        {income.comments && (<div>
-                                            Comments: {income.comments}
-                                        </div>)}
-                                        <div className="income-body-footer">
-
-                                            { permissions.canEditIncomes && (
-                                                <div className="income-body-footer-icon">
-                                                    <Pencil   
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            context.onNavigate("edit-income", {customer:customer, incomeToEdit:income});
-                                                        }}
-                                                    />
-                                                    <p>Edit</p>
-                                                </div>
-                                            )}
-
-                                            {permissions.canDeleteIncomes && (
-                                                <div className="income-body-footer-icon">
-                                                    <Trash2  
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDeleteIncome(income);
-                                                        }}
-                                                    />
-                                                    <p>Delete</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <MetaInfo document={income}/>
-                                    </div>
-                                ) : (<></>)}
-                            </div>
-                        </React.Fragment>
-                    )
-                })}
+                <IncomeList
+                    title={"Previous"}
+                    context={context}
+                    filter={pastFilter}
+                />
             </div>
         </div>
     )

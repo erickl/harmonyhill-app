@@ -2,6 +2,12 @@ import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 
+export function subscribe(setDocs, filterOptions, onError) {
+    const path = [dao.constant.INCOME];
+    const queryFilter = buildFirebaseQueryFilter(filterOptions);
+    return dao.subscribe(path, setDocs, queryFilter, onError);
+}
+
 export async function getOne(id, onError) {
     const path = [dao.constant.INCOME];
     return await dao.getOne(path, id, onError);
@@ -9,36 +15,7 @@ export async function getOne(id, onError) {
 
 export async function get(filterOptions = {}, orderingOptions = {}, limit = -1, onError = null) {
     const path = [dao.constant.INCOME];
-    let queryFilter = [];
-
-    if (utils.exists(filterOptions, "category")) {
-        const category = filterOptions.category.trim().toLowerCase();
-        queryFilter.push(where("category", "==", category));
-    }
-
-    if (utils.exists(filterOptions, "bookingId")) {
-        queryFilter.push(where("bookingId", "==", filterOptions.bookingId));
-    }
-
-    if (utils.exists(filterOptions, "activityId")) {
-        queryFilter.push(where("activityId", "==", filterOptions.activityId));
-    }
-
-    if (utils.exists(filterOptions, "paymentMethod")) {
-        const paymentMethod = filterOptions.paymentMethod.trim().toLowerCase();
-        queryFilter.push(where("paymentMethod", "==", paymentMethod));
-    }
-
-    if (utils.exists(filterOptions, "after")) {
-        const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
-        queryFilter.push(where("receivedAt", ">=", afterDateFireStore));
-    }
-
-    if (utils.exists(filterOptions, "before")) {
-        const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
-        queryFilter.push(where("receivedAt", "<=", beforeDateFireStore));
-    }
-
+    const queryFilter = buildFirebaseQueryFilter(filterOptions);
     let ordering = [];
     for(const orderKey of Object.keys(orderingOptions)) {
         ordering.push(orderBy(orderKey, orderingOptions[orderKey]));
@@ -77,3 +54,36 @@ export async function getNextSerialNumber(date, onError) {
     return nextIndex;
 }
 
+function buildFirebaseQueryFilter(filterOptions) {
+    const queryFilter = [];
+
+    if (utils.exists(filterOptions, "category")) {
+        const category = filterOptions.category.trim().toLowerCase();
+        queryFilter.push(where("category", "==", category));
+    }
+
+    if (utils.exists(filterOptions, "bookingId")) {
+        queryFilter.push(where("bookingId", "==", filterOptions.bookingId));
+    }
+
+    if (utils.exists(filterOptions, "activityId")) {
+        queryFilter.push(where("activityId", "==", filterOptions.activityId));
+    }
+
+    if (utils.exists(filterOptions, "paymentMethod")) {
+        const paymentMethod = filterOptions.paymentMethod.trim().toLowerCase();
+        queryFilter.push(where("paymentMethod", "==", paymentMethod));
+    }
+
+    if (utils.exists(filterOptions, "after")) {
+        const afterDateFireStore = utils.toFireStoreTime(filterOptions.after);
+        queryFilter.push(where("receivedAt", ">=", afterDateFireStore));
+    }
+
+    if (utils.exists(filterOptions, "before")) {
+        const beforeDateFireStore = utils.toFireStoreTime(filterOptions.before);
+        queryFilter.push(where("receivedAt", "<=", beforeDateFireStore));
+    }
+
+    return queryFilter;
+}
