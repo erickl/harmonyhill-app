@@ -158,7 +158,7 @@ export default function ExpensesScreen({ context }) {
                     <ExpenseList 
                         context={context}
                         title={"Previous"}
-                        filter={recentFilter}
+                        filter={pastFilter}
                     />
                 )}
             </div>

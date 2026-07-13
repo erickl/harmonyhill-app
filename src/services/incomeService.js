@@ -11,7 +11,7 @@ import {commitTx, decideCommit} from "../daos/dao.js";
  * @param {*} onError 
  */
 export function subscribe(setDocs, filterOptions = {}, onError) {
-    return incomeDao.subscribe(setDocs, filterOptions, onError);
+return incomeDao.subscribe(setDocs, filterOptions, onError);
 }
 
 export async function get(filterOptions, onError) {

@@ -74,7 +74,7 @@ export default function IncomeComponent({income, handleDelete, context}) {
             </div>  
             
             <div>
-                {utils.to_ddMMYY(income.purchasedAt, "/")}
+                {utils.to_ddMMYY(income.receivedAt, "/")}
             </div>
 
             { expanded && loading ? (

@@ -117,19 +117,23 @@ export default function IncomeScreen({ customer, context }) {
                 </div>  
             </div>
             <div className="card-content">
-                <IncomeList
-                    title={"Recent"}
-                    context={context}
-                    filter={recentFilter}
-                    subscribe={true}
-                    expand={true}
-                />
+                {recentFilter && (
+                    <IncomeList
+                        title={"Recent"}
+                        context={context}
+                        filter={recentFilter}
+                        subscribe={true}
+                        expand={true}
+                    />
+                )}
 
-                <IncomeList
-                    title={"Previous"}
-                    context={context}
-                    filter={pastFilter}
-                />
+                {pastFilter && (
+                    <IncomeList
+                        title={"Previous"}
+                        context={context}
+                        filter={pastFilter}
+                    />
+                )}
             </div>
         </div>
     )
