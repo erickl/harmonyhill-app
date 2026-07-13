@@ -71,7 +71,7 @@ async function addOrEditMinibarMeal(endCountEntry, booking, onError, writes = []
 
     let result = false;
 
-    const existingMinibarMeals = await activityService.get(booking.id, {subCategory: "minibar"}, onError);
+    const existingMinibarMeals = await activityService.get(booking, {subCategory: "minibar"}, onError);
     
     if(existingMinibarMeals === false || !existingMinibarMeals || existingMinibarMeals.length === 0) {
         // If nothing is taken from minibar

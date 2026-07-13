@@ -51,7 +51,8 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
     };
 
     const getBookingActivities = async(bookingId) => {
-        const bookingActivities = await activityService.get(bookingId);
+        const booking = await bookingService.getOne(bookingId);
+        const bookingActivities = await activityService.get(booking);
             const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
             return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
         });

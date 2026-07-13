@@ -109,14 +109,14 @@ export async function update(bookingId, bookingUpdateData, onError, writes = [])
 /**
  * Only admin can delete bookings. It will be logged in the deleted collection
  */
-export async function remove(bookingId, onError, writes = []) {   
+export async function remove(booking, onError, writes = []) {   
     const isAdmin = await userService.isAdmin();
     if(isAdmin === false) return false;
 
     const commit = decideCommit(writes);
 
     // To delete a booking, first delete all its activities, or they'll be dangling records (orphaned)
-    const activities = await activityService.get(bookingId);
+    const activities = await activityService.get(booking, {}, onError);
     for(const activity of activities) {
         let deleteActivityResult = false;
         
@@ -134,7 +134,7 @@ export async function remove(bookingId, onError, writes = []) {
     // These counts will be removed by the removal of the activity which was their origin 
     // (e.g. check in prep for start count, housekeeping for refill count, etc...)
 
-    const result = await bookingDao.remove(bookingId, onError, writes);
+    const result = await bookingDao.remove(booking.id, onError, writes);
     if(result === false) return false;
 
     if(commit) {

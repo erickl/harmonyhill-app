@@ -55,7 +55,7 @@ export default function BookingList({ context, title, filter, expand }) {
         onConfirm(`Are you sure you want to delete booking ${bookingToDelete.name}?`, async () => {
             if (!bookingToDelete) return;
 
-            const deleteBookingResult = await bookingService.remove(bookingToDelete.id, onError);
+            const deleteBookingResult = await bookingService.remove(bookingToDelete, onError);
             if (deleteBookingResult !== false) {
                 // manual deletion not needed if there's a subscription
                 if(doSubscribe) return; 
