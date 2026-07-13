@@ -246,7 +246,7 @@ export async function getProviders(category, subCategory) {
     return providers;
 }
 
-export async function setActivityStatus(activity, newStatus, onError, writes = []) {
+export async function setActivityStatus(booking, activity, newStatus, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const updatedData = { status : newStatus };
@@ -258,7 +258,7 @@ export async function setActivityStatus(activity, newStatus, onError, writes = [
         }
     }
 
-    const result = await update(activity.bookingId, activity.id, updatedData, onError, writes);
+    const result = await update(booking, activity, updatedData, onError, writes);
     if(result === false) return false;
 
     if(commit) {

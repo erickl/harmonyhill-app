@@ -100,6 +100,8 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     }
 
     const canCompleteActivity = () => {
+        if(!activity.startingAt) return false;
+
         const activityRequiresMinibarCount = requiresMinibarCount();
         if (activityRequiresMinibarCount) {
             return false;
@@ -162,7 +164,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         }
 
         onConfirm(confirmationText, async () => {
-            const result = await activityService.setActivityStatus(activity, newStatus.name, onError);
+            const result = await activityService.setActivityStatus(customer, activity, newStatus.name, onError);
             if(result === false) return false;
             
             const updatedActivity = {
