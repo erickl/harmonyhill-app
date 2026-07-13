@@ -3,6 +3,7 @@ import { useMenu } from '../context/MenuContext.js';
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
 import { useNotification } from "../context/NotificationContext.js";
 import * as userService from "../services/userService.js";
+import { useMarkDownModal } from "../context/MarkDownContext.js";
 import packageJson from '../../package.json';
 import { XIcon } from 'lucide-react';
 import "./SideMenu.css";
@@ -12,6 +13,7 @@ export default function SideMenu({context}) {
     const { open, close } = useMenu();
     const { onError } = useNotification();
     const { permissions, user } = useUserPermissions();
+    const {onDisplayMarkdown} = useMarkDownModal();
 
     const logout = async () => {
         const success = await userService.logout();
@@ -85,7 +87,13 @@ export default function SideMenu({context}) {
                 <li><p onClick={() => logout()} style={{ color: 'white' }}>Logout</p></li>
             </ul>
 
-            <div className="side-menu-footer">
+            <div 
+                className="side-menu-footer"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDisplayMarkdown("Permissions", permissions);
+                }}
+            >
                 {user && (<p>User: {user.name}, {user.role}</p>)}
                 <p>v{packageJson.version}</p>
             </div>

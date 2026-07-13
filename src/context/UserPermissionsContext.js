@@ -10,6 +10,10 @@ export function UserPermissionProvider({ children }) {
     const [users,       setUsers      ] = useState([]);
     const [loading,     setLoading    ] = useState(true);
 
+    const toString = () => {
+        return JSON.stringify(permissions);
+    }
+
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (user) {
@@ -67,7 +71,7 @@ export function UserPermissionProvider({ children }) {
     }, []);
 
     return (
-        <UserPermissionsContext.Provider value={{ permissions, user, users, loading }}>
+        <UserPermissionsContext.Provider value={{ permissions, user, users, loading, toString }}>
             {children}
         </UserPermissionsContext.Provider>
     );
