@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ActivityComponent from './ActivityComponent.js';
+import TodoComponent from "./TodoComponent.js";
 import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
@@ -8,9 +9,11 @@ import * as utils from "../utils.js";
 import Spinner from './Spinner.js';
 import "./ActivitiesByDate.css";
 import { update } from '../daos/userDao.js';
+import * as todoService from "../services/todoService.js";
 
 export default function ActivitiesByDate({ context, customer, date, date1, date2 }) {
     const today = utils.today();
+    const includeTodos = false;
     
     let from = date1 ? date1.startOf('day') : null;
     let to = date2 ? date2.endOf('day') : null;
@@ -50,6 +53,7 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
     const [expanded, setExpanded] = useState(isToday || doSubscribe);
     const [loading, setLoading] = useState(true);
     const [activities, setActivities] = useState([]);
+    const [todos, setTodos] = useState([]);
     const [lastUpdate, setLastUpdate] = useState(null);
 
     const { onError } = useNotification();
@@ -116,6 +120,8 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
             activities = await activityService.get(customer, filter, onError);
         } else {
             activities = await activityService.getAll(filter, onError);
+            const todos_ = await todoService.get(null, filter, onError);
+            setTodos(todos_);
         }
         setActivities(activities);
         setLoading(false);
@@ -123,32 +129,66 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
         return activities;
     };
 
+     const getTodos = async() => {
+        if(!customer) {
+            const todos_ = await todoService.get(null, filter, onError);
+            setTodos(todos_);
+            setLoading(false);
+            setLastUpdate(utils.to_HHmm());
+            return todos_;
+        } 
+        return [];
+    };
+
     // Past activities reload when the date header is expanded
     useEffect(() => {
         if(expanded && !doSubscribe) {
             setLoading(prev => !prev);
             getActivities();
+            getTodos();
         }
     }, [expanded]);
 
     // Today's activities and the rest of the week reload whenever there is a change in DB
     useEffect(() => {
         if(doSubscribe) {
-            const unsubscribe = activityService.subscribe(customer, (liveActivities) => {
+            const unsubscribeActivities = activityService.subscribe(customer, (liveActivities) => {
                 const enhancedLiveActivities = activityService.enhanceActivities(liveActivities);
                 setActivities(enhancedLiveActivities);
+
                 setLastUpdate(`${utils.to_HHmm()}`);
                 setLoading(false);
             }, filter, onError);
 
-            return () => unsubscribe !== null ? unsubscribe() : null;
+            let unsubscribeTodos = null;
+            if(customer === null && includeTodos) {
+                unsubscribeTodos = todoService.subscribe((liveTodos) => {
+                    setTodos(liveTodos);
+                    setLastUpdate(`${utils.to_HHmm()}`);
+                    setLoading(false);
+                }, filter, onError);
+            }
+
+            return () => {
+                if(unsubscribeActivities !== null) unsubscribeActivities();
+                if(unsubscribeTodos !== null) unsubscribeTodos();
+            }
         }
     }, []);
+
+    const tasks = [...(activities || []), ...(todos||[])]
+    const tasksSorted = tasks.sort((t1, t2) => {
+        const date1 = utils.exists(t1, "startingAt") ? t1.startingAt : t1.deadlineAt;
+        const date2 = utils.exists(t2, "startingAt") ? t2.startingAt : t2.deadlineAt;
+        if(date1 === null) return -1;
+        else if(date2 === null) return 1;
+        return date1 - date2;
+    });
 
     return (
         <div>
             {/* If there's a data subscription, remove div if data is empty */}
-            {(doSubscribe === false || activities.length > 0) && (<>
+            {(doSubscribe === false || tasks.length > 0) && (<>
                 <h3
                     className={'activity-group-header clickable-header'}
                     onClick={handleSetExpanded}
@@ -178,18 +218,26 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
                     <Spinner />
                 ) : expanded && !loading ? (
                     <div>
-                        {activities.map((activity, index) => {
-                            return (
-                                <React.Fragment key={activity.id}>
-                                    <ActivityComponent
-                                        inputCustomer={customer}
-                                        activity={activity}
-                                        onActivityChange={(newActivity) => onActivityChange(newActivity)}
-                                        context={context}
-                                        handleDeleteActivity={() => handleDeleteActivity(activity)}
-                                    />
-                                </React.Fragment>
-                            )
+                        {tasksSorted.map((task, index) => {
+                            let task_ = null;
+                            if(utils.exists(task, "startingAt")) {
+                                task_ = <ActivityComponent
+                                    key={`activity-${task.id}`}
+                                    inputCustomer={customer}
+                                    activity={task}
+                                    onActivityChange={(newActivity) => onActivityChange(newActivity)}
+                                    context={context}
+                                    handleDeleteActivity={() => handleDeleteActivity(task)}
+                                />;
+                            } else {
+                                task_ = <TodoComponent
+                                    key={`todo-${task.id}`}
+                                    todo={task}
+                                    context={context}
+                                    handleDelete={() => handleDeleteActivity(task)}
+                                />;
+                            }
+                            return task_;
                         })}
                     </div>
                 ) : (

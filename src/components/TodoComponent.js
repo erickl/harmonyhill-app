@@ -162,8 +162,9 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
     }
 
     useEffect(() => {
+        setAssigneeAccept(todo.assigneeAccept);
         calculateTodoStatus();
-    }, []);
+    }, [todo.assigneeAccept]);
 
     const deadlineDate = utils.isDate(todo.deadlineAt) ? utils.to_ddMMYY(todo.deadlineAt, "/") : "";
     const deadlineTime = utils.isDate(todo.deadlineTime) ? utils.to_HHmm(todo.deadlineTime) : "";

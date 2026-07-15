@@ -36,12 +36,13 @@
 
 .todo-header-top-left {
     flex: 1;                    
-    display: flex;              
+    display: flex;   
+    font-size: 0.6rem;           
     align-items: center;        
     justify-content: center;    
     color: white;
     background-color: rgb(224, 123, 140);    
-    padding: 0.5rem;           
+    padding: 0.8rem 0.25rem 0.8rem 0.25rem;           
 }
 
 .activity-header-assignee {
