@@ -5,6 +5,16 @@ import * as ActivityStatus from "../models/ActivityStatus.js";
 import {Alert} from "../models/Alert.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 
+/**
+ * Get the collection which is updated live as updates come in from other users
+ * @param {*} setDocs, the setter callback, in which to save the updating DB documents 
+ * @param {*} filterOptions 
+ * @param {*} onError 
+ */
+export function subscribe(setDocs, filterOptions = {}, onError) {
+    return todoDao.subscribe(setDocs, filterOptions, onError);
+}
+
 export async function getOne(parent, id, onError) {
     return await todoDao.getOne(parent, id, onError);
 }
@@ -31,18 +41,21 @@ export async function update(todo, updateData, onError, writes = []) {
 
     const changeAssignee = utils.exists(updateData, "assignedTo") && utils.isString(updateData.assignedTo) && todo.assignedTo !== updateData.assignedTo;
     const assignee = changeAssignee ? updateData.assignedTo : todo.assignedTo;
-    const selfUpdate = currentUser.shortName === assignee;
+    const selfUpdate = currentUser.name === assignee;
+    const assigneeAccepting = updateData.assigneeAccept === true && todo.assigneeAccept === false;
 
-    if(changeAssignee) {
-        // If updated yourself, accepting task not needed, since it counts as you noticing the task anyway
-        updateData.assigneeAccept = selfUpdate;
-        updateData.changeDescription = null;
-    } else { // same assignee
-        const changeLog = makeChangeLog(todo, updateData);
-        if(!utils.isEmpty(changeLog)) {
+    if(!assigneeAccepting) {
+        if(changeAssignee) {
+            // If updated yourself, accepting task not needed, since it counts as you noticing the task anyway
             updateData.assigneeAccept = selfUpdate;
+            updateData.changeDescription = null;
+        } else { // same assignee
+            const changeLog = makeChangeLog(todo, updateData);
+            if(!utils.isEmpty(changeLog)) {
+                updateData.assigneeAccept = selfUpdate;
+            }
         }
-    }
+    } 
        
     const result = await todoDao.update(todo, updateData, onError, writes);
     if(result === false) return false;
@@ -194,25 +207,33 @@ export function validate(data, onError) {
 
 export function makeChangeLog(oldData, newData) {
     let changeLog = [];
-    
-    if(!utils.dateIsSame(oldData.deadlineAt, newData.startingAt)) {
-        changeLog.push(`New deadline date: from ${utils.to_yyMMddHHmm(oldData.deadlineAt, "/")} to ${utils.to_yyMMddHHmm(newData.deadlineAt, "/")}`);
+
+    if(!newData) return changeLog;
+    if(!oldData) return newData;
+
+    if(utils.exists(oldData, "changeDescription")) {
+        changeLog = oldData.changeDescription;
     }
 
-    if(!utils.dateIsSame(oldData.deadlineTime, newData.deadlineTime)) {
-        changeLog.push(`New deadline time: from ${utils.to_HHmm(oldData.deadlineTime)} to ${utils.to_HHmm(newData.deadlineTime)}`);
-    }
+    for(const key of Object.keys(newData)) {
+        const newVal = newData[key];
+        const oldVal = oldData[key];
+        let change = false;
 
-    if(oldData.duration !== newData.duration) {
-        changeLog.push(`New duration: from ${oldData.duration} to ${newData.duration}`);
-    }
+        if(utils.isDate(newVal) && !utils.dateIsSame(oldVal, newVal)) {
+            change = true;
+        } else if(utils.isJsonObject(newVal)) {
+            const innerChangeLog = makeChangeLog(oldVal, newVal);
+            changeLog = [...changeLog, ...innerChangeLog];
+        } else {
+            if(newVal !== oldVal) {
+                change = true;
+            }
+        }
 
-    if(oldData.comments !== newData.comments) {
-        changeLog.push(`Comments update: from ${oldData.comments} to ${newData.comments}`);
-    }
-
-    if(oldData.comments !== newData.comments) {
-        changeLog.push(`Description update: from ${oldData.description} to ${newData.description}`);
+        if(change) {
+            changeLog.push(`New ${key}: ${oldVal} --> ${newVal}`);
+        } 
     }
     
     return changeLog;
