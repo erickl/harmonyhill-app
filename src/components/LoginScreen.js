@@ -58,10 +58,10 @@ function LoginScreen({ onLogin, onLoginSuccess }) {
         </div>
         <br></br>
         <button type="submit">Login</button>
-        <button 
+        {/* <button 
           type="button" 
           onClick={() => {setSeeRegistrationForm(true)}}>Register
-        </button>
+        </button> */}
       </form>
     </div>
   );

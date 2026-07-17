@@ -58,10 +58,14 @@ function App() {
     };
 
     useEffect(() => {
+        const checkApproval = async(user) => {
+            const isApproved = await userService.isUserApproved(user.displayName);
+            setIsLoggedIn(isApproved);
+        }
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const isApproved = await userService.isUserApproved(user.displayName);
-                setIsLoggedIn(isApproved);
+                setIsLoggedIn(true);
+                checkApproval(user);
             }
             else setIsLoggedIn(false);
 
