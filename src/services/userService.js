@@ -218,9 +218,9 @@ async function getUser(username) {
     if(!utils.isString(username)) return null;
     username = username.trim();
 
-    let users = await userDao.get({email: username.toLowerCase()}); // emails don't care about case
+    let users = await userDao.get({username: username});
     if (!users || users.length === 0) {
-        users = await userDao.get({username: username});
+        users = await userDao.get({email: username.toLowerCase()}); // emails don't care about case
         if (!users || users.length === 0) {
             return null;
         }
