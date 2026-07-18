@@ -190,27 +190,29 @@ export default function InventoryComponent({context, item}) {
                     )}
                 
                     <div className="inv-item-body-footer">
-                        {quantity !== null && quantity > 0 && (
+                        {permissions.canEditInventory && (<>
+                            {quantity !== null && quantity > 0 && (
+                                <div className="inv-item-body-footer-icon">
+                                    <MinusCircle   
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onRemoveStock(item);
+                                        }}
+                                    />
+                                    <p>Remove</p>
+                                </div>
+                            )}
+
                             <div className="inv-item-body-footer-icon">
-                                <MinusCircle   
+                                <PlusCircle   
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onRemoveStock(item);
+                                        onAddStock(item);
                                     }}
                                 />
-                                <p>Remove</p>
+                                <p>Add</p>
                             </div>
-                        )}
-
-                        <div className="inv-item-body-footer-icon">
-                            <PlusCircle   
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onAddStock(item);
-                                }}
-                            />
-                            <p>Add</p>
-                        </div>
+                        </>)}
 
                         {!utils.isEmpty(removals) && (
                             <div className="inv-item-body-footer-icon">

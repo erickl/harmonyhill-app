@@ -55,35 +55,40 @@ export default function SideMenu({context}) {
             <XIcon onClick={close} style={{ color: 'white', marginBottom: '1rem' }} />
             
             <ul className='menu-list'> 
-                {permissions.isAdmin && (<>
+                {permissions.isAdmin && (
                     <li><p onClick={() => {
                             context.onNavigate('admin');
                             close();
                         }} 
                         style={{ color: 'white' }}>Admin</p>
                     </li>
+                )}
 
+                {permissions.canReadInventory && (
                     <li><p onClick={() => {
                             context.onNavigate('inventory');
                             close();
                         }} 
                         style={{ color: 'white' }}>Inventory</p>
                     </li>
+                )}
 
-                    {true && (<li><p onClick={() => {
-                            context.onNavigate('todo-list');
-                            close();
-                        }} 
-                        style={{ color: 'white' }}>Todo</p>
-                    </li>)}
+                <li><p onClick={() => {
+                        context.onNavigate('todo-list');
+                        close();
+                    }} 
+                    style={{ color: 'white' }}>Todo</p>
+                </li>
 
+                {permissions.isAdmin && (
                     <li><p onClick={() => {
                             context.onNavigate('userLogs');
                             close();
                         }} 
                         style={{ color: 'white' }}>User Logs</p>
                     </li>
-                </>)}
+                )}
+       
                 <li><p onClick={() => logout()} style={{ color: 'white' }}>Logout</p></li>
             </ul>
 

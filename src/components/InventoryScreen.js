@@ -38,9 +38,11 @@ export default function InventoryScreen({context}) {
                     <h2 className="card-title">Inventory</h2>
                 </div>
                 <div className="card-header-right-top-row">
-                    <button className="add-button" onClick={() => context.onNavigate('addInventory', {inventory:inventory})}>
-                        +
-                    </button> 
+                    {permissions.canEditInventory && (
+                        <button className="add-button" onClick={() => context.onNavigate('addInventory', {inventory:inventory})}>
+                            +
+                        </button> 
+                    )}
                 </div>
             </div>
             <div className="card-content">
