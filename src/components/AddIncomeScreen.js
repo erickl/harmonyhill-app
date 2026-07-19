@@ -40,6 +40,8 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
     const [bookings,        setBookings       ] = useState([]       );
     const [formData,        setFormData       ] = useState(emptyForm);
     const [activities,      setActivities     ] = useState([]       );
+    const [selectedBooking, setSelectedBooking] = useState(null     );
+    const [selectedActivity,setSelectedActivity] = useState(null    );
  
     const needsGuestInfo = (formDataCategory) => {
         const category = formDataCategory.trim().toLowerCase();
@@ -68,18 +70,23 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
 
         if(!needsGuestInfo(name)) {
             change["bookingId"] = null;
-            
+            setSelectedBooking(null);
+            setSelectedActivity(null);
+        } else {
+            getBookings();
         }
         if(!needsActivityInfo(name)) {
             change["activityId"] = null;
+            setSelectedActivity(null);
         }
 
         handleChange("_batch", change);
     }
 
-    const onActivitySelect = (activity) => {
-        const id = activity ? activity[0].id : '';
-        handleChange("activityId", id);
+    const onActivitySelect = (activities) => {
+        const activity = activities ? activities[0] : null;
+        handleChange("activityId", activity?.id);
+        setSelectedActivity(activity);
     }
 
     const onPaymentMethodSelect = (paymentMethod) => {
@@ -87,15 +94,17 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
         handleChange("paymentMethod", name);
     }
 
-    const onBookingSelect = (booking) => {
-        const id = booking ? booking[0].id : '';
+    const onBookingSelect = (bookings) => {
+        const booking = bookings ? bookings[0] : null;
+        setSelectedBooking(booking);
+        setSelectedActivity(null);
         handleChange("_batch", {
-            "bookingId"  : id,
+            "bookingId"  : booking?.id,
             "activityId" : null
         });
 
         if(needsActivityInfo(formData.category)) {
-            getBookingActivities(id);
+            getBookingActivities(booking);
         }
     }
 
@@ -171,9 +180,9 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
         setBookings(bookingsByName);
     }
 
-    const getBookingActivities = async(bookingId) => {
-        const bookingActivities = await activityService.get(bookingId);
-            const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
+    const getBookingActivities = async(booking) => {
+        const bookingActivities = await activityService.get(booking, {}, onError);
+        const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
             return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
         });
         setActivities(activitiesByName);
@@ -183,16 +192,6 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
     useEffect(() => {
         validateFormData(emptyForm);
     }, []);
-
-    useEffect(() => {
-        if(needsGuestInfo(formData.category) && utils.isEmpty(bookings)) {
-            getBookings();
-        }
-
-        if(needsActivityInfo(formData.category) && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
-            getBookingActivities(formData.bookingId);
-        }
-    }, [formData]);
 
     // todo: put in database
     const categories = {
