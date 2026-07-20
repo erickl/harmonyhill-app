@@ -7,6 +7,7 @@ import ButtonsFooter from './ButtonsFooter.js';
 import TextInput from './TextInput.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
 export default function BookingForm({ booking, context }) {
     // for calculating the length of stay based on checkin and checkout date 
@@ -17,6 +18,7 @@ export default function BookingForm({ booking, context }) {
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
+    const {permissions} = useUserPermissions();
 
     const initialFormData = {
         name:                booking ? booking.name                : '', 
@@ -108,39 +110,41 @@ export default function BookingForm({ booking, context }) {
     return (
         <div className="card-content space-y-6">
             {/* House */}
-            <div>
-                <h3>House</h3>
-                <div className="flex items-center space-x-4">
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="harmonyHill"
-                            name="house"
-                            value="harmony hill"
-                            checked={formData.house === 'harmony hill'}
-                            onChange={() => handleInputChange('house', 'harmony hill')}
+            {permissions.isAdmin && (
+                <div>
+                    <h3>House</h3>
+                    <div className="flex items-center space-x-4">
+                        <div className="flex items-center">
+                            <input
+                                type="radio"
+                                id="harmonyHill"
+                                name="house"
+                                value="harmony hill"
+                                checked={formData.house === 'harmony hill'}
+                                onChange={() => handleInputChange('house', 'harmony hill')}
 
-                        />
-                        <label htmlFor="harmonyHill">
-                            Harmony Hill
-                        </label>
-                    </div>
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="jungleNook"
-                            name="house"
-                            value="the jungle nook"
-                            checked={formData.house === 'the jungle nook'}
-                            onChange={() => handleInputChange('house', 'the jungle nook')}
+                            />
+                            <label htmlFor="harmonyHill">
+                                Harmony Hill
+                            </label>
+                        </div>
+                        <div className="flex items-center">
+                            <input
+                                type="radio"
+                                id="jungleNook"
+                                name="house"
+                                value="the jungle nook"
+                                checked={formData.house === 'the jungle nook'}
+                                onChange={() => handleInputChange('house', 'the jungle nook')}
 
-                        />
-                        <label htmlFor="jungleNook">
-                            The Jungle Nook
-                        </label>
+                            />
+                            <label htmlFor="jungleNook">
+                                The Jungle Nook
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             <TextInput
                 type="text"
@@ -150,37 +154,41 @@ export default function BookingForm({ booking, context }) {
                 onChange={(e) => handleInputChange(e.target.name, e.target.value)}
             />
 
-            <TextInput
-                type="text"
-                name="phoneNumber"
-                label={"Phone number"}
-                value={formData.phoneNumber}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-            />
+            {permissions.isAdmin && (<>
+                <TextInput
+                    type="text"
+                    name="phoneNumber"
+                    label={"Phone number"}
+                    value={formData.phoneNumber}
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                />
 
-            <TextInput
-                type="text"
-                name="email"
-                label={"Email"}
-                value={formData.email}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-            />
+                <TextInput
+                    type="text"
+                    name="email"
+                    label={"Email"}
+                    value={formData.email}
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                />
+            </>)}
+
+            {permissions.isAdmin && (<>
+                <MyDatePicker 
+                    name={"checkInAt"}
+                    label={"Checkin"}
+                    date={formData.checkInAt} 
+                    time={formData.checkInTime} 
+                    onChange={handleInputChange}
+                />
            
-            <MyDatePicker 
-                name={"checkInAt"}
-                label={"Checkin"}
-                date={formData.checkInAt} 
-                time={formData.checkInTime} 
-                onChange={handleInputChange}
-            />
-
-            <MyDatePicker 
-                name={"checkOutAt"} 
-                label={"Checkout"} 
-                date={formData.checkOutAt} 
-                time={formData.checkOutTime} 
-                onChange={handleInputChange}
-            />
+                <MyDatePicker 
+                    name={"checkOutAt"} 
+                    label={"Checkout"} 
+                    date={formData.checkOutAt} 
+                    time={formData.checkOutTime} 
+                    onChange={handleInputChange}
+                />
+            </>)}
 
             <div>
                 <h3>Length of Stay</h3>
@@ -250,70 +258,74 @@ export default function BookingForm({ booking, context }) {
                 onChange={(e) => handleInputChange(e.target.name, e.target.value)}
             />
 
-            <TextInput
-                type="amount"
-                name="guestPaid"
-                label={"Guest Paid"}
-                value={formData.guestPaid}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
-            />
+            {permissions.isAdmin && (<>
+                <TextInput
+                    type="amount"
+                    name="guestPaid"
+                    label={"Guest Paid"}
+                    value={formData.guestPaid}
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+                />
 
-            <TextInput
-                type="amount"
-                name="hostPayout"
-                label={"Host Payout"}
-                value={formData.hostPayout}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
-            />
+                <TextInput
+                    type="amount"
+                    name="hostPayout"
+                    label={"Host Payout"}
+                    value={formData.hostPayout}
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+                />
+            </>)}
 
             {/* Source */}
-            <div>
-                <h3>Source</h3>
-                <div className="flex items-center space-x-4">
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="airBnb"
-                            name="source"
-                            value="AirBnB"
-                            checked={formData.source === 'airbnb'}
-                            onChange={() => handleInputChange('source', 'airbnb')}
+            {permissions.isAdmin && (
+                <div>
+                    <h3>Source</h3>
+                    <div className="flex items-center space-x-4">
+                        <div className="flex items-center">
+                            <input
+                                type="radio"
+                                id="airBnb"
+                                name="source"
+                                value="AirBnB"
+                                checked={formData.source === 'airbnb'}
+                                onChange={() => handleInputChange('source', 'airbnb')}
 
-                        />
-                        <label htmlFor="airBnb">
-                            AirBnB
-                        </label>
-                    </div>
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="direct"
-                            name="source"
-                            value="Direct"
-                            checked={formData.source === 'direct'}
-                            onChange={() => handleInputChange('source', 'direct')}
+                            />
+                            <label htmlFor="airBnb">
+                                AirBnB
+                            </label>
+                        </div>
+                        <div className="flex items-center">
+                            <input
+                                type="radio"
+                                id="direct"
+                                name="source"
+                                value="Direct"
+                                checked={formData.source === 'direct'}
+                                onChange={() => handleInputChange('source', 'direct')}
 
-                        />
-                        <label htmlFor="direct">
-                            Direct
-                        </label>
-                    </div>
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            id="booking.com"
-                            name="source"
-                            value="Booking.com"
-                            checked={formData.source === 'booking.com'}
-                            onChange={() => handleInputChange('source', 'booking.com')}
+                            />
+                            <label htmlFor="direct">
+                                Direct
+                            </label>
+                        </div>
+                        <div className="flex items-center">
+                            <input
+                                type="radio"
+                                id="booking.com"
+                                name="source"
+                                value="Booking.com"
+                                checked={formData.source === 'booking.com'}
+                                onChange={() => handleInputChange('source', 'booking.com')}
 
-                        />
-                        <label htmlFor="booking.com">
-                            Booking.com
-                        </label>
+                            />
+                            <label htmlFor="booking.com">
+                                Booking.com
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {(validationWarning && <p className="validation-warning">{`Warning: ${validationWarning}`}</p>)}
             {(validationError && <p className="validation-error">{`Error: ${validationError}`}</p>)}
