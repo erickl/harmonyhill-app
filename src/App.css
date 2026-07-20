@@ -79,6 +79,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
+    gap: 1rem;
 }
 
 .card-header-right-bottom-row {
