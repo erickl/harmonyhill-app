@@ -109,10 +109,10 @@
     align-items: center;
 }
 
-.activity-completed-overlay {
+.todo-completed-overlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4); /* dim background */
+  background-color: rgba(0, 0, 0, 0.15); /* dim background */
   z-index: 10000; /* make sure it's on top */
 }
 

@@ -428,7 +428,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 </div>)}
 
                 {/* Grey out the activity header to show it's completed */}
-                {activity && ActivityStatus.Completed.lesserThanOrEqual(status) && utils.isToday(activity.startingAt) && (
+                {activity && ActivityStatus.Completed.lesserThanOrEqual(status) && (
                     <div className="activity-completed-overlay" />
                 )}
 
