@@ -77,6 +77,11 @@ export async function getPhotos(todo, activityId, onError) {
     return await dao.get(path, [], [], -1, onError);
 }
 
+export async function removePhoto(todoId, id, onError, writes = []) {
+    const path = [dao.constant.TODOS, todoId, "todo-photos"];
+    return await dao.remove(path, id, onError, writes);
+}
+
 function buildQueryFilter(filter) {
     const queryFilter = [];
 

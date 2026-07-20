@@ -2,6 +2,7 @@ import * as todoDao from "../daos/todoDao.js";
 import * as utils from "../utils.js";
 import * as userService from "./userService.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
+import * as storageDao from "../daos/storageDao.js";
 import {Alert} from "../models/Alert.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 
@@ -110,6 +111,9 @@ export async function remove(todo, onError, writes = []) {
         if(removeStepResult === false) return false;
     }
 
+    const removePhotosResult = await removePhotos(todo, onError, writes);
+    if(removePhotosResult === false) return false;
+
     const result = await todoDao.remove(todo, onError, writes);
     if(result === false) return false;
 
@@ -146,6 +150,38 @@ export async function uploadPhoto(todo, fileData, onError, writes = []) {
 export async function getPhotos(todo, onError) {
     return await todoDao.getPhotos(todo, onError);
 } 
+
+async function removePhotos(todo, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const photos = await getPhotos(todo, onError);
+    for(const photo of photos) {
+        const removePhotoResult = await removePhoto(todo, photo, onError, writes);
+        if(removePhotoResult === false) return false;
+    }
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+    
+    return true;
+}
+
+export async function removePhoto(todo, photo, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const removeFileResult = await storageDao.removeFile(photo.fileName, onError);
+    if(removeFileResult === false) return false;
+    
+    const result = await todoDao.removePhoto(todo.id, photo.id, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
+}
 
 export function getTodoPhotoFilePath(todo) {
     if(!todo) return "";
