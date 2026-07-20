@@ -39,23 +39,23 @@ export async function update(todo, updateData, onError, writes = []) {
     const commit = decideCommit(writes);
     const currentUser = await userService.getCurrentUser();
 
-    const changeAssignee = utils.exists(updateData, "assignedTo") && utils.isString(updateData.assignedTo) && todo.assignedTo !== updateData.assignedTo;
-    const assignee = changeAssignee ? updateData.assignedTo : todo.assignedTo;
-    const selfUpdate = currentUser.name === assignee;
-    const assigneeAccepting = updateData.assigneeAccept === true && todo.assigneeAccept === false;
-
-    if(!assigneeAccepting) {
-        if(changeAssignee) {
-            // If updated yourself, accepting task not needed, since it counts as you noticing the task anyway
-            updateData.assigneeAccept = selfUpdate;
-            updateData.changeDescription = null;
-        } else { // same assignee
-            const changeLog = makeChangeLog(todo, updateData);
-            if(!utils.isEmpty(changeLog)) {
-                updateData.assigneeAccept = selfUpdate;
-            }
-        }
-    } 
+    // If (updated) assignee is current user, no need for a change log. And accept immediately
+    if(updateData.assignedTo === currentUser.name) {
+        updateData.changeDescription = null;
+        updateData.assigneeAccept = true;
+    // When changing assignee, they have to check and accept task anew
+    } else if(todo.assignedTo !== updateData.assignedTo) {
+        updateData.changeDescription = null;
+        updateData.assigneeAccept = false;
+    // If assignee already accepted but there new changes, make change log
+    } else if(todo.assigneeAccept) {
+        updateData.changeDescription = makeChangeLog(todo, updateData);
+        updateData.assigneeAccept = false;
+    // Change logs only emptied once assignee accepts. If there are existing change logs, append to them
+    } else if(!utils.isEmpty(todo.changeDescription)) {
+        updateData.changeDescription = makeChangeLog(todo, updateData);
+    // There are no existing change logs & assignee hasn't accepted task yet. No need for new change logs
+    } else {}
        
     const result = await todoDao.update(todo, updateData, onError, writes);
     if(result === false) return false;
@@ -185,7 +185,7 @@ export async function getStatus(todo, onError) {
         return ActivityStatus.Completed;
     }
 
-    return ActivityStatus.None;
+    return ActivityStatus.GoodToGo;
 }
 
 export async function getAlert() {
@@ -211,16 +211,20 @@ export function makeChangeLog(oldData, newData) {
     if(!newData) return changeLog;
     if(!oldData) return newData;
 
-    if(utils.exists(oldData, "changeDescription")) {
+    if(utils.exists(oldData, "changeDescription") && !utils.isEmpty(oldData.changeDescription) && Array.isArray(oldData.changeDescription)) {
         changeLog = oldData.changeDescription;
     }
+
+    const exceptions = ["assignedTo", "assigneeAccept"];
 
     for(const key of Object.keys(newData)) {
         const newVal = newData[key];
         const oldVal = oldData[key];
         let change = false;
 
-        if(utils.isDate(newVal) && !utils.dateIsSame(oldVal, newVal)) {
+        if(exceptions.includes(key)) {
+            // do nothing
+        } else if(utils.isDate(newVal) && !utils.dateIsSame(oldVal, newVal)) {
             change = true;
         } else if(utils.isJsonObject(newVal)) {
             const innerChangeLog = makeChangeLog(oldVal, newVal);
