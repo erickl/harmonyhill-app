@@ -102,6 +102,11 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
                         style={{marginLeft: "1rem", padding:"0.5rem", width: 'fit-content'}}>
                             Tomorrow
                     </button>
+                    <button
+                        onClick={() => handleDateChange(null, null)}
+                        style={{marginLeft: "1rem", padding:"0.5rem", width: 'fit-content'}}>
+                            TBD
+                    </button>
                 </div>
             </div>
 
