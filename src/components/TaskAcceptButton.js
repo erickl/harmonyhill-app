@@ -8,6 +8,8 @@ import * as ActivityStatus from "../models/ActivityStatus.js";
 import "./TaskAcceptButton.css";
 
 export default function TaskAcceptButton({taskDate, status, assignedTo, isAccepted, handleClick}) {
+    const [isAccepted_, setIsAccepted] = useState(isAccepted);
+
     const { user } = useUserPermissions();
     const { onError } = useNotification();
 
@@ -19,9 +21,13 @@ export default function TaskAcceptButton({taskDate, status, assignedTo, isAccept
         return true;
     }
 
+    useEffect(() => {
+        setIsAccepted(isAccepted);
+    }, [isAccepted])
+
     return (
         <div>
-            {thisUserIsAssigned && !isAccepted && (<>
+            {thisUserIsAssigned && !isAccepted_ && (<>
                 {(utils.isTomorrow(taskDate) || utils.isToday(taskDate)) ? (
 
                     <div className="footer-icon">
@@ -51,7 +57,7 @@ export default function TaskAcceptButton({taskDate, status, assignedTo, isAccept
                 )}
             </>)}
 
-            {thisUserIsAssigned && isAccepted &&
+            {thisUserIsAssigned && isAccepted_ &&
                 ActivityStatus.Started.equals(status) === false &&
                 !utils.isPast(taskDate) && (
 

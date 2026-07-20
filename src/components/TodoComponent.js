@@ -151,11 +151,6 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
             const result = await todoService.setStatus(todo, newStatus.name, onError);
             if (result !== false) {
                 setStatus(newStatus);
-                if (ActivityStatus.Completed.equals(newStatus)) {
-                    onCompleteFromParent(todo, true);
-                } else {
-                    onCompleteFromParent(todo, false);
-                }
                 onSuccess();
             }
         });
@@ -224,8 +219,8 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                 </div>)}
 
                 {/* Grey out the activity header to show it's completed */}
-                {todo && ActivityStatus.Completed.equals(todo.status) && utils.isToday(todo.deadlineAt) && (
-                    <div className="activity-completed-overlay" />
+                {todo && ActivityStatus.Completed.equals(todo.status) && (
+                    <div className="todo-completed-overlay" />
                 )}
 
                 {/* Red out the activity header to show it's OVERDUE to be started/completed */}
@@ -294,18 +289,20 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                     )}
 
                     <div className="todo-body-footer">
-                        <div className="todo-body-footer-icon">
-                            <Plus
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    context.onNavigate("add-todo", {
-                                        parent: todo,
-                                        onCreated: onTodoStepCreated
-                                    })
-                                }}
-                            />
-                            <p>Add step</p>
-                        </div>
+                        {false && ( // todo: in progress...
+                            <div className="todo-body-footer-icon">
+                                <Plus
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        context.onNavigate("add-todo", {
+                                            parent: todo,
+                                            onCreated: onTodoStepCreated
+                                        })
+                                    }}
+                                />
+                                <p>Add step</p>
+                            </div>
+                        )}
                         <div className="todo-body-footer-icon">
                             <Pencil
                                 onClick={(e) => {
@@ -332,7 +329,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                             taskDate={todo.deadlineAt}
                             status={todo.status}
                             assignedTo={todo.assignedTo}
-                            isAccepted={todo.assigneeAccept}
+                            isAccepted={assigneeAccept}
                             handleClick={handleAssigneeStatusChange}
                         />
 

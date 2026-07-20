@@ -39,12 +39,17 @@ export async function update(todo, updateData, onError, writes = []) {
     const commit = decideCommit(writes);
     const currentUser = await userService.getCurrentUser();
 
+    // For the change logs logic, enrich update data with latest assigned user info
+    if(utils.isEmpty(updateData.assignedTo)) {
+        updateData.assignedTo = todo.assignedTo ?? null;
+    }
+
     // If (updated) assignee is current user, no need for a change log. And accept immediately
     if(updateData.assignedTo === currentUser.name) {
         updateData.changeDescription = null;
         updateData.assigneeAccept = true;
     // When changing assignee, they have to check and accept task anew
-    } else if(todo.assignedTo !== updateData.assignedTo) {
+    } else if(!utils.isEmpty(updateData.assignedTo) && todo.assignedTo !== updateData.assignedTo) {
         updateData.changeDescription = null;
         updateData.assigneeAccept = false;
     // If assignee already accepted but there new changes, make change log
@@ -71,7 +76,7 @@ export async function assigneeAccept(todo, isAccepted, onError, writes = []) {
 
     const updateData = {
         assigneeAccept : isAccepted,
-        changeDescription : null
+        changeDescription : null,
     };
     const result = await update(todo, updateData, onError, writes);
 
