@@ -185,9 +185,9 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                         {"TODO"}
                     </div>
                     <TaskAssigneeComponent
-                        assigneeName={todo.assignedTo}
-                        assigneeAccept={assigneeAccept}
-                        hasChanged={false}
+                        initialAssigneeName={todo.assignedTo}
+                        initialAssigneeAccept={assigneeAccept}
+                        initialHasChanged={todo.changeDescription}
                     />
                 </div>
 

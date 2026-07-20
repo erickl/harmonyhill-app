@@ -387,10 +387,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
                         {houseShortName}
                     </div>
+                    
                     <TaskAssigneeComponent 
-                        assigneeName={activity.assignedTo} 
-                        assigneeAccept={activity.assigneeAccept}
-                        hasChanged={activityHasChanged}
+                        initialAssigneeName={activity.assignedTo} 
+                        initialAssigneeAccept={activity.assigneeAccept}
+                        initialHasChanged={activityHasChanged}
                     />
                 </div>
 
