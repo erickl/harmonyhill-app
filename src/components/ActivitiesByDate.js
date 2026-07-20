@@ -49,7 +49,7 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
 
     const doSubscribe = isToday || isThisWeek || noDates;
 
-    const [expanded, setExpanded] = useState(isToday || doSubscribe);
+    const [expanded, setExpanded] = useState(true);//isToday || doSubscribe);
     const [loading, setLoading] = useState(true);
     const [activities, setActivities] = useState([]);
     const [todos, setTodos] = useState([]);
@@ -202,65 +202,67 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
         return date1 - date2;
     });
 
-    return (
-        <div>
-            {/* If there's a data subscription, remove div if data is empty */}
-            {(doSubscribe === false || tasks.length > 0) && (<>
-                <h3
-                    className={'activity-group-header clickable-header'}
-                    onClick={handleSetExpanded}
-                >
-                    <div className='activity-group-header-left'>
-                        <div>
-                            {`${dateFormatted}${(isToday ? ` | ${utils.to_HHmm()}` : "")}`}
-                        </div>
-                        
-                    </div>
-
-                    <div className='activity-group-header-right'>
-                        {lastUpdate && (<>
-                            {doSubscribe && (
-                                <span className='subscription-notification'>•</span>
-                            )}
-                            <div className='last-updated-info'>
-                                Last updated {lastUpdate}
+    return (<>
+        {tasksSorted.length > 0 && (
+            <div>
+                {/* If there's a data subscription, remove div if data is empty */}
+                {(doSubscribe === false || tasks.length > 0) && (<>
+                    <h3
+                        className={'activity-group-header clickable-header'}
+                        onClick={handleSetExpanded}
+                    >
+                        <div className='activity-group-header-left'>
+                            <div>
+                                {`${dateFormatted}${(isToday ? ` | ${utils.to_HHmm()}` : "")}`}
                             </div>
-                        </>)}
-                        <span className="expand-icon">
-                            {expanded ? ' ▼' : ' ▶'}
-                        </span>
-                    </div>
-                </h3>
-                {expanded && loading ? (
-                    <Spinner />
-                ) : expanded && !loading ? (
-                    <div>
-                        {tasksSorted.map((task, index) => {
-                            let task_ = null;
-                            if(utils.exists(task, "startingAt")) {
-                                task_ = <ActivityComponent
-                                    key={`activity-${task.id}`}
-                                    inputCustomer={customer}
-                                    activity={task}
-                                    onActivityChange={(newActivity) => onActivityChange(newActivity)}
-                                    context={context}
-                                    handleDeleteActivity={() => handleDeleteActivity(task)}
-                                />;
-                            } else {
-                                task_ = <TodoComponent
-                                    key={`todo-${task.id}`}
-                                    todo={task}
-                                    context={context}
-                                    handleDelete={() => handleDeleteTodo(task)}
-                                />;
-                            }
-                            return task_;
-                        })}
-                    </div>
-                ) : (
-                    null
-                )}
-            </>)}
-        </div>
-    )
+                            
+                        </div>
+
+                        <div className='activity-group-header-right'>
+                            {lastUpdate && (<>
+                                {doSubscribe && (
+                                    <span className='subscription-notification'>•</span>
+                                )}
+                                <div className='last-updated-info'>
+                                    Last updated {lastUpdate}
+                                </div>
+                            </>)}
+                            <span className="expand-icon">
+                                {expanded ? ' ▼' : ' ▶'}
+                            </span>
+                        </div>
+                    </h3>
+                    {expanded && loading ? (
+                        <Spinner />
+                    ) : expanded && !loading ? (
+                        <div>
+                            {tasksSorted.map((task, index) => {
+                                let task_ = null;
+                                if(utils.exists(task, "startingAt")) {
+                                    task_ = <ActivityComponent
+                                        key={`activity-${task.id}`}
+                                        inputCustomer={customer}
+                                        activity={task}
+                                        onActivityChange={(newActivity) => onActivityChange(newActivity)}
+                                        context={context}
+                                        handleDeleteActivity={() => handleDeleteActivity(task)}
+                                    />;
+                                } else {
+                                    task_ = <TodoComponent
+                                        key={`todo-${task.id}`}
+                                        todo={task}
+                                        context={context}
+                                        handleDelete={() => handleDeleteTodo(task)}
+                                    />;
+                                }
+                                return task_;
+                            })}
+                        </div>
+                    ) : (
+                        null
+                    )}
+                </>)}
+            </div>
+        )}
+    </>)
 }
