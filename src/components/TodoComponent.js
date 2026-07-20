@@ -26,9 +26,10 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
     const [assigneeStyleIndex, setAssigneeStyleIndex] = useState(0);
     const [status, setStatus] = useState(todo.status);
     const [alert, setAlert] = useState(null);
-    const [requiredPhotosUploaded, setRequiredPhotosUploaded] = useState(false);
     const [photos, setPhotos] = useState([]);
     const [assigneeAccept, setAssigneeAccept] = useState(todo.assigneeAccept);
+
+    const stillRequirePhotos = todo.requirePhotos && photos.length === 0;
 
     const { onOpenCamera } = useCameraModal();
     const { onError } = useNotification();
@@ -51,13 +52,12 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
         const isStarted = ActivityStatus.Started.equals(status);
         if (isStarted) return true;
 
-        const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
-        if (!isGoodToGo) return false;
-
-        return isGoodToGo;
+        return false;
     }
 
     const canComplete = () => {
+        if(stillRequirePhotos) return false;
+        
         const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
         const isStarted = ActivityStatus.Started.equals(status);
         const canStillStart = canStart();
@@ -65,12 +65,11 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
         const now = utils.now();
         const minutesLeft = todo.deadlineAt.diff(now, 'minutes').minutes;
 
-        // If photos are required, see that they've been uploaded
-        if (isStarted && requiredPhotosUploaded) {
+        if (isStarted) {
             return true;
         } else if (!isStarted && canStillStart) {
             return false;
-        } else if (isGoodToGo && requiredPhotosUploaded) {
+        } else if (isGoodToGo) {
             return true;
         }
 
@@ -101,7 +100,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
     const onUploadPhoto = async (fileData) => {
         const photoRecord = await todoService.uploadPhoto(todo, fileData, onError);
         if (photoRecord !== false) {
-            setRequiredPhotosUploaded(true);
+            setPhotos(prev => [...prev, photoRecord]);
         }
         return photoRecord
     }
@@ -368,7 +367,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                             onUpload={onUploadPhoto}
                             enableUpload={canAddPhotos()}
                             path={todoService.getTodoPhotoFilePath(todo)}
-                            isRequired={true}
+                            isRequired={stillRequirePhotos}
                         />
 
                     </div>

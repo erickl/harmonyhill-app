@@ -12,6 +12,7 @@ import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import TextInput from './TextInput.js';
+import { Checkbox, FormControlLabel } from '@mui/material';
 
 export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }) {
     const emptyForm = {
@@ -25,6 +26,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
         bookingId     : todoToEdit ? todoToEdit.bookingId     : '',
         description   : todoToEdit ? todoToEdit.description   : '',
         comments      : todoToEdit ? todoToEdit.comments      : '',
+        requirePhotos : todoToEdit ? todoToEdit.requirePhotos : false,
         status        : todoToEdit ? todoToEdit.status        : ActivityStatus.None,
     };
 
@@ -308,6 +310,19 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                     label={"Comments"}
                     value={formData.comments}
                     onChange={(e) => handleChange(e.target.name, e.target.value)}
+                />
+
+                <FormControlLabel
+                    sx={{ display: 'flex', width: '100%', mt: 2 }}
+                    control={
+                        <Checkbox
+                            checked={formData["requirePhotos"]}
+                            onChange={(e) => {
+                                handleChange("requirePhotos", e.target.checked);
+                            }}
+                        />
+                    }
+                    label="Require photos?"
                 />
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}

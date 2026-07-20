@@ -25,6 +25,10 @@ export default function PhotoUploadButton({path, photos, instructions, onUpload,
         setAnimateButton(!photosDone);
     }, [photos_]);
 
+    useEffect(() => {
+        setAnimateButton(isRequired);
+    }, [isRequired]);
+
     const uploadPhoto = async(photo) => {
         const filename = `${path}/${Date.now()}`;
         const options = {maxSize : 0.15};
