@@ -45,7 +45,7 @@ export function enhanceBookings(bookings) {
         newBooking.checkOutAt = utils.toDateTime(booking.checkOutAt);
 
         newBooking.nightsCount = calculateNightsStayed(booking.checkInAt, booking.checkOutAt);
-        newBooking.guestPaid = booking.guestPaid * booking.nightsCount;
+        newBooking.guestPaid = booking.guestPaid * newBooking.nightsCount;
 
         newBooking.checkInAt = booking.checkInAt.startOf('day');
         newBooking.checkOutAt = booking.checkOutAt.startOf('day');
