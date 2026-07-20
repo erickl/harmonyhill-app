@@ -1,56 +1,93 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import "./Dropdown.css";
 import * as utils from "../utils.js";
+import { createPortal } from 'react-dom';
 
-/**
- * @param {*} options: A JSON object. The keys are displayed in the drop down list, and the value
- *                     is set as a parameter to onSelect
- * @param {*} onSelect: The callback to call with the selected option
- * @returns the dropdown view including the label on the side
- */
-export default function Dropdown({ label, options, current, onSelect }) {
+export default function Dropdown({ label, current, options, onSelect }) {
     const keys = Object.keys(options);
 
     const [isOpen, setIsOpen] = useState(false);
+    const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0, width: 0 });
     const [selected, setSelected] = useState(null);
-  
-    const toggleDropdown = () => setIsOpen(!isOpen);
-    
-    const handleSelect = (key) => {
-        //key = utils.isString(key) ? key.toLowerCase() : "";
-        const option = options[key];
-        setSelected(key);
-        onSelect(option);
-        setIsOpen(false);
+    const buttonRef = useRef(null);
+    const menuRef = useRef(null);
+
+    const toggleDropdown = () => {
+        if (!isOpen && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            setMenuPosition({
+                top: rect.bottom + window.scrollY,
+                left: rect.left + window.scrollX,
+                width: rect.width,
+            });
+        }
+        setIsOpen(prev => !prev);
     };
 
     useEffect(() => {
         setSelected(current);
     }, [current]); 
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (buttonRef.current && !buttonRef.current.contains(e.target) &&
+                menuRef.current && !menuRef.current.contains(e.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSelect = (key) => {
+        const option = options[key];
+        setSelected(key);
+        onSelect(option);
+        setIsOpen(false);
+    };
+
     return (
-      <div className="dropdown-menu">
-        <div className="dropdown-row">
-            <span>{label}</span>
-            <button type="button" className="open-button" onClick={toggleDropdown}>
-                {utils.capitalizeWords(selected) || 'Select an option'}
-            </button>
-        </div>
-        {isOpen && (
-            <ul className="list">
-                {keys.length > 0 ? (
-                    keys.map((key) => (
-                        <li className="item" key={key} onClick={() => handleSelect(key)}>
-                            {utils.capitalizeWords(key)}
+        <div className="dropdown-menu">
+            <div className="dropdown-row">
+                <span>{label}</span>
+                <button
+                    type="button"
+                    className="open-button"
+                    ref={buttonRef}
+                    onClick={toggleDropdown}
+                >
+                    {utils.capitalizeWords(selected) || 'Select an option'}
+                </button>
+            </div>
+
+            {isOpen && createPortal(
+                <ul
+                    ref={menuRef}
+                    className="list"
+                    style={{
+                        position: 'absolute',
+                        top: menuPosition.top,
+                        left: menuPosition.left,
+                        width: menuPosition.width,
+                        maxHeight: '300px',
+                        overflowY: 'auto',
+                    }}
+                >
+                    {keys.length > 0 ? (
+                        keys.map((key) => (
+                            <li className="item" key={key} onClick={() => handleSelect(key)}>
+                                {utils.capitalizeWords(key)}
+                            </li>
+                        ))
+                    ) : (
+                        <li className="item" key="no-options" onClick={() => handleSelect(null)}>
+                            No options available
                         </li>
-                    ))
-                ) : (
-                    <li className="item" key="no-options" onClick={() => handleSelect(null)}>
-                        No options available
-                    </li>
-                )}
-            </ul>
-        )}
-      </div>
+                    )}
+                </ul>,
+                document.body
+            )}
+        </div>
     );
 }
