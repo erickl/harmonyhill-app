@@ -1,0 +1,17 @@
+.card-header-title {
+    display: flex;
+    flex-direction: column;
+}
+
+.activities-card-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.todo-switch {
+    padding-top: 0;
+    display: flex; 
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}

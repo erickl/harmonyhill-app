@@ -62,6 +62,7 @@ export default function CustomerPurchasesScreen({ customer, context }) {
             <ActivitiesAllLists
                 context={context}
                 customer={customer}
+                includeTodos={false}
             />
         </div>
     );

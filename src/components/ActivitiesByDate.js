@@ -11,9 +11,8 @@ import "./ActivitiesByDate.css";
 import { update } from '../daos/userDao.js';
 import * as todoService from "../services/todoService.js";
 
-export default function ActivitiesByDate({ context, customer, date, date1, date2 }) {
+export default function ActivitiesByDate({ context, customer, date, date1, date2, includeTodos }) {
     const today = utils.today();
-    const includeTodos = true;
     
     let from = date1 ? date1.startOf('day') : null;
     let to = date2 ? date2.endOf('day') : null;
@@ -178,7 +177,7 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
             }, filter, onError);
 
             let unsubscribeTodos = null;
-            if(customer === null && includeTodos) {
+            if(customer === null) {
                 unsubscribeTodos = todoService.subscribe((liveTodos) => {
                     setTodos(liveTodos);
                     setLastUpdate(`${utils.to_HHmm()}`);
@@ -191,9 +190,10 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
                 if(unsubscribeTodos !== null) unsubscribeTodos();
             }
         }
-    }, []);
+    }, [includeTodos]);
 
-    const tasks = [...(activities || []), ...(todos||[])]
+    const todosIncluded = includeTodos ? todos : [];
+    const tasks = [...(activities || []), ...(todosIncluded||[])]
     const tasksSorted = tasks.sort((t1, t2) => {
         const date1 = utils.exists(t1, "startingAt") ? t1.startingAt : t1.deadlineAt;
         const date2 = utils.exists(t2, "startingAt") ? t2.startingAt : t2.deadlineAt;

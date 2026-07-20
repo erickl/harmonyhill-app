@@ -6,7 +6,7 @@ import ActivitiesByDate from './ActivitiesByDate.js';
 import * as userService from "../services/userService.js";
 import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
-export default function ActivitiesAllLists({ context, customer }) {
+export default function ActivitiesAllLists({ context, customer, includeTodos }) {
     const [expandPrevious, setExpandPrevious] = useState(false);
     const [expandNextWeek, setExpandNextWeek] = useState(true);
     const [expandFuture, setExpandFuture] = useState(false);
@@ -34,7 +34,11 @@ export default function ActivitiesAllLists({ context, customer }) {
         <div className="card-content">
 
             {/* Activities without date (i.e unscheduled) */}
-            <ActivitiesByDate context={context} customer={customer} date={null} />
+            <ActivitiesByDate 
+                context={context} 
+                customer={customer} 
+                date={null} 
+            />
 
             {customer && (
                 // Any activities scheduled before checkin
@@ -64,6 +68,7 @@ export default function ActivitiesAllLists({ context, customer }) {
                     from={from}
                     to={utils.today(-1).endOf('day')}
                     customer={customer}
+                    includeTodos={includeTodos}
                 />
             )}
 
@@ -73,6 +78,7 @@ export default function ActivitiesAllLists({ context, customer }) {
                 from={utils.today()}
                 to={utils.today().endOf('day')}
                 customer={customer}
+                includeTodos={includeTodos}
             />
 
             {/* Future activities */}
@@ -94,6 +100,7 @@ export default function ActivitiesAllLists({ context, customer }) {
                     from={utils.today(1)}
                     to={utils.today(7)}
                     customer={customer}
+                    includeTodos={includeTodos}
                 />
             )}
 
@@ -116,6 +123,7 @@ export default function ActivitiesAllLists({ context, customer }) {
                     from={utils.today(1)}
                     to={to}
                     customer={customer}
+                    includeTodos={includeTodos}
                 />
             )}
 
