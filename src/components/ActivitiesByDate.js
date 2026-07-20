@@ -13,7 +13,7 @@ import * as todoService from "../services/todoService.js";
 
 export default function ActivitiesByDate({ context, customer, date, date1, date2 }) {
     const today = utils.today();
-    const includeTodos = false;
+    const includeTodos = true;
     
     let from = date1 ? date1.startOf('day') : null;
     let to = date2 ? date2.endOf('day') : null;
@@ -81,6 +81,23 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
 
                 const newActivities = activities.filter((act) => act.id !== activity.id);
                 setActivities(newActivities);
+            }
+        });
+    };
+
+    const handleDeleteTodo = async (todo) => {
+        onConfirm(`Are you sure you want to delete this todo?`, async () => {
+            if (!todo || utils.isEmpty(todo.id)) return;
+
+            let deleteResult = await todoService.remove(todo, onError);
+
+            // Delete from the current GUI list
+            if (deleteResult !== false) {
+                // If there's a subscription, no need to manually adjust the state
+                if(doSubscribe) return;
+
+                const newTodos = todos.filter((t) => t.id !== t.id);
+                setTodos(newTodos);
             }
         });
     };
@@ -234,7 +251,7 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
                                     key={`todo-${task.id}`}
                                     todo={task}
                                     context={context}
-                                    handleDelete={() => handleDeleteActivity(task)}
+                                    handleDelete={() => handleDeleteTodo(task)}
                                 />;
                             }
                             return task_;
