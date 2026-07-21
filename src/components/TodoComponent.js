@@ -164,7 +164,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
     const deadlineTime = utils.isDate(todo.deadlineTime) ? utils.to_HHmm(todo.deadlineTime) : "";
     const deadlineDateTime = `${deadlineDate} ${deadlineTime}`.trim();
 
-    const deadlineTime_HHmm = utils.to_HHmm(todo.deadlineTime);
+    const deadlineTime_HHmm = todo.deadlineTime ? utils.to_HHmm(todo.deadlineTime) : "TBD";
 
     //const todoHasChanged = !utils.isEmpty(todo.changeDescription) // todo
 
