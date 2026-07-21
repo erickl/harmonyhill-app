@@ -42,14 +42,13 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
     const { permissions } = useUserPermissions();
 
     const categories = {
-        'Food'             : {"name" : "Food"             },
-        'Laundry'          : {"name" : "Laundry"          },
-        'Pool'             : {"name" : "Pool"             },
-        'Utilities'        : {"name" : "Utilities"        },
-        'Maintenance'      : {"name" : "Maintenance"      },
-        'Tax & Accounting' : {"name" : "Tax & Accounting" },
-        'Guest'            : {"name" : "Guest"            },
-        'Other'            : {"name" : "Other"            },
+        'Shopping'    : {"name" : "Shopping"         },
+        'Gardening'   : {"name" : "Gardening"        },
+        'Pool'        : {"name" : "Pool"             },
+        'Cleaning'    : {"name" : "Cleaning"         },
+        'Maintenance' : {"name" : "Maintenance"      },
+        'Guest'       : {"name" : "Guest"            },
+        'Other'       : {"name" : "Other"            },
     };
 
     const getBookingActivities = async(bookingId) => {
