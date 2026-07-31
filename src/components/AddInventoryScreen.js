@@ -94,7 +94,7 @@ export default function AddInventoryScreen({context, inventory}) {
 
     useEffect(() => {
         const getExpenses = async() => {
-            const filter = { after: utils.today(-7) };
+            const filter = { after: utils.today(-30) };
             const expenses_ = await expenseService.get(filter);
             const formattedExpenses = expenses_.reduce((m, expense) => {
                 const date = utils.to_ddMMM(expense.purchasedAt);
