@@ -71,8 +71,8 @@ export default function InventoryComponent({context, item}) {
                     utils.to_ddMMM(refill.doneAt),
                     refill.quantity,
                     //refill.quantityBefore,
-                    `${expense.index}. ${expense.description}`,
-                    expense.photoUrl,
+                    expense ? `${expense.index}. ${expense.description}` : `Not found`,
+                    expense ? expense.photoUrl : `Not found`,
                     refill.createdBy,
                     utils.to_ddMMM(refill.createdAt),
                 ];
