@@ -56,6 +56,8 @@ export function UserPermissionProvider({ children }) {
 
                         canReadInventory : permissions["inventory-r"] === true,
                         canEditInventory : permissions["inventory-u"] === true,
+
+                        canSeeTransferIncomes : permissions["incomes-transfers-r"] === true,
                     });
 
                     setUser(user_);

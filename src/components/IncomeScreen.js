@@ -40,7 +40,7 @@ export default function IncomeScreen({ customer, context }) {
 
     useEffect(() => {
         let filter = {};
-        if(!permissions.isAdmin) {
+        if(!permissions.canSeeTransferIncomes ) {
             // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
             filter["paymentMethod"] = "cash";
         } 
