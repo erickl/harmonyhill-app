@@ -16,9 +16,10 @@ export default function MyDatePicker({ name, label, date, time, onChange, useTim
 
     if(name.endsWith("At")) {
         name_ = name.replace("At", "");
-        dateName = `${name_}At`;
-        timeName = `${name_}Time`;
+        dateName = `${name_}At`;  
     }
+
+    timeName = `${name_}Time`;
 
     date = utils.toDateTime(date);
     time = utils.toDateTime(time);

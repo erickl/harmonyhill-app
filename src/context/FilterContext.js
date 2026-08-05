@@ -22,9 +22,20 @@ export function FilterProvider({ children }) {
         setShowPopup(false);
     }
 
-    const handleInputChange = (name, value) => {
-        let newValues = { ...values, [name]: value };
-        setValues(newValues);
+    const handleInputChange = (name, value, type) => {
+        let nextValues = {};
+        
+        if (name === "_batch" && typeof value === 'object' && value !== null) {
+            nextValues = ({ ...values, ...value });
+        } else if(type === "amount") {
+            nextValues = { ...values, [name]: utils.cleanNumeric(value)};
+        } else {
+            nextValues = { ...values, [name]: value };
+        }
+        
+        if(!utils.isEmpty(nextValues)) {
+            setValues(nextValues);
+        }
     };
 
     return (
