@@ -4,7 +4,9 @@ import "./ChangeLogsComponent.css";
 import * as logsService from "../services/logsService.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useMarkDownModal } from "../context/MarkDownContext.js";
+import { useUserPermissions } from '../context/UserPermissionsContext.js';
 import Spinner from './Spinner.js';
+import SheetUploader from './SheetUploader.js';
 import ConfirmModal from "./ConfirmModal.js";
 import { FileUp, Trash2 } from 'lucide-react';
 
@@ -17,6 +19,7 @@ export default function ChangeLogsComponent({}) {
     const [expandedLogs, setExpandedLogs] = useState({});
     const { onError } = useNotification();
     const {onDisplayMarkdown} = useMarkDownModal();
+    const {permissions} = useUserPermissions();
 
     const handleSetExpanded = async(log) => {
         let updatedExpandedList = { ...(expandedLogs || {}) };
@@ -50,7 +53,7 @@ export default function ChangeLogsComponent({}) {
     
     useEffect(() => {
         const getLogs = async() => {
-            const filter = {after : utils.now(-5)};
+            const filter = {after : utils.now(-20), action : "delete"};
             const userLogs = await logsService.get(filter, onError);
             setLogs(userLogs);
             setLoading(false);
@@ -58,6 +61,11 @@ export default function ChangeLogsComponent({}) {
 
         getLogs();
     }, []);
+
+    const getDataForExport = async(filterValues, onProgress) => {
+        const rows = await logsService.toArrays(filterValues, onProgress, onError);
+        return rows;
+    }
 
     if(loading) {
         return (
@@ -71,6 +79,13 @@ export default function ChangeLogsComponent({}) {
                 <div>
                     <h2 className="card-title">Change Logs</h2>
                 </div>
+                {permissions.isAdmin && (<div style={{display: "flex", }}>
+                    <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={{
+                        "after"  : "date",
+                        "before" : "date",
+                        "action" : "string"
+                    }}/>
+                </div>)}
             </div>
             <div className="card-content">
                 {logs.map((log) => {
