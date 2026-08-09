@@ -34,6 +34,11 @@ export async function get(filterOptions, onError) {
     return sortedLogs;
 }
 
+export async function getDeleted(id, onError) {
+    const query = [where("deletedFrom", "==", id)];
+    return await dao.get("deleted", query, [], 1, onError);
+}
+
 export async function getDocument(path, id,  onError) {
     return await dao.getOne(path, id, onError);
 }
