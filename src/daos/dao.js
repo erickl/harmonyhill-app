@@ -51,6 +51,7 @@ export function subscribeAll(collectionName, setDocs, filters = [], onError = nu
 
 export async function getOne(path, id, onError = null) {
     try {
+        path = utils.isString(path) ? path.split("/") : path;
         const docRef = doc(db, ...path, id);
         const snapshot = await getDoc(docRef);
         if(snapshot.exists()) {
