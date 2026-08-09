@@ -14,7 +14,7 @@ import Switch from 'react-switch';
  * @returns component for the activities of all customers
  */
 export default  function ActivitiesScreen({context}) { 
-    const [includeTodos, setIncludeTodos] = useState(false);
+    const [includeTodos, setIncludeTodos] = useState(true);
     const { onError } = useNotification();
     const { permissions } = useUserPermissions();
 

@@ -166,7 +166,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
         if(ActivityStatus.Completed.greaterThan(activity.status)) {
             const result = await Promise.all(
                  Object.values(items).map(async function(item) {
-                    const itemTotal = await inventoryService.getCurrentQuantity(item.name, onError);
+                    const itemTotal = await inventoryService.getCurrentQuantity(item, onError);
                     if(itemTotal === false) {
                         return false;
                     }
@@ -175,7 +175,7 @@ export function MinibarTableModal({title, activity, headers, items, onSubmit, on
             );
 
             // for(const item of Object.values(items)) {
-            //     const itemTotalStock = newTotalStock[item.name] = await inventoryService.getCurrentQuantity(item.name, onError);
+            //     const itemTotalStock = newTotalStock[item.name] = await inventoryService.getCurrentQuantity(item, onError);
             //     if(itemTotalStock === false) {
             //         return false;
             //     }

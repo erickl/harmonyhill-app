@@ -86,7 +86,7 @@ export function ItemsCounterProvider({ children }) {
 
     const getItemStock = async(item) => {
         const itemReservedStock = utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0;
-        const itemTotalStock = await getTotalStock(item.name);
+        const itemTotalStock = await getTotalStock(item);
         const availableStock = itemTotalStock - itemReservedStock;
         return {
             reserved  : itemReservedStock,
@@ -151,13 +151,13 @@ export function ItemsCounterProvider({ children }) {
        hidePopup();
     }
 
-    const getTotalStock = async(name) => {
+    const getTotalStock = async(item) => {
         let itemTotalStock = 0;
-        if(utils.exists(totalStock, name)) {
-            itemTotalStock = totalStock[name];
+        if(utils.exists(totalStock, item.name)) {
+            itemTotalStock = totalStock[item.name];
         } else {
-            itemTotalStock = await inventoryService.getCurrentQuantity(name, onError);
-            setTotalStock({...totalStock, [name] : itemTotalStock});
+            itemTotalStock = await inventoryService.getCurrentQuantity(item, onError);
+            setTotalStock({...totalStock, [item.name] : itemTotalStock});
         }
         return itemTotalStock;
     }

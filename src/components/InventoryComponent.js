@@ -109,12 +109,12 @@ export default function InventoryComponent({context, item}) {
 
     const fetchItemInfo = async (item) => { 
         const getRefills = async() => {
-            const refills_ = await inventoryService.getRefills(item.name, {}, onError);
+            const refills_ = await inventoryService.getRefills(item, {}, onError);
             setRefills(refills_);
         }
 
         const getRemovals = async() => {
-            const removals_ = await inventoryService.getRemovals(item.name, {}, onError);
+            const removals_ = await inventoryService.getRemovals(item, {}, onError);
             setRemovals(removals_);
         }
      
@@ -132,7 +132,7 @@ export default function InventoryComponent({context, item}) {
 
     const onCloseItemInventory = async(item) => {
         onConfirm(`Close count for ${item.name}?`, async () => {
-            const result = await inventoryService.closeItemCount(item.name, null, onError);
+            const result = await inventoryService.closeItemCount(item, null, onError);
             if(result !== false) {
                 onSuccess(`Closed ${item.name}`);
             }
@@ -141,7 +141,7 @@ export default function InventoryComponent({context, item}) {
 
     useEffect(() => {
         const load = async () => {
-            const quantity_ = await inventoryService.getCurrentQuantity(item.name, onError);
+            const quantity_ = await inventoryService.getCurrentQuantity(item, onError);
             setQuantity(quantity_);
         }
 
