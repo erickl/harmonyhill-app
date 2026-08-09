@@ -22,6 +22,13 @@ export function FilterProvider({ children }) {
         setShowPopup(false);
     }
 
+    const onSubmit = async () => {
+        const result = await onSubmitFilters(values);
+        if(result !== false) {
+            hidePopup();
+        }
+    }
+
     const handleInputChange = (name, value, type) => {
         let nextValues = {};
         
@@ -68,7 +75,7 @@ export function FilterProvider({ children }) {
                                 </React.Fragment>
                             );
                         })}
-                        <ButtonsFooter submitEnabled={true} onCancel={hidePopup} onSubmit={() => onSubmitFilters(values)} />
+                        <ButtonsFooter submitEnabled={true} onCancel={hidePopup} onSubmit={onSubmit} />
                     </div>
                 </div>
             )}

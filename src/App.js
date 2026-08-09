@@ -133,7 +133,9 @@ function App() {
     const context = {
         onNavigate: onNavigate,
         onClose: onClose,
-        setHasUnsavedChanges: setHasUnsavedChanges
+        setHasUnsavedChanges: setHasUnsavedChanges,
+        enableRecordIssues : true,
+        enableFilters : true,
     }
 
     return (
