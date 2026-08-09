@@ -79,7 +79,7 @@ export default function ExpensesScreen({ context }) {
                 setPastFilter(pastFilter);
             }
 
-            const recentFilter = {...filter, after : recentFilterAfter, before : utils.today(3)};
+            const recentFilter = {...filter, after : recentFilterAfter};
             setRecentFilter(recentFilter);
   
             const issuesFilter = { ...filter, "issue" : "attention"};
@@ -134,7 +134,7 @@ export default function ExpensesScreen({ context }) {
                 </div>  
             </div>
             <div className="card-content">
-                {false && issuesFilter && (
+                {context.enableRecordIssues && issuesFilter && (
                     <ExpenseList 
                         context={context}
                         title={"Issues"}

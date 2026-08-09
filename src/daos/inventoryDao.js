@@ -45,9 +45,9 @@ export async function updateStock(stockChangeId, invItemName, object, onError, w
     return await dao.update(path, stockChangeId, object, true, onError, writes);
 }
 
-export async function getInventoryChange(name, reason, activityId, onError) {
+export async function getInventoryChange(item, reason, activityId, onError) {
     const filter = {reason: reason, activityId: activityId};
-    const inventoryChanges = await getInventoryChanges(name, filter, onError);
+    const inventoryChanges = await getInventoryChanges(item, filter, onError);
     if(!inventoryChanges || inventoryChanges.length === 0) {
         return null;
     }
@@ -55,13 +55,12 @@ export async function getInventoryChange(name, reason, activityId, onError) {
     return inventoryChanges[0];
 }
 
-export async function getInventoryChanges(name, filterOptions, onError) {
-    const invItem = await getOne(name, onError);
-    if(!invItem) return [];
+export async function getInventoryChanges(item, filterOptions, onError) {
+    if(!item) return [];
 
     let dateFieldName = "doneAt";
     
-    const path = ["inventory", invItem.id, "stock"];
+    const path = ["inventory", item.id, "stock"];
 
     const queryFilter = [];
 
@@ -103,11 +102,10 @@ export async function getInventoryChanges(name, filterOptions, onError) {
     return await dao.get(path, queryFilter, ordering, -1, onError);
 }
 
-export async function getLastClosedRecord(name, onError) {
-    const invItem = await getOne(name, onError);
-    if(!invItem) return null;
+export async function getLastClosedRecord(item, onError) {
+    if(!item) return null;
 
-    const path = ["inventory", invItem.id, `${invItem.id}-closed`];
+    const path = ["inventory", item.id, `${item.id}-closed`];
     const newestFirst = [ orderBy("closedAt", "desc") ];
     
     const lastClosedRecords = await dao.get(path, [], newestFirst, 1, onError);
@@ -120,10 +118,12 @@ export async function getLastClosedRecord(name, onError) {
 export async function addClosedRecord(name, data, onError, writes) {
     const invItemId = makeInventoryItemId(name);
 
-    const previousMonthShort = data.closedAt.monthShort.toLowerCase();
+    const closedCollectionName = `${invItemId}-closed`;
+    const path = ["inventory", invItemId, closedCollectionName];
+
     const yearYY = data.closedAt.year - 2000;
+    const previousMonthShort = data.closedAt.monthShort.toLowerCase();
     const id = `${invItemId}-closed-${previousMonthShort}-${yearYY}`;
-    const path = ["inventory", invItemId, "inv-closed"];
     
     return await dao.add(path, id, data, onError, writes);
 }

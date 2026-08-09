@@ -56,6 +56,7 @@ export default function IncomeScreen({ customer, context }) {
         const loadData = async () => {
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);       
             
+            // In Recent tab, display records from a week ago at the oldest
             const weekAgo = utils.today(-7);
             const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : weekAgo;
             

@@ -169,8 +169,8 @@ export async function getReservedStock(filter, onError) {
     return reservedStock;
 }
 
-export async function getTotalStock(name, onError) {
-    return await inventoryService.getCurrentQuantity(name, onError);
+export async function getTotalStock(item, onError) {
+    return await inventoryService.getCurrentQuantity(item, onError);
 }
 
 /**
@@ -179,10 +179,10 @@ export async function getTotalStock(name, onError) {
  * @param {*} activity 
  * @param {*} onError 
  */
-export async function getAvailableStock(name, activity, onError) {
-    const quantity = await inventoryService.getCurrentQuantity(name, onError);
+export async function getAvailableStock(item, activity, onError) {
+    const quantity = await inventoryService.getCurrentQuantity(item, onError);
     const reservedStock = await getReservedStock({exceptActivityId: activity.id}, onError);
-    const reservedItemStock = utils.exists(reservedStock, name) ? reservedStock.name : 0;
+    const reservedItemStock = utils.exists(reservedStock, item.name) ? reservedStock.name : 0;
     return quantity - reservedItemStock;
 }
 

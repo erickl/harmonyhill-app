@@ -79,9 +79,11 @@ export async function removeMeal(meal, onError, writes = []) {
 async function deleteDish(meal, dish, onError, writes = []) {
     const commit = decideCommit(writes);
 
+    const item = await inventoryService.getOne(dish.name, onError);
+
     const [removeDishResult, removeSaleResult] = await Promise.all([
         activityDao.deleteDish(meal.bookingId, meal.id, dish.id, onError, writes),
-        inventoryService.removeSaleIfExists(dish.name, meal.id, onError, writes)
+        inventoryService.removeSaleIfExists(item, meal.id, onError, writes)
     ]);
 
     if (removeDishResult === false) return false;
@@ -195,7 +197,7 @@ async function updateDish(updatedMeal, existingDish, dishUpdateData, onError, wr
 
     // Check if inventory sale needs changing, if dish is changed
     const checkInventorySale = async() => {
-        const sale = await inventoryService.getSale(existingDish.name, updatedMeal.id, onError);
+        const sale = await inventoryService.getSale(existingDish, updatedMeal.id, onError);
         if (sale) {
             return await inventoryService.updateSale(updatedMeal, dishUpdate, onError, writes);
         }

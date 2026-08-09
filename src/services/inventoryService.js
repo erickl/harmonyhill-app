@@ -16,7 +16,7 @@ export async function remove(activity, reason, itemName, quantity, comments, onE
 
     // Don't stop users from withdrawing more than exists. It might just be that a purchase wasn't recorded, 
     // and we actually can sell more of this item
-    // const currentQuantity = await getCurrentQuantity(itemName, onError);
+    // const currentQuantity = await getCurrentQuantity(item, onError);
     // if(currentQuantity < quantity) return onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
 
     const stock = {
@@ -42,8 +42,8 @@ export async function remove(activity, reason, itemName, quantity, comments, onE
     return result;
 }
 
-export async function getSale(itemName, activityId, onError) {
-    return await inventoryDao.getInventoryChange(itemName, "sale", activityId, onError);
+export async function getSale(item, activityId, onError) {
+    return await inventoryDao.getInventoryChange(item, "sale", activityId, onError);
 }
 
 export async function addSale(activity, itemName, quantity, onError, writes = []) {
@@ -67,7 +67,7 @@ export async function updateSale(activity, item, onError, writes = []) {
         reason: "sale",
     };
 
-    const existingSales = await inventoryDao.getInventoryChanges(item.name, stockChangeFilter, onError);
+    const existingSales = await inventoryDao.getInventoryChanges(item, stockChangeFilter, onError);
     if (!existingSales || existingSales.length < 1) return false;
     const existingSale = existingSales[0];
 
@@ -132,35 +132,34 @@ export async function refill(expense, itemName, quantity, onError, writes = []) 
     return result;
 }
 
-export async function getLastClosedRecord(name, onError) {
-    const lastClosedRecord = await inventoryDao.getLastClosedRecord(name, onError);
+export async function getLastClosedRecord(item, onError) {
+    const lastClosedRecord = await inventoryDao.getLastClosedRecord(item, onError);
     return lastClosedRecord;
 }
 
-export async function getRemovals(name, filters, onError) {
+export async function getRemovals(item, filters, onError) {
     const filters_ = { ...filters, type: "removal" };
-    const removals = await inventoryDao.getInventoryChanges(name, filters_, onError);
+    const removals = await inventoryDao.getInventoryChanges(item, filters_, onError);
     return removals;
 }
 
-export async function getSales(name, filters, onError) {
+export async function getSales(item, filters, onError) {
     const filters_ = { ...filters, reason: "sale" };
-    const sales = await inventoryDao.getInventoryChanges(name, filters_, onError);
+    const sales = await inventoryDao.getInventoryChanges(item, filters_, onError);
     return sales;
 }
 
-export async function getRefills(name, filters, onError) {
+export async function getRefills(item, filters, onError) {
     const filters_ = { ...filters, reason: "refill" };
-    const refills = await inventoryDao.getInventoryChanges(name, filters_, onError);
+    const refills = await inventoryDao.getInventoryChanges(item, filters_, onError);
     return refills;
 }
 
-export async function removeSaleIfExists(name, activityId, onError, writes) {
-    const invItem = await getOne(name, onError);
-    if (invItem) {
-        const invItemSale = await getSale(name, activityId, onError);
+export async function removeSaleIfExists(item, activityId, onError, writes) {
+    if (item) {
+        const invItemSale = await getSale(item, activityId, onError);
         if (invItemSale) {
-            const removeSaleResult = await removeStockChange(invItem.id, invItemSale.id, onError, writes);
+            const removeSaleResult = await removeStockChange(item.id, invItemSale.id, onError, writes);
             if (removeSaleResult === false) return false;
         }
     }
@@ -184,30 +183,32 @@ export async function removeStockChange(invItemId, stockChangeId, onError, write
  * @param {*} onError 
  * @returns the amount of remaining stock of the named inventory item
  */
-export async function getQuantity(name, filter, onError) {
+export async function getQuantity(item, filter, onError) {
     let startQuantity = 0;
 
     if (!utils.exists(filter, "after")) {
-        const lastClosedRecord = await getLastClosedRecord(name, onError);
+        const lastClosedRecord = await getLastClosedRecord(item, onError);
         if (lastClosedRecord) {
             filter.after = lastClosedRecord.closedAt;
             startQuantity = lastClosedRecord.quantity;
         }
     }
 
-    const removals = await getRemovals(name, filter, onError);
-    const totalRemovals = removals.reduce((sum, removal) => sum + removal.quantity, 0);
+    const [removals, refills]  = await Promise.all([
+        getRemovals(item, filter, onError),
+        getRefills(item, filter, onError)
+    ]);
 
-    const refills = await getRefills(name, filter, onError);
+    const totalRemovals = removals.reduce((sum, removal) => sum + removal.quantity, 0);
     const totalRefills = refills.reduce((sum, refill) => sum + refill.quantity, 0);
 
     const currentCount = startQuantity + totalRefills - totalRemovals;
     return currentCount;
 }
 
-export async function getCurrentQuantity(name, onError) {
+export async function getCurrentQuantity(item, onError) {
     const filter = { before: utils.now() }
-    return await getQuantity(name, filter, onError);
+    return await getQuantity(item, filter, onError);
 }
 
 /**
@@ -241,7 +242,7 @@ export async function closeMonthAllItems(openAt, closeAt, onProgress, onError, w
     const nItems = inventoryItems.length;
     for (let i = 0; i < nItems; i++) {
         const inventoryItem = inventoryItems[i];
-        const result = await closeItemCount(inventoryItem.name, closeAt, onError, writes);
+        const result = await closeItemCount(inventoryItem, closeAt, onError, writes);
         if (result === false) return false;
         if (onProgress) onProgress((i + 1) / nItems);
         closedRecords.push(result);
@@ -260,21 +261,21 @@ export async function closeMonthAllItems(openAt, closeAt, onProgress, onError, w
  * @param {*} closeAt which date to count until
  * @returns 
  */
-export async function closeItemCount(name, closeAt, onError, writes = []) {
+export async function closeItemCount(item, closeAt, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const newClosedAt = utils.isDate(closeAt) ? closeAt : utils.now();
 
     const filter = { "before": newClosedAt };
 
-    const totalCount = await getQuantity(name, filter, onError);
+    const totalCount = await getQuantity(item, filter, onError);
 
     const newLastClosedRecord = {
         "quantity": totalCount,
         "closedAt": newClosedAt,
     };
 
-    const result = await inventoryDao.addClosedRecord(name, newLastClosedRecord, onError, writes);
+    const result = await inventoryDao.addClosedRecord(item.name, newLastClosedRecord, onError, writes);
     if (result === false) return false;
 
     if (commit) {

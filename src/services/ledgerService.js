@@ -71,19 +71,22 @@ export async function getCurrentTotalIncomes(onError) {
  */
 export async function getPettyCashBalance(date, onError) {
     const lastClosedPettyCashAmount = await ledgerDao.getLastClosedPettyCashRecord(date, onError);
-    if (lastClosedPettyCashAmount === false) {
-        return false;
+    
+    let closedAt = new Date(2000, 0, 1);
+    let lastClosedBalance = 0;
+    
+    if (lastClosedPettyCashAmount !== false) {
+        closedAt = lastClosedPettyCashAmount.closedAt;
+        lastClosedBalance = lastClosedPettyCashAmount.balance;
     }
-    const closedAt = lastClosedPettyCashAmount.closedAt;
 
     const ledgerFilter = {
         "paymentMethod": "cash",
         "after": closedAt,
     };
 
-    if (!utils.isEmpty(date)) {
-        ledgerFilter["before"] = date;
-    }
+    // Exclude future expenses and incomes in the current petty cash calculation
+    ledgerFilter["before"] = !utils.isEmpty(date) ? date : utils.today().endOf('day');
 
     const incomes = await incomeService.get(ledgerFilter, onError);
     const incomeSum = incomes.reduce((sum, income) => sum + income.amount, 0);
@@ -91,7 +94,7 @@ export async function getPettyCashBalance(date, onError) {
     const expenses = await expenseService.get(ledgerFilter, onError);
     const expenseSum = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
-    const total = lastClosedPettyCashAmount.balance + incomeSum - expenseSum;
+    const total = lastClosedBalance + incomeSum - expenseSum;
 
     return total;
 }
