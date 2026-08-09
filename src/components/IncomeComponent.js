@@ -29,14 +29,14 @@ export default function IncomeComponent({income, handleDelete, context}) {
             setBooking(booking_)
 
             if(income.activityId) {
-                const activity_ = await activityService.getOne(income.bookingId, income.activityId);
+                const activity_ = await activityService.getOne(booking_, income.activityId);
                 setActivity(activity_)  
             }
         }
     };
 
     const onFlagIssue = async(incomeToFlag, comment) => {
-        const result = await issueService.flagIssue(incomeToFlag, comment, onError);
+        const result = await issueService.add(incomeToFlag, comment, onError);
         if(result !== false) {
             onSuccess();
         }

@@ -31,14 +31,22 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
             setBooking(booking_)
 
             if(expense.activityId) {
-                const activity_ = await activityService.getOne(expense.bookingId, expense.activityId);
+                const activity_ = await activityService.getOne(booking_, expense.activityId);
                 setActivity(activity_)  
             }
         }
     };
 
     const onFlagIssue = async(expenseToFlag, comment) => {
-        const result = await issueService.flagIssue(expenseToFlag, comment, onError);
+        const result = await issueService.add(expenseToFlag, comment, onError);
+        if(result !== false) {
+            onSuccess();
+        }
+    }
+
+    const onResolve = async(expenseToFlag, comment) => {
+        const issue = await issueService.getOne(expenseToFlag.id);
+        const result = await issueService.resolveIssue(expenseToFlag, issue, comment, onError);
         if(result !== false) {
             onSuccess();
         }
@@ -145,10 +153,11 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
                             <p>Receipt</p>
                         </div>
 
-                        {false && permissions.isAdmin && (
+                        {context.enableRecordIssues && permissions.isAdmin && (
                             <IssueFlagButton 
                                 record={expense}
                                 onFlagIssue={onFlagIssue}
+                                onResolve={onResolve}
                             />
                         )}
 
