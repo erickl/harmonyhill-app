@@ -1,0 +1,25 @@
+.comment-field {
+    text-align: start;
+    overflow-y: scroll;
+}
+
+.comment {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 0.5rem;
+}
+
+.comment-text {
+
+}
+
+.commenter {
+    color: grey;
+    font-size: 0.5rem;
+}
+
+.comment-timestamp {
+    color: grey;
+    font-size: 0.5rem;
+}

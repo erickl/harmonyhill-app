@@ -13,6 +13,7 @@ import { DataTableProvider } from "../context/DataTableContext.js";
 import { MinibarTableProvider } from "../context/MinibarTableContext.js";
 import { UserPermissionProvider } from "../context/UserPermissionsContext.js";
 import { InputProvider } from "../context/InputContext.js";
+import { IssueProvider } from "../context/IssueContext.js";
 
 export function AppProviders({ children }) {
     return (
@@ -30,7 +31,9 @@ export function AppProviders({ children }) {
         <DataTableProvider>
         <MinibarTableProvider>
         <InputProvider>
+        <IssueProvider>
           {children}
+        </IssueProvider>
         </InputProvider>
         </MinibarTableProvider>
         </DataTableProvider>
