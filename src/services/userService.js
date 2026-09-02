@@ -79,7 +79,7 @@ export async function login(username, password, onError, writes = []) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
     
-        const success = await userDao.updateLastLoggedIn(firebaseUser.uid, writes);
+        const success = await userDao.updateLastLoggedIn(firebaseUser.uid, onError, writes);
         if(success === false) return false;
      
         if(commit) {

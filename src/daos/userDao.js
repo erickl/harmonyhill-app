@@ -39,8 +39,8 @@ export async function update(id, userData, onError, writes) {
     return await dao.update(['users'], id, userData, false, onError, writes);
 }
 
-export async function updateLastLoggedIn(id, writes) {
-    return await update(id, { lastLoginAt: new Date()}, writes);
+export async function updateLastLoggedIn(id, onError, writes) {
+    return await update(id, { lastLoginAt: new Date()}, onError, writes);
 }
 
 export async function getPermissions(user, onError) {
