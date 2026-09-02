@@ -44,13 +44,15 @@ export default function CustomersScreen({ context }) {
             checkOutBefore : utils.today(-1).endOf('day'),
         });
 
+        const nextMonthEnd = utils.monthEnd(utils.monthEnd(null, 1));
+
         setNextMonthInterval({
             checkInAfter  : utils.today(1).startOf('day'),
-            checkOutBefore : utils.today(30).endOf('day'),
+            checkInBefore: nextMonthEnd,
         });
 
         setFutureInterval({
-            checkInAfter  : utils.today(30).startOf('day').plus({seconds:-1}),
+            checkInAfter  : nextMonthEnd.plus({seconds:1}),
             checkInBefore : utils.today(90),
         });
 
