@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ButtonsFooter from "./ButtonsFooter.js";
 import TextInput from "./TextInput.js";
+import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
 import * as activityService from "../services/activityService.js";
 import * as bookingService from "../services/bookingService.js";
@@ -13,6 +14,7 @@ export default function RemoveInventoryScreen({context, item}) {
     const initialForm = {
         quantity : 0,
         activity : null,
+        doneAt   : null,
         reason   : null,
         comment  : null,
     }
@@ -74,7 +76,7 @@ export default function RemoveInventoryScreen({context, item}) {
                 return;
             }
             
-            const result = await inventoryService.remove(form.activity, form.reason, item.name, form.quantity, form.comments, onError);
+            const result = await inventoryService.remove(form.activity, form.doneAt, form.reason, item.name, form.quantity, form.comments, onError);
    
             if(result !== false) {
                 setForm(initialForm);
@@ -156,14 +158,32 @@ export default function RemoveInventoryScreen({context, item}) {
                     />
                 </div>
 
-                { form.reason !== "expired" && (<div>
-                    <Dropdown 
-                        label={"Activity/Booking"}
-                        current={form.activity ? form.activity.name : null}
-                        options={activities}
-                        onSelect={onActivitySelect}
-                    />
-                </div> )}
+                {form.activity === null ? (
+                    <div>
+                        <MyDatePicker
+                            name={"doneAt"} 
+                            label={"Date"}
+                            date={form.doneAt}
+                            onChange={handleInputChange}
+                            useTime={false}
+                        />
+                    </div>
+                ) : (
+                    <p>
+                        Date is set by selected activity: {utils.to_ddMMYY(form.activity.startingAt, "/")}
+                    </p>
+                )}
+
+                { form.reason !== "expired" && (
+                    <div>
+                        <Dropdown 
+                            label={"Activity/Booking"}
+                            current={form.activity ? form.activity.name : null}
+                            options={activities}
+                            onSelect={onActivitySelect}
+                        />
+                    </div> 
+                )}
 
                 <div>
                     <TextInput 

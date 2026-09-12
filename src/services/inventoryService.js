@@ -11,7 +11,7 @@ export async function getOne(nameOrId, onError) {
     return await inventoryDao.getOne(nameOrId, onError);
 }
 
-export async function remove(activity, reason, itemName, quantity, comments, onError, writes = []) {
+export async function remove(activity, doneAt, reason, itemName, quantity, comments, onError, writes = []) {
     const commit = decideCommit(writes);
 
     // Don't stop users from withdrawing more than exists. It might just be that a purchase wasn't recorded, 
@@ -19,11 +19,19 @@ export async function remove(activity, reason, itemName, quantity, comments, onE
     // const currentQuantity = await getCurrentQuantity(item, onError);
     // if(currentQuantity < quantity) return onError(`Cannot take ${quantity} from inventory of ${itemName}. Current quantity: ${currentQuantity}`);
 
+    let stockDate = doneAt;
+    if(activity && activity.startingAt) {
+        stockDate = activity.startingAt
+    }
+    else if(!stockDate) {
+        stockDate = utils.now();
+    }
+
     const stock = {
         bookingId: activity ? activity.bookingId : null,
         house: activity ? activity.house : null,
         activityId: activity ? activity.id : null,
-        doneAt: activity ? activity.startingAt : utils.now(),
+        doneAt: stockDate,
         name: itemName,
         quantity: quantity,
         type: "removal",
