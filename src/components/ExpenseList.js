@@ -67,41 +67,44 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
         )
     }
 
-    return (
-        <div className="card-content">
-            <h3
-                style={{ marginBottom: "0.5rem" }}
-                className={'list-group-header clickable-header'}
-                onClick={handleExpand}
-            >
-                {title}
+    return (<>
+        {expenses && expenses.length > 0 && (
+            <div className="card-content">
+                <h3
+                    style={{ marginBottom: "0.5rem" }}
+                    className={'list-group-header clickable-header'}
+                    onClick={handleExpand}
+                >
+                    {title}
 
-                <div className='list-group-header-right'>
-                    {lastUpdate && (<>
-                        {subscribe && (
-                            <span className='subscription-notification'>•</span>
-                        )}
-                        <div className='last-updated-info'>
-                            Last updated {lastUpdate}
-                        </div>
-                    </>)}
-                    <span className="expand-icon">
-                        {expand_ ? ' ▼' : ' ▶'}
-                    </span>
-                </div>
-            </h3>
-            {expand_ && (<>
-                {expenses.map((expense) => {
-                    return (
-                        <React.Fragment key={expense.id}>
-                            <ExpenseComponent 
-                                expense={expense} 
-                                handleDelete={handleDeleteExpense}
-                                context={context}
-                            />
-                        </React.Fragment>
-                    )
-                })}
-            </>)}
-    </div>);
+                    <div className='list-group-header-right'>
+                        {lastUpdate && (<>
+                            {subscribe && (
+                                <span className='subscription-notification'>•</span>
+                            )}
+                            <div className='last-updated-info'>
+                                Last updated {lastUpdate}
+                            </div>
+                        </>)}
+                        <span className="expand-icon">
+                            {expand_ ? ' ▼' : ' ▶'}
+                        </span>
+                    </div>
+                </h3>
+                {expand_ && (<>
+                    {expenses.map((expense) => {
+                        return (
+                            <React.Fragment key={expense.id}>
+                                <ExpenseComponent 
+                                    expense={expense} 
+                                    handleDelete={handleDeleteExpense}
+                                    context={context}
+                                />
+                            </React.Fragment>
+                        )
+                    })}
+                </>)}
+            </div>
+        )}
+    </>);
 }

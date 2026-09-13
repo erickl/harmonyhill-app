@@ -22,7 +22,7 @@ export async function getComments(issue, onError, writes) {
 
 export async function mark(record, type, onError, writes) {
     const path = dao.getPath(record);
-    return await dao.update(path, record.id, {issue: "attention"}, true, onError, writes);
+    return await dao.update(path, record.id, {issue: type}, true, onError, writes);
 }
 
 export async function update(issue, updateData, onError, writes) {

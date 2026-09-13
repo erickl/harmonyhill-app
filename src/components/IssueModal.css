@@ -14,12 +14,16 @@
 
 }
 
-.commenter {
+.comment-input {
+    margin-right: auto;
+}
+
+.metainfo-left {
     color: grey;
     font-size: 0.5rem;
 }
 
-.comment-timestamp {
+.metainfo-right {
     color: grey;
     font-size: 0.5rem;
 }

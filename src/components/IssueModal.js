@@ -3,6 +3,7 @@ import TextInput from "./TextInput.js";
 import ButtonsFooter from "./ButtonsFooter.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import {useUserPermissions} from "../context/UserPermissionsContext.js";
 import * as issueService from "../services/issueService.js";
 import * as utils from "../utils.js";
 import "./IssueModal.css";
@@ -10,7 +11,10 @@ import "./IssueModal.css";
 export default function IssueModal({onSubmit, record, onClose}) {
     const emptyForm = { 
         comment : "",
+        status : "",
     };
+
+    const nextStatus = record.issue === "attention" ? "pending_approval" : "attention";
 
     const [formData, setFormData] = useState(emptyForm);
 
@@ -20,11 +24,13 @@ export default function IssueModal({onSubmit, record, onClose}) {
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
+    const { permissions } = useUserPermissions();
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (status) => {
         try {
             if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
             
+            formData.status = status;
             const result = await onSubmit(formData);  
 
             if(result !== false) { 
@@ -82,6 +88,7 @@ export default function IssueModal({onSubmit, record, onClose}) {
     return (
         <div className="modal-overlay">
             <div className="modal-box">
+                <h2>Status: {record.issue ? record.issue : "Normal"}</h2>
                 {comments && (
                     <div className="comment-field">
                         {comments.map((comment) => (
@@ -90,12 +97,12 @@ export default function IssueModal({onSubmit, record, onClose}) {
                                     <div className="comment-text" key={`comment-${comment.id}`}> 
                                         {comment.comment}
                                     </div>
-                                    <div className="commenter">
-                                        {comment.createdBy}
+                                    <div className="metainfo-left">
+                                        {comment.createdBy}, {utils.to_yyMMddHHmm(comment.createdAt, "/")}
                                     </div>
                                 </div>
-                                <div className="comment-timestamp">
-                                    {utils.to_yyMMddHHmm(comment.createdAt, "/")}
+                                <div className="metainfo-right">
+                                    {}
                                 </div>
                             </div>
                         ))}
@@ -103,6 +110,7 @@ export default function IssueModal({onSubmit, record, onClose}) {
                 )}
                
                 <TextInput
+                    className="comment-input"
                     type="text"
                     name="comment"
                     label={"Comment"}
@@ -114,9 +122,17 @@ export default function IssueModal({onSubmit, record, onClose}) {
 
                 <ButtonsFooter
                     onCancel={onClose}
-                    onSubmit={handleSubmit}
+                    onSubmit={() => handleSubmit(nextStatus)}
                     submitEnabled={readyToSubmit}
                 />
+
+                {permissions.isAdmin && (
+                    <button
+                        onClick={(e) => handleSubmit("resolved")}
+                    >
+                        Resolve
+                    </button>
+                )}
             </div>
         </div>
     );

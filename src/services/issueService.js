@@ -16,7 +16,8 @@ export async function getOne(recordId, onError) {
 export async function getIssue(record, onError) {
     let issue = record;
     const path = getPath(issue);
-    if(path[0] !== "issues") {
+    const mainCollectionName = path[0];
+    if(mainCollectionName !== "issues") {
         issue = await getOne(record.id, onError);
     }
 
@@ -28,90 +29,47 @@ export async function getComments(record, onError) {
     return await issueDao.getComments(issue, onError);
 }
 
-export async function add(record, comment, onError, writes = []) {
+export async function add(record, status, comment, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const recordPathArray = getPath(record);
-    const recordPath = recordPathArray.join("/");
+    let issue = await getIssue(record, onError);
+    if(!issue) {
+        const recordPathArray = getPath(record);
+        const recordPath = recordPathArray.join("/");
 
-    const issue = {
-        collection : recordPath,
-        flaggedRecordId : record.id,
-        status : "attention"
-    };
+        const newIssue = {
+            collection : recordPath,
+            flaggedRecordId : record.id,
+            status : status
+        };
 
-    const addIssueResult = await issueDao.add(issue, onError, writes);
-    if (addIssueResult === false) return false;
+        issue = await issueDao.add(newIssue, onError, writes);
+        if (issue === false) return false;
+    } else {
+        issue = await issueDao.update(issue, {status : status}, onError, writes);
+        if(issue === false) return false;
+    }
 
-    const markResult = await issueDao.mark(record, "attention", onError, writes);
+    const markResult = await issueDao.mark(record, status, onError, writes);
     if (markResult === false) return false;
 
     const commentRecord = {
         comment: comment,
-        status: "attention"
-    }
-    const addCommentResult = await issueDao.addComment(addIssueResult, commentRecord, onError, writes)
-    if (addCommentResult === false) return false;
-
-    if (commit) {
-        if ((await commitTx(writes, onError)) === false) return false;
-    }
-
-    return addIssueResult;
-}
-
-export async function update(record, issue, status, onError, writes = []) {
-    const commit = decideCommit(writes);
-
-    const updateData = {
         status: status
-    };
-
-    const updateIssueResult = await issueDao.update(issue, updateData, onError, writes);
-
-    const markResult = await issueDao.mark(record, "resolved", onError, writes);
-    if (markResult === false) return false;
-
-    if (commit) {
-        if ((await commitTx(writes, onError)) === false) return false;
     }
-
-    return updateIssueResult;
-}
-
-export async function resolveIssue(record, issue, comment, onError, writes = []) {
-    const commit = decideCommit(writes);
-
-    const resolutionResult = await update(record, issue, "resolution", onError, writes);
-    if (resolutionResult === false) return false;
-
-    const commentRecord = {
-        comment: comment,
-        status: "resolved"
-    }
-    const addCommentResult = await issueDao.addComment(resolutionResult, commentRecord, onError, writes)
+    
+    const addCommentResult = await issueDao.addComment(issue, commentRecord, onError, writes)
     if (addCommentResult === false) return false;
 
     if (commit) {
         if ((await commitTx(writes, onError)) === false) return false;
     }
 
-    return resolutionResult;
+    return issue;
 }
 
-export async function approveIssue(record, comment, onError, writes = []) {
-    const commit = decideCommit(writes);
-
-    const approvalResult = await issueDao.add(record, "approval", comment, onError, writes);
-    if (approvalResult === false) return false;
-
-    const result = await update(record, "approved", onError, writes);
-    
-    if (commit) {
-        if ((await commitTx(writes, onError)) === false) return false;
-    }
-
-    return result;
+export async function resolve(record, comment, onError, writes = []) {
+    return await add(record, "resolved", comment, onError, writes);
 }
 
 export async function get(collectionName, filter = {}, onError) {

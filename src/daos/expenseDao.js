@@ -64,7 +64,10 @@ function buildFirebaseQueryFilter(filterOptions) {
     }
 
     if (utils.exists(filterOptions, "issue")) {
-        queryFilter.push(where("issue", "==", filterOptions.issue));
+        if(Array.isArray(filterOptions.issue)) {
+            queryFilter.push(where("issue", filterOptions.issue[0], filterOptions.issue[1]));
+        }
+        else queryFilter.push(where("issue", "==", filterOptions.issue));
     }
 
     return queryFilter;

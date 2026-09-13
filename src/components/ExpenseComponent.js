@@ -37,16 +37,8 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
         }
     };
 
-    const onFlagIssue = async(expenseToFlag, comment) => {
-        const result = await issueService.add(expenseToFlag, comment, onError);
-        if(result !== false) {
-            onSuccess();
-        }
-    }
-
-    const onResolve = async(expenseToFlag, comment) => {
-        const issue = await issueService.getOne(expenseToFlag.id);
-        const result = await issueService.resolveIssue(expenseToFlag, issue, comment, onError);
+    const onSubmitIssueInput = async(expenseToFlag, data) => {
+        const result = await issueService.add(expenseToFlag, data.status, data.comment, onError);
         if(result !== false) {
             onSuccess();
         }
@@ -153,11 +145,10 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
                             <p>Receipt</p>
                         </div>
 
-                        {context.enableRecordIssues && permissions.isAdmin && (
+                        {context.enableRecordIssues && (permissions.isAdmin || expense.issue === "attention" || expense.issue === "pending_approval") && (
                             <IssueFlagButton 
                                 record={expense}
-                                onFlagIssue={onFlagIssue}
-                                onResolve={onResolve}
+                                onSubmitInput={onSubmitIssueInput}
                             />
                         )}
 

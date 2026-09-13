@@ -18,9 +18,10 @@ export default function ExpensesScreen({ context }) {
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
 
-    const [recentFilter, setRecentFilter] = useState(null);
-    const [issuesFilter, setIssuesFilter] = useState(null);
-    const [pastFilter,   setPastFilter] = useState(null);
+    const [recentFilter,          setRecentFilter]          = useState(null);
+    const [issuesFilter,          setIssuesFilter]          = useState(null);
+    const [pendingApprovalFilter, setPendingApprovalFilter] = useState(null);
+    const [pastFilter,            setPastFilter]            = useState(null);
 
     const { onFilter   } = useFilters();
     const { onError    } = useNotification();
@@ -85,6 +86,9 @@ export default function ExpensesScreen({ context }) {
   
             const issuesFilter = { ...filter, "issue" : "attention"};
             setIssuesFilter(issuesFilter);
+
+            const pendingApprovalFilter = { ...filter, "issue" : "pending_approval"};
+            setPendingApprovalFilter(pendingApprovalFilter);
         }
 
         loadTotals();
@@ -135,15 +139,27 @@ export default function ExpensesScreen({ context }) {
                 </div>  
             </div>
             <div className="card-content">
-                {context.enableRecordIssues && issuesFilter && (
-                    <ExpenseList 
-                        context={context}
-                        title={"Issues"}
-                        filter={issuesFilter}
-                        expand={true}
-                        subscribe={true}
-                    />
-                )}
+                {context.enableRecordIssues && (<>
+                    {pendingApprovalFilter && (
+                        <ExpenseList 
+                            context={context}
+                            title={"Pending Approval"}
+                            filter={pendingApprovalFilter}
+                            expand={true}
+                            subscribe={true}
+                        />
+                    )}
+
+                    {issuesFilter && (
+                        <ExpenseList 
+                            context={context}
+                            title={"Issues"}
+                            filter={issuesFilter}
+                            expand={true}
+                            subscribe={true}
+                        />
+                    )}
+                </>)}
 
                 {recentFilter && (
                     <ExpenseList 

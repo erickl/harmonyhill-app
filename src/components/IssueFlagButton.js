@@ -1,34 +1,23 @@
 import { Flag } from 'lucide-react';
 import {useIssues} from '../context/IssueContext.js';
+import * as utils from "../utils.js";
 import "./IssueFlagButton.css";
 import * as issueService from "../services/issueService.js";
 
-export default function IssueFlagButton({record, onFlagIssue, onResolve}) {
-    const flagStyle = {color: record.issue === "attention" ? "red" : "black"};
-    const flagText = record.issue === "attention" ? "Resolve" : "Issue";
+export default function IssueFlagButton({record, onSubmitInput}) {
+    const isResolved = utils.isEmpty(record.issue) || record.issue === "resolved";
+    const flagStyle = {color: isResolved ? "black" : "red"};
+    const flagText = isResolved ? "Report" : "Resolve";
 
     const {onInput} = useIssues();
 
-    const handleClick = () => {
-        if(flagText === "Issue") {
-            onInput(record, onSubmitInput);
-        } else if(flagText === "Resolve") {
-            onInput(record, onResolveInput);
-        }
-    }
-
-    const onResolveInput = async(data) => {
-        const result = await onResolve(record, data.comment);
-        if(result !== false) {
-            // todo: maybe change the color of the flag?    
-        }
-    }
-
-    const onSubmitInput = async (data) => {
-        const result = await onFlagIssue(record, data.comment);
-        if(result !== false) {
-            // todo: maybe change the color of the flag?    
-        }
+    const handleClick = async() => {
+        onInput(record, async(data) => {
+            const result = await onSubmitInput(record, data);
+            if(result !== false) {
+                // todo: maybe change the color of the flag?    
+            }
+        });
     }
 
     return (
