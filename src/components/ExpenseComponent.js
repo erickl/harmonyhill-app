@@ -42,13 +42,14 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
         if(result !== false) {
             onSuccess();
         }
+        return result;
     }
 
     const handleSetExpanded = async(expense) => {
         if(!expanded) {
             setLoading(prev => !prev);  
             await fetchBookingInfo(expense);
-            if(expense.issue === "attention") {
+            if(expense.issue === "attention" || expense.issue === "pending_approval") {
                 const issue_ = await issueService.getLastIssue(expense);
                 setIssue(issue_);
             }

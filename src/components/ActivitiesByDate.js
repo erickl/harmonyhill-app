@@ -11,7 +11,7 @@ import "./ActivitiesByDate.css";
 import { update } from '../daos/userDao.js';
 import * as todoService from "../services/todoService.js";
 
-export default function ActivitiesByDate({ context, customer, date, date1, date2, includeTodos }) {
+export default function ActivitiesByDate({ context, customer, filter, date, date1, date2, includeTodos }) {
     const today = utils.today();
     
     let from = date1 ? date1.startOf('day') : null;
@@ -30,9 +30,16 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
     const isBeforeToday = utils.isBeforeToday(from) && utils.isBeforeToday(to);
     const isToday = singleDate && utils.isToday(from);
     const isThisWeek = (from !== null && to !== null) ? (from > today && to < utils.today(8)) : false;
+
+    if(!filter) filter = {};
     
     // if all input dates === null, then filter => {date: null}, which means getting unscheduled activities
-    const filter = (from && to) ? { after: from, before: to } : {date : null};
+    if(from && to) {
+        filter.after = from;
+        filter.before = to;
+    } else {
+        filter.date = null;
+    }
     
     let dateFormatted = "Unscheduled";
     if(from || to) {
@@ -47,7 +54,7 @@ export default function ActivitiesByDate({ context, customer, date, date1, date2
         dateFormatted = `${utils.to_ddMMM(date)}`;
     }
 
-    const doSubscribe = isToday || isThisWeek || noDates;
+    const doSubscribe = isToday || isThisWeek || noDates || filter.issues;
 
     const [expanded, setExpanded] = useState(true);//isToday || doSubscribe);
     const [loading, setLoading] = useState(true);

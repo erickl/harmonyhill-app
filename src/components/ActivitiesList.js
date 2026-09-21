@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as utils from "../utils.js";
 import ActivitiesByDate from './ActivitiesByDate.js';
 
-export default function ActivitiesList({ context, from, to, customer, includeTodos }) {
+export default function ActivitiesList({ context, from, to, filter, customer, includeTodos }) {
     const todaysHeader = useRef(null);
     const dateRange = utils.getDateRange(from, to);
 
@@ -23,6 +23,7 @@ export default function ActivitiesList({ context, from, to, customer, includeTod
                         <ActivitiesByDate
                             context={context}
                             customer={customer}
+                            filter={filter}
                             date={date}
                             includeTodos={includeTodos}
                         />

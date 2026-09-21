@@ -149,6 +149,7 @@ export async function getUserRole() {
 
 export async function getPermissions(user, onError) {
     if(!user) user = await getCurrentUser();
+    if(!user) return {};
     const permissions = await userDao.getPermissions(user, onError);
     return permissions;
 }

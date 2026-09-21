@@ -211,6 +211,10 @@ function createActivitiesQueryArray(options = {}) {
         filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
     }
 
+    if(utils.exists(options, "issues") && options.issues === true) {
+        filters.push(where("issue", "==", "attention"));
+    }
+
     // startingAt is a string in the format YYYY-MM-DD, without time
     if (utils.exists(options, "startingAt")) {
         filters.push(where("startingAt", "==", utils.toFireStoreTime(options.startingAt)));

@@ -7,8 +7,12 @@ export async function getOne(recordId, onError) {
     };
 
     const issue = await issueDao.get(filter, onError);
-
-    return issue;
+    if(Array.isArray(issue)) {
+        if(issue.length > 0) return issue[0];
+        else return null;
+    } else {
+        return issue;
+    }
 }
 
 // Input record could be the issue record or the flagged record (e.g. an expense)
@@ -26,6 +30,7 @@ export async function getIssue(record, onError) {
 
 export async function getComments(record, onError) {
     const issue = await getIssue(record);
+    if(!issue) return [];
     return await issueDao.getComments(issue, onError);
 }
 

@@ -1,4 +1,4 @@
-import { where, orderBy } from 'firebase/firestore';
+import { where, orderBy, query } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 
@@ -51,10 +51,14 @@ export async function getFromCollection(collectionName, filter, onError) {
 }
 
 export async function getLast(record, onError) {
-    const path = dao.getPath(record);
-    path.push(record.id, "issues");
     const order = [orderBy("createdAt", "desc")];
-    const issues = await dao.get(path, {}, order, 1, onError);
-    if(issues.length === 0) return null;
-    return issues[0];
+    const filter = {flaggedRecordId: record.id};
+    const issues = await get(filter, onError);
+    if(Array.isArray(issues)) {
+        if(issues.length === 0) return null;
+        issues.sort((i1, i2) => i1.createdAt - i2.createdAt);
+        return issues[0];
+    }
+
+    return issues; 
 }

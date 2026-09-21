@@ -108,5 +108,9 @@ function buildQueryFilter(filter) {
         queryFilter.push(where("deadlineAt", "==", utils.toFireStoreTime(filter.date)));
     }
 
+    if(utils.exists(filter, "issues") && filter.issues === true) {
+        queryFilter.push(where("issue", "==", "attention"));
+    }
+
     return queryFilter;
 }

@@ -27,20 +27,23 @@ export default function IssueModal({onSubmit, record, onClose}) {
     const { permissions } = useUserPermissions();
 
     const handleSubmit = async (status) => {
+        let result = false;
         try {
             if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
             
             formData.status = status;
-            const result = await onSubmit(formData);  
+            result = await onSubmit(formData);  
 
             if(result !== false) { 
                 setFormData(emptyForm);
                 onClose();
                 onSuccess();
             }
+            return result;
         } catch(e) {
             onError(`Submit error: ${e.message}`);
-        }        
+        }   
+        return result;     
     };
 
     const validateFormData = async (newFormData) => {

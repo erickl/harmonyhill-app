@@ -7,6 +7,7 @@ import * as userService from "../services/userService.js";
 import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
 export default function ActivitiesAllLists({ context, customer, includeTodos }) {
+    const [expandIssues, setExpandIssues] = useState(true);
     const [expandPrevious, setExpandPrevious] = useState(false);
     const [expandNextWeek, setExpandNextWeek] = useState(true);
     const [expandFuture, setExpandFuture] = useState(false);
@@ -46,6 +47,30 @@ export default function ActivitiesAllLists({ context, customer, includeTodos }) 
                     context={context}
                     customer={customer}
                     date2={customer.checkInAt.startOf('day')}
+                />
+            )}
+
+            <h3
+                style={{ marginBottom: "0px" }}
+                className={'activity-list-group-header clickable-header'}
+                onClick={() => setExpandIssues(prev => !prev)}
+            >
+                Issues
+
+                <span className="expand-icon">
+                    {expandIssues ? ' ▼' : ' ▶'}
+                </span>
+            </h3>
+
+            {/* Activities with issues */}
+            {expandIssues && (
+                <ActivitiesByDate 
+                    context={context} 
+                    customer={customer}
+                    date1={utils.beginning()}
+                    date2={utils.end()}
+                    filter={{issues:true}}
+                    includeTodos={true}
                 />
             )}
 

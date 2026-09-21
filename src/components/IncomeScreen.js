@@ -57,11 +57,11 @@ export default function IncomeScreen({ customer, context }) {
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);       
             
             // In Recent tab, display records from a week ago at the oldest
-            const weekAgo = utils.today(-7);
-            const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : weekAgo;
+            const monthStart = utils.monthStart();
+            const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : monthStart;
             
-            let recentFilterAfter = weekAgo;
-            if(oldest >= weekAgo) {
+            let recentFilterAfter = monthStart;
+            if(oldest >= monthStart) {
                 recentFilterAfter = oldest;
             } else {
                 const pastFilter = {...filter, after: oldest, before: utils.today(-7).plus({seconds : -1})};

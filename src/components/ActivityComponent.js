@@ -22,6 +22,8 @@ import PhotoUploadButton from "./PhotoUploadButton.js";
 import TaskAcceptButton from "./TaskAcceptButton.js";
 import TaskAssigneeComponent from './TaskAssigneeComponent.js';
 import * as ActivityStatus from "../models/ActivityStatus.js";
+import * as issueService from "../services/issueService.js";
+import IssueFlagButton from './IssueFlagButton.js';
 import {Alert} from "../models/Alert.js";
 import { motion } from "framer-motion";
 
@@ -40,6 +42,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const [stillRequirePhotos, setStillRequirePhotos] = useState(false);
     const [minibarCount, setMinibarCount] = useState(null);
     const [photos, setPhotos] = useState([]);
+    const [issue, setIssue] = useState(null);
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
@@ -71,6 +74,14 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         }
 
         return utils.isToday(activity.startingAt);
+    }
+
+    const onSubmitIssueInput = async(recordToFlag, data) => {
+        const result = await issueService.add(recordToFlag, data.status, data.comment, onError);
+        if(result !== false) {
+            onSuccess();
+        }
+        return result;
     }
 
     const requiresMinibarCount = () => {
@@ -315,6 +326,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 setDishesPrice(dishesPrice);
                 setDishes(dishes);
             } 
+
+            if(activity.issue === "attention" || activity.issue === "pending_approval") {
+                const issue_ = await issueService.getLastIssue(activity, onError);
+                setIssue(issue_);
+            }
         }
         setExpanded(expand);
     };
@@ -447,6 +463,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 <Spinner />
             ) : expanded ? (
                 <div className="activity-details">
+                    {issue && !utils.isEmpty(issue.comment) && (
+                        <div style={{color:"red"}}>
+                            Issue: {issue.comment}
+                        </div>
+                    )}
                     {alert && !utils.isEmpty(alert.message) && (
                         <p>
                             <span className="detail-label">Alert: </span>
@@ -676,6 +697,14 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                 <p>Minibar Refill</p>
                             </div>
                         )}
+
+                        {context.enableRecordIssues && (permissions.isAdmin || activity.issue === "attention" || activity.issue === "pending_approval") && (
+                            <IssueFlagButton 
+                                record={activity}
+                                onSubmitInput={onSubmitIssueInput}
+                            />
+                        )}
+
                     </div>
                     <MetaInfo document={activity} />
                 </div>
