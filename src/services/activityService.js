@@ -1,21 +1,21 @@
 import * as activityDao from '../daos/activityDao.js';
 import * as bookingService from './bookingService.js';
 import * as utils from "../utils.js";
-import {getParent} from "../daos/dao.js";
-import {getMealDishes} from "./mealService.js";
-import {get as getIncome} from "../services/incomeService.js";
-import {get as getExpense} from "../services/expenseService.js";
+import { getParent } from "../daos/dao.js";
+import { getMealDishes } from "./mealService.js";
+import { get as getIncome } from "../services/incomeService.js";
+import { get as getExpense } from "../services/expenseService.js";
 import * as storageDao from "../daos/storageDao.js";
-import {commitTx, decideCommit} from "../daos/dao.js";
-import {removeCounts as removeMinibarCounts} from "./minibarService.js";
+import { commitTx, decideCommit } from "../daos/dao.js";
+import { removeCounts as removeMinibarCounts } from "./minibarService.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
-import {Alert} from "../models/Alert.js";
+import { Alert } from "../models/Alert.js";
 
 export const sortActivitiesByDate = (activities) => {
     const enhancedActivities = enhanceActivities(activities);
-     const activitiesByDate = enhancedActivities.reduce((m, activity) => {     
+    const activitiesByDate = enhancedActivities.reduce((m, activity) => {
         const date = activity.startingAt_ddMMM ? activity.startingAt_ddMMM : "Date TBD";
-        if(!m[date]) m[date] = [];
+        if (!m[date]) m[date] = [];
         m[date].push(activity);
         return m;
     }, {});
@@ -33,9 +33,9 @@ export async function getActivityTypes(filterOptions = {}) {
 
 export async function getActivityType(category, subCategory, house) {
     const filter = {};
-    if(category) filter.category = category;
-    if(subCategory) filter.subCategory = subCategory;
-    if(house) filter.house = house;
+    if (category) filter.category = category;
+    if (subCategory) filter.subCategory = subCategory;
+    if (house) filter.house = house;
     const menuItems = await getActivityTypes(filter);
     return menuItems.length > 0 ? menuItems[0] : null;
 }
@@ -43,17 +43,17 @@ export async function getActivityType(category, subCategory, house) {
 export function getInitialActivityData(activityType) {
     //const activityType = await getActivityType(category, subCategory, house);
     const activity = {
-        category      : activityType.category,
-        subCategory   : activityType.subCategory,
-        displayName   : activityType.displayName,
-        customerPrice : activityType.customerPrice,
-        custom        : activityType.custom,
-        internal      : activityType.internal,
-        needsProvider : activityType.needsProvider || activityType.internal === false,
-        assignedTo    : null,
-        startingAt    : null,
-        startingTime  : null,
-        status        : "guest confirmed",
+        category: activityType.category,
+        subCategory: activityType.subCategory,
+        displayName: activityType.displayName,
+        customerPrice: activityType.customerPrice,
+        custom: activityType.custom,
+        internal: activityType.internal,
+        needsProvider: activityType.needsProvider || activityType.internal === false,
+        assignedTo: null,
+        startingAt: null,
+        startingTime: null,
+        status: "guest confirmed",
     };
 
     return activity;
@@ -85,7 +85,7 @@ export async function getCategories() {
 export async function get(booking, filterOptions = {}, onError) {
     const activities = await activityDao.getBookingActivities(booking.id, filterOptions, onError);
     const enhancedActivities = enhanceActivities(activities);
-    return enhancedActivities; 
+    return enhancedActivities;
 }
 
 /**
@@ -96,11 +96,11 @@ export async function get(booking, filterOptions = {}, onError) {
  * @param {*} onError 
  */
 export function subscribe(booking, setDocs, filterOptions = {}, onError) {
-    if(booking) {
+    if (booking) {
         return activityDao.subscribe(booking.id, setDocs, filterOptions, onError);
     } else {
         return activityDao.subscribeAll(setDocs, filterOptions, onError);
-    }   
+    }
 }
 
 /**
@@ -110,7 +110,7 @@ export function subscribe(booking, setDocs, filterOptions = {}, onError) {
 export async function getAll(filterOptions = {}, onError) {
     const activities = await activityDao.getAllActivities(filterOptions, onError);
     const enhancedActivities = enhanceActivities(activities);
-    return enhancedActivities; 
+    return enhancedActivities;
 }
 
 /**
@@ -119,19 +119,19 @@ export async function getAll(filterOptions = {}, onError) {
  */
 export function enhanceActivities(activities) {
     const enhance = (activity) => {
-        if(!activity) return;
-        if(utils.exists(activity, "createdAt_ddMMM_HHmm")) return activity; // has already been enhanced
+        if (!activity) return;
+        if (utils.exists(activity, "createdAt_ddMMM_HHmm")) return activity; // has already been enhanced
 
         const newActivity = utils.deepCopy(activity);
         try {
             // Date time stored in timestamp format in database. Convert to Luxon Date time to display correct time zone 
-            if(!utils.isEmpty(activity.startingAt)) {
+            if (!utils.isEmpty(activity.startingAt)) {
                 newActivity.startingAt = utils.toDateTime(activity.startingAt);
                 newActivity.startingAt_ddMMM = utils.to_ddMMM(activity.startingAt);
                 newActivity.startingAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.startingAt);
             }
 
-            if(!utils.isEmpty(activity.startingTime)) {
+            if (!utils.isEmpty(activity.startingTime)) {
                 newActivity.startingTime = utils.toDateTime(activity.startingTime);
                 newActivity.startingAt_HHmm = utils.to_HHmm(activity.startingTime);
             } else {
@@ -140,12 +140,12 @@ export function enhanceActivities(activities) {
             }
 
             // Custom activities might already have a display name given. If not, create one here
-            if(utils.isEmpty(activity.displayName)) {
+            if (utils.isEmpty(activity.displayName)) {
                 newActivity.displayName = `${activity.category.replace(/-/g, " ")}: ${activity.subCategory.replace(/-/g, " ")}`;
-            } 
+            }
             newActivity.displayName = utils.capitalizeWords(activity.displayName);
 
-            if(activity.custom === true) {
+            if (activity.custom === true) {
                 newActivity.subCategory = `Custom: ${activity.displayName}`;
             }
 
@@ -153,10 +153,10 @@ export function enhanceActivities(activities) {
             //     const booking = !booking ? await getParent(activity) : booking;
             //     newActivity.name = booking ? booking.name : null;
             // }
-            
+
             newActivity.createdAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.createdAt);
-            newActivity.updatedAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.updatedAt); 
-        } catch(e) {
+            newActivity.updatedAt_ddMMM_HHmm = utils.to_ddMMM_HHmm(activity.updatedAt);
+        } catch (e) {
             throw new Error(`Data failure for activity ${activity.id}: ${e.message}`);
         }
 
@@ -166,8 +166,8 @@ export function enhanceActivities(activities) {
     activities = Array.isArray(activities)
         ? activities.map(enhance)
         : enhance(activities);
-        
-    return activities; 
+
+    return activities;
 }
 
 /**
@@ -210,12 +210,12 @@ export async function add(booking, activityData, onError, writes = []) {
 
     const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
     const result = await activityDao.add(booking.id, activityId, activity, onError, writes);
-    if(result === false) return false;
-    
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (result === false) return false;
+
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
-    
+
     const enhancedRecord = enhanceActivities(result);
     return enhancedRecord;
 }
@@ -230,12 +230,12 @@ export async function add(booking, activityData, onError, writes = []) {
 export async function assignProvider(bookingId, activityId, personnelId, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const dataUpdate = { provider : personnelId };
+    const dataUpdate = { provider: personnelId };
     const result = await update(bookingId, activityId, dataUpdate, onError, writes);
-    if(result === false) return false;
+    if (result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -249,20 +249,20 @@ export async function getProviders(category, subCategory) {
 export async function setActivityStatus(booking, activity, newStatus, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const updatedData = { status : newStatus };
+    const updatedData = { status: newStatus };
 
-    if(ActivityStatus.Started.equals(newStatus)) {
+    if (ActivityStatus.Started.equals(newStatus)) {
         // If activity is not delayed, set startingTime when starting activity
-        if(activity.startingTime === null || utils.isFuture(activity.startingTime)) {
+        if (activity.startingTime === null || utils.isFuture(activity.startingTime)) {
             updatedData["startingTime"] = utils.now();
         }
     }
 
     const result = await update(booking, activity, updatedData, onError, writes);
-    if(result === false) return false;
+    if (result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -278,12 +278,12 @@ export async function setActivityStatus(booking, activity, newStatus, onError, w
 export async function assignStaff(bookingId, activityId, userId, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const dataUpdate = { assignTo : userId, changeDescription : null };
+    const dataUpdate = { assignTo: userId, changeDescription: null };
     const result = await update(bookingId, activityId, dataUpdate, onError, writes);
-    if(result === false) return false;
+    if (result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -292,16 +292,16 @@ export async function assignStaff(bookingId, activityId, userId, onError, writes
 export async function changeAssigneeStatus(accept, booking, activity, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const dataUpdate = { 
-        assigneeAccept  : accept,
-        changeDescription : null,
+    const dataUpdate = {
+        assigneeAccept: accept,
+        changeDescription: null,
     };
 
     const result = await update(booking, activity, dataUpdate, onError, writes);
-    if(result === false) return false;
+    if (result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -313,24 +313,24 @@ export async function update(booking, activity, activityUpdateData, onError, wri
     let activityUpdate = mapObject(activityUpdateData, true);
 
     // When changing assignee 
-    if(utils.exists(activityUpdate, "assignedTo") && utils.isString(activityUpdate.assignedTo) && activity.assignedTo !== activityUpdate.assignedTo) {
+    if (utils.exists(activityUpdate, "assignedTo") && utils.isString(activityUpdate.assignedTo) && activity.assignedTo !== activityUpdate.assignedTo) {
         activityUpdate.assigneeAccept = false;
         activityUpdate.changeDescription = null;
     }
-    
+
     // Don't try to update booking name or house
-    if(utils.exists(activityUpdate, "name")) {
+    if (utils.exists(activityUpdate, "name")) {
         delete activityUpdate.name;
     }
-    if(utils.exists(activityUpdate, "house")) {
+    if (utils.exists(activityUpdate, "house")) {
         delete activityUpdate.house;
     }
 
     const result = await activityDao.update(activity.bookingId, activity.id, activityUpdate, true, onError, writes);
-    if(result === false) return false;
+    if (result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
     const enhancedResult = enhanceActivities(result);
@@ -338,7 +338,7 @@ export async function update(booking, activity, activityUpdateData, onError, wri
 }
 
 export function getActivityPhotoFilePath(activity) {
-    if(!activity) return "";
+    if (!activity) return "";
     const activityDate = utils.to_yyMMM(activity.startingAt, "-");
     const filePath = `activities/photos/${activityDate}/${activity.id}`;
     return filePath;
@@ -352,19 +352,19 @@ export async function removePhoto(photo, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const removeFileResult = await storageDao.removeFile(photo.fileName, onError);
-    if(removeFileResult === false) return false;
-    
+    if (removeFileResult === false) return false;
+
     const activity = await getParent(photo);
-    if(!activity) return false;
+    if (!activity) return false;
 
     const booking = await getParent(activity);
-    if(!booking) return false;
+    if (!booking) return false;
 
     const result = await activityDao.removePhoto(booking.id, activity.id, photo.id, onError, writes);
-    if(result === false) return false;
+    if (result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -374,36 +374,36 @@ async function removePhotos(activity, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const photos = await getPhotos(activity, onError);
-    for(const photo of photos) {
+    for (const photo of photos) {
         const removePhotoResult = await removePhoto(photo, onError, writes);
-        if(removePhotoResult === false) return false;
+        if (removePhotoResult === false) return false;
     }
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
-    
+
     return true;
 }
 
 export async function uploadPhoto(activity, fileData, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    if(fileData.downloadUrl === false) {
+    if (fileData.downloadUrl === false) {
         return;
     }
     const id = `activity-photo-${Date.now()}`;
     const data = {
-        fileName   : fileData.filename,
-        url        : fileData.url,
-        activityId : activity.id,
+        fileName: fileData.filename,
+        url: fileData.url,
+        activityId: activity.id,
     };
 
     const result = await activityDao.addPhoto(activity.bookingId, activity.id, id, data, onError, writes);
-    if(result === false) return false;
+    if (result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -413,17 +413,17 @@ export async function remove(activity, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const removePhotosResult = await removePhotos(activity, onError, writes);
-    if(removePhotosResult === false) return false;
+    if (removePhotosResult === false) return false;
 
     // If activity is checkin-prep, housekeeping or checkout, if will have resulted minibar counts
     const removeMinibarCountsResult = await removeMinibarCounts(activity, onError, writes);
-    if(removeMinibarCountsResult === false) return false;
+    if (removeMinibarCountsResult === false) return false;
 
     const result = await activityDao.remove(activity.bookingId, activity.id, onError, writes);
-    if(result === false) return false;
+    if (result === false) return false;
 
-    if(commit) {
-        if((await commitTx(writes, onError)) === false) return false;
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
     }
 
     return result;
@@ -439,51 +439,51 @@ export function makeId(startingAt, house, subCategory) {
 function mapObject(data) {
     let activity = {};
 
-    if(utils.isString(data?.category))      activity.category = data.category;
-    if(utils.isString(data?.subCategory))   activity.subCategory = data.subCategory ;
-    if(utils.isString(data?.comments))      activity.comments = data.comments;
-    if(utils.isString(data?.displayName))   activity.displayName = data.displayName;
+    if (utils.isString(data?.category)) activity.category = data.category;
+    if (utils.isString(data?.subCategory)) activity.subCategory = data.subCategory;
+    if (utils.isString(data?.comments)) activity.comments = data.comments;
+    if (utils.isString(data?.displayName)) activity.displayName = data.displayName;
 
     // startingAt might be null if activity is still unscheduled
-    if(utils.exists(data, "startingAt")) {
+    if (utils.exists(data, "startingAt")) {
         activity.startingAt = utils.isDate(data?.startingAt) ? utils.toFireStoreTime(data.startingAt) : null;
     }
-    
+
     // Date is obligatory, but time might be set later, so startingTime might be null now
-    if(utils.exists(data, "startingTime")) {
+    if (utils.exists(data, "startingTime")) {
         activity.startingTime = utils.isDate(data?.startingTime) ? utils.toFireStoreTime(data.startingTime) : null;
     }
 
-    if(utils.isAmount(data?.customerPrice)) activity.customerPrice = data.customerPrice;
+    if (utils.isAmount(data?.customerPrice)) activity.customerPrice = data.customerPrice;
 
-    if(utils.exists(data, "isFree")) {
+    if (utils.exists(data, "isFree")) {
         activity.isFree = typeof data?.isFree === "boolean" ? data.isFree : false;
     } else {
         activity.isFree = false;
     }
-    
-    if(utils.exists(data, "needsProvider") && !utils.isEmpty(data.needsProvider)) {
+
+    if (utils.exists(data, "needsProvider") && !utils.isEmpty(data.needsProvider)) {
         activity.needsProvider = data.needsProvider;
-        if(data.needsProvider === true) {
-            if(utils.isString(data?.provider))      activity.provider = data.provider;
-            if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
+        if (data.needsProvider === true) {
+            if (utils.isString(data?.provider)) activity.provider = data.provider;
+            if (utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
         } else {
             activity.provider = null;
             activity.providerPrice = null;
         }
     } else {
-        if(utils.isString(data?.provider))      activity.provider = data.provider;
-        if(utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
+        if (utils.isString(data?.provider)) activity.provider = data.provider;
+        if (utils.isAmount(data?.providerPrice)) activity.providerPrice = data.providerPrice;
     }
 
-    if(utils.exists(data, "status") ) {
-        activity.status = utils.isString(data?.status) ? data.status.trim().toLowerCase() :  "pending guest confirmation";
+    if (utils.exists(data, "status")) {
+        activity.status = utils.isString(data?.status) ? data.status.trim().toLowerCase() : "pending guest confirmation";
     }
 
-    if(utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
-    if(utils.isBoolean(data?.assigneeAccept)) activity.assigneeAccept = data.assigneeAccept;
+    if (utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
+    if (utils.isBoolean(data?.assigneeAccept)) activity.assigneeAccept = data.assigneeAccept;
 
-    if(utils.exists(data, "changeDescription")) {
+    if (utils.exists(data, "changeDescription")) {
         activity.changeDescription = data.changeDescription;
     }
 
@@ -493,44 +493,48 @@ function mapObject(data) {
 export function validate(customer, data, isUpdate, onError, onWarning) {
     let warning = false;
     try {
-        if(utils.isEmpty(data)) {
+        if (utils.isEmpty(data)) {
             onError("Fill in all required fields to submit");
             return false;
         }
 
-        if(utils.isEmpty(data.startingAt)) {
+        if (utils.isEmpty(data.displayName)) {
+            onError(`Fill the name`);
+        }
+
+        if (utils.isEmpty(data.startingAt)) {
             warning = true;
             onWarning("Activity date not set");
         }
 
-        if(data.startingAt && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
+        if (data.startingAt && data.startingAt.startOf('day') < customer.checkInAt.startOf('day')) {
             warning = true;
             onWarning(`Beware! Activity date is before checkin date ${utils.to_ddMMM(customer.checkInAt)}`);
             //return false; // We will allow this as there are exceptions, but display a warning
         }
 
-        if(data.startingAt && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
+        if (data.startingAt && data.startingAt.startOf('day') > customer.checkOutAt.startOf('day')) {
             warning = true;
             onWarning(`Beware! Activity date is after checkout date ${utils.to_ddMMM(customer.checkOutAt)}`);
             //return false; // We will allow this as there are exceptions, but display a warning
         }
 
-        if(!warning) {
+        if (!warning) {
             onWarning(null);
         }
 
-        if(ActivityStatus.PendingGuestConfirmation.equals(data.status) && !utils.isEmpty(data.provider)) {
+        if (ActivityStatus.PendingGuestConfirmation.equals(data.status) && !utils.isEmpty(data.provider)) {
             onError(`Don't book a provider before the guest has confirmed`);
             return false;
         }
-    } catch(e) {
+    } catch (e) {
         onError(`Unexpected error in activity form: ${e.message}`);
         return true;  // A bug shouldn't prevent you from submitting an activity
     }
 
     onError(null);
 
-    return true; 
+    return true;
 }
 
 /**
@@ -542,29 +546,29 @@ export function validate(customer, data, isUpdate, onError, onWarning) {
 export function getChangeDescription(oldData, newData) {
     let changeDescription = [];
 
-    if(utils.exists(oldData, "changeDescription") && !utils.isEmpty(oldData.changeDescription) && Array.isArray(oldData.changeDescription)) {
+    if (utils.exists(oldData, "changeDescription") && !utils.isEmpty(oldData.changeDescription) && Array.isArray(oldData.changeDescription)) {
         changeDescription = oldData.changeDescription;
     }
 
-    if(!utils.dateIsSame(oldData.startingAt, newData.startingAt)) {
+    if (!utils.dateIsSame(oldData.startingAt, newData.startingAt)) {
         changeDescription.push(`New start date: from ${utils.to_yyMMddHHmm(oldData.startingAt, "/")} to ${utils.to_yyMMddHHmm(newData.startingAt, "/")}`);
     }
 
-    if(oldData.provider !== newData.provider) {
+    if (oldData.provider !== newData.provider) {
         changeDescription.push(`New provider: from ${oldData.provider} to ${newData.provider}`);
     }
 
-    if(oldData.comments !== newData.comments) {
+    if (oldData.comments !== newData.comments) {
         changeDescription.push(`Comments update: from ${oldData.comments} to ${newData.comments}`);
     }
 
-    if(!utils.isEmpty(newData?.dishes)) {
-        for(const newDish of newData.dishes) {         
+    if (!utils.isEmpty(newData?.dishes)) {
+        for (const newDish of newData.dishes) {
             const oldDish = oldData.dishes.find((dish) => dish.name === newDish.name);
-            if(!oldDish) {
+            if (!oldDish) {
                 changeDescription.push(`New dish added: ${newDish.quantity}x ${newDish.name}`);
             }
-            else if(oldDish.quantity !== newDish.quantity) {
+            else if (oldDish.quantity !== newDish.quantity) {
                 changeDescription.push(`Dish amount for "${newDish.name}" changed, from ${oldDish.quantity}x to ${newDish.quantity}x`);
             }
         }
@@ -574,15 +578,15 @@ export function getChangeDescription(oldData, newData) {
 
 export function getAlert(activity, currentStatus, activityUnit, onError) {
     const alert = (category = Alert.NONE, message = "") => {
-        return { "category" : category, "message" : (utils.isEmpty(message) ? category : message) };
+        return { "category": category, "message": (utils.isEmpty(message) ? category : message) };
     };
 
     try {
-        if(activity == null) return alert();
-        if(activityUnit == null) return alert();
+        if (activity == null) return alert();
+        if (activityUnit == null) return alert();
 
         // Haven't started yet, and past startingTime ==> Overdue
-        if(ActivityStatus.Started.greaterThan(currentStatus) && utils.isPast(activity.startingTime)) {
+        if (ActivityStatus.Started.greaterThan(currentStatus) && utils.isPast(activity.startingTime)) {
             return alert(Alert.OVERDUE, "Activity should have been started already!");
         }
 
@@ -590,36 +594,36 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
         const hoursLeft = Math.floor(timeLeft.hours);
         const urgent = !utils.isEmpty(activityUnit.deadline1) && hoursLeft <= activityUnit.deadline1;
         const emergency = !utils.isEmpty(activityUnit.deadline2) && hoursLeft <= activityUnit.deadline2;
-        
-        if(ActivityStatus.PendingGuestConfirmation.equals(currentStatus)) {
-            if(emergency) {
+
+        if (ActivityStatus.PendingGuestConfirmation.equals(currentStatus)) {
+            if (emergency) {
                 return alert(Alert.EMERGENCY, "Confirm with guest immediately!");
             }
 
-            if(urgent) {
+            if (urgent) {
                 return alert(Alert.URGENT, "Confirm with guest");
             }
         }
 
         const needsProvider = activity.needsProvider === true && utils.isEmpty(activity.provider);
-        if(needsProvider) {
-            if(emergency) {
+        if (needsProvider) {
+            if (emergency) {
                 return alert(Alert.EMERGENCY, "Book activity now!");
             }
 
-            if(urgent) {
+            if (urgent) {
                 return alert(Alert.URGENT, "Book activity!");
             }
         }
 
         const isLaterToday = utils.isToday(activity.startingAt) && utils.isPast(activity.startingAt);
         const isTodayOrTomorrow = utils.isTomorrow(activity.startingAt) || isLaterToday;
-        if(isTodayOrTomorrow) {
-            if(utils.isEmpty(activity.assignedTo)) {
+        if (isTodayOrTomorrow) {
+            if (utils.isEmpty(activity.assignedTo)) {
                 return alert(Alert.URGENT, "Assign task to someone");
             }
             const assignedNotYetAccepted = (!utils.exists(activity, "assigneeAccept") || activity.assigneeAccept === false);
-            if(ActivityStatus.StaffNotConfirmed.equals(currentStatus) && assignedNotYetAccepted) {
+            if (ActivityStatus.StaffNotConfirmed.equals(currentStatus) && assignedNotYetAccepted) {
                 return alert(Alert.URGENT, "Accept the task");
             }
         }
@@ -630,7 +634,7 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
         //         return alert(Alert.URGENT, "Did it start?");
         //     }
         // } 
-    } catch(e) {
+    } catch (e) {
         onError(`(getAlert) Error in activity ${activity.displayName}: ${e.message}`);
     }
 
@@ -638,65 +642,65 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
 }
 
 export async function getStatus(activity, activityInfo, onError) {
-    if(activity == null) return ActivityStatus.None;
+    if (activity == null) return ActivityStatus.None;
 
-    if(ActivityStatus.PendingGuestConfirmation.equals(activity.status)) {
+    if (ActivityStatus.PendingGuestConfirmation.equals(activity.status)) {
         return ActivityStatus.PendingGuestConfirmation;
     }
 
-    if(activity.needsProvider === true && utils.isEmpty(activity.provider)) {
+    if (activity.needsProvider === true && utils.isEmpty(activity.provider)) {
         return ActivityStatus.BookProvider;
     }
 
-    if(utils.isEmpty(activity.assignedTo)) {
-        if(utils.isBeforeToday(activity.startingAt)) {
+    if (utils.isEmpty(activity.assignedTo)) {
+        if (utils.isBeforeToday(activity.startingAt)) {
             return ActivityStatus.AssignStaff.withMessage("Staff assignment overdue!");
-        // If activity is today, assigning staff
-        } else if(utils.isToday(activity.startingAt)) {
+            // If activity is today, assigning staff
+        } else if (utils.isToday(activity.startingAt)) {
             return ActivityStatus.AssignStaff;
-        // Start assigning staff after 17:00 the day before the activity
-        } else if(utils.isTomorrow(activity.startingAt)) {
-            const todayAtFivePm = utils.today().set({hour: 17});
-            if(utils.isPast(todayAtFivePm)) {
+            // Start assigning staff after 17:00 the day before the activity
+        } else if (utils.isTomorrow(activity.startingAt)) {
+            const todayAtFivePm = utils.today().set({ hour: 17 });
+            if (utils.isPast(todayAtFivePm)) {
                 return ActivityStatus.AssignStaff;
             }
-        } 
+        }
     }
 
-    if(utils.isEmpty(activity.startingTime)) {
+    if (utils.isEmpty(activity.startingTime)) {
         return ActivityStatus.DetailsMissing.withMessage("Set starting time");
     }
 
-    if(activity.isFree === false && utils.isEmpty(activity.customerPrice)) {
+    if (activity.isFree === false && utils.isEmpty(activity.customerPrice)) {
         return ActivityStatus.DetailsMissing.withMessage("Provide customer price");
     }
 
-    if(activity.needsProvider === true && utils.isEmpty(activity.providerPrice)) {
+    if (activity.needsProvider === true && utils.isEmpty(activity.providerPrice)) {
         return ActivityStatus.DetailsMissing.withMessage("Provide provider price");
     }
 
-    if(activity.assigneeAccept !== true) {
-        if(utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) {
+    if (activity.assigneeAccept !== true) {
+        if (utils.isTomorrow(activity.startingAt) || utils.isToday(activity.startingAt)) {
             return ActivityStatus.StaffNotConfirmed;
         }
     }
 
-    if(ActivityStatus.Completed.equals(activity.status)) {
+    if (ActivityStatus.Completed.equals(activity.status)) {
         // Checking commissions and expenses only needed for external activities, with providers
-        if(activityInfo.internal !== true) {
+        if (activityInfo.internal !== true) {
             const activityNeedsCommission = needsCommission(activity);
             const activityHasCommission = await hasCommission(activity, onError);
-            if(activityNeedsCommission && !hasCommission) {
+            if (activityNeedsCommission && !hasCommission) {
                 return ActivityStatus.AwaitingCommission;
-            } else if(!activityNeedsCommission && activityHasCommission) {
+            } else if (!activityNeedsCommission && activityHasCommission) {
                 return ActivityStatus.RemoveCommission;
             }
 
             const activityNeedsExpense = needsExpense(activity);
             const activityHasExpense = await hasExpense(activity, onError);
-            if(activityNeedsExpense && !activityHasExpense) {
+            if (activityNeedsExpense && !activityHasExpense) {
                 return ActivityStatus.AwaitingExpense;
-            } else if(!activityNeedsExpense && activityHasExpense) {
+            } else if (!activityNeedsExpense && activityHasExpense) {
                 return ActivityStatus.RemoveExpense;
             }
         }
@@ -704,9 +708,9 @@ export async function getStatus(activity, activityInfo, onError) {
         return ActivityStatus.Completed;
     }
 
-    if(ActivityStatus.GuestConfirmed.equals(activity.status)) {
+    if (ActivityStatus.GuestConfirmed.equals(activity.status)) {
         return ActivityStatus.GoodToGo;
-    } else if(ActivityStatus.Started.equals(activity.status)) {
+    } else if (ActivityStatus.Started.equals(activity.status)) {
         return ActivityStatus.Started;
     }
 
@@ -714,26 +718,26 @@ export async function getStatus(activity, activityInfo, onError) {
 }
 
 export async function hasExpense(activity, onError) {
-    const expenses = await getExpense({activityId : activity.id}, onError);
+    const expenses = await getExpense({ activityId: activity.id }, onError);
     const existingExpense = expenses.length > 0 ? expenses[0] : null;
     return existingExpense !== null;
 }
 
 export async function hasCommission(activity, onError) {
-    const commissions = await getIncome({activityId : activity.id}, onError);
+    const commissions = await getIncome({ activityId: activity.id }, onError);
     const existingCommission = commissions.length > 0 ? commissions[0] : null;
     return existingCommission !== null;
 }
 
 export function needsCommission(activity) {
-    const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;   
+    const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;
     const isPast = utils.isPast(activity.startingAt);
     const needsCommission = providerPriceExists && isPast;
     return needsCommission;
 }
 
 export function needsExpense(activity) {
-    const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;   
+    const providerPriceExists = utils.isNumber(activity.providerPrice) && activity.providerPrice > 0;
     const isPast = utils.isPast(activity.startingAt);
     const needsExpenseNow = providerPriceExists && isPast;
     return needsExpenseNow;
@@ -757,9 +761,9 @@ export async function toArrays(filters, onProgress, onError) {
 
     let rows = [headers];
 
-    for(const document of documents) {
+    for (const document of documents) {
         let values = [];
-        for(const header of headers) {
+        for (const header of headers) {
             values.push((utils.exists(document, header) ? document[header] : "-"))
         }
 
