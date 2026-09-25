@@ -28,7 +28,7 @@ export async function getTotal(booking, onError) {
             const dishes = await mealService.getMealDishes(booking.id, meal.id, {"isFree" : false}, onError);
             mealItem.dishes = dishes;
             // Todo: should the meal total be displayed on meal level?
-            mealItem.customerPrice += dishes.reduce((sum, dish) => dish.isFree === true ? 0 : sum + dish.customerPrice * dish.quantity, 0);
+            mealItem.customerPrice += dishes.reduce((sum, dish) => sum + (dish.isFree === true ? 0 : dish.customerPrice * dish.quantity), 0);
             
             return mealItem;  
         })
