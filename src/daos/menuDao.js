@@ -2,8 +2,17 @@ import * as dao from './dao.js';
 import * as utils from "../utils.js";
 import { where, orderBy } from 'firebase/firestore';
 
-export async function getOne(id) {
-    return await dao.getOne(id)
+export async function getOne(id, onError) {
+    return await dao.getOne(["menu"], id, onError)
+}
+
+export async function update(id, data, onError, writes) {
+    return await dao.update(['menu'], id, data, true, onError, writes);
+}
+
+export async function add(data, onError, writes) {
+    const id = makeId(data);
+    return await dao.add(['menu'], id, data, onError, writes);
 }
 
 export async function get(options = {}, onError) {
@@ -46,4 +55,26 @@ export async function get(options = {}, onError) {
         console.error('Error fetching menu:', error);
         return [];
     }
+}
+
+export async function remove(item, onError, writes) {
+    return await dao.remove(['menu'], item.id, onError, writes);
+
+}
+
+function makeId(data) {
+    const name = utils.isString(data.name) ? data.name.toLowerCase().replace(/ /g, "-") : "";
+    const mealsShort = data.meals.map((meal) => {
+        switch(meal) {
+            case "lunch": return "lu";
+            case "dinner": return "di";
+            case "breakfast": return "bf";
+            case "extra": return "ex";
+            case "afternoon-tea": return "at";
+            case "snack": return "sn";
+            default: return meal;
+        }
+    });
+    const mealsJoined = mealsShort.join("-");
+    return `${name}-${mealsJoined}`.replace(/ /g, "-");
 }

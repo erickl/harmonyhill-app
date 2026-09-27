@@ -1,6 +1,7 @@
 import * as menuDao from '../daos/menuDao.js';
 import * as bookingService from './bookingService.js';
 import * as utils from "../utils.js";
+import {commitTx, decideCommit} from "../daos/dao.js";
 
 /**
  * filters = {
@@ -15,6 +16,44 @@ import * as utils from "../utils.js";
 export async function get(options = {}, onError) {
     const menu = await menuDao.get(options, onError);
     return menu;
+}
+
+export async function add(data, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const result = await menuDao.add(data, onError, writes);
+    if (result === false) return false;
+
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
+}
+
+export async function update(data, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const result = await menuDao.update(data.id, data, onError, writes);
+    if (result === false) return false;
+
+    if (commit) {
+        if ((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
+}
+
+export async function remove(item, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const result = await menuDao.remove(item, onError, writes);
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
 }
 
 export async function getOneByNameAndCourse(name, course) {
@@ -60,4 +99,8 @@ export async function getByBookingId(bookingId, options = {}) {
     options.house = house.trim().toLowerCase();
     const menuItems = await get(bookingId, options);
     return menuItems;
+}
+
+export async function validate(data, onValidationError, onValidationWarning) {
+    return true;
 }

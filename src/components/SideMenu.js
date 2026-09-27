@@ -64,6 +64,15 @@ export default function SideMenu({context}) {
                     </li>
                 )}
 
+                {permissions.isAdmin && (
+                    <li><p onClick={() => {
+                            context.onNavigate('menu');
+                            close();
+                        }} 
+                        style={{ color: 'white' }}>Menu</p>
+                    </li>
+                )}
+
                 {permissions.canReadInventory && (
                     <li><p onClick={() => {
                             context.onNavigate('inventory');

@@ -7,6 +7,8 @@ import ExpensesScreen from './components/ExpensesScreen.js';
 import AddIncomeScreen from './components/AddIncomeScreen.js';
 import IncomeScreen from './components/IncomeScreen.js';
 import LoginScreen from './components/LoginScreen.js';
+import MenuScreen from './components/MenuScreen.js';
+import AddMenuItemScreen from './components/AddMenuItemScreen.js';
 import AddCustomerScreen from './components/AddCustomerScreen.js';
 import EditCustomerScreen from './components/EditCustomerScreen.js';
 import InventoryScreen from './components/InventoryScreen.js';
@@ -119,6 +121,8 @@ function App() {
         'add-customer-purchase': AddPurchaseScreen,
         'edit-customer-purchase': EditPurchaseScreen,
         'admin': AdminScreen,
+        'menu': MenuScreen,
+        'add-menu-item' : AddMenuItemScreen,
         'userLogs': ChangeLogsComponent,
         'inventory': InventoryScreen,
         'addInventory': AddInventoryScreen,
