@@ -21,6 +21,7 @@ export default function IncomeScreen({ customer, context }) {
     const [recentFilter,        setRecentFilter        ] = useState(null );
     const [issuesFilter,        setIssuesFilter        ] = useState(null );
     const [pastFilter,          setPastFilter          ] = useState(null );
+    const [customerFilter,      setCustomerFilter      ] = useState(null );
 
     const { onError   } = useNotification();
     const { onSuccess } = useSuccessNotification();
@@ -40,6 +41,7 @@ export default function IncomeScreen({ customer, context }) {
 
     useEffect(() => {
         let filter = {};
+
         if(!permissions.canSeeTransferIncomes ) {
             // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
             filter["paymentMethod"] = "cash";
@@ -54,9 +56,14 @@ export default function IncomeScreen({ customer, context }) {
         }
 
         const loadData = async () => {
+            if(customer) {
+                setCustomerFilter({bookingId : customer.id});
+                return;
+            }
+
             const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);       
             
-            // In Recent tab, display records from a week ago at the oldest
+            // In Recent tab, display records from a month ago at the oldest
             const monthStart = utils.monthStart();
             const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : monthStart;
             
@@ -118,6 +125,16 @@ export default function IncomeScreen({ customer, context }) {
                 </div>  
             </div>
             <div className="card-content">
+                {customerFilter && (
+                    <IncomeList
+                        title={"All"}
+                        context={context}
+                        filter={customerFilter}
+                        subscribe={true}
+                        expand={true}
+                    />
+                )}
+
                 {recentFilter && (
                     <IncomeList
                         title={"Recent"}
