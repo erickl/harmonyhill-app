@@ -39,6 +39,7 @@ export default function BookingForm({ booking, context }) {
         source:              booking ? booking.source              : '',
         guestPaid:           booking ? booking.guestPaid           : '',
         hostPayout:          booking ? booking.hostPayout          : '',
+        paymentComment:      booking ? booking.paymentComment      : '',
     };
 
     const [formData, setFormData] = useState(initialFormData);
@@ -273,6 +274,14 @@ export default function BookingForm({ booking, context }) {
                     label={"Host Payout"}
                     value={formData.hostPayout}
                     onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+                />
+
+                <TextInput
+                    type="text"
+                    name="paymentComment"
+                    label={"Payment Comment"}
+                    value={formData.paymentComment}
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                 />
             </>)}
 

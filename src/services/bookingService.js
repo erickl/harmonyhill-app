@@ -164,6 +164,7 @@ export async function mapBookingObject(data) {
     
     if(utils.isAmount(data?.guestPaid))           booking.guestPaid              = data.guestPaid / data.nightsCount;
     if(utils.isAmount(data?.hostPayout))          booking.hostPayout             = data.hostPayout   ;
+    if(utils.isString(data?.paymentComment))      booking.paymentComment         = data.paymentComment;
             
     if(utils.isDate(data?.checkInAt))             booking.checkInAt              = utils.toFireStoreTime(data.checkInAt)    ;
     if(utils.isDate(data?.checkOutAt))            booking.checkOutAt             = utils.toFireStoreTime(data.checkOutAt)   ;
