@@ -73,11 +73,11 @@ export default function ExpensesScreen({ context }) {
             const monthStart = utils.monthStart();
             const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : monthStart;
             
-            let recentFilterAfter = monthStart;
+            let recentFilterAfter = utils.today(-7);
             if(oldest >= monthStart) {
                 recentFilterAfter = oldest;
             } else {
-                const pastFilter = {...filter, after: oldest, before: utils.today(-7).plus({seconds : -1})};
+                const pastFilter = {...filter, after: oldest, before: recentFilterAfter.plus({seconds : -1})};
                 setPastFilter(pastFilter);
             }
 
