@@ -11,6 +11,7 @@ export async function getOne(nameOrId, onError) {
     return await inventoryDao.getOne(nameOrId, onError);
 }
 
+// doneAt can be custom, not taking from the given activity object. Id doneAt == null, take date from activity 
 export async function remove(activity, doneAt, reason, itemName, quantity, comments, onError, writes = []) {
     const commit = decideCommit(writes);
 
@@ -57,7 +58,7 @@ export async function getSale(item, activityId, onError) {
 export async function addSale(activity, itemName, quantity, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await remove(activity, "sale", itemName, quantity, null, onError, writes);
+    const result = await remove(activity, null, "sale", itemName, quantity, null, onError, writes);
     if (result === false) return false;
 
     if (commit) {
