@@ -8,6 +8,7 @@ import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import ExpenseComponent from "./ExpenseComponent.js";
 
 export default function ExpenseList({context, title, filter, expand, subscribe}) {
+    const [filterInternal, setFilterInternal] = useState(filter);
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [lastUpdate, setLastUpdate] = useState(null);
@@ -32,34 +33,34 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
             if(result !== false) {
                 if(subscribe) return;
                 let newExpenses = utils.deepCopy(expenses);
-                newExpenses = newExpenses.filter((expense) => expense.id !== expenseToDelete.id);
+                newExpenses = newExpenses.filterInternal((expense) => expense.id !== expenseToDelete.id);
                 setExpenses(newExpenses);
                 onSuccess();
             }
         });
     }
 
-    const fetchExpenses = async() => {
+    const fetchExpenses = async(filter_) => {
         setLoading(prev => !prev);
-        const uploadedExpenses = await expenseService.get(filter, onError);
+        const uploadedExpenses = await expenseService.get(filter_, onError);
         setExpenses(uploadedExpenses);
         setLoading(prev => !prev);
     }
 
-    useEffect(() => {
-        if(!subscribe) fetchExpenses();
-    }, []);
-
     useEffect(() =>{
+        setFilterInternal(filter);
+        
         if(subscribe) {
             expenseService.subscribe((liveExpenses) => {
                 liveExpenses.sort((e1, e2) => e2.purchasedAt - e1.purchasedAt);
                 setExpenses(liveExpenses);
                 setLastUpdate(utils.to_HHmm());
                 setLoading(false);
-            }, filter, onError);
+            }, filterInternal, onError);
+        } else {
+            fetchExpenses(filter);
         }
-    }, []);
+    }, [filter]);
 
     if(loading) {
         return (

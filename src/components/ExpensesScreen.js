@@ -10,18 +10,21 @@ import VeganHamburgerButton from './VeganHamburgerButton.js';
 import { ImageDown } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 import ExpenseComponent from "./ExpenseComponent.js";
-import { useFilters } from "../context/FilterContext.js";
 import { useProgressCounter } from "../context/ProgressContext.js";
 import ExpenseList from './ExpenseList.js';
+import { Filter, FilterX } from 'lucide-react';
+import { useFilters } from "../context/FilterContext.js";
 
 export default function ExpensesScreen({ context }) {
     const [pettyCash,        setPettyCash       ] = useState(null );
     const [expenseSum,       setExpenseSum      ] = useState(null );
 
+    const [customInterval,        setCustomInterval]        = useState(null);
     const [recentFilter,          setRecentFilter]          = useState(null);
     const [issuesFilter,          setIssuesFilter]          = useState(null);
     const [pendingApprovalFilter, setPendingApprovalFilter] = useState(null);
     const [pastFilter,            setPastFilter]            = useState(null);
+    const [showFilter,        setShowFilter        ] = useState(false);
 
     const { onFilter   } = useFilters();
     const { onError    } = useNotification();
@@ -32,6 +35,13 @@ export default function ExpensesScreen({ context }) {
         "after"  : "date",
         "before" : "date",
         "paymentMethod" : "string",
+    };
+
+    const onFilterValuesSubmit = (filterValues) => {
+        setCustomInterval({
+            after  : filterValues.after,
+            before : filterValues.before
+        });
     };
 
     const getDataForExport = async(filterValues, onProgress) => {
@@ -128,6 +138,13 @@ export default function ExpensesScreen({ context }) {
                                 <ImageDown style={downloadIconStyle} onClick={() => handleReceiptsDownloadFilter()} />
                             </>)}
 
+                            {permissions.isAdmin && context.enableFilters && (<>    
+                                <Filter 
+                                    //onClick={() => setShowFilter(prev => !prev)}
+                                    onClick={() => onFilter(filterHeaders, onFilterValuesSubmit)}
+                                />
+                            </>)}
+
                             {permissions.canAddIncomes && (
                                 <button className="add-button" onClick={() => context.onNavigate("add-expense")}>
                                     + 
@@ -161,23 +178,32 @@ export default function ExpensesScreen({ context }) {
                     )}
                 </>)}
 
-                {recentFilter && (
+                {customInterval !== null ? (
                     <ExpenseList 
-                        context={context}
-                        title={"Recent"}
-                        filter={recentFilter}
+                        context={context} 
+                        title={"Custom"} 
+                        filter={customInterval} 
                         expand={true}
-                        subscribe={true}
-                    />
-                )}
+                    /> 
+                ) : (<>
+                    {recentFilter && (
+                        <ExpenseList 
+                            context={context}
+                            title={"Recent"}
+                            filter={recentFilter}
+                            expand={true}
+                            subscribe={true}
+                        />
+                    )}
 
-                {pastFilter && (
-                    <ExpenseList 
-                        context={context}
-                        title={"Previous"}
-                        filter={pastFilter}
-                    />
-                )}
+                    {pastFilter && (
+                        <ExpenseList 
+                            context={context}
+                            title={"Previous"}
+                            filter={pastFilter}
+                        />
+                    )}
+                </>)}
             </div>
         </div>
     )
