@@ -10,6 +10,9 @@ export default function MultipleChoiceList({ label, current, options, onSelect }
         if(utils.isString(current)) {
             current_ = utils.isEmpty(current) ? [] : [current];
         }
+        
+        current_ = current_.filter((item) => !utils.isEmpty(item));
+
         setSelected(current_ || []);
     }, [current]); 
 
