@@ -26,29 +26,32 @@ export default function MultipleChoiceList({ label, current, options, onSelect }
     };
 
     return (
-        <div className="row">
-            {Object.values(options).map((option, i) => {
-                const index = selected.findIndex(e => e === option);
-                const isSelected = index !== -1;
-                return (
-                    <div 
-                        className='choice'
-                        key={`button-${i}`}>
-                        <button 
-                            className={`option ${isSelected ? 'selected' : ''}`}
-                            onClick={(e) => handleSelect(option)}
-                        >
-                            {option}
-                        </button>
+        <div>
+            <span>{label}</span>
+            <div className="row">
+                {Object.values(options).map((option, i) => {
+                    const index = selected.findIndex(e => e === option);
+                    const isSelected = index !== -1;
+                    return (
+                        <div 
+                            className='choice'
+                            key={`button-${i}`}>
+                            <button 
+                                className={`option ${isSelected ? 'selected' : ''}`}
+                                onClick={(e) => handleSelect(option)}
+                            >
+                                {option}
+                            </button>
 
-                        {isSelected && (
-                            <p className="order">
-                                {index+1}
-                            </p>
-                        )}
-                    </div>
-                );
-            })}
+                            {isSelected && (
+                                <p className="order">
+                                    {index+1}
+                                </p>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }
