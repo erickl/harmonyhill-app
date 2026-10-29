@@ -24,6 +24,8 @@ export default function RemoveInventoryScreen({context, item}) {
         "lost"    : { name : "lost"    },
         "expired" : { name : "expired" },
         "broken"  : { name : "broken"  },
+        "refused" : { name : "refused"  },
+        "undercharged" : { name : "undercharged"  },
     };
 
     const [form,            setForm           ] = useState(initialForm);
