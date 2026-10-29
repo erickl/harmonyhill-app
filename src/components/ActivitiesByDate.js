@@ -5,6 +5,7 @@ import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useNotification } from '../context/NotificationContext.js';
+import { useSuccessNotification } from '../context/SuccessContext.js';
 import * as utils from "../utils.js";
 import Spinner from './Spinner.js';
 import "./ActivitiesByDate.css";
@@ -64,6 +65,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
 
     const { onError } = useNotification();
     const { onConfirm } = useConfirmationModal();
+    const { onSuccess } = useSuccessNotification();
 
     const handleSetExpanded = async () => {
         setExpanded(prev => !prev);
@@ -87,6 +89,8 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
 
                 const newActivities = activities.filter((act) => act.id !== activity.id);
                 setActivities(newActivities);
+
+                onSuccess();
             }
         });
     };
