@@ -31,10 +31,10 @@ export async function add(data, onError, writes = []) {
     return result;
 }
 
-export async function update(data, onError, writes = []) {
+export async function update(menuItem, data, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await menuDao.update(data.id, data, onError, writes);
+    const result = await menuDao.update(menuItem.id, data, onError, writes);
     if (result === false) return false;
 
     if (commit) {

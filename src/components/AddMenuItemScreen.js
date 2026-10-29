@@ -4,19 +4,26 @@ import * as utils from "../utils.js";
 import * as menuService from "../services/menuService.js";
 import { useSuccessNotification } from '../context/SuccessContext.js';
 import { useNotification } from '../context/NotificationContext.js';
+import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import ButtonsFooter from "./ButtonsFooter.js";
 import { Checkbox, FormControlLabel } from '@mui/material';
+import Dropdown from "./Dropdown.js";
+import MultipleChoiceList from './MultipleChoiceList.js';
 
 export default function AddMenuItemScreen({context, itemToEdit}) {
 
     const initalForm = {
-        name          : itemToEdit ? itemToEdit.name : "",
-        customerPrice : itemToEdit ? itemToEdit.customerPrice : 0,
-        course        : itemToEdit ? itemToEdit.course : "",
-        description   : itemToEdit ? itemToEdit.description : "",
-        instructions  : itemToEdit ? itemToEdit.instructions : "",
-        isAvailable   : itemToEdit ? itemToEdit.isAvailable : true,
-        isFavorite    : itemToEdit ? itemToEdit.isFavorite : false,
+        name              : itemToEdit ? itemToEdit.name : "",
+        customerPrice     : itemToEdit ? itemToEdit.customerPrice : 0,
+        course            : itemToEdit ? itemToEdit.course : "",
+        meals             : itemToEdit ? itemToEdit.meals : [],
+        houseAvailability : itemToEdit ? itemToEdit.houseAvailability : [],
+        allergens         : itemToEdit ? itemToEdit.allergens : [],
+        description       : itemToEdit ? itemToEdit.description : "",
+        instructions      : itemToEdit ? itemToEdit.instructions : "",
+        isAvailable       : itemToEdit ? itemToEdit.isAvailable : true,
+        isFavorite        : itemToEdit ? itemToEdit.isFavorite : false,
+        priority          : itemToEdit ? itemToEdit.priority : 0,
     };
 
     const [readyToSubmit, setReadyToSubmit] = useState(false);
@@ -25,6 +32,7 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
 
     const {onSuccess} = useSuccessNotification();
     const {onError} = useNotification();
+    const {onConfirm} = useConfirmationModal();
 
     const [formData, setFormData] = useState(initalForm);
 
@@ -57,26 +65,76 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
     };
 
     const handleSubmit = async () => {
-        try {
-            if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
-            
-            let result = false;
-            
-            if(itemToEdit) {
-                result = await menuService.update(formData, onError);
-            } else {
-                result = await menuService.add(formData, onError);
-            }         
+        onConfirm("Are you sure?", async () => {
+            try {
+                if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
+                
+                let result = false;
+                
+                if(itemToEdit) {
+                    result = await menuService.update(itemToEdit, formData, onError);
+                } else {
+                    result = await menuService.add(formData, onError);
+                }         
 
-            if(result !== false) {
-                if(itemToEdit) context.onClose();
-                else setFormData(initalForm);                
-                onSuccess();
+                if(result !== false) {
+                    if(itemToEdit) context.onClose();
+                    else setFormData(initalForm);                
+                    onSuccess();
+                }
+            } catch(e) {
+                onError(`Submit error: ${e.message}`);
             }
-        } catch(e) {
-            onError(`Submit error: ${e.message}`);
-        }        
+        });        
     };
+
+    const onCourseSelect = (newCourse) => {
+        const name = newCourse ? newCourse.name : '';
+        handleFormDataChange("course", name);
+    }
+
+    const onMealSelect = (newMeals) => {
+        handleFormDataChange("meals", newMeals);
+    }
+
+    const onHouseAvailabilitySelect = (newHouses) => {
+        handleFormDataChange("houseAvailabililty", newHouses);
+    }
+
+    const onAllergenSelect = (newAllergens) => {
+        handleFormDataChange("allergens", newAllergens);
+    }
+
+    const courses = {
+        'Lunch'  : {"name" : "Lunch"  },
+        'Dinner'  : {"name" : "Dinner"  },
+        'Drinks'  : {"name" : "Drinks"  },
+        'Dessert'  : {"name" : "Dessert"  },
+        'Coffee'  : {"name" : "Coffee"  },
+        'Breakfast'  : {"name" : "Breakfast"  },
+        'Breakfast2'  : {"name" : "Breakfast2"  },
+        'Breakfast3'  : {"name" : "Breakfast3"  },
+    };
+
+    const mealCategories = [
+        'breakfast',
+        'lunch'    ,
+        'dinner'   ,
+        'afternoon-tea',
+        'snack' ,
+        'extra',
+    ];
+
+    const houses = [
+        'harmony hill',
+        'the jungle nook',
+    ];
+
+    const allergens = [
+        "soy",
+        "tree nuts",
+        "peanuts",
+    ];
 
     return (
         <div className='card-content'>
@@ -87,6 +145,14 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
                 name="name"
                 label={"Name"}
                 value={formData.name}
+                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+            />
+
+            <TextInput 
+                type="price"
+                name="customerPrice"
+                label={"Customer Price"}
+                value={formData.customerPrice}
                 onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
             />
 
@@ -104,6 +170,42 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
                 label={"Instructions"}
                 value={formData.instructions}
                 onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+            />
+
+            <Dropdown 
+                label={"Course"} 
+                options={courses}
+                current={formData.course}
+                onSelect={onCourseSelect}
+            />
+
+            <TextInput 
+                type="amount"
+                name="priority"
+                label={"Priority"}
+                value={formData.priority}
+                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+            />
+
+            <MultipleChoiceList
+                label={"Meals"}
+                options={mealCategories}
+                current={formData.meals}
+                onSelect={onMealSelect}
+            />
+
+            <MultipleChoiceList
+                label={"House Availability"}
+                options={houses}
+                current={formData.houseAvailability}
+                onSelect={onHouseAvailabilitySelect}
+            />
+
+            <MultipleChoiceList
+                label={"Allergens"}
+                options={allergens}
+                current={formData.allergens}
+                onSelect={onAllergenSelect}
             />
 
             <FormControlLabel

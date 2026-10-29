@@ -67,7 +67,7 @@ export default function MealComponent({context, item, handleDelete}) {
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         context.onNavigate("add-menu-item", {
-                                            item: item,
+                                            itemToEdit: item,
                                         });
                                     }}
                                 />
