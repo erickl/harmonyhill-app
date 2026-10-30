@@ -89,7 +89,7 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
     };
 
     const onCourseSelect = (newCourse) => {
-        const name = newCourse ? newCourse.name : '';
+        const name = newCourse && Array.isArray(newCourse) ? newCourse[0] : newCourse;
         handleFormDataChange("course", name);
     }
 
@@ -175,6 +175,14 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
             <Dropdown 
                 label={"Course"} 
                 options={courses}
+                current={formData.course}
+                onSelect={onCourseSelect}
+            />
+
+            <MultipleChoiceList
+                label={"Course"} 
+                options={Object.keys(courses)}
+                maxSelect={1}
                 current={formData.course}
                 onSelect={onCourseSelect}
             />
