@@ -258,6 +258,12 @@ export async function setActivityStatus(booking, activity, newStatus, onError, w
         }
     }
 
+    const statusLog = {
+        name : newStatus,
+    };
+    const statusUpdateResult = await activityDao.addStatusLog(booking.id, activity.id, statusLog, onError, writes);
+    if(statusUpdateResult === false) return false;
+
     const result = await update(booking, activity, updatedData, onError, writes);
     if (result === false) return false;
 

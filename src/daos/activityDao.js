@@ -26,6 +26,13 @@ export async function add(bookingId, activityId, activity, onError, writes = [])
     return await dao.add(path, activityId, activity, onError, writes);
 }
 
+export async function addStatusLog(bookingId, activityId, status, onError, writes = []) {
+    const path = getActivitiesPath(bookingId);
+    path.push(activityId, "statusLog");
+    const statusId = `status-${status.name}-${Date.now()}`;
+    return await dao.add(path, statusId, status, onError, writes);
+}
+
 export async function update(bookingId, activityId, activityData, updateLogs = true, onError = null, writes = []) {
     const path = getActivitiesPath(bookingId);
     return await dao.update(path, activityId, activityData, updateLogs, onError, writes);

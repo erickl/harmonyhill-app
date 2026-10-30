@@ -527,7 +527,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         </p>
                     )}
 
-                    {status &&  (
+                    {status && (
                         <p>
                             <span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}
                         </p>
