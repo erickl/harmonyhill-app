@@ -7,6 +7,9 @@ export default function MultipleChoiceList({ label, current, options, maxSelect 
 
     useEffect(() => {
         let current_ = current;
+
+        if(utils.isEmpty(current)) current_ = [];
+        
         if(utils.isString(current)) {
             current_ = utils.isEmpty(current) ? [] : [current];
         }
@@ -66,7 +69,7 @@ export default function MultipleChoiceList({ label, current, options, maxSelect 
                                 {option}
                             </button>
 
-                            {isSelected && (
+                            {isSelected && maxSelect > 1 && (
                                 <p className="order">
                                     {index+1}
                                 </p>

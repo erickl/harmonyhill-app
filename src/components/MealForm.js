@@ -7,7 +7,7 @@ import * as mealService from "../services/mealService.js";
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import MealFormDish from "./MealFormDish.js";
-import Dropdown from './Dropdown.js';
+import MultipleChoiceList from './MultipleChoiceList.js';
 import TextInput from './TextInput.js';
 import { Checkbox, FormControlLabel } from '@mui/material';
 
@@ -25,7 +25,17 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     const { onError } = useNotification();
 
     const onTeamMemberSelect = (teamMember) => {
-        const name = teamMember ? teamMember.name : '';
+        let name = null;
+        if(!teamMember) return;
+        
+        if(Array.isArray(teamMember) && teamMember.length > 0) {
+            name = teamMember[0];
+        } else if(utils.exists(teamMember, "name")) {
+            name = teamMember.name;
+        } else {
+            name = teamMember;
+        }
+
         handleFormDataChange("assignedTo", name);
     }
 
@@ -243,11 +253,12 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             </div>
 
             <div className="purchase-form-group">
-                <Dropdown 
+                <MultipleChoiceList
                     current={formData.assignedTo} 
                     label={"Assign to team member"} 
-                    options={teamMembers} 
+                    options={Object.keys(teamMembers)} 
                     onSelect={onTeamMemberSelect}
+                    maxSelect={1}
                 />
             </div>
 

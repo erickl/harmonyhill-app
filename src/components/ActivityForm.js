@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import "./ActivityForm.css";
 import MyDatePicker from "./MyDatePicker.js";
-import Dropdown from "./Dropdown.js";
 import ProviderDropdown from "./ProviderDropdown.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
 import TextInput from './TextInput.js';
 import { useNotification } from "../context/NotificationContext.js";
+import MultipleChoiceList from './MultipleChoiceList.js';
 import { Checkbox, FormControlLabel } from '@mui/material';
 
 export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
@@ -30,7 +30,17 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
     }
 
     const onTeamMemberSelect = (teamMember) => {
-        const name = teamMember ? teamMember.name : '';
+        let name = null;
+        if(!teamMember) return;
+        
+        if(Array.isArray(teamMember) && teamMember.length > 0) {
+            name = teamMember[0];
+        } else if(utils.exists(teamMember, "name")) {
+            name = teamMember.name;
+        } else {
+            name = teamMember;
+        }
+
         handleFormDataChange("assignedTo", name);
     }
 
@@ -107,11 +117,12 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
             />
 
-            <Dropdown
-                current={formData.assignedTo}
+            <MultipleChoiceList 
                 label={"Assign to team member"}
-                options={teamMembers}
+                current={formData.assignedTo}
+                options={Object.keys(teamMembers)}
                 onSelect={onTeamMemberSelect}
+                maxSelect={1}
             />
 
             <FormControlLabel
