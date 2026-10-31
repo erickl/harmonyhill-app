@@ -17,6 +17,7 @@ import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useMinibarTableModal } from '../context/MinibarTableContext.js';
 import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useGenericModal } from '../context/GenericContext.js';
 import MetaInfo from './MetaInfo.js';
 import PhotoUploadButton from "./PhotoUploadButton.js";
 import TaskAcceptButton from "./TaskAcceptButton.js";
@@ -49,6 +50,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const { onConfirm } = useConfirmationModal();
     const { onDisplayMinibarTable } = useMinibarTableModal();
     const { permissions } = useUserPermissions();
+    const { onDisplayPopup } = useGenericModal();
 
     const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
     const countMinibarNow = minibarCount === null && activity && ActivityStatus.Started.equals(activity.status) && utils.isToday(activity.startingAt);
@@ -299,6 +301,19 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         setLoadingExpandedActivity(false);
     }
 
+    const displayStatusLogs = async () => {
+        const statusLogs = await activityService.getStatusLogs(customer, activity, onError);
+        if(statusLogs == false) return false;
+
+        const logs = statusLogs.map((log) => {
+            return <div>
+                {`${utils.capitalizeWords(log.name)}, ${log.createdBy}, ${utils.to_ddMMM_HHmm(log.createdAt)}`}
+            </div>
+        });
+
+        onDisplayPopup("Status Logs", logs);
+    }
+
     const loadExpandedActivityInfo = async () => {
         if (!activity) return;
 
@@ -433,6 +448,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 {status && (<div className="activity-header-status">
                     <StatusCircle
                         status={status.name}
+                        onClick={displayStatusLogs}
                     />
                 </div>)}
 
@@ -528,7 +544,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     )}
 
                     {status && (
-                        <p>
+                        <p 
+                            onClick={displayStatusLogs}
+                        >
                             <span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}
                         </p>
                     )}

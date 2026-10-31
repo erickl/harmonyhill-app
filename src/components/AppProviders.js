@@ -14,6 +14,7 @@ import { MinibarTableProvider } from "../context/MinibarTableContext.js";
 import { UserPermissionProvider } from "../context/UserPermissionsContext.js";
 import { InputProvider } from "../context/InputContext.js";
 import { IssueProvider } from "../context/IssueContext.js";
+import { GenericProvider } from "../context/GenericContext.js";
 
 export function AppProviders({ children }) {
     return (
@@ -32,7 +33,9 @@ export function AppProviders({ children }) {
         <MinibarTableProvider>
         <InputProvider>
         <IssueProvider>
+        <GenericProvider>
           {children}
+        </GenericProvider>
         </IssueProvider>
         </InputProvider>
         </MinibarTableProvider>

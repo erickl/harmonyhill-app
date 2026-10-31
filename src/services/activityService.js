@@ -246,23 +246,28 @@ export async function getProviders(category, subCategory) {
     return providers;
 }
 
+export async function getStatusLogs(booking, activity, onError) {
+    return await activityDao.getStatusLog(booking.id, activity.id, onError);
+}
+
 export async function setActivityStatus(booking, activity, newStatus, onError, writes = []) {
     const commit = decideCommit(writes);
 
     const updatedData = { status: newStatus };
 
-    if (ActivityStatus.Started.equals(newStatus)) {
-        // If activity is not delayed, set startingTime when starting activity
-        if (activity.startingTime === null || utils.isFuture(activity.startingTime)) {
-            updatedData["startingTime"] = utils.now();
-        }
-    }
+    // Removed 20261030: if we create status change logs (below), then this might not be needed anymore
+    // if (ActivityStatus.Started.equals(newStatus)) {
+    //     // If activity is not delayed, set startingTime when starting activity
+    //     if (activity.startingTime === null || utils.isFuture(activity.startingTime)) {
+    //         updatedData["startingTime"] = utils.now();
+    //     }
+    // }
 
     const statusLog = {
-        name : newStatus,
+        name: newStatus,
     };
     const statusUpdateResult = await activityDao.addStatusLog(booking.id, activity.id, statusLog, onError, writes);
-    if(statusUpdateResult === false) return false;
+    if (statusUpdateResult === false) return false;
 
     const result = await update(booking, activity, updatedData, onError, writes);
     if (result === false) return false;
