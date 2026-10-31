@@ -36,7 +36,8 @@ export async function addStatusLog(bookingId, activityId, status, onError, write
 export async function getStatusLog(bookingId, activityId, onError) {
     const path = getActivitiesPath(bookingId);
     path.push(activityId, "statusLog");
-    return await dao.get(path, [], [], -1, onError);
+    const ordering = [ orderBy("createdAt", "asc") ];
+    return await dao.get(path, [], ordering, -1, onError);
 }
 
 export async function update(bookingId, activityId, activityData, updateLogs = true, onError = null, writes = []) {
