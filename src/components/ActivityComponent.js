@@ -112,6 +112,15 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         return tooLateToStart && isGoodToGo;
     }
 
+    const canReopenActivity = () => {
+        const isCompleted = ActivityStatus.Completed.equals(status);
+        if (!isCompleted) return false;
+
+        if(!utils.isToday(activity.startingAt)) return false;
+
+        return true;
+    }
+
     const canCompleteActivity = () => {
         if(!activity.startingAt) return false;
 
@@ -172,7 +181,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         if (ActivityStatus.Started.equals(newStatus)) {
             if (minutesLeft > 30) {
-                confirmationText = `Are you sure you want set activity status to ${newStatus.name}? It's still a bit early?`;
+                confirmationText = `Are you sure you want set activity status to ${newStatus.name} already? It's still a bit early?`;
             }
         }
 
@@ -655,6 +664,20 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                     }}
                                 />
                                 <p>Complete it</p>
+                            </div>
+                        )}
+
+                        {/* Open ("uncomplete") activity again */}
+                        {canReopenActivity() && (
+                            <div className="activity-component-footer-icon">
+                                <StatusCircle
+                                    status={ActivityStatus.Completed.name}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSetActivityStatusManually(ActivityStatus.Started);
+                                    }}
+                                />
+                                <p>Reopen it</p>
                             </div>
                         )}
 
