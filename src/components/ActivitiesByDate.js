@@ -33,26 +33,29 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
     const isThisWeek = (from !== null && to !== null) ? (from > today && to < utils.today(8)) : false;
 
     if(!filter) filter = {};
-    
-    // if all input dates === null, then filter => {date: null}, which means getting unscheduled activities
-    if(from && to) {
-        filter.after = from;
-        filter.before = to;
-    } else {
-        filter.date = null;
-    }
-    
     let dateFormatted = "Unscheduled";
+
+    // if all input dates === null, then filter => {date: null}, which means getting unscheduled activities
     if(from || to) {
         if(from && to) {
+            filter.after = from;
+            filter.before = to;
             if(isToday) dateFormatted = `Today, ${utils.to_ddMMM(from)}`;
             else if(singleDate) dateFormatted = `${utils.to_www_ddMMM(from)}`;
             else dateFormatted = `${utils.to_www_ddMMM(from)} - ${utils.to_www_ddMMM(to)}`;
         }
-        else if(from && !to) dateFormatted = `After checkout`;
-        else if(!from && to) dateFormatted = `Before checkin`;
+        else if(from && !to) {
+            filter.after = from;
+            dateFormatted = `After checkout`;
+        }
+        else if(!from && to) {
+            filter.before = to;
+            dateFormatted = `Before checkin`;
+        }
     } else if(date) {
         dateFormatted = `${utils.to_ddMMM(date)}`;
+    } else { // date == null
+        filter.date = null;
     }
 
     const doSubscribe = isToday || isThisWeek || noDates || filter.issues;

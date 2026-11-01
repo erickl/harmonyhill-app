@@ -106,7 +106,7 @@ export default function ActivitiesAllLists({ context, customer, includeTodos }) 
                 includeTodos={includeTodos}
             />
 
-            {/* Future activities */}
+            {/* Next week */}
             <h3
                 style={{ marginBottom: "0px" }}
                 className={'activity-list-group-header clickable-header'}
@@ -145,7 +145,7 @@ export default function ActivitiesAllLists({ context, customer, includeTodos }) 
             {expandFuture && (
                 <ActivitiesList
                     context={context}
-                    from={utils.today(1)}
+                    from={utils.today(7+1)}
                     to={to}
                     customer={customer}
                     includeTodos={includeTodos}
