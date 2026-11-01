@@ -11,12 +11,12 @@ class ActivityStatus {
         "staff not confirmed":        600,
         "good to go":                 700,
         "started":                    800,
-        "completed":                  900,
         "overdue":                    1000,
         "awaiting commission":        1100,
         "remove commission":          1200,
         "awaiting expense":           1300,
         "remove expense":             1400,
+        "completed":                  9000,
         
     });
 
@@ -103,3 +103,7 @@ export const RemoveCommission         = new ActivityStatus("remove commission"  
 export const AwaitingExpense          = new ActivityStatus("awaiting expense"           ); 
 export const RemoveExpense            = new ActivityStatus("remove expense"             ); 
 export const None                     = new ActivityStatus("none",                      ); 
+
+export function instance(value, message = "") {
+    return new ActivityStatus(value, message);
+}

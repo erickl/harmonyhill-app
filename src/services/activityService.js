@@ -253,8 +253,7 @@ export async function getStatusLogs(booking, activity, onError) {
 export async function setActivityStatus(booking, activity, newStatus, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const updatedData = { status: newStatus };
-
+    
     // Removed 20261030: if we create status change logs (below), then this might not be needed anymore
     // if (ActivityStatus.Started.equals(newStatus)) {
     //     // If activity is not delayed, set startingTime when starting activity
@@ -263,12 +262,16 @@ export async function setActivityStatus(booking, activity, newStatus, onError, w
     //     }
     // }
 
+    const statusInfo = ActivityStatus.instance(newStatus);
+
     const statusLog = {
         name: newStatus,
+        code: statusInfo.code,
     };
     const statusUpdateResult = await activityDao.addStatusLog(booking.id, activity.id, statusLog, onError, writes);
     if (statusUpdateResult === false) return false;
 
+    const updatedData = { status: newStatus, statusCode: statusInfo.code };
     const result = await update(booking, activity, updatedData, onError, writes);
     if (result === false) return false;
 
@@ -489,6 +492,10 @@ function mapObject(data) {
 
     if (utils.exists(data, "status")) {
         activity.status = utils.isString(data?.status) ? data.status.trim().toLowerCase() : "pending guest confirmation";
+    }
+
+    if (utils.exists(data, "statusCode")) {
+        activity.statusCode = utils.isNumber(data?.statusCode) ? data.statusCode : 0;
     }
 
     if (utils.isString(data?.assignedTo)) activity.assignedTo = data.assignedTo;
