@@ -63,6 +63,24 @@ function createTodoId(todo) {
     return `${todo.assignedTo}-${deadlineAt}-${Date.now()}`;
 }
 
+export async function addStatusLog(todo, status, onError, writes = []) {
+    const parent = await dao.getParent(todo);
+    const path = await getPath(parent);
+    path.push(todo.id, "statusLog");
+
+    const statusId = `status-${status.name}-${Date.now()}`;
+    return await dao.add(path, statusId, status, onError, writes);
+}
+
+export async function getStatusLog(todo, onError) {
+    const parent = await dao.getParent(todo);
+    const path = await getPath(parent);
+    path.push(todo.id, "statusLog");
+
+    const ordering = [ orderBy("createdAt", "asc") ];
+    return await dao.get(path, [], ordering, -1, onError);
+}
+
 export async function addPhoto(todo, id, data, onError, writes = []) {
     const parent = await dao.getParent(todo);
     const path = await getPath(parent);

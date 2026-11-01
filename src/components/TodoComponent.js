@@ -6,6 +6,7 @@ import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { useUserPermissions } from "../context/UserPermissionsContext.js";
+import { useGenericModal } from '../context/GenericContext.js';
 import StatusCircle from "./StatusCircle.js";
 import AlertCircle from "./AlertCircle.js";
 import PhotoUploadButton from "./PhotoUploadButton.js";
@@ -36,6 +37,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
     const { permissions } = useUserPermissions();
+    const { onDisplayPopup } = useGenericModal();
 
     const canStart = () => {
         const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
@@ -103,6 +105,19 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
             setPhotos(prev => [...prev, photoRecord]);
         }
         return photoRecord
+    }
+
+    const displayStatusLogs = async () => {
+        const statusLogs = await todoService.getStatusLogs(todo, onError);
+        if(statusLogs == false) return false;
+
+        const logs = statusLogs.map((log) => {
+            return <div>
+                {`${utils.capitalizeWords(log.name)}, ${log.createdBy}, ${utils.to_ddMMM_HHmm(log.createdAt)}`}
+            </div>
+        });
+
+        onDisplayPopup("Status Logs", logs);
     }
 
     const onTodoStepCreated = async (newTodoStep) => {
@@ -206,6 +221,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                     <div className="activity-header-status">
                         <StatusCircle
                             status={status.name}
+                            onClick={displayStatusLogs}
                         />
                     </div>
                 )}
@@ -237,8 +253,8 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                 <Spinner />
             ) : expanded ? (
                 <div className="todo-body">
-                    <p><
-                        span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}
+                    <p onClick={displayStatusLogs}>
+                        <span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}
                     </p>
                     {alert && !utils.isEmpty(alert.message) && (
                         <p>

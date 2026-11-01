@@ -87,10 +87,24 @@ export async function assigneeAccept(todo, isAccepted, onError, writes = []) {
     return result;
 }
 
+export async function getStatusLogs(todo, onError) {
+    return await todoDao.getStatusLog(todo, onError);
+}
+
 export async function setStatus(todo, newStatus, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    const result = await update(todo, {status : newStatus}, onError, writes);
+    const statusInfo = ActivityStatus.instance(newStatus);
+    
+    const statusLog = {
+        name: newStatus,
+        code: statusInfo.code,
+    };
+    const statusUpdateResult = await todoDao.addStatusLog(todo, statusLog, onError, writes);
+    if (statusUpdateResult === false) return false;
+
+    const updateData = {status : newStatus, statusCode : statusInfo.code};
+    const result = await update(todo, updateData, onError, writes);
 
     if(commit) {
         if((await commitTx(writes, onError)) === false) return false;
