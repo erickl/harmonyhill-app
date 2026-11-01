@@ -1,6 +1,7 @@
 import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js"
 import * as utils from "../utils.js";
+import * as ActivityStatus from "../models/ActivityStatus.js";
 
 export function subscribe(bookingId, setDocs, options, onError) {
     const filters = createActivitiesQueryArray(options);
@@ -248,6 +249,10 @@ function createActivitiesQueryArray(options = {}) {
 
     if (utils.exists(options, "hasProvider")) {
         filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
+    }
+
+    if(utils.exists(options, "completed")) {
+        filters.push(where("statusCode", options.completed === true ? "==" : "<", ActivityStatus.Completed.code));
     }
 
     return filters;

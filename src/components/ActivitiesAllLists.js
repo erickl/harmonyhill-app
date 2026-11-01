@@ -41,6 +41,15 @@ export default function ActivitiesAllLists({ context, customer, includeTodos }) 
                 date={null} 
             />
 
+            {/* Overdue: Incomplete activities from yesterday or before */}
+            <ActivitiesByDate 
+                context={context} 
+                customer={customer} 
+                filter={{completed: false}}
+                date2={utils.today(-1)}
+                includeTodos={includeTodos} 
+            />
+
             {customer && (
                 // Any activities scheduled before checkin
                 <ActivitiesByDate
@@ -50,29 +59,14 @@ export default function ActivitiesAllLists({ context, customer, includeTodos }) 
                 />
             )}
 
-            <h3
-                style={{ marginBottom: "0px" }}
-                className={'activity-list-group-header clickable-header'}
-                onClick={() => setExpandIssues(prev => !prev)}
-            >
-                Issues
-
-                <span className="expand-icon">
-                    {expandIssues ? ' ▼' : ' ▶'}
-                </span>
-            </h3>
-
-            {/* Activities with issues */}
-            {expandIssues && (
-                <ActivitiesByDate 
-                    context={context} 
-                    customer={customer}
-                    date1={utils.beginning()}
-                    date2={utils.end()}
-                    filter={{issues:true}}
-                    includeTodos={true}
-                />
-            )}
+            <ActivitiesByDate 
+                context={context} 
+                customer={customer}
+                date1={utils.beginning()}
+                date2={utils.end()}
+                filter={{issues:true}}
+                includeTodos={true}
+            />
 
             <h3
                 style={{ marginBottom: "0px" }}

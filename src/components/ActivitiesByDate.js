@@ -33,29 +33,39 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
     const isThisWeek = (from !== null && to !== null) ? (from > today && to < utils.today(8)) : false;
 
     if(!filter) filter = {};
-    let dateFormatted = "Unscheduled";
+    let headerTitle = "Unscheduled";
 
     // if all input dates === null, then filter => {date: null}, which means getting unscheduled activities
     if(from || to) {
         if(from && to) {
             filter.after = from;
             filter.before = to;
-            if(isToday) dateFormatted = `Today, ${utils.to_ddMMM(from)}`;
-            else if(singleDate) dateFormatted = `${utils.to_www_ddMMM(from)}`;
-            else dateFormatted = `${utils.to_www_ddMMM(from)} - ${utils.to_www_ddMMM(to)}`;
+            if(isToday) headerTitle = `Today, ${utils.to_ddMMM(from)}`;
+            else if(singleDate) headerTitle = `${utils.to_www_ddMMM(from)}`;
+            else headerTitle = `${utils.to_www_ddMMM(from)} - ${utils.to_www_ddMMM(to)}`;
         }
         else if(from && !to) {
             filter.after = from;
-            dateFormatted = `After checkout`;
+            if(customer) headerTitle = `After checkout`;
+            else headerTitle = `After ${utils.to_www_ddMMM(from)}`;
         }
         else if(!from && to) {
             filter.before = to;
-            dateFormatted = `Before checkin`;
+            if(customer) headerTitle = `Before checkin`;
+            else headerTitle = `Before ${utils.to_www_ddMMM(to)}`;
         }
     } else if(date) {
-        dateFormatted = `${utils.to_ddMMM(date)}`;
+        headerTitle = `${utils.to_ddMMM(date)}`;
     } else { // date == null
         filter.date = null;
+    }
+
+    if(filter.completed === false && date2 <= today) {
+        headerTitle = "Overdue";
+    }
+
+    if(filter.issues === true) {
+        headerTitle = "Issues";
     }
 
     const doSubscribe = isToday || isThisWeek || noDates || filter.issues;
@@ -115,7 +125,8 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
         });
     };
 
-    // newActivity might be an update to an existing activity or an entirely new activity (e.g minibar sale)
+    // Update activities list state
+    // 'updatedActivity' might be an update to an existing activity or an entirely new activity (e.g minibar sale)
     const onActivityChange = (updatedActivity) => {
         // If there's a activities update subscription, no need to manually adjust the state
         if(doSubscribe) return;
@@ -124,10 +135,15 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
             return onError(`Unexpected error: Cannot add new activity to current list`);
         }
 
+        // Update the 'state' for list of displayed activities
         const newActivities = [...activities];
 
         const existingIndex = newActivities.findIndex((activity) => activity.id === updatedActivity.id);
+        
+        // If this is an update, overwrite the old activity
         if(existingIndex !== -1) newActivities[existingIndex] = updatedActivity;
+        
+        // Entirely new activity: add and resort the 'state' list
         else {
             newActivities.push(updatedActivity);
             newActivities.sort((a1, a2) => {
@@ -159,7 +175,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
         return activities;
     };
 
-     const getTodos = async() => {
+    const getTodos = async() => {
         if(!customer) {
             const todos_ = await todoService.get(null, filter, onError);
             setTodos(todos_);
@@ -179,8 +195,8 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
         }
     }, [expanded]);
 
-    // Today's activities and the rest of the week reload whenever there is a change in DB
     useEffect(() => {
+        // Subscribe: Reload whenever there is a change in DB
         if(doSubscribe) {
             const unsubscribeActivities = activityService.subscribe(customer, (liveActivities) => {
                 const enhancedLiveActivities = activityService.enhanceActivities(liveActivities);
@@ -227,7 +243,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
                     >
                         <div className='activity-group-header-left'>
                             <div>
-                                {`${dateFormatted}${(isToday ? ` | ${utils.to_HHmm()}` : "")}`}
+                                {`${headerTitle}${(isToday ? ` | ${utils.to_HHmm()}` : "")}`}
                             </div>
                             
                         </div>
