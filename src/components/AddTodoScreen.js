@@ -29,6 +29,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
         comments      : todoToEdit ? todoToEdit.comments      : '',
         requirePhotos : todoToEdit ? todoToEdit.requirePhotos : false,
         status        : todoToEdit ? todoToEdit.status        : ActivityStatus.None.name,
+        visibility    : todoToEdit ? todoToEdit.visibility    : "public",
     };
 
     const [bookings,          setBookings         ] = useState([]       );
@@ -331,6 +332,19 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                         />
                     }
                     label="Require photos?"
+                />
+
+                <FormControlLabel
+                    sx={{ display: 'flex', width: '100%', mt: 2 }}
+                    control={
+                        <Checkbox
+                            checked={formData["visibility"] === "private"}
+                            onChange={(e) => {
+                                handleChange("visibility", e.target.checked ? "private" : "public");
+                            }}
+                        />
+                    }
+                    label="Private"
                 />
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}

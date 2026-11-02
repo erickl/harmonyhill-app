@@ -272,6 +272,9 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                         Duration: {todo.duration} minutes
                     </div>
                     <div>
+                        Visibility: {todo.visibility}
+                    </div>
+                    <div>
                         Category: {utils.capitalizeWords(todo.category)}
                     </div>
                     {todo.comments && (<div>
