@@ -196,7 +196,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                     <TaskAssigneeComponent
                         initialAssigneeName={todo.assignedTo}
                         initialAssigneeAccept={assigneeAccept}
-                        initialHasChanged={todo.changeDescription}
+                        initialHasChanged={!utils.isEmpty(todo.changeDescription)}
                     />
                 </div>
 
@@ -221,7 +221,10 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                     <div className="activity-header-status">
                         <StatusCircle
                             status={status.name}
-                            onClick={displayStatusLogs}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                displayStatusLogs();
+                            }}
                         />
                     </div>
                 )}

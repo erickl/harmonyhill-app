@@ -1,6 +1,7 @@
 import { where, orderBy } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
+import * as ActivityStatus from "../models/ActivityStatus.js";
 
 export function subscribe(setDocs, options, onError) {
     const path = [dao.constant.TODOS];
@@ -109,6 +110,10 @@ function buildQueryFilter(filter) {
         } else {
             queryFilter.push(where("status", "!=", "completed"));
         }
+    }
+
+    if(utils.exists(filter, "completed")) {
+        queryFilter.push(where("statusCode", filter.completed === true ? "==" : "<", ActivityStatus.Completed.code));
     }
 
     // filtering for date >= null doesn't make sense

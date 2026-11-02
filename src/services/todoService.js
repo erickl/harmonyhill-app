@@ -56,7 +56,7 @@ export async function update(todo, updateData, onError, writes = []) {
     // If assignee already accepted but there new changes, make change log
     } else if(todo.assigneeAccept) {
         updateData.changeDescription = makeChangeLog(todo, updateData);
-        updateData.assigneeAccept = false;
+        updateData.assigneeAccept = todo.assigneeAccept && utils.isEmpty( updateData.changeDescription);
     // Change logs only emptied once assignee accepts. If there are existing change logs, append to them
     } else if(!utils.isEmpty(todo.changeDescription)) {
         updateData.changeDescription = makeChangeLog(todo, updateData);
@@ -270,7 +270,8 @@ export function makeChangeLog(oldData, newData) {
         changeLog = oldData.changeDescription;
     }
 
-    const exceptions = ["assignedTo", "assigneeAccept"];
+    // Don't make change logs for these fields
+    const exceptions = ["assignedTo", "assigneeAccept", "status", "statusCode"];
 
     for(const key of Object.keys(newData)) {
         const newVal = newData[key];
