@@ -7,6 +7,7 @@ import * as userService from "../services/userService.js";
 import MyDatePicker from "./MyDatePicker.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import Dropdown from "./Dropdown.js";
+import MultipleChoiceList from './MultipleChoiceList.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
@@ -27,7 +28,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
         description   : todoToEdit ? todoToEdit.description   : '',
         comments      : todoToEdit ? todoToEdit.comments      : '',
         requirePhotos : todoToEdit ? todoToEdit.requirePhotos : false,
-        status        : todoToEdit ? todoToEdit.status        : ActivityStatus.None,
+        status        : todoToEdit ? todoToEdit.status        : ActivityStatus.None.name,
     };
 
     const [bookings,          setBookings         ] = useState([]       );
@@ -118,11 +119,18 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
     }, [formData.category]);
 
     const onTeamMemberSelect = (teamMember) => {
-        const name = teamMember ? teamMember.name : '';
+        let name = null;
+        if(!teamMember) return;
         
-        handleChange("_batch", {
-            "assignedTo" : name,
-        });
+        if(Array.isArray(teamMember) && teamMember.length > 0) {
+            name = teamMember[0];
+        } else if(utils.exists(teamMember, "name")) {
+            name = teamMember.name;
+        } else {
+            name = teamMember;
+        }
+
+        handleChange("assignedTo", name);
     }
 
     const onCategorySelect = (category) => {
@@ -239,11 +247,12 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                 />
 
                 <div className="purchase-form-group">
-                    <Dropdown 
-                        current={formData.assignedTo} 
-                        label={"Assigned To"} 
-                        options={teamMembers} 
+                    <MultipleChoiceList 
+                        label={"Assign to team member"}
+                        current={formData.assignedTo}
+                        options={Object.keys(teamMembers)}
                         onSelect={onTeamMemberSelect}
+                        maxSelect={1}
                     />
                 </div>
 
