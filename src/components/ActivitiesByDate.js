@@ -218,8 +218,8 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
             }
 
             return () => {
-                if(unsubscribeActivities !== null) unsubscribeActivities();
-                if(unsubscribeTodos !== null) unsubscribeTodos();
+                if(unsubscribeActivities) unsubscribeActivities();
+                if(unsubscribeTodos) unsubscribeTodos();
             }
         }
     }, [includeTodos]);

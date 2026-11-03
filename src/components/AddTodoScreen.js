@@ -335,7 +335,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                 />
 
                 {/* Todo: change todo item visibility. Needs user data in todoDao */}
-                {/* <FormControlLabel
+                <FormControlLabel
                     sx={{ display: 'flex', width: '100%', mt: 2 }}
                     control={
                         <Checkbox
@@ -346,7 +346,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                         />
                     }
                     label="Private"
-                /> */}
+                />
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 

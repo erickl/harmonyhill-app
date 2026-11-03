@@ -12,8 +12,8 @@ import {commitTx, decideCommit} from "../daos/dao.js";
  * @param {*} filterOptions 
  * @param {*} onError 
  */
-export function subscribe(setDocs, filterOptions = {}, onError) {
-    return todoDao.subscribe(setDocs, filterOptions, onError);
+export async function subscribe(setDocs, filterOptions = {}, onError) {
+    return await todoDao.subscribe(setDocs, filterOptions, onError);
 }
 
 export async function getOne(parent, id, onError) {
@@ -114,7 +114,7 @@ export async function setStatus(todo, newStatus, onError, writes = []) {
 
 export async function remove(todo, onError, writes = []) {   
     const isAdmin = await userService.isAdmin();
-    if(isAdmin === false) return false;
+    if(isAdmin === false) return onError(`Only admins can delete a todo`);
 
     const commit = decideCommit(writes);
 

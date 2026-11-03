@@ -1,12 +1,24 @@
-import { where, orderBy } from 'firebase/firestore';
+import { where, orderBy, or, and } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
+import * as userService from "../services/userService.js";
 
 export function subscribe(setDocs, options, onError) {
-    const path = [dao.constant.TODOS];
-    const queryFilter = buildQueryFilter(options); 
-    return dao.subscribe(path, setDocs, queryFilter, onError);
+    let unsub = null;
+    let cancelled = false;
+
+    (async () => {
+        const path = [dao.constant.TODOS];
+        const queryFilter = await buildQueryFilter(options);
+        if (cancelled) return;
+        unsub = dao.subscribe(path, setDocs, queryFilter, onError);
+    })();
+
+    return () => {
+        cancelled = true;
+        if (unsub) unsub();
+    };
 } 
 
 async function getPath(parent = null) {
@@ -34,7 +46,7 @@ export async function getOne(parent, id, onError) {
 export async function get(parent, filter, onError) {
     const path = await getPath(parent);
     
-    const queryFilter = buildQueryFilter(filter);
+    const queryFilter = await buildQueryFilter(filter);
     
     let ordering = [ orderBy("deadlineAt", "asc") ];
 
@@ -101,8 +113,8 @@ export async function removePhoto(todoId, id, onError, writes = []) {
     return await dao.remove(path, id, onError, writes);
 }
 
-function buildQueryFilter(filter) {
-    const queryFilter = [];
+async function buildQueryFilter(filter) {
+    let queryFilter = [];
 
     if(utils.exists(filter, "isCompleted")) {
         if(filter.isCompleted) {
@@ -133,6 +145,15 @@ function buildQueryFilter(filter) {
 
     if(utils.exists(filter, "issues") && filter.issues === true) {
         queryFilter.push(where("issue", "==", "attention"));
+    }
+
+    // Admin users can see all: no need for visibility filter
+    const isAdmin = await userService.isAdmin();
+    if(!isAdmin) {
+        const currentUsername = await userService.getCurrentUserName();
+        queryFilter.push(or(where("visibility", "==", "public"), where("assignedTo", "==", currentUsername)));
+        // If 'or' is involved, firebase wants the top query as an 'and'
+        queryFilter =  queryFilter.length > 0 ? [and(...queryFilter)] : [];
     }
 
     return queryFilter;
