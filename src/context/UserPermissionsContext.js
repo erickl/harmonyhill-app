@@ -16,6 +16,7 @@ export function UserPermissionProvider({ children }) {
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            userService.resetCache();
             if (user) {
                 try {
                     const [

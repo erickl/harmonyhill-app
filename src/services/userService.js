@@ -4,6 +4,16 @@ import * as userDao from "../daos/userDao.js";
 import * as utils from "../utils.js";
 import {commitTx, decideCommit} from "../daos/dao.js";
 
+let users = null;
+let currentUser = null;
+let permissions = null;
+
+export function resetCache() {
+    currentUser = null;
+    permissions = null;
+    users = null;
+}
+
 export async function signUp(username, email, role, password, onError, writes = []) {
     const commit = decideCommit(writes);
 
@@ -131,32 +141,37 @@ function getFirebaseUser() {
 }
 
 export async function getCurrentUser() {
-    const user = getFirebaseUser();
-    if (!user) {
-        return null;
-    }
+    if(utils.isEmpty(currentUser)) {
+        const user = getFirebaseUser();
+        if (!user) return null;
 
-    return await userDao.getOne(user.uid);
+        currentUser = await userDao.getOne(user.uid);
+    }
+    return currentUser;
 }
 
 export async function getUserRole() {
     const user = await getCurrentUser();
-    if(!user) {
-        return null;
-    }
+    if(!user) return null;
     return user.role;
 }
 
 export async function getPermissions(user, onError) {
-    if(!user) user = await getCurrentUser();
-    if(!user) return {};
-    const permissions = await userDao.getPermissions(user, onError);
+    if(user) {
+        return await userDao.getPermissions(user, onError);
+    }
+    else if(utils.isEmpty(permissions)) {
+        if(!user) user = await getCurrentUser();
+        if(!user) return {};
+        permissions = await userDao.getPermissions(user, onError);
+    }
     return permissions;
 }
 
 export async function isManagerOrAdmin() {
-    const role = await getUserRole();
-    return !utils.isEmpty(role) && (role === "manager" || role === "admin");
+    const permissions_ = await getPermissions();
+    if(!permissions_) return false;
+    return permissions_.isAdmin === true || permissions_.isManager === true;
 }
 
 export async function canSeeAllBookings() {
@@ -175,6 +190,7 @@ export async function hasAddBookingsPermissions() {
 
 export async function logout() {
     try {
+        resetCache();
         await signOut(auth);
         return true;
     } catch(error) {
@@ -189,9 +205,9 @@ export async function getCurrentUserName() {
 }
 
 export async function isAdmin() {
-    const user = await getCurrentUser();
-    if (!user) return false;
-    return user.role === "admin";
+    const permissions_ = await getPermissions();
+    if(!permissions_) return false;
+    return permissions_.isAdmin === true;
 }
 
 export async function approve(email, writes = []) {
@@ -231,7 +247,10 @@ async function getUser(username) {
 }
 
 export async function getUsers() {
-    const users = await userDao.get();
+    if(utils.isEmpty(users)) {
+        users = await userDao.get();
+    }
+   
     return users;
 }
 
