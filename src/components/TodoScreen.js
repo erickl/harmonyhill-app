@@ -76,6 +76,13 @@ export default function TodoScreen({ context }) {
             <p>Loading...</p>
         )
     }
+
+    const todosByDate = todos.reduce((map, todo) => {
+        const date = todo.deadlineAt ? utils.to_www_ddMMM(todo.deadlineAt) : "Unscheduled";
+        if(!map[date]) map[date] = [];
+        map[date].push(todo);
+        return map;
+    }, {});
      
     return (
         <div className="fullscreen">
@@ -96,17 +103,26 @@ export default function TodoScreen({ context }) {
                 </div>  
             </div>
             <div className="card-content">
-                {todos.map((todo) => {
-                    return (
-                        <React.Fragment key={todo.id}>
-                            <TodoComponent 
-                                todo={todo}
-                                handleDelete={handleDelete}
-                                onToggleFromParent={toggleTodo}
-                                context={context}
-                            />
+                {Object.keys(todosByDate).map((date) => {
+                    return (<>
+                        <div className="todo-group-header">
+                            {date}
+                        </div>
+                        <React.Fragment key={date}>
+                            {todosByDate[date].map((todo) => {
+                                return (
+                                    <React.Fragment key={todo.id}>
+                                        <TodoComponent 
+                                            todo={todo}
+                                            handleDelete={handleDelete}
+                                            onToggleFromParent={toggleTodo}
+                                            context={context}
+                                        />
+                                    </React.Fragment>
+                                )
+                            })} 
                         </React.Fragment>
-                    )
+                    </>);
                 })}
             </div>
 
