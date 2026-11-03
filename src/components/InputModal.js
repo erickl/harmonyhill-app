@@ -76,7 +76,7 @@ export default function InputModal({onSubmit, onClose}) {
                     name="comment"
                     label={"Comment"}
                     value={formData.comment}
-                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    onChange={handleChange}
                 />
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}

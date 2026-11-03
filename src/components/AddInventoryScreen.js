@@ -19,6 +19,11 @@ export default function AddInventoryScreen({context, inventory}) {
         expense  : null,
     }
 
+    const reasons = {
+        "refill"       : { name : "refill"    },
+        "overcharged"  : { name : "overcharged"    },
+    };
+
     const [form,            setForm           ] = useState(initialForm);
     const [expenses,        setExpenses       ] = useState([]);
     const [validated,       setValidated      ] = useState(false);
@@ -124,6 +129,15 @@ export default function AddInventoryScreen({context, inventory}) {
                         alt="Expense Receipt Preview"
                     />
                 )}
+
+                <div>
+                    <Dropdown 
+                        label={"Reason"}
+                        current={form.expense ? form.expense.description : null}
+                        options={expenses}
+                        onSelect={onExpenseSelect}
+                    />
+                </div>
                 
                 <div>
                     <Dropdown 

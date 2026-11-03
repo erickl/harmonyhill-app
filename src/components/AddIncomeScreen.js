@@ -232,7 +232,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                     name="amount"
                     label={"Amount"}
                     value={formData.amount}
-                    onChange={(e) => handleChange(e.target.name, e.target.value, "amount")}
+                    onChange={handleChange}
                 />
 
                 {/* If there's a customer input, this is a guest payment. No need to select another type */}
@@ -293,7 +293,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                     name="comments"
                     label={"Comments"}
                     value={formData.comments}
-                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    onChange={handleChange}
                 />
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}

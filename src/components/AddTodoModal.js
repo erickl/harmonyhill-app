@@ -89,7 +89,7 @@ export default function AddTodoModal({todoToEdit, parent, onCreated, context}) {
                     name="title"
                     label={"Title"}
                     value={formData.title}
-                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    onChange={handleChange}
                 />
 
                 <MyDatePicker 
@@ -106,7 +106,7 @@ export default function AddTodoModal({todoToEdit, parent, onCreated, context}) {
                     name="duration"
                     label={"Duration (minutes)"}
                     value={formData.duration}
-                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    onChange={handleChange}
                 />
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}

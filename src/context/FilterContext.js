@@ -69,7 +69,7 @@ export function FilterProvider({ children }) {
                                             name={name}
                                             label={utils.capitalizeWords(name)}
                                             value={values[name]}
-                                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                                            onChange={handleInputChange}
                                         />
                                     ) : (<div><p>Hello</p></div>)}  
                                 </React.Fragment>

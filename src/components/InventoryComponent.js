@@ -146,7 +146,7 @@ export default function InventoryComponent({context, item}) {
         }
 
         load();  
-    })
+    });
 
     return (
         <div className="inv-item-box" onClick={()=> handleSetExpanded(item)}>

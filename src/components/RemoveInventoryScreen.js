@@ -147,7 +147,7 @@ export default function RemoveInventoryScreen({context, item}) {
                         name={"quantity"}
                         label={"Quantity"}
                         value={form.quantity}
-                        onChange={(e) => handleInputChange("quantity", e.target.value, "amount")}
+                        onChange={handleInputChange}
                     />
                 </div>
 
@@ -193,7 +193,7 @@ export default function RemoveInventoryScreen({context, item}) {
                         name={"comments"}
                         label={"Comments"}
                         value={form.comments}
-                        onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                        onChange={handleInputChange}
                     />
                 </div>
             </div>

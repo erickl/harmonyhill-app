@@ -106,7 +106,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 name="displayName"
                 label={"Name"}
                 value={formData.displayName}
-                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                onChange={handleFormDataChange}
             />
 
             <TextInput
@@ -114,7 +114,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 name="customerPrice"
                 label={"Customer Price"}
                 value={formData.customerPrice}
-                onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
+                onChange={handleFormDataChange}
             />
 
             <MultipleChoiceList 
@@ -149,7 +149,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                                 name="provider"
                                 label={"Provider"}
                                 value={formData.provider}
-                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                                onChange={handleFormDataChange}
                             />
                         </div>
 
@@ -159,7 +159,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                                 name="providerPrice"
                                 label={"Provider Price"}
                                 value={formData.providerPrice}
-                                onChange={(e) => handleFormDataChange(e.target.name, e.target.value, "amount")}
+                                onChange={handleFormDataChange}
                             />
                         </div>
 
@@ -204,7 +204,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 name="comments"
                 label={"Comments"}
                 value={formData.comments}
-                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                onChange={handleFormDataChange}
             />
         </div>
     );

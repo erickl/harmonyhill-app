@@ -48,7 +48,7 @@ export default function ItemsCountList({quantities, onChangeCount}) {
                             name={name}
                             label={name}
                             value={quantity}
-                            onChange={(e) => onChangeCount(e.target.name, e.target.value)}
+                            onChange={onChangeCount}
                         />
                         <button
                             style={minusButtonStyle}

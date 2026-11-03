@@ -301,7 +301,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                         name="amount"
                         label={"Amount"}
                         value={formData.amount}
-                        onChange={(e) => handleChange(e.target.name, e.target.value, "amount")}
+                        onChange={handleChange}
                     />
 
                     <div className="purchase-form-group">
@@ -367,7 +367,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                         name="description"
                         label={"Description"}
                         value={formData.description}
-                        onChange={(e) => handleChange(e.target.name, e.target.value)}
+                        onChange={handleChange}
                     />
 
                     <TextInput
@@ -375,7 +375,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                         name="comments"
                         label={"Comments"}
                         value={formData.comments}
-                        onChange={(e) => handleChange(e.target.name, e.target.value)}
+                        onChange={handleChange}
                     />
                 </>) : (  
                     <button onClick={() => onOpenCamera(null, true, true, () => onConfirmPhoto)}>

@@ -145,7 +145,7 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
                 name="name"
                 label={"Name"}
                 value={formData.name}
-                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                onChange={handleFormDataChange}
             />
 
             <TextInput 
@@ -153,7 +153,7 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
                 name="customerPrice"
                 label={"Customer Price"}
                 value={formData.customerPrice}
-                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                onChange={handleFormDataChange}
             />
 
             <TextInput 
@@ -161,7 +161,7 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
                 name="description"
                 label={"Description"}
                 value={formData.description}
-                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                onChange={handleFormDataChange}
             />
 
             <TextInput 
@@ -169,7 +169,7 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
                 name="instructions"
                 label={"Instructions"}
                 value={formData.instructions}
-                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                onChange={handleFormDataChange}
             />
 
             <Dropdown 
@@ -192,7 +192,7 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
                 name="priority"
                 label={"Priority"}
                 value={formData.priority}
-                onChange={(e) => handleFormDataChange(e.target.name, e.target.value)}
+                onChange={handleFormDataChange}
             />
 
             <MultipleChoiceList

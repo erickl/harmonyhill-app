@@ -152,7 +152,7 @@ export default function BookingForm({ booking, context }) {
                 name="name"
                 label={"Guest Name"}
                 value={formData.name}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                onChange={handleInputChange}
             />
 
             {permissions.isAdmin && (<>
@@ -161,7 +161,7 @@ export default function BookingForm({ booking, context }) {
                     name="phoneNumber"
                     label={"Phone number"}
                     value={formData.phoneNumber}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                    onChange={handleInputChange}
                 />
 
                 <TextInput
@@ -169,7 +169,7 @@ export default function BookingForm({ booking, context }) {
                     name="email"
                     label={"Email"}
                     value={formData.email}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                    onChange={handleInputChange}
                 />
             </>)}
 
@@ -216,7 +216,7 @@ export default function BookingForm({ booking, context }) {
                 name="dietaryRestrictions"
                 label={"Dietary Restrictions"}
                 value={formData.dietaryRestrictions}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                onChange={handleInputChange}
             />
 
             <TextInput
@@ -224,7 +224,7 @@ export default function BookingForm({ booking, context }) {
                 name="customerInfo"
                 label={"Customer Info"}
                 value={formData.customerInfo}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                onChange={handleInputChange}
             />
 
             <TextInput
@@ -232,7 +232,7 @@ export default function BookingForm({ booking, context }) {
                 name="arrivalInfo"
                 label={"Arrival Info"}
                 value={formData.arrivalInfo}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                onChange={handleInputChange}
             />
 
             <TextInput
@@ -240,7 +240,7 @@ export default function BookingForm({ booking, context }) {
                 name="specialRequests"
                 label={"Special Requests"}
                 value={formData.specialRequests}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                onChange={handleInputChange}
             />
 
             <TextInput
@@ -248,7 +248,7 @@ export default function BookingForm({ booking, context }) {
                 name="promotions"
                 label={"Promotions"}
                 value={formData.promotions}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                onChange={handleInputChange}
             />
 
             <TextInput
@@ -256,7 +256,7 @@ export default function BookingForm({ booking, context }) {
                 name="country"
                 label={"Country"}
                 value={formData.country}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                onChange={handleInputChange}
             />
 
             {permissions.isAdmin && (<>
@@ -265,7 +265,7 @@ export default function BookingForm({ booking, context }) {
                     name="guestPaid"
                     label={"Guest Paid"}
                     value={formData.guestPaid}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+                    onChange={handleInputChange}
                 />
 
                 <TextInput
@@ -273,7 +273,7 @@ export default function BookingForm({ booking, context }) {
                     name="hostPayout"
                     label={"Host Payout"}
                     value={formData.hostPayout}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value, "amount")}
+                    onChange={handleInputChange}
                 />
 
                 <TextInput
@@ -281,7 +281,7 @@ export default function BookingForm({ booking, context }) {
                     name="paymentComment"
                     label={"Payment Comment"}
                     value={formData.paymentComment}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                    onChange={handleInputChange}
                 />
             </>)}
 

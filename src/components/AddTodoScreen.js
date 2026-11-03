@@ -244,7 +244,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                     name="title"
                     label={"Title"}
                     value={formData.title}
-                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    onChange={handleChange}
                 />
 
                 <div className="purchase-form-group">
@@ -302,7 +302,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                     name="duration"
                     label={"Duration (minutes)"}
                     value={formData.duration}
-                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    onChange={handleChange}
                 />
 
                 <TextInput
@@ -310,7 +310,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                     name="description"
                     label={"Description"}
                     value={formData.description}
-                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    onChange={handleChange}
                 />
 
                 <TextInput
@@ -318,7 +318,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                     name="comments"
                     label={"Comments"}
                     value={formData.comments}
-                    onChange={(e) => handleChange(e.target.name, e.target.value)}
+                    onChange={handleChange}
                 />
 
                 <FormControlLabel
@@ -334,7 +334,8 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                     label="Require photos?"
                 />
 
-                <FormControlLabel
+                {/* Todo: change todo item visibility. Needs user data in todoDao */}
+                {/* <FormControlLabel
                     sx={{ display: 'flex', width: '100%', mt: 2 }}
                     control={
                         <Checkbox
@@ -345,7 +346,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                         />
                     }
                     label="Private"
-                />
+                /> */}
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 

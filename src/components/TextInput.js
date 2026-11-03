@@ -20,6 +20,14 @@ export default function TextInput({type, name, label, value, onChange}) {
         formattedLabel = `${label} (${utils.getCurrency()})`
     }
 
+    const onChangeInternal = (e) => {
+        let value = e.target.value;
+        if(type === "amount" || type === "price") {
+            value = utils.cleanNumeric(value);
+        }
+        onChange(e.target.name, value, type);
+    }
+
     return (
         <div className="floating-label-input">
             <input
@@ -27,7 +35,7 @@ export default function TextInput({type, name, label, value, onChange}) {
                 name={name}
                 type={baseType}
                 value={formattedValue}
-                onChange={onChange}
+                onChange={onChangeInternal}
                 placeholder=" " 
             />
             <label htmlFor="name">{formattedLabel}</label>
