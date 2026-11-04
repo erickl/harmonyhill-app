@@ -49,7 +49,7 @@ export default function IncomeList({context, title, filter, expand, subscribe}) 
 
     useEffect(() => {
         if(!subscribe) fetchIncomes();
-    }, []);
+    }, [filter]);
 
     useEffect(() =>{
         if(subscribe) {

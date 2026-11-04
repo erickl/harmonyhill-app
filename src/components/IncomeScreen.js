@@ -10,10 +10,11 @@ import Spinner from "./Spinner.js";
 import MetaInfo from './MetaInfo.js';
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Filter, FilterX } from 'lucide-react';
 import SheetUploader from "./SheetUploader.js";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
 import IncomeList from './IncomeList.js';
+import { useFilters } from "../context/FilterContext.js";
 
 export default function IncomeScreen({ customer, context }) {
     const [pettyCash,           setPettyCash           ] = useState(null );
@@ -22,10 +23,12 @@ export default function IncomeScreen({ customer, context }) {
     const [issuesFilter,        setIssuesFilter        ] = useState(null );
     const [pastFilter,          setPastFilter          ] = useState(null );
     const [customerFilter,      setCustomerFilter      ] = useState(null );
-
-    const { onError   } = useNotification();
-    const { onSuccess } = useSuccessNotification();
-    const { onConfirm } = useConfirmationModal();
+    const [customInterval,        setCustomInterval]        = useState(null);
+    
+    const { onFilter    } = useFilters();
+    const { onError     } = useNotification();
+    const { onSuccess   } = useSuccessNotification();
+    const { onConfirm   } = useConfirmationModal();
     const { permissions } = useUserPermissions();
 
     const filterHeaders = {
@@ -38,6 +41,13 @@ export default function IncomeScreen({ customer, context }) {
         const rows = await incomeService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
+
+    const onFilterValuesSubmit = (filterValues) => {
+        setCustomInterval({
+            after  : filterValues.after,
+            before : filterValues.before
+        });
+    };
 
     useEffect(() => {
         let filter = {};
@@ -115,6 +125,13 @@ export default function IncomeScreen({ customer, context }) {
                                 <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
                             </>)}
 
+                            {permissions.isAdmin && context.enableFilters && (<>    
+                                <Filter 
+                                    //onClick={() => setShowFilter(prev => !prev)}
+                                    onClick={() => onFilter(filterHeaders, onFilterValuesSubmit)}
+                                />
+                            </>)}
+
                             {permissions.canAddIncomes && (
                                 <button className="add-button" onClick={() => context.onNavigate("add-income", {customer:customer})}>
                                     + 
@@ -125,32 +142,44 @@ export default function IncomeScreen({ customer, context }) {
                 </div>  
             </div>
             <div className="card-content">
-                {customerFilter && (
-                    <IncomeList
-                        title={"All"}
-                        context={context}
-                        filter={customerFilter}
-                        subscribe={true}
+                {/* Filtering is used */}
+                {customInterval !== null ? (
+                    <IncomeList 
+                        context={context} 
+                        title={"Custom"} 
+                        filter={customInterval} 
                         expand={true}
-                    />
-                )}
+                    /> 
+                ) : (<>
+                {/* No filtering is used */}
+                    {customerFilter && (
+                        <IncomeList
+                            title={"All"}
+                            context={context}
+                            filter={customerFilter}
+                            subscribe={true}
+                            expand={true}
+                        />
+                    )}
 
-                {recentFilter && (
-                    <IncomeList
-                        title={"Recent"}
-                        context={context}
-                        filter={recentFilter}
-                        subscribe={true}
-                        expand={true}
-                    />
-                )}
+                    {recentFilter && (
+                        <IncomeList
+                            title={"Recent"}
+                            context={context}
+                            filter={recentFilter}
+                            subscribe={true}
+                            expand={true}
+                        />
+                    )}
 
-                {pastFilter && (
-                    <IncomeList
-                        title={"Previous"}
-                        context={context}
-                        filter={pastFilter}
-                    />
+                    {pastFilter && (
+                        <IncomeList
+                            title={"Previous"}
+                            context={context}
+                            filter={pastFilter}
+                        />
+                    )}
+                    </>
                 )}
             </div>
         </div>
