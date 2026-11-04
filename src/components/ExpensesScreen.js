@@ -140,9 +140,11 @@ export default function ExpensesScreen({ context }) {
 
                             {permissions.isAdmin && context.enableFilters && (<>    
                                 <Filter 
-                                    //onClick={() => setShowFilter(prev => !prev)}
                                     onClick={() => onFilter(filterHeaders, onFilterValuesSubmit)}
                                 />
+                                {customInterval && (
+                                    <FilterX onClick={() => setCustomInterval(null)}/>
+                                )}
                             </>)}
 
                             {permissions.canAddIncomes && (
