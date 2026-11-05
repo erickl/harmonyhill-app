@@ -19,7 +19,7 @@ export default function InventoryComponent({context, item}) {
     const [quantity, setQuantity] = useState(null);
     const [reserved, setReserved] = useState(null);
     const [removals, setRemovals] = useState(null);
-    const [refills, setRefills] = useState(null);
+    const [supplies, setSupplies] = useState(null);
 
     const { onError } = useNotification();
     const { onConfirm } = useConfirmationModal();
@@ -57,31 +57,32 @@ export default function InventoryComponent({context, item}) {
         onDisplayDataTable("Removals", headers, enhancedRemovals);
     }
 
-    const onDisplayRefillsData = async(item) => {
-        const headers = ["#", "Refill At", "Quantity", "expense", "Receipt", "Refill By", "Created" ];
+    const onDisplaySuppliesData = async(item) => {
+        const headers = ["#", "Reason", "Supplied At", "Quantity", "expense", "Receipt", "Supply By", "Created" ];
         
-        if(!refills) return;
+        if(!supplies) return;
         
-        const enhancedRefills = await Promise.all(
-            refills.map(async (refill, i) => {
-                const expense = await expenseService.getOne(refill.expenseId);
+        const enhancedSupplies = await Promise.all(
+            supplies.map(async (supply, i) => {
+                const expense = await expenseService.getOne(supply.expenseId);
             
-                const enhancedRefill = [
+                const enhancedSupply = [
                     i+1,
-                    utils.to_ddMMM(refill.doneAt),
-                    refill.quantity,
-                    //refill.quantityBefore,
-                    expense ? `${expense.index}. ${expense.description}` : `Not found`,
-                    expense ? expense.photoUrl : `Not found`,
-                    refill.createdBy,
-                    utils.to_ddMMM(refill.createdAt),
+                    utils.capitalizeWords(supply.reason),
+                    utils.to_ddMMM(supply.doneAt),
+                    supply.quantity,
+                    //supply.quantityBefore,
+                    expense ? `${expense.index}. ${expense.description}` : `-`,
+                    expense ? expense.photoUrl : `-`,
+                    supply.createdBy,
+                    utils.to_ddMMM(supply.createdAt),
                 ];
 
-                return enhancedRefill;
+                return enhancedSupply;
             })  
         );
 
-        onDisplayDataTable("Refills", headers, enhancedRefills);
+        onDisplayDataTable("Supplies", headers, enhancedSupplies);
     }
 
     const onAddStock = async(item) => {
@@ -108,9 +109,9 @@ export default function InventoryComponent({context, item}) {
     }
 
     const fetchItemInfo = async (item) => { 
-        const getRefills = async() => {
-            const refills_ = await inventoryService.getRefills(item, {}, onError);
-            setRefills(refills_);
+        const getSupplies = async() => {
+            const supplies_ = await inventoryService.getSupplies(item, {}, onError);
+            setSupplies(supplies_);
         }
 
         const getRemovals = async() => {
@@ -118,7 +119,7 @@ export default function InventoryComponent({context, item}) {
             setRemovals(removals_);
         }
      
-        if(!refills) getRefills();
+        if(!supplies) getSupplies();
         if(!removals) getRemovals();
     };
 
@@ -226,15 +227,15 @@ export default function InventoryComponent({context, item}) {
                             </div>
                         )}
                     
-                        {!utils.isEmpty(refills) && (
+                        {!utils.isEmpty(supplies) && (
                             <div className="inv-item-body-footer-icon">
                                 <ShoppingCart   
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onDisplayRefillsData(item);
+                                        onDisplaySuppliesData(item);
                                     }}
                                 />
-                                <p>Refills</p>
+                                <p>Supplies</p>
                             </div>
                         )}
 

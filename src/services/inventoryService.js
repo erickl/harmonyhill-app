@@ -158,6 +158,12 @@ export async function getSales(item, filters, onError) {
     return sales;
 }
 
+export async function getSupplies(item, filters, onError) {
+    const filters_ = { ...filters, type: "supply" };
+    const supplies = await inventoryDao.getInventoryChanges(item, filters_, onError);
+    return supplies;
+}
+
 export async function getRefills(item, filters, onError) {
     const filters_ = { ...filters, reason: "refill" };
     const refills = await inventoryDao.getInventoryChanges(item, filters_, onError);
@@ -203,15 +209,15 @@ export async function getQuantity(item, filter, onError) {
         }
     }
 
-    const [removals, refills]  = await Promise.all([
+    const [removals, supplies]  = await Promise.all([
         getRemovals(item, filter, onError),
-        getRefills(item, filter, onError)
+        getSupplies(item, filter, onError)
     ]);
 
     const totalRemovals = removals.reduce((sum, removal) => sum + removal.quantity, 0);
-    const totalRefills = refills.reduce((sum, refill) => sum + refill.quantity, 0);
+    const totalSupplies = supplies.reduce((sum, supply) => sum + supply.quantity, 0);
 
-    const currentCount = startQuantity + totalRefills - totalRemovals;
+    const currentCount = startQuantity + totalSupplies - totalRemovals;
     return currentCount;
 }
 
