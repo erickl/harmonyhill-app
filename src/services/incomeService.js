@@ -55,6 +55,19 @@ export async function remove(id, onError, writes = []) {
     return result;
 }
 
+export async function softRemove(id, onError, writes = []) {
+    const commit = decideCommit(writes);
+
+    const result = await incomeDao.softRemove(id, onError, writes);
+    if(result === false) return false;
+
+    if(commit) {
+        if((await commitTx(writes, onError)) === false) return false;
+    }
+
+    return result;
+}
+
 export async function update(id, data, onError, writes = []) {
     const commit = decideCommit(writes);
 

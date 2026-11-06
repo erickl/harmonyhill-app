@@ -1,4 +1,4 @@
-import { where, orderBy, or, and } from 'firebase/firestore';
+import { where, orderBy, or } from 'firebase/firestore';
 import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
@@ -152,8 +152,6 @@ async function buildQueryFilter(filter) {
     if(!isAdmin) {
         const currentUsername = await userService.getCurrentUserName();
         queryFilter.push(or(where("visibility", "==", "public"), where("assignedTo", "==", currentUsername)));
-        // If 'or' is involved, firebase wants the top query as an 'and'
-        queryFilter =  queryFilter.length > 0 ? [and(...queryFilter)] : [];
     }
 
     return queryFilter;

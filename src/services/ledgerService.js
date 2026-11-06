@@ -10,7 +10,10 @@ export async function getTotalIncomes(filter, onError) {
         filter = { ...range, ...filter };
     }
     const entries = await incomeService.get(filter, onError);
-    const sum = entries.reduce((sum, entry) => sum + entry.amount, 0);
+    
+    const sum = entries.reduce((sum, entry) => {
+        return sum + (utils.isEmpty(entry.deletedAt) ? entry.amount : 0);
+    }, 0);
 
     return {
         sum: sum,
@@ -24,7 +27,10 @@ export async function getTotalExpenses(filter, onError) {
         filter = { ...range, ...filter };
     }
     const entries = await expenseService.get(filter, onError);
-    const sum = entries.reduce((sum, entry) => sum + entry.amount, 0);
+
+    const sum = entries.reduce((sum, entry) => {
+        return sum + (utils.isEmpty(entry.deletedAt) ? entry.amount : 0);
+    }, 0);
 
     return {
         sum: sum,
@@ -41,7 +47,10 @@ export async function getCurrentTotalExpenses(filter, onError) {
 
     filter["after"] = lastClosedAt;
     const expenses = await expenseService.get(filter, onError);
-    const expenseSum = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const expenseSum = expenses.reduce((sum, expense) => {
+        return sum + (utils.isEmpty(expense.deletedAt) ? expense.amount : 0);
+    }, 0);
+
     return expenseSum;
 }
 
@@ -59,7 +68,11 @@ export async function getCurrentTotalIncomes(onError) {
     const ledgerFilter = { "after": lastClosedPettyCashAmount.closedAt };
     const incomes = await incomeService.get(ledgerFilter, onError);
     const filteredIncomes = incomes.filter((income) => income.category !== "petty cash top up");
-    const incomeSum = filteredIncomes.reduce((sum, income) => sum + income.amount, 0);
+    
+    const incomeSum = filteredIncomes.reduce((sum, income) => {
+        return sum + (utils.isEmpty(income.deletedAt) ? income.amount : 0);
+    }, 0);
+    
     return incomeSum;
 }
 
@@ -89,10 +102,14 @@ export async function getPettyCashBalance(date, onError) {
     ledgerFilter["before"] = !utils.isEmpty(date) ? date : utils.today().endOf('day');
 
     const incomes = await incomeService.get(ledgerFilter, onError);
-    const incomeSum = incomes.reduce((sum, income) => sum + income.amount, 0);
+    const incomeSum = incomes.reduce((sum, income) => {
+        return sum + (utils.isEmpty(income.deletedAt) ? income.amount : 0);
+    }, 0);
 
     const expenses = await expenseService.get(ledgerFilter, onError);
-    const expenseSum = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const expenseSum = expenses.reduce((sum, expense) => {
+        return sum + (utils.isEmpty(expense.deletedAt) ? expense.amount : 0);
+    }, 0);
 
     const total = lastClosedBalance + incomeSum - expenseSum;
 

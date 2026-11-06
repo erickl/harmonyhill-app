@@ -43,6 +43,10 @@ export async function remove(id, onError, writes) {
     return await dao.remove(path, id, onError, writes);
 }
 
+export async function softRemove(id, onError, writes) {
+    return await dao.softRemove([dao.constant.INCOME], id, onError, writes);
+}
+
 export async function getNextSerialNumber(date, onError) {
     const filter = {
         "after"  : utils.monthStart(date),

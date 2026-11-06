@@ -55,8 +55,10 @@ export default function IncomeComponent({income, handleDelete, context}) {
         setExpanded(prev => !prev);
     }
 
+    const incomeComponentClass = `income-box${income.deletedAt ? "-removed" : ""}`;
+
     return (
-        <div className="income-box" onClick={()=> handleSetExpanded(income)}>
+        <div className={incomeComponentClass} onClick={()=> handleSetExpanded(income)}>
             <div className="income-header">
                 <div className="income-header-left">
                     <div className="income-title">

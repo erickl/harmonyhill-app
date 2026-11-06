@@ -1,5 +1,6 @@
 import { 
     where, query, limit,
+    and,
     collection, collectionGroup,  
     doc,getDocs, getDoc, 
     runTransaction,
@@ -15,38 +16,93 @@ import { DateTime } from 'luxon';
 export { constant }
 
 export function subscribe(path, setDocs, filters = [], onError = null) {
-    path = utils.isString(path) ? path.split("/") : path;    
-    const collectionRef = collection(db, ...path);
+    let unsubscribe = null;
+    let cancelled = false;
 
-    const constraints = [];
-    if(filters?.length > 0) constraints.push(...filters);  
+    (async() => {
+        if(cancelled) return;
+        const isAdmin = await userService.isAdmin();
 
-    const docQuery = query(collectionRef, ...constraints);
+        try {
+            path = utils.isString(path) ? path.split("/") : path;    
+            const collectionRef = collection(db, ...path);
 
-    const unsubscribe = onSnapshot(docQuery, (snapshot) => {
-        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
-        docs.forEach((doc) => utils.allToDateTime(doc));
-        setDocs(docs);
-    });
+            const constraints = [];
 
-    return unsubscribe;
+            if(filters?.length > 0) {
+                // If 'or' is involved, firebase wants the top query as an 'and'
+                filters =  [and(...filters)];
+                constraints.push(...filters);  
+            }
+
+            const docQuery = query(collectionRef, ...constraints);
+
+            unsubscribe = onSnapshot(docQuery, (snapshot) => {
+                let docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+                docs.forEach((doc) => utils.allToDateTime(doc));
+                
+                // Todo: put bar in place until all recent docs has a deleted flag. Firestore filtering 
+                // on deletedAt == null doesn't work for docs that don't have deletedAt field at all
+                if(!isAdmin) {
+                    docs = docs.filter((doc) => utils.isEmpty(doc.deletedAt));
+                }
+
+                setDocs(docs);
+            });
+        } catch(e) {
+            if(onError) onError(`Unexpected error in subscription: ${e.message}`);
+        }
+    })();
+
+    return () => {
+        cancelled = true;
+        if(unsubscribe) unsubscribe();
+    }
 }
 
 export function subscribeAll(collectionName, setDocs, filters = [], onError = null) {
-    const collectionRef = collectionGroup(db, collectionName);
+    let unsubscribe = null;
+    let cancelled = false;
 
-    const constraints = [];
-    if(filters?.length > 0) constraints.push(...filters);  
+    (async () => {
+        try {
+            if(cancelled) return;
+            const isAdmin = await userService.isAdmin();
 
-    const docQuery = query(collectionRef, ...constraints);
+            const collectionRef = collectionGroup(db, collectionName);
 
-    const unsubscribe = onSnapshot(docQuery, (snapshot) => {
-        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
-        docs.forEach((doc) => utils.allToDateTime(doc));
-        setDocs(docs);
-    });
+            const constraints = [];
 
-    return unsubscribe;
+            if(filters?.length > 0) {
+                // If 'or' is involved, firebase wants the top query as an 'and'
+                filters =  [and(...filters)];
+                constraints.push(...filters); 
+            } 
+
+            const docQuery = query(collectionRef, ...constraints);
+
+            unsubscribe = onSnapshot(docQuery, (snapshot) => {
+                let docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+                docs.forEach((doc) => utils.allToDateTime(doc));
+                
+                // Todo: put bar in place until all recent docs has a deleted flag. Firestore filtering 
+                // on deletedAt == null doesn't work for docs that don't have deletedAt field at all
+                
+                if(!isAdmin) {
+                    docs = docs.filter((doc) => utils.isEmpty(doc.deletedAt));
+                }
+
+                setDocs(docs);
+            });
+        } catch(e) {
+            if(onError) onError(`Unexpected error, unSubAll: ${e.message}`);
+        }
+    })();
+
+    return () => {
+        cancelled = true;
+        if(unsubscribe) unsubscribe();
+    }
 }
 
 export async function getOne(path, id, onError = null) {
@@ -56,6 +112,13 @@ export async function getOne(path, id, onError = null) {
         const snapshot = await getDoc(docRef);
         if(snapshot.exists()) {
             const doc = { ...snapshot.data(), id: snapshot.id, ref: snapshot.ref };
+
+            if(doc.deletedAt) {
+                // If doc is soft deleted, only admins can see it
+                const isAdmin = await userService.isAdmin();
+                return isAdmin ? doc : null;
+            }
+            
             utils.allToDateTime(doc);
             return doc
         }
@@ -73,8 +136,18 @@ export async function get(path, filters = [], ordering = [], max = -1, onError =
         const collectionRef = collection(db, ...path);
         
         const constraints = [];
+
+        // todo: uncomment once all records have soft delete fields
+        // if(!isAdmin) {
+        //     filters.push(where("deletedAt", "!=", null));
+        // }
         
-        if(filters?.length > 0)  constraints.push(...filters);   
+        if(filters?.length > 0)  {
+            // If 'or' is involved, firebase wants the top query as an 'and'
+            filters =  [and(...filters)];
+            constraints.push(...filters);   
+        }
+        
         if(ordering?.length > 0) constraints.push(...ordering);
         if(max !== -1)           constraints.push(limit(max))
         
@@ -83,8 +156,14 @@ export async function get(path, filters = [], ordering = [], max = -1, onError =
         if (snapshot.empty) {
             return [];
         }
-        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+        let docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
         docs.forEach((doc) => utils.allToDateTime(doc));
+        
+        // Todo: put bar in place until all recent docs has a deleted flag. Firestore filtering 
+        // on deletedAt == null doesn't work for docs that don't have deletedAt field at all
+        const isAdmin = await userService.isAdmin();
+        if(!isAdmin) docs = docs.filter((doc) => utils.isEmpty(doc.deletedAt));
+       
         return docs
     } catch (e) {
         if(onError) onError(`Error getting documents from ${path}: ${e.message}`);
@@ -129,8 +208,13 @@ export async function getOneFromSubCollection(collectionName, id, onError = null
             return null;
         }
         
-        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
-        return docs[0];
+        let docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+
+        // If docs are soft deleted, only admins can see them
+        const isAdmin = await userService.isAdmin();
+        if(!isAdmin) docs = docs.filter((doc) => utils.isEmpty(doc.deletedAt));
+
+        return docs.length > 0 ? docs[0] : null;
     } catch(e) {
         if(onError) onError(`Error getting ${id} from ${collectionName}: ${e.message}`);
         return null;
@@ -148,6 +232,11 @@ export async function getSubCollections(collectionName, filters = [], ordering =
             return [];
         }
         const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+        
+        // If docs are soft deleted, only admins can see them
+        const isAdmin = await userService.isAdmin();
+        if(!isAdmin) docs = docs.filter((doc) => utils.isEmpty(doc.deletedAt));
+
         return docs;
     } catch (e) {
         if(onError) onError(`Error getting documents from collection ${collectionName}: `, e);
@@ -172,7 +261,7 @@ export async function update(path, id, update, updateLogs, onError = null, write
             return onError(`Document ${path}/${id} doesn't exist (yet). Can't be updated`);
         }
 
-        const currentUsername = await getCurrentUsername();
+        const currentUsername = await userService.getCurrentUserName();
         const now = new Date();
 
         // Remove any field which should not be updated
@@ -231,11 +320,6 @@ export async function update(path, id, update, updateLogs, onError = null, write
     }
 }
 
-async function getCurrentUsername() {
-    const user = await getOne(['users'], auth.currentUser.uid);
-    return user ? user.name : null;
-}
-
 export async function add(path, id, data, onError = null, writes = []) {
     try {
         path = utils.isString(path) ? path.split("/") : path;
@@ -244,7 +328,7 @@ export async function add(path, id, data, onError = null, writes = []) {
         utils.allToTimestamp(data_);
 
         data_.createdAt = new Date();
-        data_.createdBy = await getCurrentUsername();
+        data_.createdBy = await userService.getCurrentUserName();
 
         if(utils.exists(data_, "id")) {
             delete data_.id;
@@ -274,6 +358,33 @@ export async function add(path, id, data, onError = null, writes = []) {
     }
 }
 
+export async function softRemove(path, id, onError = null, writes = []) {
+    try {
+        const docIdToDelete = `${path.join("/")}/${id}`;
+
+        // Log the deleted data before deleting it
+        let dataToDelete = await getOne(path, id);
+        if (!dataToDelete) {
+            if(onError) onError(`Document ${docIdToDelete} could not be deleted because it was not found`);
+            return false;
+        }
+
+        const updateData = {
+            deletedBy : await userService.getCurrentUserName(),
+            deletedAt : new Date()
+        };
+        
+        // Soft delete document
+        const updateResult = await update(path, id, updateData, false, onError, writes);
+        if(updateResult === false) return false;
+        
+        return true;
+    } catch (e) {
+        if(onError) onError(`Error (s_ft) deleting document ${path}/${id}: ${e.message}`);
+        return false;
+    }
+}
+
 export async function remove(path, id, onError = null, writes = []) {
     try {
         const docIdToDelete = `${path.join("/")}/${id}`;
@@ -285,7 +396,7 @@ export async function remove(path, id, onError = null, writes = []) {
             return false;
         }
 
-        dataToDelete.deletedBy = await getCurrentUsername();
+        dataToDelete.deletedBy = await userService.getCurrentUserName();
         dataToDelete.deletedAt = new Date();
         dataToDelete.deletedFrom = docIdToDelete;
 

@@ -2,14 +2,8 @@ import * as dao from './dao.js';
 import { where, orderBy } from 'firebase/firestore';
 import * as utils from "../utils.js";
 
-export async function getOne(userId) {
-    try {
-        const user = await dao.getOne(['users'], userId);
-        return user;
-    } catch (error) {
-        console.error('Error fetching user by ID:', error);
-        return null;
-    }
+export async function getOne(userId, onError) {
+    return await dao.getOne(["users"], userId, onError);
 }
 
 export async function get(options = {}) {

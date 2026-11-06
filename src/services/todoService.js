@@ -12,8 +12,8 @@ import {commitTx, decideCommit} from "../daos/dao.js";
  * @param {*} filterOptions 
  * @param {*} onError 
  */
-export async function subscribe(setDocs, filterOptions = {}, onError) {
-    return await todoDao.subscribe(setDocs, filterOptions, onError);
+export function subscribe(setDocs, filterOptions = {}, onError) {
+    return todoDao.subscribe(setDocs, filterOptions, onError);
 }
 
 export async function getOne(parent, id, onError) {

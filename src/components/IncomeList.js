@@ -29,7 +29,12 @@ export default function IncomeList({context, title, filter, expand, subscribe}) 
         if(!incomeToDelete || utils.isEmpty(incomeToDelete.id)) return;
         
         onConfirm(`Are you sure you want to delete income ${incomeToDelete.id}?`, async () => {
-            const result = await incomeService.remove(incomeToDelete.id, onError);
+            let result = false;
+                        
+            // If the record has already been softly deleted, deleting again, will hard-delete it
+            result = incomeToDelete.deletedAt ? await incomeService.remove(incomeToDelete.id, onError) : 
+                                                await incomeService.softRemove(incomeToDelete.id, onError);
+
             if(result !== false) {
                 if(subscribe) return;
                 let newIncomes = utils.deepCopy(incomes);
@@ -47,20 +52,22 @@ export default function IncomeList({context, title, filter, expand, subscribe}) 
         setLoading(prev => !prev);
     }
 
-    useEffect(() => {
-        if(!subscribe) fetchIncomes();
-    }, [filter]);
-
     useEffect(() =>{
         if(subscribe) {
-            incomeService.subscribe((liveIncomes) => {
+            const unsubscribe = incomeService.subscribe((liveIncomes) => {
                 liveIncomes.sort((e1, e2) => e2.receivedAt - e1.receivedAt);
                 setIncomes(liveIncomes);
                 setLastUpdate(utils.to_HHmm());
                 setLoading(false);
             }, filter, onError);
+
+            return () => { 
+                if(unsubscribe) unsubscribe();
+            }
+        } else {
+            fetchIncomes();
         }
-    }, []);
+    }, [filter]);
 
     if(loading) {
         return (

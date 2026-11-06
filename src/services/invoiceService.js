@@ -8,7 +8,10 @@ import * as incomeService from "./incomeService.js";
  * @returns json with itemized list of all a booking's activities and the total amount owed 
  */
 export async function getTotal(booking, onError) {
-    const activities = await activityService.get(booking, {}, onError);
+    let activities = await activityService.get(booking, {}, onError);
+
+    // Exclude soft deleted activities
+    activities = activities.filter(activity => utils.isEmpty(activity.deletedAt));
     
     // Get all meals, even with customerPrice = 0, because the dish prices are no longer summed up at meal level (since 2025-12)
     const meals = activities.filter(activity => activity.category === "meal" && activity.isFree === false);
@@ -27,6 +30,7 @@ export async function getTotal(booking, onError) {
             // E.g. even though a whole breakfast can be free, it can still include non-free, extra items
             const dishes = await mealService.getMealDishes(booking.id, meal.id, {"isFree" : false}, onError);
             mealItem.dishes = dishes;
+
             // Todo: should the meal total be displayed on meal level?
             mealItem.customerPrice += dishes.reduce((sum, dish) => sum + (dish.isFree === true ? 0 : dish.customerPrice * dish.quantity), 0);
             

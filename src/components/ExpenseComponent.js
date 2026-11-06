@@ -58,8 +58,10 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
         setExpanded(prev => !prev);
     }
 
+    const expenseComponentClass = `expense-box${expense.deletedAt ? "-removed" : ""}`;
+
     return (
-        <div className="expense-box" onClick={()=> handleSetExpanded(expense)}>
+        <div className={expenseComponentClass} onClick={()=> handleSetExpanded(expense)}>
             <div className="expense-header">
                 <div className="expense-header-left">
                     <div className="expense-title">
@@ -107,6 +109,11 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
                     <div>
                         Purchased By: {utils.capitalizeWords(expense.purchasedBy)}
                     </div>
+                    {expense.deletedAt && (
+                        <div>
+                            Deleted by: {utils.capitalizeWords(expense.deletedBy)}, {utils.to_www_ddMMM(expense.deletedAt)}
+                        </div>
+                    )}
                     <div className="expense-body-footer">
                         
                         { permissions.canEditExpenses && (

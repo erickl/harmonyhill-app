@@ -19,13 +19,12 @@ export function UserPermissionProvider({ children }) {
             userService.resetCache();
             if (user) {
                 try {
+                    const user_ = await userService.getCurrentUser();
                     const [
                         permissions,
-                        user_,
                         users_,
                     ] = await Promise.all([
                         userService.getPermissions(),
-                        userService.getCurrentUser(),
                         userService.getUsers(),
                     ]);
 

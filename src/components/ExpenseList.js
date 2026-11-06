@@ -29,7 +29,11 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
         if(!expenseToDelete || utils.isEmpty(expenseToDelete.id)) return;
         
         onConfirm(`Are you sure you want to delete expense ${expenseToDelete.id}?`, async () => {
-            const result = await expenseService.remove(expenseToDelete.id, onError);
+            let result = false;
+            
+            // If the record has already been softly deleted, deleting again, will hard-delete it
+            result = expenseToDelete.deletedAt ? await expenseService.remove(expenseToDelete.id, onError) : 
+                                                await expenseService.softRemove(expenseToDelete.id, onError);
             if(result !== false) {
                 if(subscribe) return;
                 let newExpenses = utils.deepCopy(expenses);
@@ -51,12 +55,16 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
         setFilterInternal(filter);
         
         if(subscribe) {
-            expenseService.subscribe((liveExpenses) => {
+            const unsubscribe = expenseService.subscribe((liveExpenses) => {
                 liveExpenses.sort((e1, e2) => e2.purchasedAt - e1.purchasedAt);
                 setExpenses(liveExpenses);
                 setLastUpdate(utils.to_HHmm());
                 setLoading(false);
-            }, filterInternal, onError);
+            }, filter, onError);
+
+            return () => { 
+                if(unsubscribe) unsubscribe(); 
+            }
         } else {
             fetchExpenses(filter);
         }
