@@ -83,6 +83,7 @@ export async function getCategories() {
  * @returns activities array, ordered by date (oldest first)
  */
 export async function get(booking, filterOptions = {}, onError) {
+    if(!booking) return [];
     const activities = await activityDao.getBookingActivities(booking.id, filterOptions, onError);
     const enhancedActivities = enhanceActivities(activities);
     return enhancedActivities;
