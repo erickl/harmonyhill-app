@@ -106,14 +106,12 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
     }
 
     const courses = {
+        'Breakfast'  : {"name" : "Breakfast"  },
         'Lunch'  : {"name" : "Lunch"  },
         'Dinner'  : {"name" : "Dinner"  },
         'Drinks'  : {"name" : "Drinks"  },
         'Dessert'  : {"name" : "Dessert"  },
         'Coffee'  : {"name" : "Coffee"  },
-        'Breakfast'  : {"name" : "Breakfast"  },
-        'Breakfast2'  : {"name" : "Breakfast2"  },
-        'Breakfast3'  : {"name" : "Breakfast3"  },
     };
 
     const mealCategories = [
@@ -170,13 +168,6 @@ export default function AddMenuItemScreen({context, itemToEdit}) {
                 label={"Instructions"}
                 value={formData.instructions}
                 onChange={handleFormDataChange}
-            />
-
-            <Dropdown 
-                label={"Course"} 
-                options={courses}
-                current={formData.course}
-                onSelect={onCourseSelect}
             />
 
             <MultipleChoiceList
