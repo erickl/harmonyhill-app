@@ -1,4 +1,4 @@
-import React, { useState, useEffect, act } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as activityService from "../services/activityService.js";
 import * as utils from "../utils.js";
 import * as mealService from "../services/mealService.js";
@@ -32,7 +32,6 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const [customer, setCustomer] = useState(null);
     const [showCustomerInfo, setShowCustomerInfo] = useState(false);
     const [activityInfo, setActivityInfo] = useState(null);
-    const [isManagerOrAdmin, setIsManagerOrAdmin] = useState(false);
     const [loadingExpandedActivity, setLoadingExpandedActivity] = useState(false);
     const [expanded, setExpanded] = useState(false);
     const [dishes, setDishes] = useState([]);
@@ -52,7 +51,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const { permissions } = useUserPermissions();
     const { onDisplayPopup } = useGenericModal();
 
-    const houseShortName = activity ? (activity.house === "harmony hill" ? "HH" : "JN") : "?";
+    const houseShortName = activity ? (activity.house?.toLowerCase() === "harmony hill" ? "HH" : "JN") : "?";
     const countMinibarNow = minibarCount === null && activity && ActivityStatus.Started.equals(activity.status) && utils.isToday(activity.startingAt);
     const minibarCountAnimation = countMinibarNow ? { scale: [1, 1.1, 1], opacity: [1, 0.5, 1] } : {};
     const minibarCountTransition = countMinibarNow ? { duration: 1.5, ease: "easeInOut", repeat: Infinity } : {};
@@ -106,7 +105,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         // If it's already past the 'Started' stage, we can go from 'Good To Go' to 'Completed', if required photos has been uploaded
         const now = utils.now();
-        const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
+        const minutesLeft = activity.startingAt ? activity.startingAt.diff(now, 'minutes').minutes : 9999;
         const tooLateToStart = minutesLeft < -60;
 
         return tooLateToStart && isGoodToGo;
@@ -312,7 +311,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     const displayStatusLogs = async () => {
         const statusLogs = await activityService.getStatusLogs(customer, activity, onError);
-        if(statusLogs == false) return false;
+        if(statusLogs === false) return false;
 
         const logs = statusLogs.map((log) => {
             return <div>
@@ -394,13 +393,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
             setMinibarCount(existingMinibarCount && existingMinibarCount.length > 0 ? existingMinibarCount[0].items : null);
         }
 
-        const setUserRole = async () => {
-            const userRole = await userService.isManagerOrAdmin();
-            setIsManagerOrAdmin(userRole);
-        }
-
         setInitialData();
-        setUserRole();
         getAndSetActivityInfo();
 
         return () => {
@@ -562,7 +555,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
                     {showProvider && (<>
                         <p><span className="detail-label">Provider: </span> {activity.provider}</p>
-                        {isManagerOrAdmin && (<p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p>)}
+                        {permissions.isManagerOrAdmin && (<p><span className="detail-label">Provider Price:</span> {utils.formatDisplayPrice(activity.providerPrice)}</p>)}
                     </>)}
 
                     {activity.isFree !== true && (<>
@@ -573,7 +566,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </p>
                         )}
 
-                        {dishesPrice && dishesPrice > 0 && (
+                        {dishesPrice > 0 && (
                             <p>
                                 <span className="detail-label">Dishes Total: </span>
                                 {utils.formatDisplayPrice(dishesPrice, true) ?? 0}
@@ -588,12 +581,12 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
                     {!utils.isEmpty(activity.changeDescription) && (
                         <div style={{ color: "red" }}>
-                            <p className="preserve-whitespaces">
+                            <div className="preserve-whitespaces">
                                 <span className="detail-label">Change:</span>
                                 {activity.changeDescription.map((change) => {
                                     return (<p>• {change}</p>)
                                 })}
-                            </p>
+                            </div>
                         </div>
                     )}
 
@@ -718,7 +711,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         <PhotoUploadButton 
-                            instructions={activityInfo.photoInstructions} 
+                            instructions={activityInfo?.photoInstructions} 
                             photos={photos}
                             onUpload={onUploadPhoto}
                             enableUpload={canAddPhotos()}

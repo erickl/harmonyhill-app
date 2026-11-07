@@ -109,7 +109,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
 
     const displayStatusLogs = async () => {
         const statusLogs = await todoService.getStatusLogs(todo, onError);
-        if(statusLogs == false) return false;
+        if(statusLogs === false) return false;
 
         const logs = statusLogs.map((log) => {
             return <div>

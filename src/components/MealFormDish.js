@@ -4,6 +4,7 @@ import * as utils from "../utils.js";
 import { useNotification } from "../context/NotificationContext.js";
 import { TextField, Checkbox, FormControlLabel } from '@mui/material';
 import { Trash2} from "lucide-react";
+import TextInput from "./TextInput.js";
 import "./MealFormDish.css"
 
 export default function MealFormDish({dish, formData, handleFormDataChange, custom, isFree}) {
@@ -20,38 +21,38 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
 
     const { onError } = useNotification();
 
-    const handleEditOrderQuantity = (newDish, quantity) => {
-        let updatedDishes = [ ...(formData.dishes || []) ];
+    const handleEditOrderQuantity = (quantity) => {
+        let newDishes = [ ...(formData.dishes || []) ];
 
-        let existingDishIndex = updatedDishes.findIndex((dish) => {
-            return dish.id === newDish.id || dish.name === newDish.name;
+        let existingDishIndex = newDishes.findIndex((item) => {
+            return item.id === dish.id || item.name === dish.name;
         })
 
         if(existingDishIndex === -1) {
-            newDish.quantity = 0;
-            newDish.isFree = isFree;
-            existingDishIndex = updatedDishes.push(newDish) - 1;
+            dish.quantity = 0;
+            dish.isFree = isFree;
+            existingDishIndex = newDishes.push(dish) - 1;
         } 
 
-        updatedDishes[existingDishIndex].quantity += quantity;
-        updatedDishes[existingDishIndex].quantity = Math.max(updatedDishes[existingDishIndex].quantity, 0);
+        newDishes[existingDishIndex].quantity += quantity;
+        newDishes[existingDishIndex].quantity = Math.max(newDishes[existingDishIndex].quantity, 0);
 
-        if(updatedDishes[existingDishIndex].quantity == 0) {
-            updatedDishes = updatedDishes.filter((_, i) => i !== existingDishIndex);
+        if(newDishes[existingDishIndex].quantity == 0) {
+            newDishes = newDishes.filter((_, i) => i !== existingDishIndex);
         } 
         
-        handleFormDataChange("dishes", updatedDishes);
+        handleFormDataChange("dishes", newDishes);
     };
 
-    const handleEditOrder = (newDish, field, value) => {
-        let updatedDishes = [ ...(formData.dishes || []) ];
+    const handleEditOrder = (field, value) => {
+        let newDishes = [ ...(formData.dishes || []) ];
 
-        let existingDishIndex = updatedDishes.findIndex((dish) => {
+        let existingDishIndex = newDishes.findIndex((newDish) => {
             return dish.name === newDish.name && dish.course === newDish.course;
         })
 
         if(existingDishIndex === -1) {
-            existingDishIndex = updatedDishes.push(newDish) - 1;
+            existingDishIndex = newDishes.push(dish) - 1;
         }
 
         if(field === "customerPrice") {
@@ -60,16 +61,16 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
 
         // If editing name (for custom dishes)
         if(field === "name") {
-            if(utils.isEmpty(newDish.name) && newDish.quantity === 0) {
-                newDish.quantity = 1;
+            if(utils.isEmpty(dish.name) && dish.quantity === 0) {
+                dish.quantity = 1;
             }
             if(utils.isEmpty(value)) {
-                newDish.quantity = 0;
+                dish.quantity = 0;
             }
         }
 
-        updatedDishes[existingDishIndex][field] = value;
-        handleFormDataChange("dishes", updatedDishes);
+        newDishes[existingDishIndex][field] = value;
+        handleFormDataChange("dishes", newDishes);
     };
 
     const quantity = getDishData("quantity", 0);
@@ -82,34 +83,23 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                 {custom === true ? (
                     <div className="custom-meal-dish-row">
                         <Trash2 color="red" onClick={() => {
-                            handleEditOrderQuantity(dish, -dish.quantity);
+                            handleEditOrderQuantity(-dish.quantity);
                         }}/>
-                        <label for={`${dish.id}-name`}>
-                            Custom Name:
-                        </label>
-                        <input
+                        <TextInput 
                             type="text"
-                            id={`${dish.id}-name`}
-                            name={`name`}
+                            name="name"
+                            label={"Custom Name"}
                             value={dish.name}
-                            onChange={(e) => handleEditOrder(dish, "name", e.target.value)}
-                            className="input"
+                            onChange={handleEditOrder}
                         />
-                        <span 
-                            style={{marginLeft: '10px'}}
-                            className="currency-prefix">
-                            {utils.getCurrency()}
-                        </span>
-                        <input
-                            style={{marginLeft: '3px'}}
-                            type="text" // Changed from "number" to "text"
-                            id={`${dish.id}-customerPrice`}
+                        <TextInput 
+                            type="price"
                             name="customerPrice"
-                            // Apply formatting here for display inside the input
+                            label={"Price"}
                             value={utils.formatDisplayPrice(dish.customerPrice)}
-                            onChange={(e) => handleEditOrder(dish, e.target.name, e.target.value)}
-                            className="input"
+                            onChange={handleEditOrder}
                         />
+                        
                     </div>
                 ) : ( 
                     <span>{`${dish.name}${dishPrice}`}</span>
@@ -119,7 +109,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                         key={`${dish.id}-decrement`}
                         //className="button activity-button"
                         onClick={() => {
-                            handleEditOrderQuantity(dish, -1);
+                            handleEditOrderQuantity(-1);
                         }}>
                         -
                     </button>
@@ -128,7 +118,7 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
                         key={`${dish.id}-increment`}
                         //className="button activity-button"
                         onClick={() => {
-                            handleEditOrderQuantity(dish, 1);
+                            handleEditOrderQuantity(1);
                         }}>
                         +
                     </button>
@@ -137,21 +127,19 @@ export default function MealFormDish({dish, formData, handleFormDataChange, cust
 
             {quantity > 0 && (
                 <div className="meal-dish-comment">
-                    <label htmlFor="purchaseComments">Comments:</label>
-                    <textarea
-                        id="purchaseComments"
+                    <TextInput 
+                        type="text"
                         name="comments"
+                        label={"Comments"}
                         value={getDishData("comments", "")}
-                        onChange={(e) => handleEditOrder(dish, e.target.name, e.target.value)}
-                        rows="1"
-                        className="input"
-                    ></textarea>
+                        onChange={handleEditOrder}
+                    />
 
                     <FormControlLabel
                         control={
                             <Checkbox
                                 checked={getDishData("isFree", false)}
-                                onChange={(e) => handleEditOrder(dish, "isFree", e.target.checked)}
+                                onChange={(e) => handleEditOrder("isFree", e.target.checked)}
                             />
                         }
                         label="Free"
