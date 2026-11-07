@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import "./Dropdown.css";
 import * as utils from "../utils.js";
+import TextInput from './TextInput.js';
 import { createPortal } from 'react-dom';
 
 export default function Dropdown({ label, current, options, onSelect }) {
@@ -15,10 +16,12 @@ export default function Dropdown({ label, current, options, onSelect }) {
     const toggleDropdown = () => {
         if (!isOpen && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom - 8;
             setMenuPosition({
-                top: rect.bottom + window.scrollY,
-                left: rect.left + window.scrollX,
+                top: rect.bottom,
+                left: rect.left,
                 width: rect.width,
+                maxHeight: Math.max(120, Math.min(300, spaceBelow)),
             });
         }
         setIsOpen(prev => !prev);
@@ -49,16 +52,15 @@ export default function Dropdown({ label, current, options, onSelect }) {
 
     return (
         <div className="dropdown-menu">
-            <div className="dropdown-row">
-                <span>{label}</span>
-                <button
-                    type="button"
-                    className="open-button"
-                    ref={buttonRef}
-                    onClick={toggleDropdown}
-                >
-                    {utils.capitalizeWords(selected) || 'Select an option'}
-                </button>
+            <div className="dropdown-row" onClick={toggleDropdown} ref={buttonRef}>
+                <TextInput
+                    type="text"
+                    label={label}
+                    
+                    
+                    value={utils.capitalizeWords(selected) || 'Select an option'}
+                    onChange={null}
+                />
             </div>
 
             {isOpen && createPortal(
@@ -66,7 +68,7 @@ export default function Dropdown({ label, current, options, onSelect }) {
                     ref={menuRef}
                     className="list"
                     style={{
-                        position: 'absolute',
+                        position: 'fixed',
                         top: menuPosition.top,
                         left: menuPosition.left,
                         width: menuPosition.width,

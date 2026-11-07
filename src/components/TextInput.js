@@ -5,7 +5,7 @@ export default function TextInput({type, name, label, value, onChange}) {
     let baseType = "text";
     let formattedValue = value;
     if(utils.isEmpty(name) && !utils.isEmpty(label)) {
-        name = label.trim().toLowerString();
+        name = label.trim().toLowerCase();
     }
     let formattedLabel = label ? label : utils.capitalizeWords(name);
 
@@ -25,7 +25,7 @@ export default function TextInput({type, name, label, value, onChange}) {
         if(type === "amount" || type === "price") {
             value = utils.cleanNumeric(value);
         }
-        onChange(e.target.name, value, type);
+        if(onChange) onChange(e.target.name, value, type);
     }
 
     return (
