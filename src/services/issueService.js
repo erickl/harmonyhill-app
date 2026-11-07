@@ -20,7 +20,7 @@ export async function getOne(recordId, onError) {
 export async function getIssue(record, onError) {
     let issue = record;
     const path = getPath(issue);
-    const mainCollectionName = path[0];
+    const mainCollectionName = path.length > 0 ? path[0] : "";
     if(mainCollectionName !== "issues") {
         issue = await getOne(record.id, onError);
     }
@@ -32,6 +32,12 @@ export async function getComments(record, onError) {
     const issue = await getIssue(record);
     if(!issue) return [];
     return await issueDao.getComments(issue, onError);
+}
+
+export async function getLastComment(record, onError) {
+    const issue = await getIssue(record);
+    if(!issue) return null;
+    return await issueDao.getLastComment(issue, onError);
 }
 
 export async function add(record, status, comment, onError, writes = []) {

@@ -15,9 +15,18 @@ export async function addComment(issue, comment, onError, writes) {
     return await dao.add(commentPath, id, comment, onError, writes);
 }
 
-export async function getComments(issue, onError, writes) {
+export async function getComments(issue, onError) {
     const commentsPath = [...path, issue.id, "comments"];
-    return await dao.get(commentsPath, [], -1, onError);
+    const order = [orderBy("createdAt", "desc")];
+    return await dao.get(commentsPath, [], order, -1, onError);
+}
+
+export async function getLastComment(issue, onError) {
+    const commentsPath = [...path, issue.id, "comments"];
+    const order = [orderBy("createdAt", "desc")];
+    const comments = await dao.get(commentsPath, [], order, 1, onError);
+    if(comments.length >= 0) return comments[0];
+    return null; 
 }
 
 export async function mark(record, type, onError, writes) {

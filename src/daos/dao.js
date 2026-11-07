@@ -429,11 +429,16 @@ export async function remove(path, id, onError = null, writes = []) {
  * @returns path to record (excl ID) in an array
  */
 export function getPath(record) {
-    const path = record.ref.path;
-    let pathArray = path.split("/");
-    // remove record ID, preserve only path to record
-    pathArray.pop(); 
-    return pathArray;
+    try {
+        if(!record) return [];
+        const path = record.ref.path;
+        let pathArray = path.split("/");
+        // remove record ID, preserve only path to record
+        pathArray.pop(); 
+        return pathArray;
+    } catch(e) {
+        return [];
+    }
 }
 
 export async function getParent(child) {

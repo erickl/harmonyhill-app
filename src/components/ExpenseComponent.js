@@ -20,6 +20,7 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
     const [booking,          setBooking         ] = useState(null);
     const [activity,         setActivity        ] = useState(null);
     const [issue,            setIssue           ] = useState(null);
+    const [issueComment,     setIssueComment    ] = useState(null);
 
     const { permissions} = useUserPermissions();
     const { onError    } = useNotification();
@@ -52,6 +53,9 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
             if(expense.issue === "attention" || expense.issue === "pending_approval") {
                 const issue_ = await issueService.getLastIssue(expense);
                 setIssue(issue_);
+                
+                const lastComment_ = await issueService.getLastComment(issue_, onError);
+                setIssueComment(lastComment_);
             }
             setLoading(prev => !prev);
         }
@@ -86,9 +90,9 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
                 <Spinner />
             ) : expanded && !loading ? (
                 <div className="expense-body">
-                    {issue && !utils.isEmpty(issue.comment) && (
+                    {issueComment && !utils.isEmpty(issueComment.comment) && (
                         <div style={{color:"red"}}>
-                            Issue: {issue.comment}
+                            Issue: {issueComment.comment}
                         </div>
                     )}
                     <div>
