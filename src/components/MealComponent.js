@@ -64,6 +64,7 @@ export default function MealComponent({context, item, handleDelete}) {
                         {permissions.isAdmin && (
                             <div className="meal-component-footer-icon">
                                 <Pencil
+                                    size={25}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         context.onNavigate("add-menu-item", {
@@ -71,19 +72,24 @@ export default function MealComponent({context, item, handleDelete}) {
                                         });
                                     }}
                                 />
-                                <p>Edit</p>
+                                <div className="meal-component-footer-label">
+                                    Edit
+                                </div>
                             </div>
                         )}
 
                         {permissions.isAdmin && (
                             <div className="meal-component-footer-icon">
                                 <Trash2
+                                    size={25}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleDelete();
                                     }}
                                 />
-                                <p>Delete</p>
+                                <div className="meal-component-footer-label">
+                                    Delete
+                                </div>
                             </div>
                         )}
                     </div>

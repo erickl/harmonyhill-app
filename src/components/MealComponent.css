@@ -32,7 +32,7 @@
 }
 
 .meal-item-body {
-  padding: 1rem 1rem 0 1rem;
+  padding: 0.5rem 0.5rem 0 0.5rem;
 }
 
 .meal-item-photo {
@@ -49,16 +49,22 @@
 
 .meal-item-body-footer {
     margin-top: 2rem;
+    margin-bottom: 0rem;
     display: flex;
     gap: 30px;
 }
 
 .meal-component-footer-icon {
     cursor: pointer;
+    margin-bottom: 0rem;
     align-items: center;
     display: flex;
     flex-direction: column;
     transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.meal-component-footer-label {
+  margin: 0.3rem;
 }
 
 .meal-component-footer-icon:hover {
