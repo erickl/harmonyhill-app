@@ -46,7 +46,7 @@ export default function MultipleChoiceList({ label, current, options, maxSelect 
     };
 
     return (
-        <div>
+        <div className="menu">
             <span>{label}</span>
             <div className="row">
                 {Object.values(options).map((option, i) => {

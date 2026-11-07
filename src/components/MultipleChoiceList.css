@@ -1,4 +1,7 @@
 
+.menu {
+    margin-top: 1rem;
+}
 
 .row {
     width: 100vw;
@@ -55,9 +58,9 @@
     
     
     border-radius: 50%;
-    border: 2px solid #ea0a0a;
-    background-color: #ea0a0a;
-    color: white;
+    border: 2px solid rgb(4, 138, 138);
+    background-color: white;
+    color: rgb(4, 138, 138);
     
     display: inline-flex;
     align-items: center;
