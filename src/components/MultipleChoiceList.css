@@ -9,25 +9,47 @@
 }
 
 .option {
-    border: 0.1rem solid black;
-    background-color: rgb(5, 186, 186);
-    color: white;
+    border: 0.15rem solid rgb(4, 138, 138);
+    background-color: white;
+    color: rgb(4, 138, 138);
     border-radius: 5px;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
+    gap: 0.4rem;
     margin: 0.3rem;
-    padding: 0.2rem;
+    padding: 0.4rem 0.8rem;
     width: auto;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.option:hover {
+    background-color: rgba(5, 186, 186, 0.12);
 }
 
 .option.selected {
     background-color: rgb(4, 138, 138);
     color: white;
+    font-weight: 600;
+    box-shadow: 0 0 0 0.15rem rgba(5, 186, 186, 0.45);
+}
+
+/* Checkmark on selected options: a second visual cue that isn't just color */
+.option.selected::before {
+    content: "✓";
+}
+
+/* Keyboard focus */
+.option:focus-visible {
+    outline: 0.2rem solid black;
+    outline-offset: 0.15rem;
 }
 
 .order {
     position: absolute;
-    top: 1.8rem;
+    top: 2rem;
+    left: 0rem;
     width: 0.8rem;
     aspect-ratio: 1;
     
