@@ -6,6 +6,7 @@ import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
+import MultipleChoiceList from './MultipleChoiceList.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import * as utils from "../utils.js";
 import "./AddExpenseScreen.css";
@@ -135,8 +136,17 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
     }, [formData.category]);
 
     const onTeamMemberSelect = (teamMember) => {
-        const name = teamMember ? teamMember.name : '';
+        let name = null;
+        if(!teamMember) return;
         
+        if(Array.isArray(teamMember) && teamMember.length > 0) {
+            name = teamMember[0];
+        } else if(utils.exists(teamMember, "name")) {
+            name = teamMember.name;
+        } else {
+            name = teamMember;
+        }
+
         // Description auto generated sometimes, by category & purchases
         handleChange("_batch", {
             "description" : "",
@@ -164,7 +174,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
     }
 
     const onPaymentMethodSelect = (paymentMethod) => {
-        const name = paymentMethod ? paymentMethod.name : '';
+        const name = paymentMethod && Array.isArray(paymentMethod) ? paymentMethod[0] : paymentMethod;
         handleChange("paymentMethod", name);
     }
 
@@ -254,14 +264,13 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
     };
 
     // todo: put in database
-    const paymentMethods = {
-        'Cash' : {"name" : "Cash" },
-    };
+    const paymentMethods = ['Cash'];
 
     if(permissions.isAdmin) {
-        paymentMethods['Transfer'] = {"name" : "Transfer"};
+        paymentMethods.push('Transfer');
     }
 
+    // If there's only one choice, choose it automatically
     let currentPaymentMethod = formData.paymentMethod;
     const paymentMethodNames = Object.keys(paymentMethods);
     if(paymentMethodNames.length === 1 && !currentPaymentMethod) {
@@ -305,20 +314,22 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                     />
 
                     <div className="purchase-form-group">
-                        <Dropdown 
+                        <MultipleChoiceList 
+                            current={currentPaymentMethod} 
                             label={"Payment Method"} 
-                            options={paymentMethods}
-                            current={currentPaymentMethod}
+                            options={paymentMethods} 
                             onSelect={onPaymentMethodSelect}
+                            maxSelect={1}
                         />
                     </div>
-
+                    
                     <div className="purchase-form-group">
-                        <Dropdown 
+                        <MultipleChoiceList 
                             current={formData.purchasedBy} 
                             label={"Purchased By"} 
-                            options={teamMembers} 
+                            options={Object.keys(teamMembers)} 
                             onSelect={onTeamMemberSelect}
+                            maxSelect={1}
                         />
                     </div>
 
