@@ -14,8 +14,10 @@
 
 }
 
-.comment-input {
-    margin-right: auto;
+.comment-input-wrapper{
+    width: 100%;
+    text-align: start;
+    align-self: stretch;
 }
 
 .metainfo-left {

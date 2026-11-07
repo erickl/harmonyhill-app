@@ -6,6 +6,12 @@ import ButtonsFooter from "../components/ButtonsFooter.js";
 
 const FilterContext = createContext();
 
+const commentInputWrapper = {
+    width: "100%",
+    textAlign: "start",
+    alignSelf: "stretch",
+}
+
 export function FilterProvider({ children }) {
     const [showPopup, setShowPopup] = useState(false);
     const [filters, setFilters] = useState({});
@@ -64,13 +70,15 @@ export function FilterProvider({ children }) {
                                             useTime={false}
                                         />
                                     ) : type === "string" ? (
-                                        <TextInput 
-                                            type="text"
-                                            name={name}
-                                            label={utils.capitalizeWords(name)}
-                                            value={values[name]}
-                                            onChange={handleInputChange}
-                                        />
+                                        <div style={commentInputWrapper}>
+                                            <TextInput 
+                                                type="text"
+                                                name={name}
+                                                label={utils.capitalizeWords(name)}
+                                                value={values[name]}
+                                                onChange={handleInputChange}
+                                            />
+                                        </div>
                                     ) : (<div><p>Hello</p></div>)}  
                                 </React.Fragment>
                             );

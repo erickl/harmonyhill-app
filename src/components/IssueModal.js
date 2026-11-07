@@ -112,14 +112,16 @@ export default function IssueModal({onSubmit, record, onClose}) {
                     </div>
                 )}
                
-                <TextInput
-                    className="comment-input"
-                    type="text"
-                    name="comment"
-                    label={"Comment"}
-                    value={formData.comment}
-                    onChange={handleChange}
-                />
+               <div className="comment-input-wrapper">
+                    <TextInput
+                        className="comment-input"
+                        type="text"
+                        name="comment"
+                        label={"Comment"}
+                        value={formData.comment}
+                        onChange={handleChange}
+                    />
+                </div>
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}
 

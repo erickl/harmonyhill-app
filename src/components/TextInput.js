@@ -38,7 +38,10 @@ export default function TextInput({type, name, label, value, onChange}) {
                 onChange={onChangeInternal}
                 placeholder=" " 
             />
-            <label htmlFor="name">{formattedLabel}</label>
+            <label 
+                htmlFor="name">
+                    {formattedLabel}
+            </label>
         </div>
     );
 }
