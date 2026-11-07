@@ -8,6 +8,7 @@ import { useNotification } from "../context/NotificationContext.js";
 import IncomeScreen from "./IncomeScreen.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
+import MultipleChoiceList from './MultipleChoiceList.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
@@ -90,7 +91,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
     }
 
     const onPaymentMethodSelect = (paymentMethod) => {
-        const name = paymentMethod ? paymentMethod.name : '';
+        const name = paymentMethod && Array.isArray(paymentMethod) ? paymentMethod[0] : paymentMethod;
         handleChange("paymentMethod", name);
     }
 
@@ -202,12 +203,12 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
     };
 
     // todo: put in database
-    const paymentMethods = {
-        'Cash'        : {"name" : "Cash"        },
-        'Transfer'    : {"name" : "Transfer"    },
-        'AirBnB'      : {"name" : "AirBnB"      },
-        'Booking.com' : {"name" : "Booking.com" },
-    };
+    const paymentMethods = [
+        'Cash'       ,
+        'Transfer'   ,
+        'AirBnB'     ,
+        'Booking.com',
+    ];
 
     const incomeFromText = customer ? `: ${customer.name}` : "";
 
@@ -271,13 +272,15 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                 )}
 
                 <div className="purchase-form-group">
-                    <Dropdown 
+                    <MultipleChoiceList 
                         label={"Payment Method"} 
                         options={paymentMethods}
                         current={formData.paymentMethod}
                         onSelect={onPaymentMethodSelect}
                     />
                 </div>
+
+                
 
                 <MyDatePicker 
                     name={"receivedAt"}
