@@ -98,7 +98,7 @@ export default function IssueModal({onSubmit, record, onClose}) {
                             <div className="comment">
                                 <div>
                                     <div className="comment-text" key={`comment-${comment.id}`}> 
-                                        {comment.comment}
+                                        {utils.capitalizeWords(comment.status)}: {utils.isEmpty(comment.comment) ? "[Empty]" : comment.comment}
                                     </div>
                                     <div className="metainfo-left">
                                         {comment.createdBy}, {utils.to_yyMMddHHmm(comment.createdAt, "/")}
