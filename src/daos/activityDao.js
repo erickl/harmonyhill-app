@@ -1,4 +1,4 @@
-import { where, orderBy } from 'firebase/firestore';
+import { where, orderBy, or } from 'firebase/firestore';
 import * as dao from "./dao.js"
 import * as utils from "../utils.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
@@ -227,7 +227,7 @@ function createActivitiesQueryArray(options = {}) {
     }
 
     if(utils.exists(options, "issues") && options.issues === true) {
-        filters.push(where("issue", "==", "attention"));
+        filters.push(or(where("issue", "==", "attention"), where("issue", "==", "pending_approval")));
     }
 
     // startingAt is a string in the format YYYY-MM-DD, without time
