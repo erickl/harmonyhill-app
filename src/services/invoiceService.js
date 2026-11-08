@@ -99,6 +99,9 @@ export function dishReceiptLine(dishData) {
     if(dishComments.length > 0) {
         dishComments = ` (${dishComments})`;
     }
+    if(dishData.isFree !== true) {
+        dishComments += `, ${utils.formatDisplayPrice(dishData.customerPrice)}`;
+    }
     
     return dishItem + dishComments;
 }

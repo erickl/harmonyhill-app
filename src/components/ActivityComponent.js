@@ -43,6 +43,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const [minibarCount, setMinibarCount] = useState(null);
     const [photos, setPhotos] = useState([]);
     const [issue, setIssue] = useState(null);
+    const [statusLogs, setStatusLogs] = useState([]);
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
@@ -309,17 +310,36 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         setLoadingExpandedActivity(false);
     }
 
-    const displayStatusLogs = async () => {
-        const statusLogs = await activityService.getStatusLogs(customer, activity, onError);
-        if(statusLogs === false) return false;
+    const getLastStatus = () => {
+        if(utils.isEmpty(statusLogs)) {
+            return null;
+        }
 
-        const logs = statusLogs.map((log) => {
+        const lastStatus = statusLogs[statusLogs.length-1];
+        if(lastStatus) {
+            const statusName = utils.capitalizeWords(lastStatus.name);
+            const statusDate = utils.to_HHmm(lastStatus.createdAt);
+            const updatedBy = utils.capitalizeWords(lastStatus.createdBy);
+            return `${statusName} ${statusDate} by ${updatedBy}`;
+        }
+
+        return null;
+    }
+
+    const displayStatusLogs = async () => {
+        let statusLogs_ = statusLogs;
+        if(utils.isEmpty(statusLogs_)) {
+            statusLogs_ = await activityService.getStatusLogs(customer, activity, onError);
+            if(statusLogs_ === false) statusLogs_ = [];
+        }       
+
+        const builtLogs = statusLogs_.map((log) => {
             return <div>
                 {`${utils.capitalizeWords(log.name)}, ${log.createdBy}, ${utils.to_ddMMM_HHmm(log.createdAt)}`}
             </div>
         });
 
-        onDisplayPopup("Status Logs", logs);
+        onDisplayPopup("Status Logs", builtLogs);
     }
 
     const loadExpandedActivityInfo = async () => {
@@ -348,7 +368,12 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 const dishesPrice = dishes.reduce((sum, dish) => sum + (dish.isFree === true ? 0 : dish.customerPrice * dish.quantity), 0);
                 setDishesPrice(dishesPrice);
                 setDishes(dishes);
-            } 
+            }
+
+            const statusLogs = await activityService.getStatusLogs(customer, activity, onError);
+            if(statusLogs !== false) {
+                setStatusLogs(statusLogs);
+            }
 
             if(activity.issue === "attention" || activity.issue === "pending_approval") {
                 const issue_ = await issueService.getLastIssue(activity, onError);
@@ -408,7 +433,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         return <p>Loading...</p>;
     }
 
-    const activityHasChanged = !utils.isEmpty(activity.changeDescription)
+    const activityHasChanged = !utils.isEmpty(activity.changeDescription);
+
+    const lastStatusMessage = getLastStatus();
 
     return (
         <div>
@@ -450,7 +477,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 {status && (<div className="activity-header-status">
                     <StatusCircle
                         status={status.name}
-                        onClick={displayStatusLogs}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            displayStatusLogs();
+                        }}
                     />
                 </div>)}
 
@@ -545,11 +575,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         </p>
                     )}
 
-                    {status && (
+                    {!utils.isEmpty(lastStatusMessage) && (
                         <p 
                             onClick={displayStatusLogs}
                         >
-                            <span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}
+                            <span className="detail-label">Status: </span> {lastStatusMessage}
                         </p>
                     )}
 
