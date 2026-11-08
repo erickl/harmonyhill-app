@@ -256,14 +256,14 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                 <Spinner />
             ) : expanded ? (
                 <div className="todo-body">
-                    <p onClick={displayStatusLogs}>
+                    <div onClick={displayStatusLogs}>
                         <span className="detail-label">Status: </span> {utils.capitalizeWords(status.message)}
-                    </p>
+                    </div>
                     {alert && !utils.isEmpty(alert.message) && (
-                        <p>
+                        <div>
                             <span className="detail-label">Alert: </span>
                             <span className="important-badge">{alert.message}</span>
-                        </p>
+                        </div>
                     )}
                     <div>
                         Description: {todo.description}
@@ -271,9 +271,11 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
                     <div>
                         Duration: {todo.duration} minutes
                     </div>
-                    <div>
-                        Visibility: {todo.visibility}
-                    </div>
+                    {!utils.isEmpty(todo.visibility) && (
+                        <div>
+                            Visibility: {todo.visibility}
+                        </div>
+                    )}
                     <div>
                         Category: {utils.capitalizeWords(todo.category)}
                     </div>

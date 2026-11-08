@@ -7,12 +7,12 @@ export function subscribe(bookingId, setDocs, options, onError) {
     const filters = createActivitiesQueryArray(options);
     const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
     return dao.subscribe(path, setDocs, filters, onError);
-} 
+}
 
 export function subscribeAll(setDocs, options, onError) {
     const filters = createActivitiesQueryArray(options);
     return dao.subscribeAll(dao.constant.ACTIVITIES, setDocs, filters, onError);
-} 
+}
 
 const getActivitiesPath = (bookingId) => {
     return [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];;
@@ -29,15 +29,15 @@ export async function add(bookingId, activityId, activity, onError, writes = [])
 
 export async function addStatusLog(bookingId, activityId, status, onError, writes = []) {
     const path = getActivitiesPath(bookingId);
-    path.push(activityId, "statusLog");
+    path.push(activityId, "statusLogs");
     const statusId = `status-${status.name}-${Date.now()}`;
     return await dao.add(path, statusId, status, onError, writes);
 }
 
 export async function getStatusLog(bookingId, activityId, onError) {
     const path = getActivitiesPath(bookingId);
-    path.push(activityId, "statusLog");
-    const ordering = [ orderBy("createdAt", "asc") ];
+    path.push(activityId, "statusLogs");
+    const ordering = [orderBy("createdAt", "asc")];
     return await dao.get(path, [], ordering, -1, onError);
 }
 
@@ -46,12 +46,12 @@ export async function update(bookingId, activityId, activityData, updateLogs = t
     return await dao.update(path, activityId, activityData, updateLogs, onError, writes);
 }
 
-export async function addDish(bookingId, mealId, dishId, dish, onError, writes = []) { 
+export async function addDish(bookingId, mealId, dishId, dish, onError, writes = []) {
     const path = getDishesPath(bookingId, mealId);
     return await dao.add(path, dishId, dish, onError, writes);
 }
 
-export async function deleteDish(bookingId, mealId, dishId, onError, writes = []) { 
+export async function deleteDish(bookingId, mealId, dishId, onError, writes = []) {
     const path = getDishesPath(bookingId, mealId);
     return await dao.remove(path, dishId, onError, writes);
 }
@@ -78,7 +78,7 @@ export async function removePhoto(bookingId, activityId, id, onError, writes = [
 
 export async function getProviders(category, subCategory) {
     let filters = [
-        where("category",    category   ),
+        where("category", category),
         where("subCategory", subCategory)
     ];
 
@@ -87,22 +87,22 @@ export async function getProviders(category, subCategory) {
 }
 
 // mealCategory = "breakfast", "lunch", "dinner", "snack", "afternoon tea", "floating breakfast"
-export async function getMeals(bookingId, options = {}) {  
+export async function getMeals(bookingId, options = {}) {
     const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
-    
-    if(!utils.exists(options, "category")) {
+
+    if (!utils.exists(options, "category")) {
         options.category = "meal";
     }
 
     const filters = createActivitiesQueryArray(options);
-    
+
     const meals = await dao.get(path, filters);
     const sortedMeals = dao.sort(meals, "startingAt");
 
     return sortedMeals;
 }
 
-export async function getBookingActivities(bookingId, options = {}, onError = null) { 
+export async function getBookingActivities(bookingId, options = {}, onError = null) {
     const path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
     const filters = createActivitiesQueryArray(options);
     const activities = await dao.get(path, filters, [], -1, onError);
@@ -110,7 +110,7 @@ export async function getBookingActivities(bookingId, options = {}, onError = nu
     return sortedActivities;
 }
 
-export async function getAllActivities(options = {}, onError) { 
+export async function getAllActivities(options = {}, onError) {
     const filters = createActivitiesQueryArray(options);
     const allActivities = await dao.getSubCollections(dao.constant.ACTIVITIES, filters, [], onError);
     const sortedActivities = dao.sort(allActivities, "startingAt");
@@ -128,7 +128,7 @@ export async function getMealDishes(bookingId, mealId, filterOptions = {}, onErr
     if (utils.exists(filterOptions, "isFree")) {
         filters.push(where("isFree", "==", filterOptions.isFree));
     }
-    
+
     return await dao.get(path, filters, [], -1, onError);
 }
 
@@ -145,7 +145,7 @@ export async function getDishes(filterOptions = {}, onError) {
     }
 
     // filtering for startingAt >= null doesn't make sense
-    if (utils.exists(filterOptions, "after")  && !utils.isEmpty(filterOptions.after)) {
+    if (utils.exists(filterOptions, "after") && !utils.isEmpty(filterOptions.after)) {
         const after = utils.toFireStoreTime(filterOptions.after);
         filters.push(where("createdAt", ">=", after));
     }
@@ -156,18 +156,18 @@ export async function getDishes(filterOptions = {}, onError) {
         filters.push(where("createdAt", "<=", before));
     }
 
-    const ordering = [ orderBy("createdAt", "asc") ];
+    const ordering = [orderBy("createdAt", "asc")];
 
     const dishes = await dao.getSubCollections(dao.constant.DISHES, filters, ordering, onError);
 
     const dishesWithParent = await Promise.all(dishes.map(async (dish) => {
         const parent = await dao.getParent(dish);
         return {
-            ...dish,      
+            ...dish,
             parent: parent,
         };
     }));
-    
+
     return dishesWithParent;
 }
 
@@ -195,13 +195,13 @@ export async function getTypes(filterOptions = {}) {
 
     let activityTypes = [];
     try {
-        activityTypes = await dao.get([dao.constant.ACTIVITY_TYPES], filters, [], -1); 
+        activityTypes = await dao.get([dao.constant.ACTIVITY_TYPES], filters, [], -1);
     } catch (error) {
         console.error('Error fetching menu:', error);
         return [];
     }
 
-    if(utils.exists(filterOptions, 'house')) {
+    if (utils.exists(filterOptions, 'house')) {
         activityTypes = activityTypes.filter(item => item.houseAvailability.includes(filterOptions.house));
     }
 
@@ -226,7 +226,7 @@ function createActivitiesQueryArray(options = {}) {
         filters.push(where("startingAt", "==", utils.toFireStoreTime(options.date)));
     }
 
-    if(utils.exists(options, "issues") && options.issues === true) {
+    if (utils.exists(options, "issues") && options.issues === true) {
         filters.push(or(where("issue", "==", "attention"), where("issue", "==", "pending_approval")));
     }
 
@@ -251,7 +251,7 @@ function createActivitiesQueryArray(options = {}) {
         filters.push(where("provider", options.hasProvider ? "!=" : "==", ""));
     }
 
-    if(utils.exists(options, "completed")) {
+    if (utils.exists(options, "completed")) {
         filters.push(where("statusCode", options.completed === true ? "==" : "<", ActivityStatus.Completed.code));
     }
 

@@ -19,7 +19,7 @@ export function subscribe(setDocs, options, onError) {
         cancelled = true;
         if (unsub) unsub();
     };
-} 
+}
 
 async function getPath(parent = null) {
     let path = [];
@@ -45,10 +45,10 @@ export async function getOne(parent, id, onError) {
 
 export async function get(parent, filter, onError) {
     const path = await getPath(parent);
-    
+
     const queryFilter = await buildQueryFilter(filter);
-    
-    let ordering = [ orderBy("deadlineAt", "asc") ];
+
+    let ordering = [orderBy("deadlineAt", "asc")];
 
     return await dao.get(path, queryFilter, ordering, -1, onError);
 }
@@ -79,7 +79,7 @@ function createTodoId(todo) {
 export async function addStatusLog(todo, status, onError, writes = []) {
     const parent = await dao.getParent(todo);
     const path = await getPath(parent);
-    path.push(todo.id, "statusLog");
+    path.push(todo.id, "statusLogs");
 
     const statusId = `status-${status.name}-${Date.now()}`;
     return await dao.add(path, statusId, status, onError, writes);
@@ -88,9 +88,9 @@ export async function addStatusLog(todo, status, onError, writes = []) {
 export async function getStatusLog(todo, onError) {
     const parent = await dao.getParent(todo);
     const path = await getPath(parent);
-    path.push(todo.id, "statusLog");
+    path.push(todo.id, "statusLogs");
 
-    const ordering = [ orderBy("createdAt", "asc") ];
+    const ordering = [orderBy("createdAt", "asc")];
     return await dao.get(path, [], ordering, -1, onError);
 }
 
@@ -116,15 +116,15 @@ export async function removePhoto(todoId, id, onError, writes = []) {
 async function buildQueryFilter(filter) {
     let queryFilter = [];
 
-    if(utils.exists(filter, "isCompleted")) {
-        if(filter.isCompleted) {
+    if (utils.exists(filter, "isCompleted")) {
+        if (filter.isCompleted) {
             queryFilter.push(where("status", "==", "completed"));
         } else {
             queryFilter.push(where("status", "!=", "completed"));
         }
     }
 
-    if(utils.exists(filter, "completed")) {
+    if (utils.exists(filter, "completed")) {
         queryFilter.push(where("statusCode", filter.completed === true ? "==" : "<", ActivityStatus.Completed.code));
     }
 
@@ -143,13 +143,13 @@ async function buildQueryFilter(filter) {
         queryFilter.push(where("deadlineAt", "==", utils.toFireStoreTime(filter.date)));
     }
 
-    if(utils.exists(filter, "issues") && filter.issues === true) {
+    if (utils.exists(filter, "issues") && filter.issues === true) {
         queryFilter.push(where("issue", "==", "attention"));
     }
 
     // Admin users can see all: no need for visibility filter
     const isAdmin = await userService.isAdmin();
-    if(!isAdmin) {
+    if (!isAdmin) {
         const currentUsername = await userService.getCurrentUserName();
         queryFilter.push(or(where("visibility", "==", "public"), where("assignedTo", "==", currentUsername)));
     }

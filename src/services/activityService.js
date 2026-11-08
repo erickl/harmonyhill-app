@@ -83,7 +83,7 @@ export async function getCategories() {
  * @returns activities array, ordered by date (oldest first)
  */
 export async function get(booking, filterOptions = {}, onError) {
-    if(!booking) return [];
+    if (!booking) return [];
     const activities = await activityDao.getBookingActivities(booking.id, filterOptions, onError);
     const enhancedActivities = enhanceActivities(activities);
     return enhancedActivities;
@@ -254,7 +254,7 @@ export async function getStatusLogs(booking, activity, onError) {
 export async function setActivityStatus(booking, activity, newStatus, onError, writes = []) {
     const commit = decideCommit(writes);
 
-    
+
     // Removed 20261030: if we create status change logs (below), then this might not be needed anymore
     // if (ActivityStatus.Started.equals(newStatus)) {
     //     // If activity is not delayed, set startingTime when starting activity
@@ -265,11 +265,11 @@ export async function setActivityStatus(booking, activity, newStatus, onError, w
 
     const statusInfo = ActivityStatus.instance(newStatus);
 
-    const statusLog = {
+    const statusLogs = {
         name: newStatus,
         code: statusInfo.code,
     };
-    const statusUpdateResult = await activityDao.addStatusLog(booking.id, activity.id, statusLog, onError, writes);
+    const statusUpdateResult = await activityDao.addStatusLog(booking.id, activity.id, statusLogs, onError, writes);
     if (statusUpdateResult === false) return false;
 
     const updatedData = { status: newStatus, statusCode: statusInfo.code };
