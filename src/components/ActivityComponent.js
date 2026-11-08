@@ -43,6 +43,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const [minibarCount, setMinibarCount] = useState(null);
     const [photos, setPhotos] = useState([]);
     const [issue, setIssue] = useState(null);
+    const [issueComment,     setIssueComment    ] = useState(null);
     const [statusLogs, setStatusLogs] = useState([]);
 
     const { onError } = useNotification();
@@ -306,7 +307,8 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     const handleActivityClick = async () => {
         setLoadingExpandedActivity(true);
-        await loadExpandedActivityInfo();
+        await loadExpandedActivityInfo(!expanded);
+        setExpanded(!expanded);
         setLoadingExpandedActivity(false);
     }
 
@@ -342,12 +344,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         onDisplayPopup("Status Logs", builtLogs);
     }
 
-    const loadExpandedActivityInfo = async () => {
+    const loadExpandedActivityInfo = async (isExpanded) => {
         if (!activity) return;
 
-        const expand = !expanded;
-
-        if (expand) {
+        if (isExpanded) {
             // Check if photos already exist, and get their download URLs
             const activityPhotos = await activityService.getPhotos(activity, onError);
             setPhotos(activityPhotos);
@@ -378,9 +378,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
             if(activity.issue === "attention" || activity.issue === "pending_approval") {
                 const issue_ = await issueService.getLastIssue(activity, onError);
                 setIssue(issue_);
+
+                const lastComment_ = await issueService.getLastComment(issue_, onError);
+                setIssueComment(lastComment_);
             }
         }
-        setExpanded(expand);
     };
 
     useEffect(() => {
@@ -389,6 +391,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     useEffect(() => {
         calculateActivityStatus();
+        
+        // Reload the expanded activity info, in case it changed and already open, without changing the current expanded status
+        loadExpandedActivityInfo(expanded);
         if(activity && Array.isArray(activity.dishes) && activity.dishes.length > 0) {
             setDishes(activity.dishes);
         }
@@ -511,9 +516,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 <Spinner />
             ) : expanded ? (
                 <div className="activity-details">
-                    {issue && !utils.isEmpty(issue.comment) && (
+                    {issueComment && !utils.isEmpty(issueComment.comment) && (
                         <div style={{color:"red"}}>
-                            Issue: {issue.comment}
+                            Issue: {issueComment.comment}
                         </div>
                     )}
                     {alert && !utils.isEmpty(alert.message) && (
