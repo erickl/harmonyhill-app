@@ -89,7 +89,7 @@ async function addOrEditMinibarMeal(endCountEntry, booking, onError, writes = []
         minibarActivity.status = "completed";
         minibarActivity.dishes = dishes;
         
-        result = await mealService.addMeal(booking.id, minibarActivity, onError, writes);
+        result = await mealService.addMeal(booking, minibarActivity, onError, writes);
     } else if(existingMinibarMeals.length > 1) {
         return onError(`Booking ${booking.id} has ${existingMinibarMeals.length}/1 minibar meals`);
     } else {

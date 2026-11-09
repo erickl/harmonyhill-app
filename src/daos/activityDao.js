@@ -125,52 +125,21 @@ export async function getMealDishes(bookingId, mealId, filterOptions = {}, onErr
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES, mealId, dao.constant.DISHES];
     let filters = [];
 
+    let dishes = await dao.get(path, filters, [], -1, onError);
+
+    // 'isFree' doesn't exist for older data, and firebase cannot filter on missing fields
     if (utils.exists(filterOptions, "isFree")) {
-        filters.push(where("isFree", "==", filterOptions.isFree));
+        dishes = dishes.filter((dish) => {
+            if(filterOptions.isFree === true) {
+                return dish.isFree === true;
+            } else {
+                return !utils.exists(dish, "isFree") || dish.isFree === false;
+            }
+        });
     }
 
-    return await dao.get(path, filters, [], -1, onError);
+    return dishes;
 }
-
-export async function getDishes(filterOptions = {}, onError) {
-    ;
-    let filters = [];
-
-    if (utils.exists(filterOptions, "isFree")) {
-        filters.push(where("isFree", "==", filterOptions.isFree));
-    }
-
-    if (utils.exists(filterOptions, "name")) {
-        filters.push(where("name", "==", filterOptions.name));
-    }
-
-    // filtering for startingAt >= null doesn't make sense
-    if (utils.exists(filterOptions, "after") && !utils.isEmpty(filterOptions.after)) {
-        const after = utils.toFireStoreTime(filterOptions.after);
-        filters.push(where("createdAt", ">=", after));
-    }
-
-    // filtering for startingAt <= null doesn't make sense
-    if (utils.exists(filterOptions, "before") && !utils.isEmpty(filterOptions.before)) {
-        const before = utils.toFireStoreTime(filterOptions.before);
-        filters.push(where("createdAt", "<=", before));
-    }
-
-    const ordering = [orderBy("createdAt", "asc")];
-
-    const dishes = await dao.getSubCollections(dao.constant.DISHES, filters, ordering, onError);
-
-    const dishesWithParent = await Promise.all(dishes.map(async (dish) => {
-        const parent = await dao.getParent(dish);
-        return {
-            ...dish,
-            parent: parent,
-        };
-    }));
-
-    return dishesWithParent;
-}
-
 
 export async function getOne(bookingId, id) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];

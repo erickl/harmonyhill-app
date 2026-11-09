@@ -252,6 +252,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 utils.exists(stockListItem.minimumStock, houseShortLowerCase) ?
                 stockListItem.minimumStock[houseShortLowerCase] : 0;
             let data = {
+                id: stockListItem.id,
                 name: stockListItem.name,
                 count: activity.subCategory === "checkout" ? null : 0,
                 reserved: 0,

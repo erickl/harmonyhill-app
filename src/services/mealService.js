@@ -29,6 +29,9 @@ export async function addMeal(booking, mealData, onError, writes = []) {
     meal.name = booking.name
     meal.bookingId = booking.id;
 
+    // Can't do this in mapMealObject, because it's also used for updates
+    if(!utils.exists(meal, "isFree")) meal.isFree = false;
+
     const dishes = Object.values(mealData.dishes);
 
     const mealId = makeMealId(meal.startingAt, booking.house, meal.subCategory);
@@ -212,6 +215,10 @@ async function updateDish(updatedMeal, existingDish, dishUpdateData, onError, wr
 
 async function addDish(meal, mealId, dishData, onError, writes) {
     const dish = mapDishObject(dishData);
+
+    // Can't do this in mapDishObject, because it's also used for dish updates
+    if(!utils.exists(dish, "isFree")) dish.isFree = false;
+
     const dishId = makeDishId(meal.startingAt, meal.house, meal.subCategory, dish.name);
 
     // Add meal item to the meal
@@ -246,10 +253,6 @@ export async function getMealsByBooking(booking, options = {}) {
  */
 export async function getMealDishes(bookingId, mealId, filterOptions, onError) {
     return await activityDao.getMealDishes(bookingId, mealId, filterOptions, onError);
-}
-
-export async function getDishes(filterOptions, onError) {
-    return await activityDao.getDishes(filterOptions, onError);
 }
 
 export function validate(customer, data, isUpdate, onError, onWarning) {

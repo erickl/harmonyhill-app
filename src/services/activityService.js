@@ -209,6 +209,9 @@ export async function add(booking, activityData, onError, writes = []) {
     activity.name = booking.name;
     activity.house = booking.house;
 
+    // Can't do this in mapObject, because it's also used for updates
+    if(!utils.exists(activity, "isFree")) activity.isFree = false;
+
     const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
     const result = await activityDao.add(booking.id, activityId, activity, onError, writes);
     if (result === false) return false;
