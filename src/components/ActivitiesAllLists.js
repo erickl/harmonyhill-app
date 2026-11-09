@@ -55,7 +55,7 @@ export default function ActivitiesAllLists({ context, customer, includeTodos }) 
                 <ActivitiesByDate
                     context={context}
                     customer={customer}
-                    date2={customer.checkInAt.startOf('day')}
+                    date2={customer.checkInAt.plus({days:-1}).endOf('day')}
                 />
             )}
 
@@ -151,7 +151,7 @@ export default function ActivitiesAllLists({ context, customer, includeTodos }) 
                 <ActivitiesByDate
                     context={context}
                     customer={customer}
-                    date1={customer.checkOutAt.endOf('day')}
+                    date1={customer.checkOutAt.plus({days:1}).startOf('day')}
                 />
             )}
         </div>
