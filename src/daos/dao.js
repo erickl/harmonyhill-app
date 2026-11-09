@@ -280,28 +280,29 @@ export async function update(path, id, update, updateLogs, onError = null, write
         }
 
         // Add change to the update logs
-        let diffStr = "";
+        let diff = [];
         if(updateLogs) {
-            diffStr = await jsonObjectDiffStr(originalData, update_);
+            diff = jsonObjectDiffStr(originalData, update_);
         
-            if(diffStr.length === 0) {
+            if(diff.length === 0) {
                 utils.allToDateTime(originalData);
                 return originalData;
             }
-                
-            update_.updateLogs = utils.exists(originalData, "updateLogs") ? originalData.updateLogs : [];
-            update_.updateLogs.push(diffStr);
 
             // Log user activity
             const updateLog = {
                 "document"  : `${path.join("/")}/${id}`,
-                "edit"      : diffStr,
+                "edit"      : diff,
                 "createdBy" : currentUsername,
                 "createdAt" : now,
                 "action"    : "update" 
             };
             const updateLogRef = doc(db, ...["userLogs"], `u-${id}-${Date.now()}`);
             writes.push((tx) => tx.set(updateLogRef, updateLog));
+
+            // Append to change log subcollection of updated document
+            const log2 = {diff:diff};
+            const addUpdateLogResult = await add([...path, id, "updates"], `update-${Date.now()}`, log2, onError, writes);
         }
 
         update_.updatedAt = now;
@@ -494,8 +495,8 @@ export async function commitTx(writes = [], onError = null) {
     return result;
 }
 
-export async function jsonObjectDiffStr(obj1, obj2, level = 0) {
-    let diff = "";
+export function jsonObjectDiffStr(obj1, obj2, level = 0) {
+    let diff = [];
     
     try {
         if(level > 20) {
@@ -524,28 +525,29 @@ export async function jsonObjectDiffStr(obj1, obj2, level = 0) {
                 }
                 else if (utils.isEmpty(val1)) {
                     // Display human readable data
-                    const val2Legible = utils.isDate(val2) ? utils.toDateTime(val2) : val2; 
-                    diff += `Added ${key}: ${val2Legible}, `;
+                    const val2Legible = utils.isDate(val2) ? utils.to_ddMMM_HHmm(val2) : val2; 
+                    diff.push(`Added ${key}: ${val2Legible}`);
                 } 
                 else if(utils.isDate(val2)) {
                     const val1DateTime = utils.toDateTime(val1);
                     const val2DateTime = utils.toDateTime(val2);
                     if(!val1DateTime.equals(val2DateTime)) {
-                        diff += ` ${key}: ${val1DateTime} -> ${val2DateTime}, `;
+                        diff.push(`Updated ${key}: ${utils.to_ddMMM_HHmm(val1DateTime)} -> ${utils.to_ddMMM_HHmm(val2DateTime)}`);
                     }
                 }
                 else if(utils.isJsonObject(val2)) {
-                    const internalDiff = await jsonObjectDiffStr(val1, val2, level+1);
+                    const internalDiff = jsonObjectDiffStr(val1, val2, level+1);
                     if(!utils.isEmpty(internalDiff)) {
-                        diff += ` ${key}: ${internalDiff}`;
+                        // TODO: Implement better solution later: maybe with dot notaion (key.key2: val1 -> val2)
+                        diff.push(`${key}: ${JSON.stringify(internalDiff)}`);
                     }
                 }
                 else if (val2 !== val1) {
                     const val2_ = utils.isEmpty(val2) ? "[empty]" : val2;
-                    diff += ` ${key}: ${val1} -> ${val2_}, `;
+                    diff.push(`Updated ${key}: ${val1} -> ${val2_}`);
                 }
             } catch(e) {
-                diff += `Failed comparing field ${key}: ${e.message}, `;
+                diff.push(`Failed comparing field ${key}: ${e.message}`);
             }
         }
 
@@ -554,14 +556,14 @@ export async function jsonObjectDiffStr(obj1, obj2, level = 0) {
         }
 
         // add prefix with user info & remove the last comma and space
-        if (diff.length > 0) {
-            const username = await userService.getCurrentUserName();
-            const nowStr = utils.to_yyMMddHHmmTz(DateTime.now());
-            diff = `Updated by ${username} at ${nowStr}: ${diff}`;
-            diff = diff.slice(0, -2);
-        }
+        // if (diff.length > 0) {
+        //     const username = await userService.getCurrentUserName();
+        //     const nowStr = utils.to_yyMMddHHmmTz(DateTime.now());
+        //     diff = `Updated by ${username} at ${nowStr}: ${diff}`;
+        //     diff = diff.slice(0, -2);
+        // }
     } catch(e) {
-        diff += `Unexpected error in update comparison: ${e.message}`;
+        diff.push(`Unexpected error in update comparison: ${e.message}`);
     }
 
     return diff;

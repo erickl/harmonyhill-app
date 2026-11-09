@@ -35,6 +35,54 @@ export async function getDeleted(id, onError) {
     return docs[0];
 }
 
+/**
+ * Get update logs from the updates sub collection of a DB record
+ */
+export async function getRecordLogs(record, onError) {
+    let updateLogs = await logsDao.getUpdateLogs(record, onError);
+
+    // The old way of logging updates, for older records
+    if(utils.isEmpty(updateLogs)) {
+        updateLogs = record.updateLogs;
+        if(!updateLogs) updateLogs = [];
+        updateLogs = updateLogs.reduce((m, log) => {
+            m.push({diff: [log], createdBy: "-", createdAt: null});
+            return m;
+        }, []);
+    }
+
+    return updateLogs;
+}
+
+export async function buildLogsDom(record, onError) {
+    const updateLogs = await getRecordLogs(record);
+    let builtLogs = updateLogs.map((log, i) => {
+        const dateStr = log.createdAt ? utils.to_ddMMM_HHmm(log.createdAt) : "-";
+        return (
+            <div key={`update-${i}`}>
+                {log.createdBy}, {dateStr}
+                {log.diff.map((field, j) => {
+                    return (
+                        <div key={`diff-${j}`}>
+                            - {field}
+                        </div>
+                    );
+                })}
+                <br/>
+            </div>    
+        );
+    });
+
+    builtLogs.unshift(<>
+        <div key="create">
+            Created by {record.createdBy}, {utils.to_ddMMM_HHmm(record.createdAt)}
+        </div>
+        <br/>
+    </>);
+
+    return builtLogs;
+}
+
 export async function toArrays(filters, onProgress, onError) {
     const documents = await get(filters, onError);
 

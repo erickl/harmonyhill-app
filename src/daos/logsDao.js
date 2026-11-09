@@ -2,6 +2,12 @@ import * as dao from "./dao.js";
 import * as utils from "../utils.js";
 import { where, orderBy } from 'firebase/firestore';
 
+export async function getUpdateLogs(record, onError) {
+    const path = await dao.getPath(record);
+    const logs = await dao.get([...path, record.id, "updates"], [], [], -1, onError);
+    return logs;
+}
+
 export async function get(filterOptions, onError) {
     const path = dao.constant.USER_LOGS;
     let queryFilter = [];

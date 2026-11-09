@@ -371,7 +371,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                 setDishes(dishes);
             }
 
-            const statusLogs = await activityService.getStatusLogs(customer, activity, onError);
+            const statusLogs = customer ? await activityService.getStatusLogs(customer, activity, onError) : false;
             if(statusLogs !== false) {
                 setStatusLogs(statusLogs);
             }

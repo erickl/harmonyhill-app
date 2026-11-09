@@ -3,6 +3,9 @@ import * as utils from "../utils.js";
 import { groupByCourse } from '../services/mealService.js';
 import * as invoiceService from "../services/invoiceService.js";
 import * as menuService from "../services/menuService.js";
+import {buildLogsDom} from "../services/logsService.js";
+import { useGenericModal } from '../context/GenericContext.js';
+import { useNotification } from "../context/NotificationContext.js";
 import "./DishesSummaryComponent.css";
 import { Image as ImageIcon} from 'lucide-react';
 import Spinner from './Spinner.js';
@@ -10,6 +13,9 @@ import Spinner from './Spinner.js';
 import { getPhotoUrl } from '../daos/storageDao.js';
 
 export default function DishesSummaryComponent({dishes}) {
+
+    const {onDisplayPopup} = useGenericModal();
+    const { onError } = useNotification();
 
     const [loadingImages, setLoadingImages] = useState({});
     const [photoUrls, setPhotoUrls] = useState({});
@@ -20,6 +26,12 @@ export default function DishesSummaryComponent({dishes}) {
         const dishData = dishesData.length > 0 ? dishesData[0] : null;
         const photoUrl = dishData && dishData.photoUrl ? await getPhotoUrl(dishData.photoUrl) : "";
         return photoUrl;
+    }
+
+    const showUpdateLogs = async (record) => {
+        const builtLogs = buildLogsDom(record, onError);
+        const header = `${record.name} logs`;
+        onDisplayPopup(header, builtLogs);
     }
 
     useEffect(() => {
@@ -82,7 +94,13 @@ export default function DishesSummaryComponent({dishes}) {
                                         ) : (
                                             <div style={{ width: 20, height: 20 }} />
                                         )}
-                                        <p className="dish-text">{invoiceService.dishReceiptLine(dish)}</p>
+                                        <p 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                showUpdateLogs(dish);
+                                            } }
+                                            className="dish-text">{invoiceService.dishReceiptLine(dish)}
+                                        </p>
                                         {loadingImages[dish.name] === true && (<Spinner size={10}/>)}
                                     </div>
                                 </React.Fragment>
