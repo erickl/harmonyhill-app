@@ -20,7 +20,7 @@ export default function IncomeList({context, title, filter, expand, subscribe}) 
 
     const handleExpand = () => {
         if(expand_ === false && !subscribe) {
-            fetchIncomes();
+            fetchIncomes(filter);
         }
         setExpand(prev => !prev);
     }
@@ -65,7 +65,7 @@ export default function IncomeList({context, title, filter, expand, subscribe}) 
                 if(unsubscribe) unsubscribe();
             }
         } else {
-            fetchIncomes();
+            if(expand) fetchIncomes();
         }
     }, [filter]);
 
@@ -75,41 +75,46 @@ export default function IncomeList({context, title, filter, expand, subscribe}) 
         )
     }
 
-    return (
-        <div className="card-content">
-            <h3
-                style={{ marginBottom: "0.5rem" }}
-                className={'list-group-header clickable-header'}
-                onClick={handleExpand}
-            >
-                {title}
+    const showHeader = (!subscribe || (incomes && incomes.length > 0));
 
-                <div className='list-group-header-right'>
-                    {lastUpdate && (<>
-                        {subscribe && (
-                            <span className='subscription-notification'>•</span>
-                        )}
-                        <div className='last-updated-info'>
-                            Last updated {lastUpdate}
-                        </div>
-                    </>)}
-                    <span className="expand-icon">
-                        {expand_ ? ' ▼' : ' ▶'}
-                    </span>
-                </div>
-            </h3>
-            {expand_ && (<>
-                {incomes.map((income) => {
-                    return (
-                        <React.Fragment key={income.id}>
-                            <IncomeComponent 
-                                income={income} 
-                                handleDelete={handleDeleteIncome}
-                                context={context}
-                            />
-                        </React.Fragment>
-                    )
-                })}
-            </>)}
-    </div>);
+    return (<>
+        {showHeader && (
+            <div className="card-content">
+                <h3
+                    style={{ marginBottom: "0.5rem" }}
+                    className={'list-group-header clickable-header'}
+                    onClick={handleExpand}
+                >
+                    {title}
+
+                    <div className='list-group-header-right'>
+                        {lastUpdate && (<>
+                            {subscribe && (
+                                <span className='subscription-notification'>•</span>
+                            )}
+                            <div className='last-updated-info'>
+                                Last updated {lastUpdate}
+                            </div>
+                        </>)}
+                        <span className="expand-icon">
+                            {expand_ ? ' ▼' : ' ▶'}
+                        </span>
+                    </div>
+                </h3>
+                {expand_ && (<>
+                    {incomes.map((income) => {
+                        return (
+                            <React.Fragment key={income.id}>
+                                <IncomeComponent 
+                                    income={income} 
+                                    handleDelete={handleDeleteIncome}
+                                    context={context}
+                                />
+                            </React.Fragment>
+                        )
+                    })}
+                </>)}
+            </div>
+        )}
+    </>);
 }

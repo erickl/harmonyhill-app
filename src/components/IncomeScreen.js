@@ -81,11 +81,11 @@ export default function IncomeScreen({ customer, context }) {
             if(oldest >= monthStart) {
                 recentFilterAfter = oldest;
             } else {
-                const pastFilter = {...filter, after: oldest, before: utils.today(-7).plus({seconds : -1})};
+                const pastFilter = {...filter, after: oldest, before: recentFilterAfter.plus({seconds : -1})};
                 setPastFilter(pastFilter);
             }
 
-            const recentFilter = {...filter, after : recentFilterAfter, before : utils.today(3)};
+            const recentFilter = {...filter, after : recentFilterAfter};
             setRecentFilter(recentFilter);
     
             const issuesFilter = { ...filter, "issue" : "attention"};

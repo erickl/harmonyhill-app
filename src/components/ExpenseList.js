@@ -20,7 +20,7 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
 
     const handleExpand = () => {
         if(expand_ === false && !subscribe) {
-            fetchExpenses();
+            fetchExpenses(filter);
         }
         setExpand(prev => !prev);
     }
@@ -66,7 +66,7 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
                 if(unsubscribe) unsubscribe(); 
             }
         } else {
-            fetchExpenses(filter);
+            if(expand) fetchExpenses(filter);
         }
     }, [filter]);
 
@@ -76,8 +76,10 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
         )
     }
 
+    const showHeader = (!subscribe || (expenses && expenses.length > 0));
+
     return (<>
-        {expenses && expenses.length > 0 && (
+        {showHeader && (
             <div className="card-content">
                 <h3
                     style={{ marginBottom: "0.5rem" }}
