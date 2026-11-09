@@ -1,6 +1,6 @@
 {
   "name": "harmonyhill-app",
-  "version": "3.7.2.1b",
+  "version": "3.7.2.1c",
   "private": true,
   "type": "module",
   "dependencies": {

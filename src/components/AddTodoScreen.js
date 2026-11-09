@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as todoService from "../services/todoService.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import * as userService from "../services/userService.js";
@@ -17,53 +17,53 @@ import { Checkbox, FormControlLabel } from '@mui/material';
 
 export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }) {
     const emptyForm = {
-        title         : todoToEdit ? todoToEdit.title         : '',
-        deadlineAt    : todoToEdit ? todoToEdit.deadlineAt    : '',
-        deadlineTime  : todoToEdit ? todoToEdit.deadlineTime  : '', 
-        assignedTo    : todoToEdit ? todoToEdit.assignedTo    : '',
-        duration      : todoToEdit ? todoToEdit.duration      : '',
-        category      : todoToEdit ? todoToEdit.category      : '',
-        activityId    : todoToEdit ? todoToEdit.activityId    : '',
-        bookingId     : todoToEdit ? todoToEdit.bookingId     : '',
-        description   : todoToEdit ? todoToEdit.description   : '',
-        comments      : todoToEdit ? todoToEdit.comments      : '',
-        requirePhotos : todoToEdit ? todoToEdit.requirePhotos : false,
-        status        : todoToEdit ? todoToEdit.status        : ActivityStatus.None.name,
-        visibility    : todoToEdit ? todoToEdit.visibility    : "public",
+        title: todoToEdit ? todoToEdit.title : '',
+        deadlineAt: todoToEdit ? todoToEdit.deadlineAt : '',
+        deadlineTime: todoToEdit ? todoToEdit.deadlineTime : '',
+        assignedTo: todoToEdit ? todoToEdit.assignedTo : '',
+        duration: todoToEdit ? todoToEdit.duration : '',
+        category: todoToEdit ? todoToEdit.category : '',
+        activityId: todoToEdit ? todoToEdit.activityId : '',
+        bookingId: todoToEdit ? todoToEdit.bookingId : '',
+        description: todoToEdit ? todoToEdit.description : '',
+        comments: todoToEdit ? todoToEdit.comments : '',
+        requirePhotos: todoToEdit ? todoToEdit.requirePhotos : false,
+        status: todoToEdit ? todoToEdit.status : ActivityStatus.None.name,
+        visibility: todoToEdit ? todoToEdit.visibility : "public",
     };
 
-    const [bookings,          setBookings         ] = useState([]       );
-    const [activities,        setActivities       ] = useState([]       );
-    const [teamMembers,       setTeamMembers      ] = useState([]       );
-    const [readyToSubmit,     setReadyToSubmit    ] = useState(false    );
-    const [validationError,   setValidationError  ] = useState(null     );
-    const [formData,          setFormData         ] = useState(emptyForm);
+    const [bookings, setBookings] = useState([]);
+    const [activities, setActivities] = useState([]);
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
+    const [validationError, setValidationError] = useState(null);
+    const [formData, setFormData] = useState(emptyForm);
 
     const { onError } = useNotification();
     const { onSuccess } = useSuccessNotification();
     const { permissions } = useUserPermissions();
 
     const categories = {
-        'Shopping'    : {"name" : "Shopping"         },
-        'Gardening'   : {"name" : "Gardening"        },
-        'Pool'        : {"name" : "Pool"             },
-        'Cleaning'    : {"name" : "Cleaning"         },
-        'Maintenance' : {"name" : "Maintenance"      },
-        'Guest'       : {"name" : "Guest"            },
-        'Other'       : {"name" : "Other"            },
+        'Shopping': { "name": "Shopping" },
+        'Gardening': { "name": "Gardening" },
+        'Pool': { "name": "Pool" },
+        'Cleaning': { "name": "Cleaning" },
+        'Maintenance': { "name": "Maintenance" },
+        'Guest': { "name": "Guest" },
+        'Other': { "name": "Other" },
     };
 
-    const getBookingActivities = async(bookingId) => {
+    const getBookingActivities = async (bookingId) => {
         const booking = await bookingService.getOne(bookingId);
         const bookingActivities = await activityService.get(booking);
-            const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
+        const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
             return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
         });
         setActivities(activitiesByName);
     };
 
-    const getBookings = async() => {
-        const filter = {"after": utils.today(-30), "before" : utils.today(10)};
+    const getBookings = async () => {
+        const filter = { "after": utils.today(-30), "before": utils.today(10) };
         const bookings = await bookingService.get(filter, onError);
         const bookingsByName = utils.groupBy(bookings, (booking) => {
             const house = booking.house === "harmony hill" ? "HH" : "JN";
@@ -88,7 +88,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
         fetchTeamMembers();
     }, []);
 
-    
+
     const needsGuestInfo = (formDataCategory) => {
         const category = formDataCategory.trim().toLowerCase();
         return category === "guest";
@@ -104,28 +104,28 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
         const guestInfoNeeded = needsGuestInfo(formData.category);
         const activityInfoNeeded = needsActivityInfo(formData.category);
 
-        if(guestInfoNeeded && utils.isEmpty(bookings)) {
+        if (guestInfoNeeded && utils.isEmpty(bookings)) {
             getBookings();
         }
-        if(activityInfoNeeded && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
+        if (activityInfoNeeded && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
             getBookingActivities(formData.bookingId);
         }
 
-        if(!guestInfoNeeded) {
+        if (!guestInfoNeeded) {
             handleChange("_batch", {
-                "bookingId"  : null,
-                "activityId" : null
+                "bookingId": null,
+                "activityId": null
             });
         }
     }, [formData.category]);
 
     const onTeamMemberSelect = (teamMember) => {
         let name = null;
-        if(!teamMember) return;
-        
-        if(Array.isArray(teamMember) && teamMember.length > 0) {
+        if (!teamMember) return;
+
+        if (Array.isArray(teamMember) && teamMember.length > 0) {
             name = teamMember[0];
-        } else if(utils.exists(teamMember, "name")) {
+        } else if (utils.exists(teamMember, "name")) {
             name = teamMember.name;
         } else {
             name = teamMember;
@@ -138,12 +138,12 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
         const name = category ? category.name : '';
 
         const change = {
-            "category"    : name,
+            "category": name,
         }
 
         const guestInfoNeeded = needsGuestInfo(name);
 
-        if(!guestInfoNeeded) {
+        if (!guestInfoNeeded) {
             change["bookingId"] = null;
             change["activityId"] = null;
         }
@@ -154,11 +154,11 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
     const onBookingSelect = async (booking) => {
         const id = booking ? booking[0].id : '';
         handleChange("_batch", {
-            "bookingId"  : id,
-            "activityId" : null
+            "bookingId": id,
+            "activityId": null
         });
-        
-        if(needsActivityInfo(formData.category)) {
+
+        if (needsActivityInfo(formData.category)) {
             getBookingActivities(id);
         }
     }
@@ -173,7 +173,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
 
         setReadyToSubmit(validationResult);
 
-        if(validationResult === true) {
+        if (validationResult === true) {
             setValidationError(null);
         }
     }
@@ -191,7 +191,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
             nextFormData = { ...formData, [field]: value };
         }
 
-        if(!utils.isEmpty(nextFormData)) {
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
 
@@ -200,27 +200,27 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
 
     const handleSubmit = async () => {
         try {
-            if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
-            
+            if (!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
+
             let result = false;
-            
-            if(todoToEdit) {
+
+            if (todoToEdit) {
                 result = await todoService.update(todoToEdit, formData, onError);
             } else {
                 result = await todoService.add(formData, parent, onError);
-            }         
+            }
 
-            if(result !== false) {
-                if(todoToEdit) context.onClose();
+            if (result !== false) {
+                if (todoToEdit) context.onClose();
                 else setFormData(emptyForm);
 
-                if(onCreated) onCreated(result);
-                
+                if (onCreated) onCreated(result);
+
                 onSuccess();
             }
-        } catch(e) {
+        } catch (e) {
             onError(`Submit error: ${e.message}`);
-        }        
+        }
     };
 
     return (
@@ -229,7 +229,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                 <div>
                     <h2 className="card-title">Create New Todo</h2>
                 </div>
-            
+
                 <div>
                     {!todoToEdit && (
                         <button className="add-button" onClick={() => context.onClose()}>
@@ -238,7 +238,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                     )}
                 </div>
             </div>
-            <div className="card-content">     
+            <div className="card-content">
                 <TextInput
                     type="text"
                     name="title"
@@ -248,7 +248,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                 />
 
                 <div className="purchase-form-group">
-                    <MultipleChoiceList 
+                    <MultipleChoiceList
                         label={"Assign to team member"}
                         current={formData.assignedTo}
                         options={Object.keys(teamMembers)}
@@ -258,18 +258,18 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                 </div>
 
                 <div className="purchase-form-group">
-                    <Dropdown 
-                        label={"Category"} 
+                    <Dropdown
+                        label={"Category"}
                         options={categories}
                         current={formData.category}
                         onSelect={onCategorySelect}
                     />
                 </div>
 
-                <MyDatePicker 
-                    name={"deadlineAt"} 
+                <MyDatePicker
+                    name={"deadlineAt"}
                     label={"Deadline"}
-                    date={formData.deadlineAt} 
+                    date={formData.deadlineAt}
                     onChange={handleChange}
                     time={formData.deadlineTime}
                     useTime={true}
@@ -277,8 +277,8 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
 
                 {needsGuestInfo(formData.category) && (
                     <div className="purchase-form-group">
-                        <Dropdown 
-                            label={"Booking"} 
+                        <Dropdown
+                            label={"Booking"}
                             options={bookings}
                             current={formData.bookingId}
                             onSelect={onBookingSelect}
@@ -288,8 +288,8 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
 
                 {needsActivityInfo(formData.category) && !utils.isEmpty(formData.bookingId) && (
                     <div className="purchase-form-group">
-                        <Dropdown 
-                            label={"Activity"} 
+                        <Dropdown
+                            label={"Activity"}
                             options={activities}
                             current={formData.activityId}
                             onSelect={onActivitySelect}
@@ -345,7 +345,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                             }}
                         />
                     }
-                    label="Private"
+                    label="Private (only visible to you and the admins)"
                 />
 
                 {(validationError && <p className="validation-error">{validationError}</p>)}

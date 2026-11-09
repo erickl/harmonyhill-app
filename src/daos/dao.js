@@ -106,6 +106,8 @@ export function subscribeAll(collectionName, setDocs, filters = [], onError = nu
 }
 
 export async function getOne(path, id, onError = null) {
+    if(!id || !path) return null;
+
     try {
         path = utils.isString(path) ? path.split("/") : path;
         const docRef = doc(db, ...path, id);
@@ -130,6 +132,8 @@ export async function getOne(path, id, onError = null) {
 }
 
 export async function get(path, filters = [], ordering = [], max = -1, onError = null) {
+    if(!path) return [];
+
     try {
         path = utils.isString(path) ? path.split("/") : path;
         
@@ -231,7 +235,7 @@ export async function getSubCollections(collectionName, filters = [], ordering =
             //console.log(`No documents found in ${collectionName}`);
             return [];
         }
-        const docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
+        let docs = snapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }));
         
         // If docs are soft deleted, only admins can see them
         const isAdmin = await userService.isAdmin();
@@ -322,6 +326,8 @@ export async function update(path, id, update, updateLogs, onError = null, write
 }
 
 export async function add(path, id, data, onError = null, writes = []) {
+    if(!path || !id || !data) return false;
+
     try {
         path = utils.isString(path) ? path.split("/") : path;
 
@@ -360,6 +366,8 @@ export async function add(path, id, data, onError = null, writes = []) {
 }
 
 export async function softRemove(path, id, onError = null, writes = []) {
+    if(!path || !id) return false;
+
     try {
         const docIdToDelete = `${path.join("/")}/${id}`;
 
@@ -387,6 +395,8 @@ export async function softRemove(path, id, onError = null, writes = []) {
 }
 
 export async function remove(path, id, onError = null, writes = []) {
+    if(!path || !id) return false;
+
     try {
         const docIdToDelete = `${path.join("/")}/${id}`;
 
