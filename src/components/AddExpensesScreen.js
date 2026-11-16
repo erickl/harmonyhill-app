@@ -163,6 +163,16 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
             "description" : "",
         }
 
+        // Auto fill description in some cases
+        if(utils.isEmpty(formData.description) && !utils.isEmpty(category) && !utils.isEmpty(formData.purchasedBy)) {
+            if(name === "food - daily market") {
+                change.description = `Market Food, by ${formData.purchasedBy}`;
+            }   
+            if(name === "laundry") {
+                change.description = `Laundry`;
+            }
+        }
+
         const guestInfoNeeded = needsGuestInfo(name);
 
         if(!guestInfoNeeded) {
@@ -211,6 +221,8 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
     }
 
     const handleChange = (field, value) => {
+        context.setHasUnsavedChanges(true);
+        
         let nextFormData = {};
 
         if (field === "_batch" && typeof value === 'object' && value !== null) {
@@ -225,17 +237,6 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
 
         if(!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
-        }
-
-        // Auto fill description in some cases
-        const category = nextFormData.category.trim().toLowerCase();
-        if(utils.isEmpty(nextFormData.description) && !utils.isEmpty(category) && !utils.isEmpty(formData.purchasedBy)) {
-            if(category === "food - daily market") {
-                nextFormData.description = `Market Food, by ${formData.purchasedBy}`;
-            }   
-            if(category === "laundry") {
-                nextFormData.description = `Laundry`;
-            }
         }
 
         validateFormData(nextFormData);
