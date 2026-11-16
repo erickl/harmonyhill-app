@@ -4,6 +4,48 @@ import { makeAdapter } from "../../functions/db-adapter.js";
 export default class ActivityType {
     static COLLECTION = "activityTypes";
 
+    static newModel = {
+        description: "",
+        instructions: "",
+        category: "massage",
+        subCategory: ["Balinese", "Abhyanga", "4-hands"], 
+        
+        // Different price depending on subCategory
+        subCategory1: {"Balinese" : 450, "Abhyanga" : 800, "4-hands" : 900}, 
+        
+        // What to do when there's a fixed price for all people? Array with uniform values 
+        customerPrices: [1, 2, 3, 4, 5, 6], // for each person
+
+        //providerPrices : {"yuni": {"Balinese" : {"60min" : }}}, // move to providers collection?
+        //providerPrices : [1, 2, 3, 4, 5, 6], // for each person
+
+        // For some activities (RPW, flower bath), choosing number of people is irrelevant/impossible => remove the choice
+        maxParticipants: 6,
+
+        // Maybe one base activity model, and transport is an extended object
+        destinations: {amed: 1000, batur: 500},
+        endTime: new Date(), // for some transports, we can calculate the price with this?
+
+        // maybe choose like we do with customDishes in meal form? Extras would be a sub collection with "dishes" then
+        extras: {hotsprings: 200}, // e.g. for batur hiking
+        extras1: {transport: 200}, // for batik
+
+
+
+        
+        internal : false,
+        houseAvailability : ["harmony hill", "the jungle nook"],
+        custom: false,
+        isFree: false,
+        displayName: "",
+        deadline1 : 24, // hours
+        deadline2 : 12, // hours
+        photoInstructions: "", // if non-empty, require photos
+
+        icon: "", // name of the icon used in the selector menu. Maybe one for each subCategory?
+
+    };
+
     constructor(subCategory, category, priority, customerPrice, providerPrices, houseAvailability, description, instructions, custom, internal, photosRequired, photoInstructions, deadline1, deadline2) {
         //console.log(`subCategory: ${subCategory}, category: ${category}, customerPrice: ${customerPrice}, providerPrices: ${providerPrices}, description: ${description}, instructions: ${instructions}}`);
         
