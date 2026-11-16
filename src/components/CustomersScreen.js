@@ -10,6 +10,7 @@ import { Filter, FilterX } from 'lucide-react';
 import { useFilters } from "../context/FilterContext.js";
 import BookingList from "./BookingList.js";
 import MyDatePicker from "../components/MyDatePicker.js";
+import NotificationButton from './NotificationButton.js';
 
 export default function CustomersScreen({ context }) {
     const [customInterval,    setCustomInterval    ] = useState(null);
@@ -79,12 +80,16 @@ export default function CustomersScreen({ context }) {
                                 onClick={() => onFilter(filterHeaders, onFilterValuesSubmit)}
                             />
                         </>)}
+                        {permissions.isAdmin && (
+                            <NotificationButton />
+                        )}
                         { permissions.canAddBookings && (
                             <button className="add-button" onClick={() => context.onNavigate('add-customer')}>
                                 +
                             </button>
                         )}
-                        </div>
+                        
+                    </div>
                 </div>
             </div>
             

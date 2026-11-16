@@ -1,15 +1,15 @@
 import { useMenu } from '../context/MenuContext.js';
 
 export default function VeganHamburgerButton() {
-  const { toggle } = useMenu();
+    const { toggle } = useMenu("sideMenu");
 
-  return (
+    return (
         <button
             onClick={toggle}
             style={{
-                top: '1.8rem',          
-                left: '1rem',         
-                zIndex: 3000,         
+                top: '1.8rem',
+                left: '1rem',
+                zIndex: 3000,
                 background: 'transparent',
                 color: 'black',
                 border: 'none',
@@ -19,5 +19,5 @@ export default function VeganHamburgerButton() {
         >
             ☰
         </button>
-  );
+    );
 }
