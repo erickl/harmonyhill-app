@@ -227,9 +227,14 @@ export async function getOneFromSubCollection(collectionName, id, onError = null
 
 export async function getSubCollections(collectionName, filters = [], ordering = [], onError = null) {
     try {
+        if(filters?.length > 0)  {
+            // If 'or' is involved, firebase wants the top query as an 'and'
+            filters = [and(...filters)];
+        }
+
         const collectionGroupRef = collectionGroup(db, collectionName);
         const docQuery = query(collectionGroupRef, ...filters, ...ordering);
-        
+
         const snapshot = await getDocs(docQuery);
         if (snapshot.empty) {
             //console.log(`No documents found in ${collectionName}`);
