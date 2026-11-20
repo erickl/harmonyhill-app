@@ -9,6 +9,7 @@ import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import { useNotification } from "../context/NotificationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import * as ActivityStatus from "../models/ActivityStatus.js";
 
 const AddPurchaseScreen = ({ customer, context }) => {
     
@@ -44,7 +45,8 @@ const AddPurchaseScreen = ({ customer, context }) => {
         assignedTo    : '',
         isFree        : false,
         dishes        : [], // only not null when ordering meals, null for all other activities
-        status        : "guest confirmed",
+        status        : ActivityStatus.GuestConfirmed.name,
+        statusCode    : ActivityStatus.GuestConfirmed.code,
 
         // Auxiliary data
         house         : customer.house,
