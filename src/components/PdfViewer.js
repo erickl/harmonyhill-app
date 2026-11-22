@@ -90,14 +90,14 @@ export default function PdfViewer({customer, triggerRerender, onClose }) {
             </div>
             {pdfUrl ? (
                 <iframe
-                src={pdfUrl}
-                style={{
-                    width: "100%",
-                    height: "100%",
-                    border: "none",
-                    borderRadius: "8px",
-                }}
-                title="PDF Preview"
+                    src={`${pdfUrl}#view=FitH`}
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        border: "none",
+                        borderRadius: "8px",
+                    }}
+                    title="PDF Preview"
                 />
             ) : (
                 <p>Generating PDF...</p>

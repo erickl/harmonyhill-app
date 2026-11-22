@@ -31,7 +31,13 @@ export default function CustomerPurchasesScreen({ customer, context }) {
     const today = utils.today();
 
     if (showInvoice) {
-        return (<PdfViewer customer={customer} triggerRerender={triggerRerender} onClose={() => setShowInvoice(false)} />);
+        return (
+            <PdfViewer 
+                customer={customer} 
+                triggerRerender={triggerRerender} 
+                onClose={() => setShowInvoice(false)} 
+            />
+        );
     }
 
     return (
