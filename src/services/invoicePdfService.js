@@ -11,7 +11,7 @@ export async function make(customer, onError) {
     let currentDate = "";
     return (
         <Document>
-            <Page>
+            <Page size="A4" style={styles.page}>
                 <View style={styles.header}>
                     <Image src={hhLogo} style={styles.logo} />
                     <Text style={styles.title}>{title}</Text>
@@ -108,6 +108,10 @@ const getDishName = function(dish) {
 }
 
 const styles = StyleSheet.create({
+    page: {
+        paddingTop: 20,
+        paddingBottom: 20
+    },
     header: {
         flexDirection: 'row',   // horizontal layout
         alignItems: 'center',   // vertically center
