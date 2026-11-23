@@ -792,3 +792,82 @@ export async function toArrays(filters, onProgress, onError) {
 
     return rows;
 }
+
+export function requiresMinibarCount(activity, minibarCount) {
+    if (minibarCount !== null) return false;
+    if (activity.subCategory === "checkin-prep") return true;
+    if (activity.subCategory === "housekeeping") return true;
+    if (activity.subCategory === "checkout") return true;
+    return false;
+}
+
+export function canAddPhotos(activity, status) {
+    const isCompleted = ActivityStatus.Completed.equals(status);
+    if (isCompleted) return false;
+
+    const isStarted = ActivityStatus.Started.equals(status);
+    if (isStarted) return true;
+
+    const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
+    if (!isGoodToGo) return false;
+
+    // If it's already past the 'Started' stage, we can go from 'Good To Go' to 'Completed', if required photos has been uploaded
+    const now = utils.now();
+    const minutesLeft = activity.startingAt ? activity.startingAt.diff(now, 'minutes').minutes : 9999;
+    const tooLateToStart = minutesLeft < -60;
+
+    return tooLateToStart && isGoodToGo;
+}
+
+export function canReopenActivity(activity, status) {
+    const isCompleted = ActivityStatus.Completed.equals(status);
+    if (!isCompleted) return false;
+
+    if(!utils.isToday(activity.startingAt)) return false;
+
+    return true;
+}
+
+export function canStartActivity(activity, status) {
+    const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
+    if (!isGoodToGo) {
+        return false;
+    }
+
+    return utils.isToday(activity.startingAt);
+}
+
+export function canCompleteActivity(activity, status, stillRequirePhotos, minibarCount) {
+    if(!activity.startingAt) return false;
+
+    const activityRequiresMinibarCount = requiresMinibarCount(activity, minibarCount);
+    if (activityRequiresMinibarCount) {
+        return false;
+    }
+
+    if(stillRequirePhotos) {
+        return false;
+    }
+
+    const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
+    const isStarted = ActivityStatus.Started.equals(status);
+    const canStillStart = canStartActivity(status);
+
+    // Cannot Complete 15 minutes before the activity is scheduled to start
+    const now = utils.now();
+    const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
+    if (minutesLeft > 15) {
+        return false;
+    }
+
+    // If photos are required, see that they've been uploaded
+    if (isStarted) {
+        return true;
+    } else if (!isStarted && canStillStart) {
+        return false;
+    } else if (isGoodToGo) {
+        return true;
+    }
+
+    return false;
+}

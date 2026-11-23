@@ -70,91 +70,12 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         return thisActivityInfo;
     };
 
-    const canStartActivity = () => {
-        const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
-        if (!isGoodToGo) {
-            return false;
-        }
-
-        return utils.isToday(activity.startingAt);
-    }
-
     const onSubmitIssueInput = async(recordToFlag, data) => {
         const result = await issueService.add(recordToFlag, data.status, data.comment, onError);
         if(result !== false) {
             onSuccess();
         }
         return result;
-    }
-
-    const requiresMinibarCount = () => {
-        if (minibarCount !== null) return false;
-        if (activity.subCategory === "checkin-prep") return true;
-        if (activity.subCategory === "housekeeping") return true;
-        if (activity.subCategory === "checkout") return true;
-        return false;
-    }
-
-    const canAddPhotos = () => {
-        const isCompleted = ActivityStatus.Completed.equals(status);
-        if (isCompleted) return false;
-
-        const isStarted = ActivityStatus.Started.equals(status);
-        if (isStarted) return true;
-
-        const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
-        if (!isGoodToGo) return false;
-
-        // If it's already past the 'Started' stage, we can go from 'Good To Go' to 'Completed', if required photos has been uploaded
-        const now = utils.now();
-        const minutesLeft = activity.startingAt ? activity.startingAt.diff(now, 'minutes').minutes : 9999;
-        const tooLateToStart = minutesLeft < -60;
-
-        return tooLateToStart && isGoodToGo;
-    }
-
-    const canReopenActivity = () => {
-        const isCompleted = ActivityStatus.Completed.equals(status);
-        if (!isCompleted) return false;
-
-        if(!utils.isToday(activity.startingAt)) return false;
-
-        return true;
-    }
-
-    const canCompleteActivity = () => {
-        if(!activity.startingAt) return false;
-
-        const activityRequiresMinibarCount = requiresMinibarCount();
-        if (activityRequiresMinibarCount) {
-            return false;
-        }
-
-        if(stillRequirePhotos) {
-            return false;
-        }
-
-        const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
-        const isStarted = ActivityStatus.Started.equals(status);
-        const canStillStart = canStartActivity();
-
-        // Cannot Complete 15 minutes before the activity is scheduled to start
-        const now = utils.now();
-        const minutesLeft = activity.startingAt.diff(now, 'minutes').minutes;
-        if (minutesLeft > 15) {
-            return false;
-        }
-
-        // If photos are required, see that they've been uploaded
-        if (isStarted) {
-            return true;
-        } else if (!isStarted && canStillStart) {
-            return false;
-        } else if (isGoodToGo) {
-            return true;
-        }
-
-        return false;
     }
 
     // Calculates status for the activity header (un-expanded activity component)
@@ -269,7 +190,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
             return map;
         }, {});
 
-        const headers = ["name", "count", "reserved"];
+        const headers = ["name", "count"]; // "reserved"
         const values = Object.values(stockListItems);
 
         if (activity.subCategory !== "checkout") {
@@ -668,7 +589,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         />
 
                         {/* Mark activity started */}
-                        {canStartActivity() && (
+                        {activityService.canStartActivity(activity, status) && (
                             <div className="activity-component-footer-icon">
                                 <StatusCircle
                                     status={ActivityStatus.Started.name}
@@ -683,7 +604,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
                         {/* Todo (dev-100): for this, we have to fetch the dishes, which we normally don't do until the activity details component is expanded */}
                         {/* Mark activity started */}
-                        {canCompleteActivity() && (
+                        {activityService.canCompleteActivity(activity, status, stillRequirePhotos, minibarCount) && (
                             <div className="activity-component-footer-icon">
                                 <StatusCircle
                                     status={ActivityStatus.Completed.name}
@@ -697,7 +618,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         {/* Open ("uncomplete") activity again */}
-                        {canReopenActivity() && (
+                        {activityService.canReopenActivity(activity, status) && (
                             <div className="activity-component-footer-icon">
                                 <StatusCircle
                                     status={ActivityStatus.Completed.name}
@@ -750,7 +671,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             instructions={activityInfo?.photoInstructions} 
                             photos={photos}
                             onUpload={onUploadPhoto}
-                            enableUpload={canAddPhotos()}
+                            enableUpload={activityService.canAddPhotos(activity, status)}
                             path={activityService.getActivityPhotoFilePath(activity)}
                             isRequired={stillRequirePhotos}
                         /> 
