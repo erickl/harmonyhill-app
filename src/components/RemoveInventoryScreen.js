@@ -7,34 +7,34 @@ import * as activityService from "../services/activityService.js";
 import * as bookingService from "../services/bookingService.js";
 import * as inventoryService from "../services/inventoryService.js"
 import * as utils from "../utils.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 
-export default function RemoveInventoryScreen({context, item}) {
+export default function RemoveInventoryScreen({ context, item }) {
     const initialForm = {
-        quantity : 0,
-        activity : null,
-        doneAt   : null,
-        reason   : null,
-        comment  : null,
+        quantity: 0,
+        activity: null,
+        doneAt: null,
+        reason: null,
+        comment: null,
     }
 
     const reasons = {
-        "sale"    : { name : "sale"    },
-        "lost"    : { name : "lost"    },
-        "expired" : { name : "expired" },
-        "broken"  : { name : "broken"  },
-        "refused" : { name : "refused"  },
-        "undercharged" : { name : "undercharged"  },
+        "sale": { name: "sale" },
+        "lost": { name: "lost" },
+        "expired": { name: "expired" },
+        "broken": { name: "broken" },
+        "refused": { name: "refused" },
+        "undercharged": { name: "undercharged" },
     };
 
-    const [form,            setForm           ] = useState(initialForm);
-    const [activities,      setActivities     ] = useState([]);
-    const [bookings,        setBookings       ] = useState([]);
-    const [validated,       setValidated      ] = useState(false);
+    const [form, setForm] = useState(initialForm);
+    const [activities, setActivities] = useState([]);
+    const [bookings, setBookings] = useState([]);
+    const [validated, setValidated] = useState(false);
     const [validationError, setValidationError] = useState(null);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
 
     const onValidationError = (error) => {
@@ -43,18 +43,18 @@ export default function RemoveInventoryScreen({context, item}) {
 
     const handleInputChange = (name, value, type) => {
         context.setHasUnsavedChanges(true);
-        
+
         let nextFormData = {};
-        
+
         if (name === "_batch" && typeof value === 'object' && value !== null) {
             nextFormData = ({ ...form, ...value });
-        } else if(type === "amount") {
-            nextFormData = { ...form, [name]: utils.cleanNumeric(value)};
+        } else if (type === "amount") {
+            nextFormData = { ...form, [name]: utils.cleanNumeric(value) };
         } else {
             nextFormData = { ...form, [name]: value };
         }
-        
-        if(!utils.isEmpty(nextFormData)) {
+
+        if (!utils.isEmpty(nextFormData)) {
             setForm(nextFormData);
         }
 
@@ -66,28 +66,28 @@ export default function RemoveInventoryScreen({context, item}) {
 
         setValidated(validationResult);
 
-        if(validationResult === true) {
+        if (validationResult === true) {
             setValidationError(null);
         }
     };
 
     const handleSubmit = async () => {
         try {
-            if(!validated) {
+            if (!validated) {
                 onError(`Not yet ready to submit. Missing obligatory data`);
                 return;
             }
-            
+
             const result = await inventoryService.remove(form.activity, form.doneAt, form.reason, item.name, form.quantity, form.comments, onError);
-   
-            if(result !== false) {
+
+            if (result !== false) {
                 setForm(initialForm);
                 onSuccess();
                 context.onClose();
             }
-        } catch(e) {
+        } catch (e) {
             onError(`Submit error: ${e.message}`);
-        }        
+        }
     };
 
     const onActivitySelect = (activity) => {
@@ -104,7 +104,7 @@ export default function RemoveInventoryScreen({context, item}) {
     }
 
     useEffect(() => {
-        const getActivities = async() => {
+        const getActivities = async () => {
             const filter = { after: utils.today(-7) };
             const activities_ = await activityService.getAll(filter, onError);
             const formattedActivities = activities_.reduce((m, activity) => {
@@ -115,8 +115,8 @@ export default function RemoveInventoryScreen({context, item}) {
             setActivities(formattedActivities);
         };
 
-        const getBookings = async() => {
-            const filter = { after: utils.today(-7) }; 
+        const getBookings = async () => {
+            const filter = { after: utils.today(-7) };
             const bookings_ = await bookingService.get(filter, onError);
             const formattedBookings = bookings_.reduce((m, booking) => {
                 const date = utils.to_ddMMM(booking.checkInAt);
@@ -126,7 +126,7 @@ export default function RemoveInventoryScreen({context, item}) {
             setBookings(formattedBookings);
         }
 
-        getActivities(); 
+        getActivities();
         //getBookings();
 
         validateFormData(initialForm);
@@ -142,7 +142,7 @@ export default function RemoveInventoryScreen({context, item}) {
 
             <div className="card-content space-y-6">
                 <div>
-                    <TextInput 
+                    <TextInput
                         type={"amount"}
                         name={"quantity"}
                         label={"Quantity"}
@@ -152,7 +152,7 @@ export default function RemoveInventoryScreen({context, item}) {
                 </div>
 
                 <div>
-                    <Dropdown 
+                    <Dropdown
                         label={"Reason"}
                         current={form.reason}
                         options={reasons}
@@ -163,7 +163,7 @@ export default function RemoveInventoryScreen({context, item}) {
                 {form.activity === null ? (
                     <div>
                         <MyDatePicker
-                            name={"doneAt"} 
+                            name={"doneAt"}
                             label={"Date"}
                             date={form.doneAt}
                             onChange={handleInputChange}
@@ -176,19 +176,19 @@ export default function RemoveInventoryScreen({context, item}) {
                     </p>
                 )}
 
-                { form.reason !== "expired" && (
+                {form.reason !== "expired" && (
                     <div>
-                        <Dropdown 
+                        <Dropdown
                             label={"Activity/Booking"}
                             current={form.activity ? form.activity.name : null}
                             options={activities}
                             onSelect={onActivitySelect}
                         />
-                    </div> 
+                    </div>
                 )}
 
                 <div>
-                    <TextInput 
+                    <TextInput
                         type={"text"}
                         name={"comments"}
                         label={"Comments"}
@@ -200,7 +200,7 @@ export default function RemoveInventoryScreen({context, item}) {
 
             {(validationError && <p className="validation-error">{validationError}</p>)}
 
-            <ButtonsFooter 
+            <ButtonsFooter
                 onCancel={context.onClose}
                 onSubmit={handleSubmit}
                 submitEnabled={validated}

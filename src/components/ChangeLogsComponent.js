@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as utils from "../utils.js";
 import "./ChangeLogsComponent.css";
 import * as logsService from "../services/logsService.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useMarkDownModal } from "../context/MarkDownContext.js";
 import { useUserPermissions } from '../context/UserPermissionsContext.js';
 import Spinner from './Spinner.js';
@@ -10,21 +10,21 @@ import SheetUploader from './SheetUploader.js';
 import ConfirmModal from "./ConfirmModal.js";
 import { FileUp, Trash2 } from 'lucide-react';
 
-export default function ChangeLogsComponent({}) {
+export default function ChangeLogsComponent({ }) {
     const [loading, setLoading] = useState(true);
     const [loadingExpanded, setLoadingExpanded] = useState({});
-    
-    const [logs, setLogs] = useState([]);
-    const [logToDelete,  setLogToDelete ] = useState(null);
-    const [expandedLogs, setExpandedLogs] = useState({});
-    const { onError } = useNotification();
-    const {onDisplayMarkdown} = useMarkDownModal();
-    const {permissions} = useUserPermissions();
 
-    const handleSetExpanded = async(log) => {
+    const [logs, setLogs] = useState([]);
+    const [logToDelete, setLogToDelete] = useState(null);
+    const [expandedLogs, setExpandedLogs] = useState({});
+    const { onError } = useToast();
+    const { onDisplayMarkdown } = useMarkDownModal();
+    const { permissions } = useUserPermissions();
+
+    const handleSetExpanded = async (log) => {
         let updatedExpandedList = { ...(expandedLogs || {}) };
         const compressed = utils.isEmpty(updatedExpandedList[log.id]);
-        if(compressed) {
+        if (compressed) {
             //setLoadingExpanded((prev) => ({...prev, [expense.id]: true}));
             //await get the changed document... todo
             //setLoadingExpanded((prev) => ({...prev, [expense.id]: false}));
@@ -36,24 +36,24 @@ export default function ChangeLogsComponent({}) {
         setExpandedLogs(updatedExpandedList);
     }
 
-    const displayDocument = async(log) => {
+    const displayDocument = async (log) => {
         const document = await logsService.getDocument(log.document, onError);
         onDisplayMarkdown("Data", document);
     }
 
-    const handleDeleteLog = async() => {
-        if(!logToDelete || utils.isEmpty(logToDelete.id)) {
+    const handleDeleteLog = async () => {
+        if (!logToDelete || utils.isEmpty(logToDelete.id)) {
             return;
         }
         const result = await logsService.remove(logToDelete.id, onError);
-        if(result) {
+        if (result) {
             setLogToDelete(null);
         }
     }
-    
+
     useEffect(() => {
-        const getLogs = async() => {
-            const filter = {after : utils.now(-20), action : "delete"};
+        const getLogs = async () => {
+            const filter = { after: utils.now(-20), action: "delete" };
             const userLogs = await logsService.get(filter, onError);
             setLogs(userLogs);
             setLoading(false);
@@ -62,12 +62,12 @@ export default function ChangeLogsComponent({}) {
         getLogs();
     }, []);
 
-    const getDataForExport = async(filterValues, onProgress) => {
+    const getDataForExport = async (filterValues, onProgress) => {
         const rows = await logsService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 
-    if(loading) {
+    if (loading) {
         return (
             <p>Loading...</p>
         );
@@ -79,12 +79,12 @@ export default function ChangeLogsComponent({}) {
                 <div>
                     <h2 className="card-title">Change Logs</h2>
                 </div>
-                {permissions.isAdmin && (<div style={{display: "flex", }}>
+                {permissions.isAdmin && (<div style={{ display: "flex", }}>
                     <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={{
-                        "after"  : "date",
-                        "before" : "date",
-                        "action" : "string"
-                    }}/>
+                        "after": "date",
+                        "before": "date",
+                        "action": "string"
+                    }} />
                 </div>)}
             </div>
             <div className="card-content">
@@ -93,7 +93,7 @@ export default function ChangeLogsComponent({}) {
                     const documentId = log.document.split("/").pop();
                     return (
                         <React.Fragment key={log.id}>
-                            <div className="log-box" onClick={()=> handleSetExpanded(log)}>
+                            <div className="log-box" onClick={() => handleSetExpanded(log)}>
                                 <div className="log-header">
                                     <div className="log-header-left">
                                         <div className="log-title">
@@ -108,8 +108,8 @@ export default function ChangeLogsComponent({}) {
                                             {expandedLogs[log.id] ? '▼' : '▶'}
                                         </div>
                                     </div>
-                                </div>  
-                                
+                                </div>
+
                                 <div>
                                     {utils.to_ddMMYY(log.createdAt, "/")}
                                 </div>
@@ -124,7 +124,7 @@ export default function ChangeLogsComponent({}) {
                                         <div>
                                             Document ID: {documentId}
                                         </div>
-                                        <div className="log-body-footer">   
+                                        <div className="log-body-footer">
                                             <div className="log-body-footer-icon">
                                                 <FileUp
                                                     onClick={(e) => {
@@ -135,7 +135,7 @@ export default function ChangeLogsComponent({}) {
                                                 <p>Open</p>
                                             </div>
                                             <div className="log-body-footer-icon">
-                                                <Trash2  
+                                                <Trash2
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setLogToDelete(log);
@@ -153,7 +153,7 @@ export default function ChangeLogsComponent({}) {
             </div>
 
             {logToDelete && (
-                <ConfirmModal 
+                <ConfirmModal
                     onCancel={() => setLogToDelete(null)}
                     onConfirm={handleDeleteLog}
                 />

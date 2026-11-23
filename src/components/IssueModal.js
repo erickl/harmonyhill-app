@@ -1,49 +1,49 @@
 import { useState, useEffect } from 'react';
 import TextInput from "./TextInput.js";
 import ButtonsFooter from "./ButtonsFooter.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
-import {useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import * as issueService from "../services/issueService.js";
 import * as utils from "../utils.js";
 import "./IssueModal.css";
 
-export default function IssueModal({onSubmit, record, onClose}) {
-    const emptyForm = { 
-        comment : "",
-        status : "",
+export default function IssueModal({ onSubmit, record, onClose }) {
+    const emptyForm = {
+        comment: "",
+        status: "",
     };
 
     const nextStatus = record.issue === "attention" ? "pending_approval" : "attention";
 
     const [formData, setFormData] = useState(emptyForm);
 
-    const [validationError,   setValidationError  ] = useState(null);
-    const [readyToSubmit,     setReadyToSubmit    ] = useState(true);
-    const [comments,          setComments         ] = useState([]);
+    const [validationError, setValidationError] = useState(null);
+    const [readyToSubmit, setReadyToSubmit] = useState(true);
+    const [comments, setComments] = useState([]);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
     const { permissions } = useUserPermissions();
 
     const handleSubmit = async (status) => {
         let result = false;
         try {
-            if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
-            
-            formData.status = status;
-            result = await onSubmit(formData);  
+            if (!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
 
-            if(result !== false) { 
+            formData.status = status;
+            result = await onSubmit(formData);
+
+            if (result !== false) {
                 setFormData(emptyForm);
                 onClose();
                 onSuccess();
             }
             return result;
-        } catch(e) {
+        } catch (e) {
             onError(`Submit error: ${e.message}`);
-        }   
-        return result;     
+        }
+        return result;
     };
 
     const validateFormData = async (newFormData) => {
@@ -51,7 +51,7 @@ export default function IssueModal({onSubmit, record, onClose}) {
 
         // Add validation
         const validationResult = true;
-        if(validationResult === true) {
+        if (validationResult === true) {
             setValidationError(null);
         }
     }
@@ -69,7 +69,7 @@ export default function IssueModal({onSubmit, record, onClose}) {
             nextFormData = { ...formData, [field]: value };
         }
 
-        if(!utils.isEmpty(nextFormData)) {
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
 
@@ -79,7 +79,7 @@ export default function IssueModal({onSubmit, record, onClose}) {
     useEffect(() => {
         // Initial validation
         validateFormData(emptyForm);
-        
+
         const loadComments = async () => {
             const comments = await issueService.getComments(record);
             setComments(comments);
@@ -97,7 +97,7 @@ export default function IssueModal({onSubmit, record, onClose}) {
                         {comments.map((comment) => (
                             <div className="comment">
                                 <div>
-                                    <div className="comment-text" key={`comment-${comment.id}`}> 
+                                    <div className="comment-text" key={`comment-${comment.id}`}>
                                         {utils.capitalizeWords(comment.status)}: {utils.isEmpty(comment.comment) ? "[Empty]" : comment.comment}
                                     </div>
                                     <div className="metainfo-left">
@@ -105,14 +105,14 @@ export default function IssueModal({onSubmit, record, onClose}) {
                                     </div>
                                 </div>
                                 <div className="metainfo-right">
-                                    {}
+                                    { }
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
-               
-               <div className="comment-input-wrapper">
+
+                <div className="comment-input-wrapper">
                     <TextInput
                         className="comment-input"
                         type="text"

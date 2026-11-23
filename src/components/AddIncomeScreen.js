@@ -4,7 +4,7 @@ import * as incomeService from "../services/incomeService.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import "./AddIncomeScreen.css";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import IncomeScreen from "./IncomeScreen.js";
 import MyDatePicker from "./MyDatePicker.js";
 import Dropdown from "./Dropdown.js";
@@ -17,41 +17,41 @@ import { useUserPermissions } from '../context/UserPermissionsContext.js';
 export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
     let bookingId = '';
     let category = '';
-    if(incomeToEdit) {
+    if (incomeToEdit) {
         bookingId = incomeToEdit.bookingId;
         category = incomeToEdit.category;
-    } else if(customer) {
+    } else if (customer) {
         category = "Guest Payment";
         bookingId = customer.id;
     }
 
     const emptyForm = {
-        amount        : incomeToEdit ? incomeToEdit.amount        : '',
-        receivedAt    : incomeToEdit ? incomeToEdit.receivedAt    : utils.today(),
-        paymentMethod : incomeToEdit ? incomeToEdit.paymentMethod : '', 
-        category      : category,
-        index         : incomeToEdit ? incomeToEdit.index         : '',
-        bookingId     : bookingId,
-        activityId    : incomeToEdit ? incomeToEdit.activityId    : '',
-        comments      : incomeToEdit ? incomeToEdit.comments      : '',
-        description   : incomeToEdit ? incomeToEdit.description   : '',
+        amount: incomeToEdit ? incomeToEdit.amount : '',
+        receivedAt: incomeToEdit ? incomeToEdit.receivedAt : utils.today(),
+        paymentMethod: incomeToEdit ? incomeToEdit.paymentMethod : '',
+        category: category,
+        index: incomeToEdit ? incomeToEdit.index : '',
+        bookingId: bookingId,
+        activityId: incomeToEdit ? incomeToEdit.activityId : '',
+        comments: incomeToEdit ? incomeToEdit.comments : '',
+        description: incomeToEdit ? incomeToEdit.description : '',
     };
 
-    const [readyToSubmit,   setReadyToSubmit  ] = useState(false    );
-    const [validationError, setValidationError] = useState(null     );
-    const [bookings,        setBookings       ] = useState([]       );
-    const [formData,        setFormData       ] = useState(emptyForm);
-    const [activities,      setActivities     ] = useState([]       );
-    const [selectedBooking, setSelectedBooking] = useState(null     );
-    const [selectedActivity,setSelectedActivity] = useState(null    );
- 
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
+    const [validationError, setValidationError] = useState(null);
+    const [bookings, setBookings] = useState([]);
+    const [formData, setFormData] = useState(emptyForm);
+    const [activities, setActivities] = useState([]);
+    const [selectedBooking, setSelectedBooking] = useState(null);
+    const [selectedActivity, setSelectedActivity] = useState(null);
+
     const needsGuestInfo = (formDataCategory) => {
         const category = formDataCategory.trim().toLowerCase();
         return category === "guest payment" || category === "commission";
     }
 
-    const needsActivityInfo = (formDataCategory) => { 
-        if(customer) return false;
+    const needsActivityInfo = (formDataCategory) => {
+        if (customer) return false;
 
         const category = formDataCategory.trim().toLowerCase();
         return category === "guest payment" || category === "commission";
@@ -61,9 +61,9 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
         setValidationError(error);
     };
 
-    const { onError } = useNotification();
-    const {onSuccess} = useSuccessNotification();
-    const {permissions} = useUserPermissions();
+    const { onError } = useToast();
+    const { onSuccess } = useSuccessNotification();
+    const { permissions } = useUserPermissions();
 
     const onCategorySelect = (category) => {
         const name = category ? category.name : '';
@@ -71,14 +71,14 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
             "category": name,
         }
 
-        if(!needsGuestInfo(name)) {
+        if (!needsGuestInfo(name)) {
             change["bookingId"] = null;
             setSelectedBooking(null);
             setSelectedActivity(null);
         } else {
             getBookings();
         }
-        if(!needsActivityInfo(name)) {
+        if (!needsActivityInfo(name)) {
             change["activityId"] = null;
             setSelectedActivity(null);
         }
@@ -102,11 +102,11 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
         setSelectedBooking(booking);
         setSelectedActivity(null);
         handleChange("_batch", {
-            "bookingId"  : booking?.id,
-            "activityId" : null
+            "bookingId": booking?.id,
+            "activityId": null
         });
 
-        if(needsActivityInfo(formData.category)) {
+        if (needsActivityInfo(formData.category)) {
             getBookingActivities(booking);
         }
     }
@@ -116,7 +116,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
 
         setReadyToSubmit(validationResult);
 
-        if(validationResult === true) {
+        if (validationResult === true) {
             setValidationError(null);
         }
     }
@@ -138,7 +138,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
             nextFormData = { ...formData, [field]: value };
         }
 
-        if(!utils.isEmpty(nextFormData)) {
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
 
@@ -147,35 +147,35 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
 
     const handleSubmit = async () => {
         try {
-            if(!readyToSubmit) return;
+            if (!readyToSubmit) return;
 
             let result = false;
-            if(incomeToEdit) {
+            if (incomeToEdit) {
                 result = await incomeService.update(incomeToEdit.id, formData, onError);
             } else {
                 result = await incomeService.add(formData, onError);
             }
-           
-            if(result !== false) {
-                if(incomeToEdit) context.onClose();
+
+            if (result !== false) {
+                if (incomeToEdit) context.onClose();
                 else resetForm();
                 onSuccess();
             } else {
                 throw new Error("Receipt form data upload error");
             }
-        } catch(e) {
+        } catch (e) {
             onError(`Submit error: ${e.message}`);
-        }        
+        }
     };
 
     let commentsHint = "";
-    if(formData.category.trim().toLowerCase() === "commission") {
+    if (formData.category.trim().toLowerCase() === "commission") {
         commentsHint = "Please name provider";
     }
 
-    const getBookings = async() => {
-        const filter = {"after": utils.today(-10)};
-        
+    const getBookings = async () => {
+        const filter = { "after": utils.today(-10) };
+
         const bookings = await bookingService.get(filter, onError);
         const bookingsByName = utils.groupBy(bookings, (booking) => {
             const house = booking.house === "harmony hill" ? "HH" : "JN";
@@ -184,7 +184,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
         setBookings(bookingsByName);
     }
 
-    const getBookingActivities = async(booking) => {
+    const getBookingActivities = async (booking) => {
         const bookingActivities = await activityService.get(booking, {}, onError);
         const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
             return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
@@ -199,29 +199,29 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
 
     // todo: put in database
     const categories = {
-        'Guest Payment'        : {"name" : "Guest Payment"    },
-        'Petty Cash Top Up'    : {"name" : "Petty Cash Top Up"},
-        'Commission'           : {"name" : "Commission"       },
-        'Other'                : {"name" : "Other"            },
+        'Guest Payment': { "name": "Guest Payment" },
+        'Petty Cash Top Up': { "name": "Petty Cash Top Up" },
+        'Commission': { "name": "Commission" },
+        'Other': { "name": "Other" },
     };
 
     // todo: put in database
     const paymentMethods = [
-        'Cash'       ,
-        'Transfer'   ,
-        'AirBnB'     ,
+        'Cash',
+        'Transfer',
+        'AirBnB',
         'Booking.com',
     ];
 
     const incomeFromText = customer ? `: ${customer.name}` : "";
 
     return (
-         <div className="fullscreen">
+        <div className="fullscreen">
             <div className="card-header">
                 <div>
                     <h2 className="card-title">Record New Income {incomeFromText}</h2>
                 </div>
-            
+
                 <div>
                     {!incomeToEdit && (
                         <button className="add-button" onClick={() => context.onClose()}>
@@ -230,7 +230,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                     )}
                 </div>
             </div>
-            <div className="card-content">     
+            <div className="card-content">
                 <TextInput
                     type="amount"
                     name="amount"
@@ -242,8 +242,8 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                 {/* If there's a customer input, this is a guest payment. No need to select another type */}
                 {utils.isEmpty(customer) && (
                     <div className="purchase-form-group">
-                        <Dropdown 
-                            label={"Category"} 
+                        <Dropdown
+                            label={"Category"}
                             options={categories}
                             current={formData.category}
                             onSelect={onCategorySelect}
@@ -254,8 +254,8 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                 {/* If there's a customer input, this is a payment for that specific guest. No need to select another */}
                 {utils.isEmpty(customer) && needsGuestInfo(formData.category) && (
                     <div className="purchase-form-group">
-                        <Dropdown 
-                            label={"Booking"} 
+                        <Dropdown
+                            label={"Booking"}
                             options={bookings}
                             current={formData.bookingId}
                             onSelect={onBookingSelect}
@@ -265,8 +265,8 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
 
                 {utils.isEmpty(customer) && needsActivityInfo(formData.category) && !utils.isEmpty(formData.bookingId) && (
                     <div className="purchase-form-group">
-                        <Dropdown 
-                            label={"Activity"} 
+                        <Dropdown
+                            label={"Activity"}
                             options={activities}
                             current={formData.activityId}
                             onSelect={onActivitySelect}
@@ -275,8 +275,8 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                 )}
 
                 <div className="purchase-form-group">
-                    <MultipleChoiceList 
-                        label={"Payment Method"} 
+                    <MultipleChoiceList
+                        label={"Payment Method"}
                         options={paymentMethods}
                         current={formData.paymentMethod}
                         onSelect={onPaymentMethodSelect}
@@ -284,10 +284,10 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                     />
                 </div>
 
-                <MyDatePicker 
+                <MyDatePicker
                     name={"receivedAt"}
                     label="Payment"
-                    date={formData.receivedAt} 
+                    date={formData.receivedAt}
                     onChange={handleChange}
                     time={null}
                     useTime={false}
@@ -307,7 +307,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                     onCancel={context.onClose}
                     onSubmit={handleSubmit}
                     submitEnabled={readyToSubmit}
-                /> 
+                />
             </div>
         </div>
     );

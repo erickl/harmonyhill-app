@@ -4,18 +4,18 @@ import { pdfjs } from 'react-pdf';
 import * as invoicePdfService from "../services/invoicePdfService.js";
 import { Share, XIcon } from 'lucide-react';
 import "./PdfViewer.css";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { WhatsappShareButton, WhatsappIcon } from 'react-share';
 
 import * as storageDao from "../daos/storageDao.js";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
-export default function PdfViewer({customer, triggerRerender, onClose }) {
+export default function PdfViewer({ customer, triggerRerender, onClose }) {
     const [pdfUrl, setPdfUrl] = useState(null);
     const [title, setTitle] = useState(null);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
 
     useEffect(() => {
         let isMounted = true;
@@ -61,7 +61,7 @@ export default function PdfViewer({customer, triggerRerender, onClose }) {
                 onError("Sharing is not supported on this device.");
             }
         } catch (e) {
-            if(e.message.includes("cancellation")) return;
+            if (e.message.includes("cancellation")) return;
             onError(`Error sharing: ${e.message}`);
         }
     };
@@ -74,7 +74,7 @@ export default function PdfViewer({customer, triggerRerender, onClose }) {
         <div style={{ position: "relative", height: "90vh", width: "100%" }}>
             <div className="share-container">
                 <WhatsappShareButton
-                    style={{margin:"0"}}
+                    style={{ margin: "0" }}
                     url={pdfUrl}
                     title={`Dear ${customer.name}. Here's your invoice`}
                     separator=" | "

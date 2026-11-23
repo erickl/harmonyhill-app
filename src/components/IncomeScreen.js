@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import * as incomeService from "../services/incomeService.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import * as bookingService from "../services/bookingService.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import * as ledgerService from "../services/ledgerService.js";
 import * as utils from "../utils.js";
 import "./IncomeScreen.css";
@@ -17,78 +17,78 @@ import IncomeList from './IncomeList.js';
 import { useFilters } from "../context/FilterContext.js";
 
 export default function IncomeScreen({ customer, context }) {
-    const [pettyCash,           setPettyCash           ] = useState(null );
-    const [incomeSum,           setIncomeSum           ] = useState(null );
-    const [recentFilter,        setRecentFilter        ] = useState(null );
-    const [issuesFilter,        setIssuesFilter        ] = useState(null );
-    const [pastFilter,          setPastFilter          ] = useState(null );
-    const [customerFilter,      setCustomerFilter      ] = useState(null );
-    const [customInterval,        setCustomInterval]        = useState(null);
-    
-    const { onFilter    } = useFilters();
-    const { onError     } = useNotification();
-    const { onSuccess   } = useSuccessNotification();
-    const { onConfirm   } = useConfirmationModal();
+    const [pettyCash, setPettyCash] = useState(null);
+    const [incomeSum, setIncomeSum] = useState(null);
+    const [recentFilter, setRecentFilter] = useState(null);
+    const [issuesFilter, setIssuesFilter] = useState(null);
+    const [pastFilter, setPastFilter] = useState(null);
+    const [customerFilter, setCustomerFilter] = useState(null);
+    const [customInterval, setCustomInterval] = useState(null);
+
+    const { onFilter } = useFilters();
+    const { onError } = useToast();
+    const { onSuccess } = useSuccessNotification();
+    const { onConfirm } = useConfirmationModal();
     const { permissions } = useUserPermissions();
 
     const filterHeaders = {
-        "after"  : "date",
-        "before" : "date",
-        "paymentMethod" : "string",
+        "after": "date",
+        "before": "date",
+        "paymentMethod": "string",
     };
 
-    const getDataForExport = async(filterValues, onProgress) => {
+    const getDataForExport = async (filterValues, onProgress) => {
         const rows = await incomeService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 
     const onFilterValuesSubmit = (filterValues) => {
         setCustomInterval({
-            after  : filterValues.after,
-            before : filterValues.before
+            after: filterValues.after,
+            before: filterValues.before
         });
     };
 
     useEffect(() => {
         let filter = {};
 
-        if(!permissions.canSeeTransferIncomes ) {
+        if (!permissions.canSeeTransferIncomes) {
             // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
             filter["paymentMethod"] = "cash";
-        } 
+        }
 
-        const getCashFlow = async() => {
+        const getCashFlow = async () => {
             const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
             setPettyCash(pettyCashSum);
-            
+
             const incomeSum = await ledgerService.getCurrentTotalIncomes(onError);
             setIncomeSum(incomeSum);
         }
 
         const loadData = async () => {
-            if(customer) {
-                setCustomerFilter({bookingId : customer.id});
+            if (customer) {
+                setCustomerFilter({ bookingId: customer.id });
                 return;
             }
 
-            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);       
-            
+            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);
+
             // In Recent tab, display records from a month ago at the oldest
             const monthStart = utils.monthStart();
             const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : monthStart;
-            
+
             let recentFilterAfter = monthStart;
-            if(oldest >= monthStart) {
+            if (oldest >= monthStart) {
                 recentFilterAfter = oldest;
             } else {
-                const pastFilter = {...filter, after: oldest, before: recentFilterAfter.plus({seconds : -1})};
+                const pastFilter = { ...filter, after: oldest, before: recentFilterAfter.plus({ seconds: -1 }) };
                 setPastFilter(pastFilter);
             }
 
-            const recentFilter = {...filter, after : recentFilterAfter};
+            const recentFilter = { ...filter, after: recentFilterAfter };
             setRecentFilter(recentFilter);
-    
-            const issuesFilter = { ...filter, "issue" : "attention"};
+
+            const issuesFilter = { ...filter, "issue": "attention" };
             setIssuesFilter(issuesFilter);
         }
 
@@ -97,7 +97,7 @@ export default function IncomeScreen({ customer, context }) {
     }, []);
 
     const incomeFromText = customer ? `: ${customer.name}` : "";
-     
+
     return (
         <div className="fullscreen">
             <div className="card-header">
@@ -115,45 +115,45 @@ export default function IncomeScreen({ customer, context }) {
                                 Total (excl top ups): {utils.formatDisplayPrice(incomeSum, true)}
                             </span>
                         )}
-                    </div>    
+                    </div>
                 </div>
 
                 <div className="card-header-right">
                     <div>
                         <div className="card-header-right-top-row">
                             {permissions.isAdmin && (<>
-                                <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                                <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={filterHeaders} />
                             </>)}
 
-                            {permissions.isAdmin && context.enableFilters && (<>    
-                                <Filter 
+                            {permissions.isAdmin && context.enableFilters && (<>
+                                <Filter
                                     onClick={() => onFilter(filterHeaders, onFilterValuesSubmit)}
                                 />
                                 {customInterval && (
-                                    <FilterX onClick={() => setCustomInterval(null)}/>
+                                    <FilterX onClick={() => setCustomInterval(null)} />
                                 )}
                             </>)}
 
                             {permissions.canAddIncomes && (
-                                <button className="add-button" onClick={() => context.onNavigate("add-income", {customer:customer})}>
-                                    + 
+                                <button className="add-button" onClick={() => context.onNavigate("add-income", { customer: customer })}>
+                                    +
                                 </button>
                             )}
                         </div>
                     </div>
-                </div>  
+                </div>
             </div>
             <div className="card-content">
                 {/* Filtering is used */}
                 {customInterval !== null ? (
-                    <IncomeList 
-                        context={context} 
-                        title={"Custom"} 
-                        filter={customInterval} 
+                    <IncomeList
+                        context={context}
+                        title={"Custom"}
+                        filter={customInterval}
                         expand={true}
-                    /> 
+                    />
                 ) : (<>
-                {/* No filtering is used */}
+                    {/* No filtering is used */}
                     {customerFilter && (
                         <IncomeList
                             title={"All"}
@@ -181,7 +181,7 @@ export default function IncomeScreen({ customer, context }) {
                             filter={pastFilter}
                         />
                     )}
-                    </>
+                </>
                 )}
             </div>
         </div>

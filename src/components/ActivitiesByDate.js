@@ -4,7 +4,7 @@ import TodoComponent from "./TodoComponent.js";
 import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
-import { useNotification } from '../context/NotificationContext.js';
+import { useToast } from '../context/ToastContext.js';
 import { useSuccessNotification } from '../context/SuccessContext.js';
 import { useUserPermissions } from '../context/UserPermissionsContext.js';
 import * as utils from "../utils.js";
@@ -15,17 +15,17 @@ import * as todoService from "../services/todoService.js";
 
 export default function ActivitiesByDate({ context, customer, filter, date, date1, date2, includeTodos }) {
     const today = utils.today();
-    
+
     let from = date1 ? date1.startOf('day') : null;
     let to = date2 ? date2.endOf('day') : null;
 
-    if(date) {
+    if (date) {
         from = date.startOf('day');
         to = date.endOf('day');
     }
 
     // input date(s) define 1 particular day, not a range of dates
-    const singleDate = utils.dateIsSame(to, from, true); 
+    const singleDate = utils.dateIsSame(to, from, true);
 
     // Giving no dates means to get all the unscheduled activities
     const noDates = !from && !to;
@@ -33,39 +33,39 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
     const isToday = singleDate && utils.isToday(from);
     const isThisWeek = (from !== null && to !== null) ? (from > today && to < utils.today(8)) : false;
 
-    if(!filter) filter = {};
+    if (!filter) filter = {};
     let headerTitle = "Unscheduled";
 
     // if all input dates === null, then filter => {date: null}, which means getting unscheduled activities
-    if(from || to) {
-        if(from && to) {
+    if (from || to) {
+        if (from && to) {
             filter.after = from;
             filter.before = to;
-            if(isToday) headerTitle = `Today, ${utils.to_ddMMM(from)}`;
-            else if(singleDate) headerTitle = `${utils.to_www_ddMMM(from)}`;
+            if (isToday) headerTitle = `Today, ${utils.to_ddMMM(from)}`;
+            else if (singleDate) headerTitle = `${utils.to_www_ddMMM(from)}`;
             else headerTitle = `${utils.to_www_ddMMM(from)} - ${utils.to_www_ddMMM(to)}`;
         }
-        else if(from && !to) {
+        else if (from && !to) {
             filter.after = from;
-            if(customer) headerTitle = `After checkout`;
+            if (customer) headerTitle = `After checkout`;
             else headerTitle = `After ${utils.to_www_ddMMM(from)}`;
         }
-        else if(!from && to) {
+        else if (!from && to) {
             filter.before = to;
-            if(customer) headerTitle = `Before checkin`;
+            if (customer) headerTitle = `Before checkin`;
             else headerTitle = `Before ${utils.to_www_ddMMM(to)}`;
         }
-    } else if(date) {
+    } else if (date) {
         headerTitle = `${utils.to_ddMMM(date)}`;
     } else { // date == null
         filter.date = null;
     }
 
-    if(filter.completed === false && date2 <= today) {
+    if (filter.completed === false && date2 <= today) {
         headerTitle = "Overdue";
     }
 
-    if(filter.issues === true) {
+    if (filter.issues === true) {
         headerTitle = "Issues";
     }
 
@@ -77,7 +77,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
     const [todos, setTodos] = useState([]);
     const [lastUpdate, setLastUpdate] = useState(null);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
     const { permissions, user } = useUserPermissions();
@@ -100,7 +100,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
             // Delete activity from the current GUI list
             if (deleteActivityResult !== false) {
                 // If there's a activities update subscription, no need to manually adjust the state
-                if(doSubscribe) return;
+                if (doSubscribe) return;
 
                 const newActivities = activities.filter((act) => act.id !== activity.id);
                 setActivities(newActivities);
@@ -119,7 +119,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
             // Delete from the current GUI list
             if (deleteResult !== false) {
                 // If there's a subscription, no need to manually adjust the state
-                if(doSubscribe) return;
+                if (doSubscribe) return;
 
                 const newTodos = todos.filter((t) => t.id !== t.id);
                 setTodos(newTodos);
@@ -131,9 +131,9 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
     // 'updatedActivity' might be an update to an existing activity or an entirely new activity (e.g minibar sale)
     const onActivityChange = (updatedActivity) => {
         // If there's a activities update subscription, no need to manually adjust the state
-        if(doSubscribe) return;
+        if (doSubscribe) return;
 
-        if(!updatedActivity) {
+        if (!updatedActivity) {
             return onError(`Unexpected error: Cannot add new activity to current list`);
         }
 
@@ -141,30 +141,30 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
         const newActivities = [...activities];
 
         const existingIndex = newActivities.findIndex((activity) => activity.id === updatedActivity.id);
-        
+
         // If this is an update, overwrite the old activity
-        if(existingIndex !== -1) newActivities[existingIndex] = updatedActivity;
-        
+        if (existingIndex !== -1) newActivities[existingIndex] = updatedActivity;
+
         // Entirely new activity: add and resort the 'state' list
         else {
             newActivities.push(updatedActivity);
             newActivities.sort((a1, a2) => {
-                if(utils.isDate(a1.startingAt) && utils.isDate(a2.startingAt)) {
+                if (utils.isDate(a1.startingAt) && utils.isDate(a2.startingAt)) {
                     return a1.startingAt - a2.startingAt;
                 } else {
                     return -1;
                 }
             });
         }
-       
+
         setActivities(newActivities);
 
         return true;
     };
 
-    const getActivities = async() => {
+    const getActivities = async () => {
         let activities = [];
-        if(customer) {
+        if (customer) {
             activities = await activityService.get(customer, filter, onError);
         } else {
             activities = await activityService.getAll(filter, onError);
@@ -177,20 +177,20 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
         return activities;
     };
 
-    const getTodos = async() => {
-        if(!customer) {
+    const getTodos = async () => {
+        if (!customer) {
             const todos_ = await todoService.get(null, filter, onError);
             setTodos(todos_);
             setLoading(false);
             setLastUpdate(utils.to_HHmm());
             return todos_;
-        } 
+        }
         return [];
     };
 
     // Past activities reload when the date header is expanded
     useEffect(() => {
-        if(expanded && !doSubscribe) {
+        if (expanded && !doSubscribe) {
             setLoading(prev => !prev);
             getActivities();
             getTodos();
@@ -199,7 +199,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
 
     useEffect(() => {
         // Subscribe: Reload whenever there is a change in DB
-        if(doSubscribe) {
+        if (doSubscribe) {
             const unsubscribeActivities = activityService.subscribe(customer, (liveActivities) => {
                 const enhancedLiveActivities = activityService.enhanceActivities(liveActivities);
                 setActivities(enhancedLiveActivities);
@@ -209,7 +209,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
             }, filter, onError);
 
             let unsubscribeTodos = null;
-            if(customer === null) {
+            if (customer === null) {
                 unsubscribeTodos = todoService.subscribe((liveTodos) => {
                     setTodos(liveTodos);
                     setLastUpdate(`${utils.to_HHmm()}`);
@@ -218,19 +218,19 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
             }
 
             return () => {
-                if(unsubscribeActivities) unsubscribeActivities();
-                if(unsubscribeTodos) unsubscribeTodos();
+                if (unsubscribeActivities) unsubscribeActivities();
+                if (unsubscribeTodos) unsubscribeTodos();
             }
         }
     }, [includeTodos]);
 
     const todosIncluded = includeTodos ? todos : [];
-    const tasks = [...(activities || []), ...(todosIncluded||[])]
+    const tasks = [...(activities || []), ...(todosIncluded || [])]
     const tasksSorted = tasks.sort((t1, t2) => {
         const date1 = utils.exists(t1, "startingAt") ? t1.startingAt : t1.deadlineAt;
         const date2 = utils.exists(t2, "startingAt") ? t2.startingAt : t2.deadlineAt;
-        if(date1 === null) return -1;
-        else if(date2 === null) return 1;
+        if (date1 === null) return -1;
+        else if (date2 === null) return 1;
         return date1 - date2;
     });
 
@@ -247,7 +247,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
                             <div>
                                 {`${headerTitle}${(isToday ? ` | ${utils.to_HHmm()}` : "")}`}
                             </div>
-                            
+
                         </div>
 
                         <div className='activity-group-header-right'>
@@ -270,7 +270,7 @@ export default function ActivitiesByDate({ context, customer, filter, date, date
                         <div>
                             {tasksSorted.map((task, index) => {
                                 let task_ = null;
-                                if(utils.exists(task, "startingAt")) {
+                                if (utils.exists(task, "startingAt")) {
                                     task_ = <ActivityComponent
                                         key={`activity-${task.id}`}
                                         inputCustomer={customer}

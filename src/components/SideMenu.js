@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMenu } from '../context/MenuContext.js';
 import { useUserPermissions } from "../context/UserPermissionsContext.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import * as userService from "../services/userService.js";
 import { useMarkDownModal } from "../context/MarkDownContext.js";
 import packageJson from '../../package.json';
@@ -11,7 +11,7 @@ import "./SideMenu.css";
 export default function SideMenu({ context }) {
 
     const { open, close } = useMenu("sideMenu");
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { permissions, user } = useUserPermissions();
     const { onDisplayMarkdown } = useMarkDownModal();
 

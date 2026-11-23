@@ -5,7 +5,7 @@ import * as utils from "../utils.js";
 import './CustomerPurchasesScreen.css';
 import ActivitiesAllLists from './ActivitiesAllLists.js';
 import ActivitiesByDate from './ActivitiesByDate.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import PdfViewer from './PdfViewer.js';
 
 /**
@@ -17,7 +17,7 @@ export default function CustomerPurchasesScreen({ customer, context }) {
     const [total, setTotal] = useState(0);
     const [triggerRerender, setTriggerRerender] = useState(0);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { permissions } = useUserPermissions();
 
     useEffect(() => {
@@ -32,10 +32,10 @@ export default function CustomerPurchasesScreen({ customer, context }) {
 
     if (showInvoice) {
         return (
-            <PdfViewer 
-                customer={customer} 
-                triggerRerender={triggerRerender} 
-                onClose={() => setShowInvoice(false)} 
+            <PdfViewer
+                customer={customer}
+                triggerRerender={triggerRerender}
+                onClose={() => setShowInvoice(false)}
             />
         );
     }

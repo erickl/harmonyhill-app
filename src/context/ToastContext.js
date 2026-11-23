@@ -1,8 +1,8 @@
 import React, { createContext, useState, useContext } from "react";
 
-const NotificationContext = createContext();
+const ToastContext = createContext();
 
-export function NotificationProvider({ children }) {
+export function ToastProvider({ children }) {
     const [header, setHeader] = useState(null);
     const [message, setMessage] = useState(null);
 
@@ -10,7 +10,7 @@ export function NotificationProvider({ children }) {
         setHeader("Something happened...");
         setMessage(`${message}`);
         return false;
-    } 
+    }
 
     const onWarning = (message) => {
         setHeader("Warning!");
@@ -21,14 +21,14 @@ export function NotificationProvider({ children }) {
         setHeader(header);
         setMessage(`${message}`);
     }
-    
+
     const hidePopup = () => {
         setHeader(null);
         setMessage(null);
     }
 
     return (
-        <NotificationContext.Provider value={{ onError, onWarning, onInfo }}>
+        <ToastContext.Provider value={{ onError, onWarning, onInfo }}>
             {children}
             {message && (
                 <div className="modal-overlay">
@@ -41,10 +41,10 @@ export function NotificationProvider({ children }) {
                     </div>
                 </div>
             )}
-        </NotificationContext.Provider>
+        </ToastContext.Provider>
     );
 }
 
-export function useNotification() {
-    return useContext(NotificationContext);
+export function useToast() {
+    return useContext(ToastContext);
 }

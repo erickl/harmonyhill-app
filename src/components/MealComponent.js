@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import * as mealService from "../services/mealService.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { Pencil, Trash2, Candy } from 'lucide-react';
 import MetaInfo from "./MetaInfo.js";
 import Spinner from './Spinner.js';
 import * as utils from "../utils.js";
 import "./MealComponent.css";
 
-export default function MealComponent({context, item, handleDelete}) {
+export default function MealComponent({ context, item, handleDelete }) {
     const [expanded, setExpanded] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const { permissions } = useUserPermissions();
-    const { onError } = useNotification();
+    const { onError } = useToast();
 
-    const fetchItemInfo = async (item) => { 
+    const fetchItemInfo = async (item) => {
 
     };
 
-    const handleSetExpanded = async(item) => {
-        if(!expanded) {
+    const handleSetExpanded = async (item) => {
+        if (!expanded) {
             setLoading(prev => !prev);
-            await fetchItemInfo(item); 
+            await fetchItemInfo(item);
             setLoading(prev => !prev);
-        } 
+        }
         setExpanded(prev => !prev);
     }
 
     return (
-        <div className="meal-item-box" onClick={()=> handleSetExpanded(item)}>
+        <div className="meal-item-box" onClick={() => handleSetExpanded(item)}>
             <div className="meal-item-header">
                 <div className="meal-item-header-left">
                     <div className="meal-item-title">
@@ -44,10 +44,10 @@ export default function MealComponent({context, item, handleDelete}) {
                         {expanded ? '▼' : '▶'}
                     </div>
                 </div>
-            </div>  
-            
+            </div>
+
             <div>
-                {utils.capitalizeWords(item.course)} 
+                {utils.capitalizeWords(item.course)}
             </div>
 
             {loading ? (
@@ -59,7 +59,7 @@ export default function MealComponent({context, item, handleDelete}) {
                             Description: {item.description}
                         </div>
                     )}
-                
+
                     <div className="meal-item-body-footer">
                         {permissions.isAdmin && (
                             <div className="meal-component-footer-icon">
@@ -93,8 +93,8 @@ export default function MealComponent({context, item, handleDelete}) {
                             </div>
                         )}
                     </div>
-                    
-                    <MetaInfo document={item}/>
+
+                    <MetaInfo document={item} />
                 </div>
             ) : (<></>)}
         </div>

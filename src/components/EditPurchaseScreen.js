@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import * as mealService from "../services/mealService.js"; 
-import * as activityService from "../services/activityService.js"; 
-import * as userService from "../services/userService.js"; 
+import * as mealService from "../services/mealService.js";
+import * as activityService from "../services/activityService.js";
+import * as userService from "../services/userService.js";
 import * as utils from "../utils.js";
 import ActivityForm from "./ActivityForm.js";
 import MealForm from "./MealForm.js";
@@ -10,54 +10,54 @@ import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import "./EditPurchaseScreen.css";
 import "../App.css";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
 const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => {
 
     // Show purchase summary and confirmation pop up modal
-    const [showConfirm,       setShowConfirm]       = useState(false);
-    const [activityMenuItem,  setActivityMenuItem]  = useState(null );
-    const [readyToSubmit,     setReadyToSubmit]     = useState(false);
-    const [loading,           setLoading]           = useState(true );
-    const [validationError,   setValidationError]   = useState(null );
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [activityMenuItem, setActivityMenuItem] = useState(null);
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [validationError, setValidationError] = useState(null);
     const [validationWarning, setValidationWarning] = useState(null);
 
-    const { onError, onWarning } = useNotification();
-    const {onSuccess} = useSuccessNotification();
+    const { onError, onWarning } = useToast();
+    const { onSuccess } = useSuccessNotification();
     const { user } = useUserPermissions();
 
     const [formData, setFormData] = useState({
-        startingAt       : activityToEdit.startingAt,
-        startingTime     : activityToEdit.startingTime,
-        category         : activityToEdit.category,
-        subCategory      : activityToEdit.subCategory,
-        displayName      : activityToEdit.displayName,
-        custom           : activityToEdit.custom,
-        comments         : activityToEdit.comments,
-        customerPrice    : activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
-        provider         : activityToEdit.provider,
-        providerPrice    : activityToEdit.providerPrice,
-        needsProvider    : activityToEdit.needsProvider,
-        assignedTo       : activityToEdit.assignedTo,
-        assigneeAccept   : activityToEdit.assigneeAccept,
-        status           : activityToEdit.status, // not editable. Edits automatically when provider is assigned  
-        dishes           : activityToEdit.dishes, // not null only for meal activities
-        isFree           : activityToEdit.isFree,
-        changeDescription: activityToEdit.changeDescription, 
-        
+        startingAt: activityToEdit.startingAt,
+        startingTime: activityToEdit.startingTime,
+        category: activityToEdit.category,
+        subCategory: activityToEdit.subCategory,
+        displayName: activityToEdit.displayName,
+        custom: activityToEdit.custom,
+        comments: activityToEdit.comments,
+        customerPrice: activityToEdit.customerPrice, // not editable for meals. Derived from the dishes' costs 
+        provider: activityToEdit.provider,
+        providerPrice: activityToEdit.providerPrice,
+        needsProvider: activityToEdit.needsProvider,
+        assignedTo: activityToEdit.assignedTo,
+        assigneeAccept: activityToEdit.assigneeAccept,
+        status: activityToEdit.status, // not editable. Edits automatically when provider is assigned  
+        dishes: activityToEdit.dishes, // not null only for meal activities
+        isFree: activityToEdit.isFree,
+        changeDescription: activityToEdit.changeDescription,
+
         // Auxiliary data
-        house          : customer.house,
-        guestCount     : customer.guestCount,
-        internal       : activityToEdit.internal,
+        house: customer.house,
+        guestCount: customer.guestCount,
+        internal: activityToEdit.internal,
     });
 
     const validateFormData = (newFormData) => {
-        if(!activityToEdit) return;
+        if (!activityToEdit) return;
         let validationResult = false;
-        
-        if(activityToEdit.category === "meal") {
+
+        if (activityToEdit.category === "meal") {
             validationResult = mealService.validate(customer, newFormData, true, setValidationError, setValidationWarning);
         } else {
             validationResult = activityService.validate(customer, newFormData, true, setValidationError, setValidationWarning);
@@ -80,45 +80,45 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => 
         else if (type === 'amount') {
             nextFormData = { ...formData, [name]: utils.cleanNumeric(value) };
         } else {
-            nextFormData = { ...formData, [name]: value };  
+            nextFormData = { ...formData, [name]: value };
         }
 
-        if(!utils.isEmpty(nextFormData)) {
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
-        }  
-        
-        validateFormData(nextFormData); 
+        }
+
+        validateFormData(nextFormData);
     };
 
-    const handleEditPurchaseSubmit = async() => {
+    const handleEditPurchaseSubmit = async () => {
         try {
             // If user already accepted the task, get and display change description
             // Or if the user didn't see the existing change yet, and now there's another change, add to the existing change
-            if(formData.assigneeAccept || !utils.isEmpty(formData.changeDescription)) {
+            if (formData.assigneeAccept || !utils.isEmpty(formData.changeDescription)) {
                 // If the assignee herself is changing the data, no need to accept the task change again
-                if(user.name !== formData.assignedTo) {
+                if (user.name !== formData.assignedTo) {
                     formData.changeDescription = activityService.getChangeDescription(activityToEdit, formData);
                 }
             }
             formData.assigneeAccept = formData.assigneeAccept && utils.isEmpty(formData.changeDescription);
 
             let editActivitySuccess = null;
-            if(activityToEdit.category === "meal") {
+            if (activityToEdit.category === "meal") {
                 editActivitySuccess = await mealService.update(customer, activityToEdit, formData, onError);
             } else {
                 editActivitySuccess = await activityService.update(customer, activityToEdit, formData, onError);
             }
-            
-            if(editActivitySuccess) {
+
+            if (editActivitySuccess) {
                 onSuccess();
                 context.onClose();
-                if(onSubmit) {
+                if (onSubmit) {
                     onSubmit(editActivitySuccess);
                 }
             } else {
                 setShowConfirm(false);
             }
-        } catch(error) {
+        } catch (error) {
             onError(`Unexpected error while trying to update meal: ${error.message}`);
         }
     };
@@ -130,18 +130,18 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => 
             const menuItem = await activityService.getActivityType(activityToEdit.category, activityToEdit.subCategory, customer.house);
             setActivityMenuItem(menuItem);
             setLoading(false);
-            if(!menuItem) {
+            if (!menuItem) {
                 onError(`Can't find any information on the activity type '${activityToEdit.displayName}'`);
             }
         };
 
         fetchActivityMenuItemData();
 
-        validateFormData(formData); 
+        validateFormData(formData);
 
         // If both date and time are set (i.e. time not TBD), and start time is in the past:
         const isPast = (utils.isDate(formData.startingAt) && utils.isBeforeToday(formData.startingAt)) || (utils.isDate(formData.startingTime) && utils.isPast(formData.startingAt));
-        if(isPast) {
+        if (isPast) {
             onWarning(`You are editing an ongoing or old activity (started ${utils.to_yyMMddHHmm(formData.startingAt, "/")})`)
         }
     }, []);
@@ -166,7 +166,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => 
         );
     }
 
-    if(activityMenuItem) {
+    if (activityMenuItem) {
         return (
             <div className="fullscreen">
                 <div className="card-header">
@@ -178,24 +178,24 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => 
                 <div className="card-content">
                     {/* Display meal purchase form */}
                     {activityToEdit.category === "meal" ? (
-                        <MealForm 
+                        <MealForm
                             selectedActivity={activityMenuItem}
                             formData={formData}
                             handleFormDataChange={handleFormDataChange}
                         />
-                    // Display form for all other activities
-                    ) : ( 
-                        <ActivityForm 
+                        // Display form for all other activities
+                    ) : (
+                        <ActivityForm
                             selectedActivity={activityMenuItem}
-                            formData={formData} 
-                            handleFormDataChange={handleFormDataChange}  
+                            formData={formData}
+                            handleFormDataChange={handleFormDataChange}
                         />
                     )}
                 </div>
 
                 {/* Confirm meal selection before submitting to database */}
                 {showConfirm && (
-                    <ConfirmOrderModal 
+                    <ConfirmOrderModal
                         selected={formData.dishes}
                         onCancel={() => setShowConfirm(false)}
                         onConfirm={handleEditPurchaseSubmit}
@@ -204,15 +204,15 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => 
 
                 {(validationWarning && <p className="validation-warning">{`Warning: ${validationWarning}`}</p>)}
                 {(validationError && <p className="validation-error">{`Error: ${validationError}`}</p>)}
-                
-                <ButtonsFooter 
-                    onCancel={context.onClose} 
+
+                <ButtonsFooter
+                    onCancel={context.onClose}
                     onSubmit={() => setShowConfirm(true)}
                     submitEnabled={readyToSubmit}
                 />
             </div>
         )
-    }  
+    }
 };
 
 export default EditPurchaseScreen;

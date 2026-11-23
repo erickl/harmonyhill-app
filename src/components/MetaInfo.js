@@ -1,13 +1,13 @@
 import "./MetaInfo.css";
 import * as utils from "../utils.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useGenericModal } from '../context/GenericContext.js';
-import {buildLogsDom} from "../services/logsService.js";
+import { buildLogsDom } from "../services/logsService.js";
 
-export default function MetaInfo({document}) {
+export default function MetaInfo({ document }) {
 
-    const { onError } = useNotification();
-    const {onDisplayPopup} = useGenericModal();
+    const { onError } = useToast();
+    const { onDisplayPopup } = useGenericModal();
 
     const handleMetaInfoClick = () => {
         const builtLogs = buildLogsDom(document, onError);
@@ -17,12 +17,12 @@ export default function MetaInfo({document}) {
 
     let metaInfo = "";
 
-    if(document) {
+    if (document) {
         const createdAt = utils.to_ddMMM_HHmm(document.createdAt);
         const updatedAt = utils.exists(document, "updatedAt") ? utils.to_ddMMM_HHmm(document.updatedAt) : "";
         const createdMetaInfo = `Created by ${document.createdBy}, ${createdAt}`;
         const updatedMetaInfo = document.updatedBy ? ` | Updated by ${document.updatedBy}, ${updatedAt}` : "";
-        metaInfo = `${createdMetaInfo}${updatedMetaInfo}`; 
+        metaInfo = `${createdMetaInfo}${updatedMetaInfo}`;
     }
 
     return (

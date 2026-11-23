@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useGoogleApi } from "../hooks/useGoogleApi.js";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import * as utils from "../utils.js";
-import { useNotification } from "../context/NotificationContext.js";
-import { useSuccessNotification } from "../context/SuccessContext.js"; 
+import { useToast } from "../context/ToastContext.js";
+import { useSuccessNotification } from "../context/SuccessContext.js";
 import { Upload } from 'lucide-react';
 import { useFilters } from "../context/FilterContext.js";
 import { useProgressCounter } from "../context/ProgressContext.js";
@@ -19,13 +19,13 @@ const BASE_API = `https://sheets.googleapis.com/v4/spreadsheets`;
 
 const SPREADSHEET_ID = `${process.env.REACT_APP_SHEET_ID}`;
 
-export default function SheetUploader({label, onExportRequest, filterHeaders}) {
+export default function SheetUploader({ label, onExportRequest, filterHeaders }) {
     const googleLoaded = useGoogleApi();
     const [accessToken, setAccessToken] = useState(null);
-    const {onError} = useNotification();
-    const {onFilter} = useFilters();
-    const {onSuccess} = useSuccessNotification();
-    const {onProgress} = useProgressCounter();
+    const { onError } = useToast();
+    const { onFilter } = useFilters();
+    const { onSuccess } = useSuccessNotification();
+    const { onProgress } = useProgressCounter();
 
     const isTokenExpired = (token) => {
         try {
@@ -45,7 +45,7 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
                 scope: SCOPES,
                 callback: (response) => {
                     console.log(response);
-                    if(response.error) {
+                    if (response.error) {
                         reject(response.error);
                     }
                     else if (response.access_token) {
@@ -60,7 +60,7 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
         })
     }
 
-    const auth = async () => { 
+    const auth = async () => {
         if (accessToken && !isTokenExpired(accessToken)) {
             return accessToken;
         }
@@ -68,20 +68,20 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
         let token = null;
         try {
             token = null;//localStorage.getItem("google_access_token");
-            if(!token) {
+            if (!token) {
                 if (!googleLoaded) {
                     alert("Google login not ready yet");
                     return null;
                 }
-                token = await getRequestAccessToken();  
+                token = await getRequestAccessToken();
             }
             //if(token is error) todo...
             setAccessToken(token);
             localStorage.setItem("google_access_token", token);
-        } catch(e) {
+        } catch (e) {
             onError(`Error getting oauth2 token: ${e.message}`);
         }
-        
+
         return token;
     }
 
@@ -90,16 +90,16 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
             handleUploadClick(filterValues);
         };
         onFilter(filterHeaders, onFilterValuesSubmit);
-    } 
+    }
 
     const handleUploadClick = async (filterValues) => {
         const rows = await onExportRequest(filterValues, onProgress);
         const token = await auth();
         const result = await uploadData(rows, token);
-        if(result) {
+        if (result) {
             onSuccess(`See data here: ${TO_DATA_URL}`);
         }
-    } 
+    }
 
     // Note: 'values' is a key word for the google sheets API. Keep the name
     const uploadData = async (values, token) => {
@@ -109,7 +109,7 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
             const range = `${sheetName}!A1`;
 
             const sheetExists = await ensureSheetExists(token, range);
-            if(!sheetExists) {
+            if (!sheetExists) {
                 return;
             }
 
@@ -120,17 +120,17 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
                     Authorization: `Bearer ${token}`,
                 },
                 // example: const rows = [["Name", "name@example.com", "data"]];
-                body: JSON.stringify({values}),
+                body: JSON.stringify({ values }),
             }
 
             const sheetApiEndpoint = `${BASE_API}/${SPREADSHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED`;
-        
+
             const response = await fetch(sheetApiEndpoint, requestBody);
             //console.log(`resp: ${JSON.stringify(response)}`);
 
             const result = await response.json();
-            
-            if(utils.exists(result, "error")) {
+
+            if (utils.exists(result, "error")) {
                 const error = result.error;
                 onError(`Error calling Google Sheet API: ${error.message} (${error.code})`);
             } else {
@@ -162,7 +162,7 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
             try {
                 const response = await fetch(url, config);
                 const result = await response.json();
-                
+
                 // Check for API-specific error structure
                 if (result && result.error) {
                     const error = result.error;
@@ -196,8 +196,8 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
                                 title: sheetName,
                                 // Optional: set initial grid size
                                 gridProperties: {
-                                    rowCount: 1000, 
-                                    columnCount: 26 
+                                    rowCount: 1000,
+                                    columnCount: 26
                                 }
                             }
                         }
@@ -209,11 +209,11 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
                     headers: authHeaders,
                     body: JSON.stringify(createSheetRequestBody),
                 });
-                
+
                 console.log(`Sheet "${sheetName}" created successfully.`);
 
                 return true;
-            }  
+            }
         } catch (e) {
             // Handle error during check or create phase
             onError(`Failure during sheet check/create: ${e.message}`);
@@ -223,7 +223,7 @@ export default function SheetUploader({label, onExportRequest, filterHeaders}) {
 
     return (
         <GoogleOAuthProvider clientId={`${CLIENT_ID}.apps.googleusercontent.com`}>
-            <div style={{margin:"1rem", display:"flex", flexDirection: "column", alignItems: "center"}}>
+            <div style={{ margin: "1rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <Upload onClick={handleExportClick} />
                 {label && (<span>{label}</span>)}
             </div>

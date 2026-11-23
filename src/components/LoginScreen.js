@@ -3,14 +3,14 @@ import React, { useState } from 'react';
 import './LoginScreen.css';
 import logo from '../assets/logowhitegreen.png';
 import RegistrationScreen from './RegistrationScreen.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 
 function LoginScreen({ onLogin, onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [seeRegistrationForm, setSeeRegistrationForm] = useState(false);
 
-  const { onError } = useNotification();
+  const { onError } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,10 +20,10 @@ function LoginScreen({ onLogin, onLoginSuccess }) {
     }
   };
 
-  if(seeRegistrationForm) {
+  if (seeRegistrationForm) {
     return (
-      <RegistrationScreen 
-        onClose={() => setSeeRegistrationForm(false) }
+      <RegistrationScreen
+        onClose={() => setSeeRegistrationForm(false)}
       />
     )
   }

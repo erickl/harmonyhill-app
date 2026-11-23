@@ -4,32 +4,32 @@ import Dropdown from "./Dropdown.js";
 import * as expenseService from "../services/expenseService.js";
 import * as inventoryService from "../services/inventoryService.js"
 import * as utils from "../utils.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import ItemsCountList from './ItemCountList.js';
 
-export default function AddInventoryScreen({context, inventory}) {
+export default function AddInventoryScreen({ context, inventory }) {
     const initialQuantities = inventory.reduce((map, item) => {
         map[item.name] = 0;
         return map;
     }, {});
 
     const initialForm = {
-        quantities : initialQuantities,
-        expense  : null,
+        quantities: initialQuantities,
+        expense: null,
     }
 
     const reasons = {
-        "refill"       : { name : "refill"    },
-        "overcharged"  : { name : "overcharged"    },
+        "refill": { name: "refill" },
+        "overcharged": { name: "overcharged" },
     };
 
-    const [form,            setForm           ] = useState(initialForm);
-    const [expenses,        setExpenses       ] = useState([]);
-    const [validated,       setValidated      ] = useState(false);
+    const [form, setForm] = useState(initialForm);
+    const [expenses, setExpenses] = useState([]);
+    const [validated, setValidated] = useState(false);
     const [validationError, setValidationError] = useState(null);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
 
     const onValidationError = (error) => {
@@ -39,24 +39,24 @@ export default function AddInventoryScreen({context, inventory}) {
 
     const handleInputQuantity = (name, value) => {
         const cleanedValue = utils.cleanNumeric(value);
-        const nextQuantities = ({ ...form.quantities, [name] : cleanedValue });
+        const nextQuantities = ({ ...form.quantities, [name]: cleanedValue });
         handleInputChange("quantities", nextQuantities);
     }
 
     const handleInputChange = (name, value, type) => {
         context.setHasUnsavedChanges(true);
-        
+
         let nextFormData = {};
-        
+
         if (name === "_batch" && typeof value === 'object' && value !== null) {
             nextFormData = ({ ...form, ...value });
-        } else if(type === "amount") {
-            nextFormData = { ...form, [name]: utils.cleanNumeric(value)};
+        } else if (type === "amount") {
+            nextFormData = { ...form, [name]: utils.cleanNumeric(value) };
         } else {
             nextFormData = { ...form, [name]: value };
         }
-        
-        if(!utils.isEmpty(nextFormData)) {
+
+        if (!utils.isEmpty(nextFormData)) {
             setForm(nextFormData);
         }
 
@@ -68,28 +68,28 @@ export default function AddInventoryScreen({context, inventory}) {
 
         setValidated(validationResult);
 
-        if(validationResult === true) {
+        if (validationResult === true) {
             setValidationError(null);
         }
     };
 
     const handleSubmit = async () => {
         try {
-            if(!validated) {
+            if (!validated) {
                 onError(`Not yet ready to submit. Missing obligatory data`);
                 return;
             }
-            
+
             const result = await inventoryService.refillMany(form.expense, form.quantities, onError);
-   
-            if(result !== false) {
+
+            if (result !== false) {
                 setForm(initialForm);
                 onSuccess();
                 context.onClose();
             }
-        } catch(e) {
+        } catch (e) {
             onError(`Submit error: ${e.message}`);
-        }        
+        }
     };
 
     const onExpenseSelect = (expense) => {
@@ -98,7 +98,7 @@ export default function AddInventoryScreen({context, inventory}) {
     }
 
     useEffect(() => {
-        const getExpenses = async() => {
+        const getExpenses = async () => {
             const filter = { after: utils.today(-30) };
             const expenses_ = await expenseService.get(filter);
             const formattedExpenses = expenses_.reduce((m, expense) => {
@@ -124,23 +124,23 @@ export default function AddInventoryScreen({context, inventory}) {
 
             <div className="card-content space-y-6">
                 {form.expense && (
-                    <img 
+                    <img
                         src={form.expense.photoUrl}
                         alt="Expense Receipt Preview"
                     />
                 )}
 
                 <div>
-                    <Dropdown 
+                    <Dropdown
                         label={"Reason"}
                         current={form.expense ? form.expense.description : null}
                         options={expenses}
                         onSelect={onExpenseSelect}
                     />
                 </div>
-                
+
                 <div>
-                    <Dropdown 
+                    <Dropdown
                         label={"Expense"}
                         current={form.expense ? form.expense.description : null}
                         options={expenses}
@@ -149,8 +149,8 @@ export default function AddInventoryScreen({context, inventory}) {
                 </div>
 
                 {form.expense && (
-                    <ItemsCountList 
-                        quantities={form.quantities} 
+                    <ItemsCountList
+                        quantities={form.quantities}
                         onChangeCount={handleInputQuantity}
                     />
                 )}
@@ -158,7 +158,7 @@ export default function AddInventoryScreen({context, inventory}) {
 
             {(validationError && <p className="validation-error">{validationError}</p>)}
 
-            <ButtonsFooter 
+            <ButtonsFooter
                 onCancel={context.onClose}
                 onSubmit={handleSubmit}
                 submitEnabled={validated}

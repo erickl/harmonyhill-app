@@ -2,16 +2,16 @@ import { useEffect, useState } from "react";
 import "./NotificationsMenu.css";
 import * as notifictionService from "../services/notificationService.js";
 import { useMenu } from '../context/MenuContext.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { XIcon } from 'lucide-react';
 
-export default function NotificationsMenu({}) {
+export default function NotificationsMenu({ }) {
     const [notifications, setNotifications] = useState([]);
-    const {open, close} = useMenu("notificationsMenu");
-    const {onError} = useNotification();
+    const { open, close } = useMenu("notificationsMenu");
+    const { onError } = useToast();
 
     useEffect(() => {
-        (async() => {
+        (async () => {
             const notifications_ = await notifictionService.get({}, onError);
             setNotifications(notifications_);
         })();

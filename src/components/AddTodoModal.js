@@ -2,47 +2,47 @@ import { useState, useEffect } from 'react';
 import TextInput from "./TextInput.js";
 import ButtonsFooter from "./ButtonsFooter.js";
 import * as todoService from "../services/todoService.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import MyDatePicker from "./MyDatePicker.js";
 import * as utils from "../utils.js";
 
-export default function AddTodoModal({todoToEdit, parent, onCreated, context}) {
-    const emptyForm = { 
-        title      : todoToEdit ? todoToEdit.title : "",
-        deadlineAt : todoToEdit ? todoToEdit.deadlineAt : null,
-        duration   : todoToEdit ? todoToEdit.deadlineAt : null,
+export default function AddTodoModal({ todoToEdit, parent, onCreated, context }) {
+    const emptyForm = {
+        title: todoToEdit ? todoToEdit.title : "",
+        deadlineAt: todoToEdit ? todoToEdit.deadlineAt : null,
+        duration: todoToEdit ? todoToEdit.deadlineAt : null,
     };
 
     const [formData, setFormData] = useState(emptyForm);
 
-    const [validationError,   setValidationError  ] = useState(null);
-    const [readyToSubmit,     setReadyToSubmit    ] = useState(false);
+    const [validationError, setValidationError] = useState(null);
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
 
     const handleSubmit = async () => {
         try {
-            if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
-            
+            if (!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
+
             let result = false;
-            
-            if(todoToEdit) {
+
+            if (todoToEdit) {
                 result = await todoService.update(todoToEdit, formData, onError);
             } else {
                 result = await todoService.add(formData, parent, onError);
-            }         
+            }
 
-            if(result !== false) { 
+            if (result !== false) {
                 onCreated(result);
                 setFormData(emptyForm);
                 context.onClose();
                 onSuccess();
             }
-        } catch(e) {
+        } catch (e) {
             onError(`Submit error: ${e.message}`);
-        }        
+        }
     };
 
     const validateFormData = async (newFormData) => {
@@ -50,7 +50,7 @@ export default function AddTodoModal({todoToEdit, parent, onCreated, context}) {
 
         setReadyToSubmit(validationResult);
 
-        if(validationResult === true) {
+        if (validationResult === true) {
             setValidationError(null);
         }
     }
@@ -68,7 +68,7 @@ export default function AddTodoModal({todoToEdit, parent, onCreated, context}) {
             nextFormData = { ...formData, [field]: value };
         }
 
-        if(!utils.isEmpty(nextFormData)) {
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
 
@@ -92,10 +92,10 @@ export default function AddTodoModal({todoToEdit, parent, onCreated, context}) {
                     onChange={handleChange}
                 />
 
-                <MyDatePicker 
-                    name={"deadlineAt"} 
+                <MyDatePicker
+                    name={"deadlineAt"}
                     label={"Deadline"}
-                    date={formData.deadlineAt} 
+                    date={formData.deadlineAt}
                     onChange={handleChange}
                     time={null}
                     useTime={false}

@@ -12,11 +12,11 @@ import { Pencil, Trash2, Candy } from 'lucide-react';
 import DishesSummaryComponent from './DishesSummaryComponent.js';
 import StatusCircle from './StatusCircle.js';
 import AlertCircle from './AlertCircle.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
 import { useMinibarTableModal } from '../context/MinibarTableContext.js';
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import { useGenericModal } from '../context/GenericContext.js';
 import MetaInfo from './MetaInfo.js';
 import PhotoUploadButton from "./PhotoUploadButton.js";
@@ -25,7 +25,7 @@ import TaskAssigneeComponent from './TaskAssigneeComponent.js';
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import * as issueService from "../services/issueService.js";
 import IssueFlagButton from './IssueFlagButton.js';
-import {Alert} from "../models/Alert.js";
+import { Alert } from "../models/Alert.js";
 import { motion } from "framer-motion";
 
 export default function ActivityComponent({ inputCustomer, activity, onActivityChange, context, handleDeleteActivity }) {
@@ -43,10 +43,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     const [minibarCount, setMinibarCount] = useState(null);
     const [photos, setPhotos] = useState([]);
     const [issue, setIssue] = useState(null);
-    const [issueComment,     setIssueComment    ] = useState(null);
+    const [issueComment, setIssueComment] = useState(null);
     const [statusLogs, setStatusLogs] = useState([]);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
     const { onConfirm } = useConfirmationModal();
     const { onDisplayMinibarTable } = useMinibarTableModal();
@@ -70,9 +70,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         return thisActivityInfo;
     };
 
-    const onSubmitIssueInput = async(recordToFlag, data) => {
+    const onSubmitIssueInput = async (recordToFlag, data) => {
         const result = await issueService.add(recordToFlag, data.status, data.comment, onError);
-        if(result !== false) {
+        if (result !== false) {
             onSuccess();
         }
         return result;
@@ -109,23 +109,23 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
         onConfirm(confirmationText, async () => {
             const result = await activityService.setActivityStatus(customer, activity, newStatus.name, onError);
-            if(result === false) return false;
-            
+            if (result === false) return false;
+
             const updatedActivity = {
                 ...(activity || {}),
                 ...result
             };
             const updateActivityListResult = onActivityChange(updatedActivity);
-            if(updateActivityListResult === false) return false;
-            
+            if (updateActivityListResult === false) return false;
+
             return onSuccess();
         });
     }
 
     const handleAssigneeStatusChange = async (accept) => {
         const result = await activityService.changeAssigneeStatus(accept, null, activity, onError);
-        if(result === false) return false;
-       
+        if (result === false) return false;
+
         const updatedActivity = {
             ...(activity || {}),
             ...result
@@ -134,7 +134,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         const updateActivityListResult = onActivityChange(updatedActivity);
         if (updateActivityListResult === false) return false;
 
-        return onSuccess();  
+        return onSuccess();
     }
 
     const onSubmitStockCount = async (stockCountList) => {
@@ -219,9 +219,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
         onDisplayMinibarTable("Minibar Count", activity, headers, stockListItems, onSubmitStockCount);
     }
 
-    const onUploadPhoto = async(fileData) => {
+    const onUploadPhoto = async (fileData) => {
         const photoRecord = await activityService.uploadPhoto(activity, fileData, onError);
-        if(photoRecord !== false) {
+        if (photoRecord !== false) {
             setStillRequirePhotos(false);
         }
         return photoRecord
@@ -235,12 +235,12 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
     }
 
     const getLastStatus = () => {
-        if(utils.isEmpty(statusLogs)) {
+        if (utils.isEmpty(statusLogs)) {
             return null;
         }
 
-        const lastStatus = statusLogs[statusLogs.length-1];
-        if(lastStatus) {
+        const lastStatus = statusLogs[statusLogs.length - 1];
+        if (lastStatus) {
             const statusName = utils.capitalizeWords(lastStatus.name);
             const statusDate = utils.to_HHmm(lastStatus.createdAt);
             const updatedBy = utils.capitalizeWords(lastStatus.createdBy);
@@ -252,10 +252,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     const displayStatusLogs = async () => {
         let statusLogs_ = statusLogs;
-        if(utils.isEmpty(statusLogs_)) {
+        if (utils.isEmpty(statusLogs_)) {
             statusLogs_ = await activityService.getStatusLogs(customer, activity, onError);
-            if(statusLogs_ === false) statusLogs_ = [];
-        }       
+            if (statusLogs_ === false) statusLogs_ = [];
+        }
 
         const builtLogs = statusLogs_.map((log) => {
             return <div>
@@ -273,19 +273,19 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
             // Check if photos already exist, and get their download URLs
             const activityPhotos = await activityService.getPhotos(activity, onError);
             setPhotos(activityPhotos);
-            
-            if(activityInfo) {
+
+            if (activityInfo) {
                 setStillRequirePhotos(activityInfo.photosRequired && activityPhotos.length === 0);
             }
 
             if (activity.category === "meal") {
                 // If this list is displayed for all customers, get the customer for each activity 
                 let bookingId = activity.bookingId;
-                if(utils.isEmpty(bookingId)) {
+                if (utils.isEmpty(bookingId)) {
                     const mealCustomer = customer ? customer : await getParent(activity);
                     bookingId = utils.isEmpty(mealCustomer) ? "missing" : mealCustomer.id;
                 }
-               
+
                 const dishes = await mealService.getMealDishes(bookingId, activity.id, {}, onError);
                 const dishesPrice = dishes.reduce((sum, dish) => sum + (dish.isFree === true ? 0 : dish.customerPrice * dish.quantity), 0);
                 setDishesPrice(dishesPrice);
@@ -293,11 +293,11 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
             }
 
             const statusLogs = customer ? await activityService.getStatusLogs(customer, activity, onError) : false;
-            if(statusLogs !== false) {
+            if (statusLogs !== false) {
                 setStatusLogs(statusLogs);
             }
 
-            if(activity.issue === "attention" || activity.issue === "pending_approval") {
+            if (activity.issue === "attention" || activity.issue === "pending_approval") {
                 const issue_ = await issueService.getLastIssue(activity, onError);
                 setIssue(issue_);
 
@@ -313,10 +313,10 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
 
     useEffect(() => {
         calculateActivityStatus();
-        
+
         // Reload the expanded activity info, in case it changed and already open, without changing the current expanded status
         loadExpandedActivityInfo(expanded);
-        if(activity && Array.isArray(activity.dishes) && activity.dishes.length > 0) {
+        if (activity && Array.isArray(activity.dishes) && activity.dishes.length > 0) {
             setDishes(activity.dishes);
         }
     }, [activity, activityInfo, stillRequirePhotos, minuteTicker]);
@@ -374,9 +374,9 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     <div className="activity-header-house" style={{ backgroundColor: houseColor }}>
                         {houseShortName}
                     </div>
-                    
-                    <TaskAssigneeComponent 
-                        initialAssigneeName={activity.assignedTo} 
+
+                    <TaskAssigneeComponent
+                        initialAssigneeName={activity.assignedTo}
                         initialAssigneeAccept={activity.assigneeAccept}
                         initialHasChanged={activityHasChanged}
                     />
@@ -429,7 +429,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         className="activity-delayed-overlay"
                         animate={{ scale: [1, 1, 1], opacity: [0.5, 0.1, 0.5] }}
                         transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-                    />  
+                    />
                 )}
 
             </div>
@@ -439,7 +439,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
             ) : expanded ? (
                 <div className="activity-details">
                     {issueComment && !utils.isEmpty(issueComment.comment) && (
-                        <div style={{color:"red"}}>
+                        <div style={{ color: "red" }}>
                             Issue: {issueComment.comment}
                         </div>
                     )}
@@ -503,7 +503,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     )}
 
                     {!utils.isEmpty(lastStatusMessage) && (
-                        <p 
+                        <p
                             onClick={displayStatusLogs}
                         >
                             <span className="detail-label">Status: </span> {lastStatusMessage}
@@ -548,7 +548,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                     )}
 
                     <div className="activity-component-footer">
-                        
+
                         {permissions.canEditActivities && (
                             <div className="activity-component-footer-icon">
                                 <Pencil
@@ -560,7 +560,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                                         context.onNavigate("edit-customer-purchase", {
                                             customer: customer,
                                             activityToEdit: activity,
-                                            onSubmit : onActivityChange,
+                                            onSubmit: onActivityChange,
                                         });
                                     }}
                                 />
@@ -580,7 +580,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        <TaskAcceptButton 
+                        <TaskAcceptButton
                             taskDate={activity.startingAt}
                             status={activity.status}
                             assignedTo={activity.assignedTo}
@@ -667,14 +667,14 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             </div>
                         )}
 
-                        <PhotoUploadButton 
-                            instructions={activityInfo?.photoInstructions} 
+                        <PhotoUploadButton
+                            instructions={activityInfo?.photoInstructions}
                             photos={photos}
                             onUpload={onUploadPhoto}
                             enableUpload={activityService.canAddPhotos(activity, status)}
                             path={activityService.getActivityPhotoFilePath(activity)}
                             isRequired={stillRequirePhotos}
-                        /> 
+                        />
 
                         {activity && ActivityStatus.Started.lesserThanOrEqual(activity.status) && activity.subCategory === "housekeeping" && (
                             <div className="activity-component-footer-icon">
@@ -694,7 +694,7 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                         )}
 
                         {context.enableRecordIssues && (permissions.isAdmin || activity.issue === "attention" || activity.issue === "pending_approval") && (
-                            <IssueFlagButton 
+                            <IssueFlagButton
                                 record={activity}
                                 onSubmitInput={onSubmitIssueInput}
                             />

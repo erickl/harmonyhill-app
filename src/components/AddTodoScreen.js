@@ -10,7 +10,7 @@ import Dropdown from "./Dropdown.js";
 import MultipleChoiceList from './MultipleChoiceList.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import * as utils from "../utils.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import TextInput from './TextInput.js';
 import { Checkbox, FormControlLabel } from '@mui/material';
@@ -39,7 +39,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
     const [validationError, setValidationError] = useState(null);
     const [formData, setFormData] = useState(emptyForm);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
     const { permissions } = useUserPermissions();
 

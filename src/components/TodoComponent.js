@@ -4,7 +4,7 @@ import MetaInfo from './MetaInfo.js';
 import { useCameraModal } from "../context/CameraContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import { useGenericModal } from '../context/GenericContext.js';
 import StatusCircle from "./StatusCircle.js";
@@ -33,7 +33,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
     const stillRequirePhotos = todo.requirePhotos && photos.length === 0;
 
     const { onOpenCamera } = useCameraModal();
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
     const { permissions } = useUserPermissions();
@@ -58,8 +58,8 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
     }
 
     const canComplete = () => {
-        if(stillRequirePhotos) return false;
-        
+        if (stillRequirePhotos) return false;
+
         const isGoodToGo = ActivityStatus.GoodToGo.equals(status);
         const isStarted = ActivityStatus.Started.equals(status);
         const canStillStart = canStart();
@@ -109,7 +109,7 @@ export default function TodoComponent({ todo, handleDelete, onCompleteFromParent
 
     const displayStatusLogs = async () => {
         const statusLogs = await todoService.getStatusLogs(todo, onError);
-        if(statusLogs === false) return false;
+        if (statusLogs === false) return false;
 
         const logs = statusLogs.map((log) => {
             return <div>

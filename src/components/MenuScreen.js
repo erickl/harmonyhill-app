@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import * as menuService from "../services/menuService.js";
-import { useConfirmationModal } from '../context/ConfirmationContext.js'; 
-import { useNotification } from '../context/NotificationContext.js';
+import { useConfirmationModal } from '../context/ConfirmationContext.js';
+import { useToast } from '../context/ToastContext.js';
 import MealComponent from './MealComponent.js';
 import { useSuccessNotification } from '../context/SuccessContext.js';
 
-export default function MenuScreen({context}) {
+export default function MenuScreen({ context }) {
     const [items, setItems] = useState([]);
 
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
-    const { onError } = useNotification();
+    const { onError } = useToast();
 
     useEffect(() => {
         const loadMenu = async () => {

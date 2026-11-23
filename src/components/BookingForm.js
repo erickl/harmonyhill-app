@@ -5,7 +5,7 @@ import * as bookingService from "../services/bookingService.js";
 import MyDatePicker from './MyDatePicker.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import TextInput from './TextInput.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
@@ -16,30 +16,30 @@ export default function BookingForm({ booking, context }) {
     const [validationError, setValidationError] = useState(null);
     const [validationWarning, setValidationWarning] = useState(null);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
-    const {permissions} = useUserPermissions();
+    const { permissions } = useUserPermissions();
 
     const initialFormData = {
-        name:                booking ? booking.name                : '', 
-        house:               booking ? booking.house               : '',
-        phoneNumber:         booking ? booking.phoneNumber         : '',
-        email:               booking ? booking.email               : '',
-        checkInAt:           booking ? booking.checkInAt           : null, 
-        checkInTime:         booking ? booking.checkInTime         : null, 
-        checkOutAt:          booking ? booking.checkOutAt          : null,
-        checkOutTime:        booking ? booking.checkOutTime        : null,
-        guestCount:          booking ? booking.guestCount          : 1,
+        name: booking ? booking.name : '',
+        house: booking ? booking.house : '',
+        phoneNumber: booking ? booking.phoneNumber : '',
+        email: booking ? booking.email : '',
+        checkInAt: booking ? booking.checkInAt : null,
+        checkInTime: booking ? booking.checkInTime : null,
+        checkOutAt: booking ? booking.checkOutAt : null,
+        checkOutTime: booking ? booking.checkOutTime : null,
+        guestCount: booking ? booking.guestCount : 1,
         dietaryRestrictions: booking ? booking.dietaryRestrictions : '',
-        customerInfo:        booking ? booking.customerInfo        : '',
-        arrivalInfo:         booking ? booking.arrivalInfo         : '',
-        specialRequests:     booking ? booking.specialRequests     : '',
-        promotions:          booking ? booking.promotions          : '',
-        country:             booking ? booking.country             : '',
-        source:              booking ? booking.source              : '',
-        guestPaid:           booking ? booking.guestPaid           : '',
-        hostPayout:          booking ? booking.hostPayout          : '',
-        paymentComment:      booking ? booking.paymentComment      : '',
+        customerInfo: booking ? booking.customerInfo : '',
+        arrivalInfo: booking ? booking.arrivalInfo : '',
+        specialRequests: booking ? booking.specialRequests : '',
+        promotions: booking ? booking.promotions : '',
+        country: booking ? booking.country : '',
+        source: booking ? booking.source : '',
+        guestPaid: booking ? booking.guestPaid : '',
+        hostPayout: booking ? booking.hostPayout : '',
+        paymentComment: booking ? booking.paymentComment : '',
     };
 
     const [formData, setFormData] = useState(initialFormData);
@@ -49,20 +49,20 @@ export default function BookingForm({ booking, context }) {
         setReadyToSubmit(validationResult);
     }
 
-    const handleSubmit = async () => { 
+    const handleSubmit = async () => {
         const bookingData = {
             ...formData
         };
 
         try {
             let result = false;
-            if(booking) {
+            if (booking) {
                 result = await bookingService.update(booking.id, bookingData, onError);
             } else {
-                 result = await bookingService.add(bookingData, onError);
+                result = await bookingService.add(bookingData, onError);
             }
-           
-            if(result !== false) {
+
+            if (result !== false) {
                 onSuccess();
                 context.onClose();
             }
@@ -73,18 +73,18 @@ export default function BookingForm({ booking, context }) {
 
     const handleInputChange = (name, value, type) => {
         context.setHasUnsavedChanges(true);
-        
+
         let nextFormData = {};
-        
+
         if (name === "_batch" && typeof value === 'object' && value !== null) {
             nextFormData = ({ ...formData, ...value });
-        } else if(type === "amount") {
-            nextFormData = { ...formData, [name]: utils.cleanNumeric(value)};
+        } else if (type === "amount") {
+            nextFormData = { ...formData, [name]: utils.cleanNumeric(value) };
         } else {
             nextFormData = { ...formData, [name]: value };
         }
-        
-        if(!utils.isEmpty(nextFormData)) {
+
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
 
@@ -174,19 +174,19 @@ export default function BookingForm({ booking, context }) {
             </>)}
 
             {permissions.isAdmin && (<>
-                <MyDatePicker 
+                <MyDatePicker
                     name={"checkInAt"}
                     label={"Checkin"}
-                    date={formData.checkInAt} 
-                    time={formData.checkInTime} 
+                    date={formData.checkInAt}
+                    time={formData.checkInTime}
                     onChange={handleInputChange}
                 />
-           
-                <MyDatePicker 
-                    name={"checkOutAt"} 
-                    label={"Checkout"} 
-                    date={formData.checkOutAt} 
-                    time={formData.checkOutTime} 
+
+                <MyDatePicker
+                    name={"checkOutAt"}
+                    label={"Checkout"}
+                    date={formData.checkOutAt}
+                    time={formData.checkOutTime}
                     onChange={handleInputChange}
                 />
             </>)}
@@ -339,8 +339,8 @@ export default function BookingForm({ booking, context }) {
             {(validationWarning && <p className="validation-warning">{`Warning: ${validationWarning}`}</p>)}
             {(validationError && <p className="validation-error">{`Error: ${validationError}`}</p>)}
 
-            <ButtonsFooter 
-                onCancel={context.onClose} 
+            <ButtonsFooter
+                onCancel={context.onClose}
                 onSubmit={handleSubmit}
                 submitEnabled={readyToSubmit}
             />

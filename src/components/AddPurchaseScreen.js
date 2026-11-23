@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import * as activityService from '../services/activityService.js'; 
+import * as activityService from '../services/activityService.js';
 import * as mealService from '../services/mealService.js';
 import * as utils from '../utils.js';
 import "./AddPurchaseScreen.css";
@@ -7,12 +7,12 @@ import ActivityForm from "./ActivityForm.js";
 import MealForm from "./MealForm.js";
 import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 
 const AddPurchaseScreen = ({ customer, context }) => {
-    
+
     // Show purchase summary and confirmation pop up modal
     const [showConfirm, setShowConfirm] = useState(false);
     const [readyToSubmit, setReadyToSubmit] = useState(false);
@@ -29,32 +29,32 @@ const AddPurchaseScreen = ({ customer, context }) => {
     // State to hold the menu items (activities)
     const [categories, setCategories] = useState([]);
     const [activityMenuItems, setActivityMenuItems] = useState([]);
-    
+
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
 
     const initialForm = {
-        startingAt    : null, // important for Luxon Date time to reset to null, not empty string
-        startingTime  : null,
-        comments      : '',
-        customerPrice : 0,
-        displayName   : selectedActivity ? selectedActivity.displayName : "",
-        custom        : false,
-        provider      : '',
-        providerPrice : 0,
-        needsProvider : false,
-        assignedTo    : '',
-        isFree        : false,
-        dishes        : [], // only not null when ordering meals, null for all other activities
-        status        : ActivityStatus.GuestConfirmed.name,
-        statusCode    : ActivityStatus.GuestConfirmed.code,
+        startingAt: null, // important for Luxon Date time to reset to null, not empty string
+        startingTime: null,
+        comments: '',
+        customerPrice: 0,
+        displayName: selectedActivity ? selectedActivity.displayName : "",
+        custom: false,
+        provider: '',
+        providerPrice: 0,
+        needsProvider: false,
+        assignedTo: '',
+        isFree: false,
+        dishes: [], // only not null when ordering meals, null for all other activities
+        status: ActivityStatus.GuestConfirmed.name,
+        statusCode: ActivityStatus.GuestConfirmed.code,
 
         // Auxiliary data
-        house         : customer.house,
-        guestCount    : customer.guestCount,
-        internal      : false,
+        house: customer.house,
+        guestCount: customer.guestCount,
+        internal: false,
     };
 
-    const { onError, onWarning } = useNotification();
+    const { onError, onWarning } = useToast();
     const { onSuccess } = useSuccessNotification();
 
     // State for the purchase form data
@@ -63,27 +63,27 @@ const AddPurchaseScreen = ({ customer, context }) => {
     const handleCategorySelection = async (category) => {
         setSelectedCategory(category);
 
-        const formResetData = {...(initialForm || {})};
-        
-        if(category == null) { 
+        const formResetData = { ...(initialForm || {}) };
+
+        if (category == null) {
             setSelectedCategory(null);
             setFormData(formResetData);
             return;
-        } 
+        }
     }
 
     const handleActivitySelection = async (activityType) => {
         setSelectedActivity(activityType);
 
-        const formResetData = {...(initialForm || {})};
-        
-        if(activityType == null) {
+        const formResetData = { ...(initialForm || {}) };
+
+        if (activityType == null) {
             setSelectedCategory(null);
             setFormData(formResetData);
             return;
         }
 
-        if(selectedCategory == null) {
+        if (selectedCategory == null) {
             onError(`Error: subCategory ${activityType.subCategory} selected without a category`);
         }
 
@@ -98,13 +98,13 @@ const AddPurchaseScreen = ({ customer, context }) => {
         formData.category = selectedCategory;
         formData.subCategory = selectedActivity.subCategory;
 
-        if(selectedActivity.category === "meal") {         
+        if (selectedActivity.category === "meal") {
             addActivityResult = await mealService.addMeal(customer, formData, onError);
         } else {
             addActivityResult = await activityService.add(customer, formData, onError);
         }
-        
-        if(addActivityResult !== false) {
+
+        if (addActivityResult !== false) {
             onSuccess();
             handleCategorySelection(null);
             handleActivitySelection(null);
@@ -122,10 +122,10 @@ const AddPurchaseScreen = ({ customer, context }) => {
     };
 
     const validateFormData = (newFormData) => {
-        if(!selectedActivity) return;
+        if (!selectedActivity) return;
 
         let validationResult = false;
-        if(selectedActivity.category === "meal") {
+        if (selectedActivity.category === "meal") {
             validationResult = mealService.validate(customer, newFormData, false, setValidationError, setValidationWarning);
         } else {
             validationResult = activityService.validate(customer, newFormData, false, setValidationError, setValidationWarning);
@@ -136,7 +136,7 @@ const AddPurchaseScreen = ({ customer, context }) => {
 
     const handleFormDataChange = (name, value, type) => {
         context.setHasUnsavedChanges(true);
-        
+
         let nextFormData = {};
 
         if (name === "_batch" && typeof value === 'object' && value !== null) {
@@ -147,12 +147,12 @@ const AddPurchaseScreen = ({ customer, context }) => {
         else if (type === 'amount') {
             nextFormData = { ...formData, [name]: utils.cleanNumeric(value) };
         } else {
-            nextFormData = { ...formData, [name]: value };  
+            nextFormData = { ...formData, [name]: value };
         }
-        if(!utils.isEmpty(nextFormData)) {
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
-      
+
         validateFormData(nextFormData);
     };
 
@@ -172,19 +172,19 @@ const AddPurchaseScreen = ({ customer, context }) => {
             setLoadingMenu(true); // Set loading to true before fetching
 
             try {
-                const activityMenuData = await activityService.getActivityTypes({"house": customer.house});
+                const activityMenuData = await activityService.getActivityTypes({ "house": customer.house });
                 let categories = activityMenuData.map(item => item.category);
                 // getActivityTypes() gets all sub categories (e.g. lunch, dinner), so a category (e.g. meal) can occur multiple times
                 categories = Array.from(new Set(categories));
-                
+
                 setCategories(categories);
                 setActivityMenuItems(activityMenuData);
                 setLoadingMenu(false);
             } catch (err) {
                 onError(`Failed to fetch menu: ${err.message}`);
                 setLoadingMenu(false);
-            }     
-        }   
+            }
+        }
 
         load();
     }, [customer?.id]);
@@ -212,17 +212,17 @@ const AddPurchaseScreen = ({ customer, context }) => {
                 <div className="card-content">
                     {/* Display meal purchase form */}
                     {selectedActivity.category === "meal" ? (
-                        <MealForm 
+                        <MealForm
                             selectedActivity={selectedActivity}
                             formData={formData}
                             handleFormDataChange={handleFormDataChange}
                         />
-                    // Display form for all other activities
-                    ) : ( 
-                        <ActivityForm 
+                        // Display form for all other activities
+                    ) : (
+                        <ActivityForm
                             selectedActivity={selectedActivity}
-                            formData={formData} 
-                            handleFormDataChange={handleFormDataChange}  
+                            formData={formData}
+                            handleFormDataChange={handleFormDataChange}
                             custom={selectedActivity.subCategory === "custom"}
                         />
                     )}
@@ -230,7 +230,7 @@ const AddPurchaseScreen = ({ customer, context }) => {
 
                 {/* Confirm meal selection before submitting to database */}
                 {showConfirm && (
-                    <ConfirmOrderModal 
+                    <ConfirmOrderModal
                         selected={formData.dishes}
                         onCancel={handleCancelConfirm}
                         onConfirm={handleActivityPurchase}
@@ -239,9 +239,9 @@ const AddPurchaseScreen = ({ customer, context }) => {
 
                 {(validationWarning && <p className="validation-warning">{`Warning: ${validationWarning}`}</p>)}
                 {(validationError && <p className="validation-error">{`Error: ${validationError}`}</p>)}
-                
-                <ButtonsFooter 
-                    onCancel={() => handleActivitySelection(null)} 
+
+                <ButtonsFooter
+                    onCancel={() => handleActivitySelection(null)}
                     onSubmit={onSubmit}
                     submitEnabled={readyToSubmit}
                 />
@@ -275,8 +275,8 @@ const AddPurchaseScreen = ({ customer, context }) => {
                                                 handleActivitySelection(item)
                                             }}
                                         >
-                                            {itemLabel} <br></br> 
-                                            { item.customerPrice !== 0 && (<>{utils.formatDisplayPrice(item.customerPrice, true)}</>)}
+                                            {itemLabel} <br></br>
+                                            {item.customerPrice !== 0 && (<>{utils.formatDisplayPrice(item.customerPrice, true)}</>)}
                                         </button>
                                     </div>
                                 )

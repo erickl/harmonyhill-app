@@ -2,40 +2,40 @@ import React, { useEffect, useState } from "react";
 import * as expenseService from "../services/expenseService.js";
 import * as utils from "../utils.js";
 import "./ExpenseList.css";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import ExpenseComponent from "./ExpenseComponent.js";
 
-export default function ExpenseList({context, title, filter, expand, subscribe}) {
+export default function ExpenseList({ context, title, filter, expand, subscribe }) {
     const [filterInternal, setFilterInternal] = useState(filter);
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [lastUpdate, setLastUpdate] = useState(null);
     const [expand_, setExpand] = useState(expand || false);
 
-    const {onError} = useNotification();
-    const {onSuccess} = useSuccessNotification();
-    const {onConfirm} = useConfirmationModal();
+    const { onError } = useToast();
+    const { onSuccess } = useSuccessNotification();
+    const { onConfirm } = useConfirmationModal();
 
     const handleExpand = () => {
-        if(expand_ === false && !subscribe) {
+        if (expand_ === false && !subscribe) {
             fetchExpenses(filter);
         }
         setExpand(prev => !prev);
     }
-    
-    const handleDeleteExpense = async(expenseToDelete) => {
-        if(!expenseToDelete || utils.isEmpty(expenseToDelete.id)) return;
-        
+
+    const handleDeleteExpense = async (expenseToDelete) => {
+        if (!expenseToDelete || utils.isEmpty(expenseToDelete.id)) return;
+
         onConfirm(`Are you sure you want to delete expense ${expenseToDelete.id}?`, async () => {
             let result = false;
-            
+
             // If the record has already been softly deleted, deleting again, will hard-delete it
-            result = expenseToDelete.deletedAt ? await expenseService.remove(expenseToDelete.id, onError) : 
-                                                await expenseService.softRemove(expenseToDelete.id, onError);
-            if(result !== false) {
-                if(subscribe) return;
+            result = expenseToDelete.deletedAt ? await expenseService.remove(expenseToDelete.id, onError) :
+                await expenseService.softRemove(expenseToDelete.id, onError);
+            if (result !== false) {
+                if (subscribe) return;
                 let newExpenses = utils.deepCopy(expenses);
                 newExpenses = newExpenses.filterInternal((expense) => expense.id !== expenseToDelete.id);
                 setExpenses(newExpenses);
@@ -44,17 +44,17 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
         });
     }
 
-    const fetchExpenses = async(filter_) => {
+    const fetchExpenses = async (filter_) => {
         setLoading(prev => !prev);
         const uploadedExpenses = await expenseService.get(filter_, onError);
         setExpenses(uploadedExpenses);
         setLoading(prev => !prev);
     }
 
-    useEffect(() =>{
+    useEffect(() => {
         setFilterInternal(filter);
-        
-        if(subscribe) {
+
+        if (subscribe) {
             const unsubscribe = expenseService.subscribe((liveExpenses) => {
                 liveExpenses.sort((e1, e2) => e2.purchasedAt - e1.purchasedAt);
                 setExpenses(liveExpenses);
@@ -62,15 +62,15 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
                 setLoading(false);
             }, filter, onError);
 
-            return () => { 
-                if(unsubscribe) unsubscribe(); 
+            return () => {
+                if (unsubscribe) unsubscribe();
             }
         } else {
-            if(expand) fetchExpenses(filter);
+            if (expand) fetchExpenses(filter);
         }
     }, [filter]);
 
-    if(loading) {
+    if (loading) {
         return (
             <p>Loading...</p>
         )
@@ -106,8 +106,8 @@ export default function ExpenseList({context, title, filter, expand, subscribe})
                     {expenses.map((expense) => {
                         return (
                             <React.Fragment key={expense.id}>
-                                <ExpenseComponent 
-                                    expense={expense} 
+                                <ExpenseComponent
+                                    expense={expense}
                                     handleDelete={handleDeleteExpense}
                                     context={context}
                                 />

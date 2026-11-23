@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import * as inventoryService from "../services/inventoryService.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import * as bookingService from "../services/bookingService.js";
 import * as expenseService from "../services/expenseService.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useDataTableModal } from "../context/DataTableContext.js";
 import { useConfirmationModal } from '../context/ConfirmationContext.js';
-import { PlusCircle, MinusCircle, CheckCircle, ShoppingCart, Receipt} from 'lucide-react';
+import { PlusCircle, MinusCircle, CheckCircle, ShoppingCart, Receipt } from 'lucide-react';
 import MetaInfo from "./MetaInfo.js";
 import Spinner from './Spinner.js';
 import * as utils from "../utils.js";
 import "./InventoryComponent.css";
 
-export default function InventoryComponent({context, item}) {
+export default function InventoryComponent({ context, item }) {
     const [expanded, setExpanded] = useState(false);
     const [loading, setLoading] = useState(false);
     const [quantity, setQuantity] = useState(null);
@@ -21,25 +21,25 @@ export default function InventoryComponent({context, item}) {
     const [removals, setRemovals] = useState(null);
     const [supplies, setSupplies] = useState(null);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
     const { onDisplayDataTable } = useDataTableModal();
     const { permissions } = useUserPermissions();
 
-    const onDisplayRemovalsData = async(item) => {    
-        const headers = ["#", "Reason", "Removed At", "Quantity", "Booking", "Villa", "Removed By", "Comments", "Created"];  
-    
-        if(!removals) return;
+    const onDisplayRemovalsData = async (item) => {
+        const headers = ["#", "Reason", "Removed At", "Quantity", "Booking", "Villa", "Removed By", "Comments", "Created"];
+
+        if (!removals) return;
 
         const enhancedRemovals = await Promise.all(
             removals.map(async (removal, i) => {
                 const booking = await bookingService.getOne(removal.bookingId);
                 const bookingName = booking ? booking.name : "-";
                 const bookingHouse = booking ? (booking.house.trim().toLowerCase() === "harmony hill" ? "HH" : "JN") : "-";
-            
+
                 const enchancedRemoval = [
-                    i+1,
+                    i + 1,
                     removal.reason,
                     utils.to_ddMMM(removal.doneAt),
                     removal.quantity,
@@ -57,17 +57,17 @@ export default function InventoryComponent({context, item}) {
         onDisplayDataTable("Removals", headers, enhancedRemovals);
     }
 
-    const onDisplaySuppliesData = async(item) => {
-        const headers = ["#", "Reason", "Supplied At", "Quantity", "expense", "Receipt", "Supply By", "Created" ];
-        
-        if(!supplies) return;
-        
+    const onDisplaySuppliesData = async (item) => {
+        const headers = ["#", "Reason", "Supplied At", "Quantity", "expense", "Receipt", "Supply By", "Created"];
+
+        if (!supplies) return;
+
         const enhancedSupplies = await Promise.all(
             supplies.map(async (supply, i) => {
                 const expense = await expenseService.getOne(supply.expenseId);
-            
+
                 const enhancedSupply = [
-                    i+1,
+                    i + 1,
                     utils.capitalizeWords(supply.reason),
                     utils.to_ddMMM(supply.doneAt),
                     supply.quantity,
@@ -79,62 +79,62 @@ export default function InventoryComponent({context, item}) {
                 ];
 
                 return enhancedSupply;
-            })  
+            })
         );
 
         onDisplayDataTable("Supplies", headers, enhancedSupplies);
     }
 
-    const onAddStock = async(item) => {
+    const onAddStock = async (item) => {
         const inventory = [item];
-        context.onNavigate("addInventory", {inventory: inventory});
+        context.onNavigate("addInventory", { inventory: inventory });
     }
 
-    const onRemoveStock = async(item) => {
-        context.onNavigate("removeInventory", {item: item});
+    const onRemoveStock = async (item) => {
+        context.onNavigate("removeInventory", { item: item });
     }
 
     // todo
-    const handleEditItem = async(item) => {
+    const handleEditItem = async (item) => {
 
     }
 
-    const handleSetExpanded = async(item) => {
-        if(!expanded) {
+    const handleSetExpanded = async (item) => {
+        if (!expanded) {
             setLoading(prev => !prev);
-            await fetchItemInfo(item); 
+            await fetchItemInfo(item);
             setLoading(prev => !prev);
-        } 
+        }
         setExpanded(prev => !prev);
     }
 
-    const fetchItemInfo = async (item) => { 
-        const getSupplies = async() => {
+    const fetchItemInfo = async (item) => {
+        const getSupplies = async () => {
             const supplies_ = await inventoryService.getSupplies(item, {}, onError);
             setSupplies(supplies_);
         }
 
-        const getRemovals = async() => {
+        const getRemovals = async () => {
             const removals_ = await inventoryService.getRemovals(item, {}, onError);
             setRemovals(removals_);
         }
-     
-        if(!supplies) getSupplies();
-        if(!removals) getRemovals();
+
+        if (!supplies) getSupplies();
+        if (!removals) getRemovals();
     };
 
     useEffect(() => {
-        if(removals) {
+        if (removals) {
             const futureRemovals = removals.filter((item) => utils.isAfterToday(item.doneAt));
             const reservedCount = futureRemovals.reduce((count, removal) => removal.quantity + count, 0);
             setReserved(reservedCount);
         }
     }, [removals]);
 
-    const onCloseItemInventory = async(item) => {
+    const onCloseItemInventory = async (item) => {
         onConfirm(`Close count for ${item.name}?`, async () => {
             const result = await inventoryService.closeItemCount(item, null, onError);
-            if(result !== false) {
+            if (result !== false) {
                 onSuccess(`Closed ${item.name}`);
             }
         })
@@ -146,11 +146,11 @@ export default function InventoryComponent({context, item}) {
             setQuantity(quantity_);
         }
 
-        load();  
+        load();
     });
 
     return (
-        <div className="inv-item-box" onClick={()=> handleSetExpanded(item)}>
+        <div className="inv-item-box" onClick={() => handleSetExpanded(item)}>
             <div className="inv-item-header">
                 <div className="inv-item-header-left">
                     <div className="inv-item-title">
@@ -167,10 +167,10 @@ export default function InventoryComponent({context, item}) {
                         {expanded ? '▼' : '▶'}
                     </div>
                 </div>
-            </div>  
-            
+            </div>
+
             <div>
-                {utils.capitalizeWords(item.type)} 
+                {utils.capitalizeWords(item.type)}
             </div>
 
             {loading ? (
@@ -189,12 +189,12 @@ export default function InventoryComponent({context, item}) {
                             Reserved: {reserved}
                         </div>
                     )}
-                
+
                     <div className="inv-item-body-footer">
                         {permissions.canEditInventory && (<>
                             {quantity !== null && quantity > 0 && (
                                 <div className="inv-item-body-footer-icon">
-                                    <MinusCircle   
+                                    <MinusCircle
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onRemoveStock(item);
@@ -205,7 +205,7 @@ export default function InventoryComponent({context, item}) {
                             )}
 
                             <div className="inv-item-body-footer-icon">
-                                <PlusCircle   
+                                <PlusCircle
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onAddStock(item);
@@ -217,7 +217,7 @@ export default function InventoryComponent({context, item}) {
 
                         {!utils.isEmpty(removals) && (
                             <div className="inv-item-body-footer-icon">
-                                <Receipt   
+                                <Receipt
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onDisplayRemovalsData(item);
@@ -226,10 +226,10 @@ export default function InventoryComponent({context, item}) {
                                 <p>Removals</p>
                             </div>
                         )}
-                    
+
                         {!utils.isEmpty(supplies) && (
                             <div className="inv-item-body-footer-icon">
-                                <ShoppingCart   
+                                <ShoppingCart
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onDisplaySuppliesData(item);
@@ -241,7 +241,7 @@ export default function InventoryComponent({context, item}) {
 
                         {permissions.isAdmin && (
                             <div className="inv-item-body-footer-icon">
-                                <CheckCircle   
+                                <CheckCircle
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onCloseItemInventory(item);
@@ -251,8 +251,8 @@ export default function InventoryComponent({context, item}) {
                             </div>
                         )}
                     </div>
-                    
-                    <MetaInfo document={item}/>
+
+                    <MetaInfo document={item} />
                 </div>
             ) : (<></>)}
         </div>

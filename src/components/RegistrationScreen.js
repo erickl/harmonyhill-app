@@ -2,20 +2,20 @@ import React, { useState } from 'react';
 import './RegistrationScreen.css';
 import logo from '../assets/logowhitegreen.png';
 import * as userService from "../services/userService.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 
 function RegistrationScreen({ onClose }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { onError } = useNotification();
+  const { onError } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const success = await userService.signUp(username, email, "staff", password, onError);
     if (success) {
-        onClose();
+      onClose();
     }
   };
 
@@ -29,13 +29,13 @@ function RegistrationScreen({ onClose }) {
       />
       <form onSubmit={handleSubmit}>
         <div>
-            <label>Username:</label>
-            <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-            />
+          <label>Username:</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
         </div>
         <div>
           <label>Email:</label>
@@ -58,7 +58,7 @@ function RegistrationScreen({ onClose }) {
         </div>
         <br></br>
         <button type="submit">Register</button>
-        <button type="Cancel" onClick={() => onClose() }>Cancel</button>
+        <button type="Cancel" onClick={() => onClose()}>Cancel</button>
       </form>
     </div>
   );

@@ -3,10 +3,10 @@ import "../components/ItemsCounterModal.css";
 import { ArrowBigLeftIcon, ArrowBigRightIcon } from 'lucide-react';
 import ButtonsFooter from "../components/ButtonsFooter.js";
 import * as utils from "../utils.js";
-import {getPhotoUrl} from "../daos/storageDao.js";
+import { getPhotoUrl } from "../daos/storageDao.js";
 import * as inventoryService from "../services/inventoryService.js";
 import * as minibarService from "../services/minibarService.js";
-import { useNotification } from "./NotificationContext.js";
+import { useToast } from "./ToastContext.js";
 import { update } from "../daos/userDao.js";
 import Spinner from "../components/Spinner.js";
 
@@ -14,22 +14,22 @@ const ItemsCounterContext = createContext();
 
 export function ItemsCounterProvider({ children }) {
     const [initState, setInitState] = useState({
-        items             : [],
-        type              : "",
-        reservedStock     : {},
-        includeZeroCounts : true,
+        items: [],
+        type: "",
+        reservedStock: {},
+        includeZeroCounts: true,
     });
 
-    const [counts,            setCount            ] = useState({});
-    const [totalStock,        setTotalStock       ] = useState({});
-    const [currentIndex,      setCurrentIndex     ] = useState(0);
-    const [quantityText,      setQuantityText     ] = useState("");
-    const [currentPhotoUrl,   setCurrentPhotoUrl  ] = useState(null);
-    const [onSubmit,          setOnSubmit         ] = useState(null);
-    const [showCounter,       setShowCounter      ] = useState(false);
-    const [loading,           setLoading          ] = useState(true);
+    const [counts, setCount] = useState({});
+    const [totalStock, setTotalStock] = useState({});
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [quantityText, setQuantityText] = useState("");
+    const [currentPhotoUrl, setCurrentPhotoUrl] = useState(null);
+    const [onSubmit, setOnSubmit] = useState(null);
+    const [showCounter, setShowCounter] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    const {onError} = useNotification();
+    const { onError } = useToast();
 
     // Update the current displayed quantity to the user and the possible capacity for more increments
     useEffect(() => {
@@ -38,8 +38,8 @@ export function ItemsCounterProvider({ children }) {
     }, [currentIndex, initState, counts]);
 
     useEffect(() => {
-        const getCurrentPhotoUrl = async() => {
-            if(initState.items && Array.isArray(initState.items) && initState.items.length > currentIndex) {
+        const getCurrentPhotoUrl = async () => {
+            if (initState.items && Array.isArray(initState.items) && initState.items.length > currentIndex) {
                 const photoUrl = initState.items[currentIndex].photoUrl;
                 const currentPhotoUrl = await getPhotoUrl(photoUrl);
                 setCurrentPhotoUrl(currentPhotoUrl);
@@ -52,21 +52,21 @@ export function ItemsCounterProvider({ children }) {
         setShowCounter(true);
 
         const stockList = await minibarService.getSelection(onError);
-        if(stockList === false) return false;
-                
+        if (stockList === false) return false;
+
         // When doing 'end' count, it's only important to see how many items has already been provided 
         // to that booking, because the end count can't be higher than that amount.
         // But when counting 'start' and 'refill', it's important to see how many items have been provided 
         // elsewhere in total, to see how many is still available to refill from storage
-        const filter = {exceptActivityId : activity.id};
-        if(type === "end") filter["house"] = activity.house;
+        const filter = { exceptActivityId: activity.id };
+        if (type === "end") filter["house"] = activity.house;
         const reservedStock = await minibarService.getReservedStock(filter, onError);
-        if(reservedStock === false) return false;
+        if (reservedStock === false) return false;
 
         // If there's already an existing minibar inventory count, continue with that one
         const updatedCount = {};
-        if(existingCount) {
-            for(const [name, quantities] of Object.entries(existingCount)) {
+        if (existingCount) {
+            for (const [name, quantities] of Object.entries(existingCount)) {
                 updatedCount[name] = quantities.count;
             }
         }
@@ -74,29 +74,29 @@ export function ItemsCounterProvider({ children }) {
         setCount(updatedCount);
 
         setInitState({
-            type              : type,
-            reservedStock     : reservedStock, 
-            items             : stockList,
-            includeZeroCounts : includeZeroCounts
+            type: type,
+            reservedStock: reservedStock,
+            items: stockList,
+            includeZeroCounts: includeZeroCounts
         });
 
         setOnSubmit(() => onSubmit);
         setLoading(false);
     }
 
-    const getItemStock = async(item) => {
+    const getItemStock = async (item) => {
         const itemReservedStock = utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0;
         const itemTotalStock = await getTotalStock(item);
         const availableStock = itemTotalStock - itemReservedStock;
         return {
-            reserved  : itemReservedStock,
-            total     : itemTotalStock,
-            available : availableStock,
+            reserved: itemReservedStock,
+            total: itemTotalStock,
+            available: availableStock,
         };
     }
 
     const generateItemCountText = async (currentItem) => {
-        if(!currentItem) return;
+        if (!currentItem) return;
 
         const itemStock = await getItemStock(currentItem);
 
@@ -105,15 +105,15 @@ export function ItemsCounterProvider({ children }) {
         let updatedQuantityText = `${currentQuantity}`;
 
         // If 'end' count, count how many the guest took, from the already reserved count of that booking
-        if(initState.type === "end") {
+        if (initState.type === "end") {
             updatedQuantityText = `${updatedQuantityText}/${itemStock.reserved}`;
-            
-        // If 'start' count, count how many we can take from storage (available)
+
+            // If 'start' count, count how many we can take from storage (available)
         } else { // else if type = 'start' || 'housekeeping'
             updatedQuantityText = `${currentQuantity}/${itemStock.available}`;
 
             // Show user how many items have already been put elsewhere
-            if(itemStock.available < itemStock.total) {
+            if (itemStock.available < itemStock.total) {
                 updatedQuantityText += ` (used ${itemStock.reserved})`;
             }
         }
@@ -124,7 +124,7 @@ export function ItemsCounterProvider({ children }) {
 
     const onChangeCount = async (newQuantity) => {
         let updatedCount = { ...(counts || {}) };
-        
+
         const currentItem = initState.items[currentIndex];
         const itemStock = await getItemStock(currentItem);
 
@@ -132,32 +132,32 @@ export function ItemsCounterProvider({ children }) {
         // If 'start' count, count how many we can take from storage (available)
         let maxCount = initState.type === "end" ? itemStock.reserved : itemStock.available;
 
-        if(newQuantity <= 999/*maxCount*/) {
+        if (newQuantity <= 999/*maxCount*/) {
             updatedCount[currentItem.name] = utils.cleanNumeric(newQuantity);
             setCount(updatedCount);
         }
     }
 
     const hidePopup = () => {
-        setShowCounter(false); 
-    }
-    
-    const cleanState = () => {
-       setInitState({});
-       setCount({});
-       setCurrentPhotoUrl(null);
-       setCurrentIndex(0);
-       setTotalStock({}); 
-       hidePopup();
+        setShowCounter(false);
     }
 
-    const getTotalStock = async(item) => {
+    const cleanState = () => {
+        setInitState({});
+        setCount({});
+        setCurrentPhotoUrl(null);
+        setCurrentIndex(0);
+        setTotalStock({});
+        hidePopup();
+    }
+
+    const getTotalStock = async (item) => {
         let itemTotalStock = 0;
-        if(utils.exists(totalStock, item.name)) {
+        if (utils.exists(totalStock, item.name)) {
             itemTotalStock = totalStock[item.name];
         } else {
             itemTotalStock = await inventoryService.getCurrentQuantity(item, onError);
-            setTotalStock({...totalStock, [item.name] : itemTotalStock});
+            setTotalStock({ ...totalStock, [item.name]: itemTotalStock });
         }
         return itemTotalStock;
     }
@@ -172,15 +172,15 @@ export function ItemsCounterProvider({ children }) {
         setCurrentIndex(newCurrentIndex);
     }
 
-    const onSubmitCount = async() => {
-        if(!onSubmit) return;
+    const onSubmitCount = async () => {
+        if (!onSubmit) return;
 
         let updatedItems = initState.items.map((item) => {
             item.count = utils.exists(counts, item.name) ? counts[item.name] : 0;
             return item;
         });
 
-        if(initState.includeZeroCounts === false) {
+        if (initState.includeZeroCounts === false) {
             updatedItems = updatedItems.filter((item) => item && utils.exists(item, "count") && item.count > 0);
         }
 
@@ -193,23 +193,23 @@ export function ItemsCounterProvider({ children }) {
 
         const finalCount = updatedItems.reduce((map, item) => {
             map[item.name] = {
-                reserved : utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0,
-                total    : utils.exists(totalStock, item.name) ? totalStock[item.name] : 0,
-                count    : item.count,
+                reserved: utils.exists(initState.reservedStock, item.name) ? initState.reservedStock[item.name] : 0,
+                total: utils.exists(totalStock, item.name) ? totalStock[item.name] : 0,
+                count: item.count,
             };
             return map;
         }, {});
 
         const result = await onSubmit(finalCount);
-        
-        if(result !== false) {
+
+        if (result !== false) {
             cleanState();
         }
     }
 
     const currentItem = initState.items && Array.isArray(initState.items) && initState.items.length > currentIndex ? initState.items[currentIndex] : null;
     const currentQuantity = currentItem && utils.exists(counts, currentItem.name) ? counts[currentItem.name] : 0;
-    
+
     return (
         <ItemsCounterContext.Provider value={{ onCountItems }}>
             {children}
@@ -230,12 +230,12 @@ export function ItemsCounterProvider({ children }) {
                                 <ArrowBigLeftIcon onClick={(e) => {
                                     e.stopPropagation();
                                     onShowPrevious();
-                                }}/>
+                                }} />
                                 <h4>{quantityText}</h4>
                                 <ArrowBigRightIcon onClick={(e) => {
                                     e.stopPropagation();
                                     onShowNext();
-                                }}/>
+                                }} />
                             </div>
                             <input
                                 type="number"
@@ -246,12 +246,13 @@ export function ItemsCounterProvider({ children }) {
                                 placeholder="Enter amount"
                                 className="number-input"
                                 onChange={(e) => {
-                                    onChangeCount(e.target.value)}
+                                    onChangeCount(e.target.value)
+                                }
                                 }
                             />
                             <ButtonsFooter onCancel={hidePopup} onSubmit={() => onSubmitCount()} submitEnabled={true} />
                         </>) : (
-                            <Spinner/>
+                            <Spinner />
                         )}
                     </div>
                 </div>

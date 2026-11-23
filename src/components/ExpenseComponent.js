@@ -8,52 +8,52 @@ import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import * as issueService from "../services/issueService.js";
 import invoiceLogo from "../assets/invoice-icon.png";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from '../context/SuccessContext.js';
 import "./ExpenseComponent.css";
 
-export default function ExpenseComponent({expense, handleDelete, context}) {
-    const [displayedReceipt, setDisplayedReceipt] = useState(null );
-    const [expanded,         setExpanded        ] = useState(false);
-    const [loading,          setLoading         ] = useState(false);
-    const [booking,          setBooking         ] = useState(null);
-    const [activity,         setActivity        ] = useState(null);
-    const [issue,            setIssue           ] = useState(null);
-    const [issueComment,     setIssueComment    ] = useState(null);
+export default function ExpenseComponent({ expense, handleDelete, context }) {
+    const [displayedReceipt, setDisplayedReceipt] = useState(null);
+    const [expanded, setExpanded] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [booking, setBooking] = useState(null);
+    const [activity, setActivity] = useState(null);
+    const [issue, setIssue] = useState(null);
+    const [issueComment, setIssueComment] = useState(null);
 
-    const { permissions} = useUserPermissions();
-    const { onError    } = useNotification();
-    const { onSuccess  } = useSuccessNotification();
+    const { permissions } = useUserPermissions();
+    const { onError } = useToast();
+    const { onSuccess } = useSuccessNotification();
 
     const fetchBookingInfo = async (expense) => {
-        if(!utils.isEmpty(expense.bookingId)) {
+        if (!utils.isEmpty(expense.bookingId)) {
             const booking_ = await bookingService.getOne(expense.bookingId);
             setBooking(booking_)
 
-            if(expense.activityId) {
+            if (expense.activityId) {
                 const activity_ = await activityService.getOne(booking_, expense.activityId);
-                setActivity(activity_)  
+                setActivity(activity_)
             }
         }
     };
 
-    const onSubmitIssueInput = async(expenseToFlag, data) => {
+    const onSubmitIssueInput = async (expenseToFlag, data) => {
         const result = await issueService.add(expenseToFlag, data.status, data.comment, onError);
-        if(result !== false) {
+        if (result !== false) {
             onSuccess();
         }
         return result;
     }
 
-    const handleSetExpanded = async(expense) => {
-        if(!expanded) {
-            setLoading(prev => !prev);  
+    const handleSetExpanded = async (expense) => {
+        if (!expanded) {
+            setLoading(prev => !prev);
             await fetchBookingInfo(expense);
-            if(expense.issue === "attention" || expense.issue === "pending_approval") {
+            if (expense.issue === "attention" || expense.issue === "pending_approval") {
                 const issue_ = await issueService.getLastIssue(expense);
                 setIssue(issue_);
-                
+
                 const lastComment_ = await issueService.getLastComment(issue_, onError);
                 setIssueComment(lastComment_);
             }
@@ -65,7 +65,7 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
     const expenseComponentClass = `expense-box${expense.deletedAt ? "-removed" : ""}`;
 
     return (
-        <div className={expenseComponentClass} onClick={()=> handleSetExpanded(expense)}>
+        <div className={expenseComponentClass} onClick={() => handleSetExpanded(expense)}>
             <div className="expense-header">
                 <div className="expense-header-left">
                     <div className="expense-title">
@@ -80,18 +80,18 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
                         {expanded ? '▼' : '▶'}
                     </div>
                 </div>
-            </div>  
-            
+            </div>
+
             <div>
                 {utils.to_ddMMYY(expense.purchasedAt, "/")}
             </div>
 
-            { expanded && loading ? (
+            {expanded && loading ? (
                 <Spinner />
             ) : expanded && !loading ? (
                 <div className="expense-body">
                     {issueComment && !utils.isEmpty(issueComment.comment) && (
-                        <div style={{color:"red"}}>
+                        <div style={{ color: "red" }}>
                             Issue: {issueComment.comment}
                         </div>
                     )}
@@ -119,13 +119,13 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
                         </div>
                     )}
                     <div className="expense-body-footer">
-                        
-                        { permissions.canEditExpenses && (
+
+                        {permissions.canEditExpenses && (
                             <div className="expense-body-footer-icon">
-                                <Pencil   
+                                <Pencil
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        context.onNavigate("edit-expense", {expenseToEdit:expense})
+                                        context.onNavigate("edit-expense", { expenseToEdit: expense })
                                     }}
                                 />
                                 <p>Edit</p>
@@ -134,7 +134,7 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
 
                         {permissions.canDeleteExpenses && (
                             <div className="expense-body-footer-icon">
-                                <Trash2  
+                                <Trash2
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleDelete(expense);
@@ -144,11 +144,11 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
                             </div>
                         )}
                         <div className="expense-body-footer-icon">
-                            <img 
-                                className="expense-thumbnail" 
+                            <img
+                                className="expense-thumbnail"
                                 //src={expense.thumbNailUrl} 
-                                src={invoiceLogo} 
-                                alt={`preview-${expense.id}`} 
+                                src={invoiceLogo}
+                                alt={`preview-${expense.id}`}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setDisplayedReceipt(expense);
@@ -158,22 +158,22 @@ export default function ExpenseComponent({expense, handleDelete, context}) {
                         </div>
 
                         {context.enableRecordIssues && (permissions.isAdmin || expense.issue === "attention" || expense.issue === "pending_approval") && (
-                            <IssueFlagButton 
+                            <IssueFlagButton
                                 record={expense}
                                 onSubmitInput={onSubmitIssueInput}
                             />
                         )}
 
                     </div>
-                    <MetaInfo document={expense}/>
+                    <MetaInfo document={expense} />
                 </div>
             ) : (<></>)}
 
             {displayedReceipt && (
-                <img 
-                    className="expense-photo" 
-                    src={displayedReceipt.photoUrl} 
-                    alt={`expense-${displayedReceipt.id}`} 
+                <img
+                    className="expense-photo"
+                    src={displayedReceipt.photoUrl}
+                    alt={`expense-${displayedReceipt.id}`}
                     onClick={() => setDisplayedReceipt(null)}
                 />
             )}

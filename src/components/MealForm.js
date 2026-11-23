@@ -5,32 +5,32 @@ import * as menuService from '../services/menuService.js';
 import * as userService from '../services/userService.js';
 import * as mealService from "../services/mealService.js";
 import * as utils from "../utils.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import MealFormDish from "./MealFormDish.js";
 import MultipleChoiceList from './MultipleChoiceList.js';
 import TextInput from './TextInput.js';
 import { Checkbox, FormControlLabel } from '@mui/material';
 
-export default function MealForm({selectedActivity, formData, handleFormDataChange }) {
+export default function MealForm({ selectedActivity, formData, handleFormDataChange }) {
 
     let meal = selectedActivity.subCategory;
-    if(meal.includes("floating-breakfast")) meal = "breakfast";
-    
-    const [teamMembers,     setTeamMembers    ] = useState([]  );
-    const [allDishes,       setAllDishes      ] = useState([]  );
-    const [extraDishes,     setExtraDishes    ] = useState([]  ); // For breakfast, present extra options for extra charge
-    const [expandedCourses, setExpandedCourses] = useState({}  );
-    const [loadingMenu,     setLoadingMenu    ] = useState(true); // to indicate when data is being fetched
-            
-    const { onError } = useNotification();
+    if (meal.includes("floating-breakfast")) meal = "breakfast";
+
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [allDishes, setAllDishes] = useState([]);
+    const [extraDishes, setExtraDishes] = useState([]); // For breakfast, present extra options for extra charge
+    const [expandedCourses, setExpandedCourses] = useState({});
+    const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
+
+    const { onError } = useToast();
 
     const onTeamMemberSelect = (teamMember) => {
         let name = null;
-        if(!teamMember) return;
-        
-        if(Array.isArray(teamMember) && teamMember.length > 0) {
+        if (!teamMember) return;
+
+        if (Array.isArray(teamMember) && teamMember.length > 0) {
             name = teamMember[0];
-        } else if(utils.exists(teamMember, "name")) {
+        } else if (utils.exists(teamMember, "name")) {
             name = teamMember.name;
         } else {
             name = teamMember;
@@ -40,16 +40,16 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     }
 
     const onGuestConfirmed = (checked) => {
-        if(checked) {
-            if(formData.status === "pending guest confirmation") {
+        if (checked) {
+            if (formData.status === "pending guest confirmation") {
                 handleFormDataChange("status", "guest confirmed");
             }
         } else {
             // If status is further along, e.g. "started" or "completed", no sense in letting it go back to "pending"
-            if(formData.status === "guest confirmed") {
+            if (formData.status === "guest confirmed") {
                 handleFormDataChange("status", "pending guest confirmation");
             }
-        }   
+        }
     }
 
     const handleAddCustomDish = (() => {
@@ -62,7 +62,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
     const handleExpandCourseSection = (course) => {
         const newExpandedCourses = { ...(expandedCourses || {}) };
-        if(!utils.exists(newExpandedCourses, course)) {
+        if (!utils.exists(newExpandedCourses, course)) {
             newExpandedCourses[course] = false;
         }
         newExpandedCourses[course] = !newExpandedCourses[course];
@@ -71,24 +71,24 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
     useEffect(() => {
         const load = async () => {
-            if(selectedActivity) {
+            if (selectedActivity) {
                 const allDishes = await menuService.groupByCourse({
-                    "meal"  : meal,
-                    "house" : formData.house,
+                    "meal": meal,
+                    "house": formData.house,
                 });
                 setAllDishes(allDishes);
 
-                if(meal === "breakfast") {
+                if (meal === "breakfast") {
                     const extraDishes = await menuService.get({
-                        "meal"  : "extra",
-                        "house" : formData.house,
+                        "meal": "extra",
+                        "house": formData.house,
                     });
                     extraDishes.map((extraDish) => {
                         extraDish.course = `extra`;
                         extraDish.priority = 700;
                     })
                     setExtraDishes(extraDishes);
-                }      
+                }
             }
 
             setLoadingMenu(false);
@@ -101,7 +101,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             setTeamMembers(formattedTeamMembers);
         }
         load();
-        
+
     }, [selectedActivity]);
 
     if (loadingMenu) {
@@ -115,8 +115,8 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
     const customDishes = formData.dishes.filter(dish => dish.custom === true);
 
     const statuses = {
-        "pending guest confirmation" : {"name" : "Pending Guest Confirmation"},
-        "guest confirmed" : {"name" : "Guest Confirmed"},
+        "pending guest confirmation": { "name": "Pending Guest Confirmation" },
+        "guest confirmed": { "name": "Guest Confirmed" },
     };
 
     return (
@@ -160,7 +160,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                     />
                 </div>
             </div>
-            
+
             {/* Display all dishes, inc/dec buttons, and how many of each dish */}
             {Object.entries(allDishes).length > 0 ? (
                 <div className="activity-button-container">
@@ -172,11 +172,11 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                                 <h3>{expandedCourses[course] ? ' ▼' : ' ▶'}</h3>
                                 <h2>{utils.capitalizeWords(course.split(",")[1])}</h2>
                             </div>
-                            
+
                             {/* Each dish has a counter, incrementor, a comment field, and other options */}
                             {expandedCourses[course] && (<>
                                 {allDishes[course].map((dish) => (
-                                    <MealFormDish 
+                                    <MealFormDish
                                         dish={dish}
                                         formData={formData}
                                         handleFormDataChange={handleFormDataChange}
@@ -192,12 +192,12 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                                 <h3>{expandedCourses["extra"] ? ' ▼' : ' ▶'}</h3>
                                 <h2>Extra</h2>
                             </div>
-                            
+
                             {/* Each dish has a counter, incrementor, a comment field, and other options */}
                             {expandedCourses["extra"] && (<>
                                 {extraDishes.map((dish) => {
                                     return (
-                                        <MealFormDish 
+                                        <MealFormDish
                                             dish={dish}
                                             formData={formData}
                                             handleFormDataChange={handleFormDataChange}
@@ -221,9 +221,9 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             {/* List existing custom dishes */}
             {expandedCourses["custom"] && (<>
                 {!utils.isEmpty(customDishes) && (
-                    <div key="custom-wrapper">   
+                    <div key="custom-wrapper">
                         {customDishes.map((dish) => (<>
-                            <MealFormDish 
+                            <MealFormDish
                                 dish={dish}
                                 formData={formData}
                                 handleFormDataChange={handleFormDataChange}
@@ -254,9 +254,9 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
 
             <div className="purchase-form-group">
                 <MultipleChoiceList
-                    current={formData.assignedTo} 
-                    label={"Assign to team member"} 
-                    options={Object.keys(teamMembers)} 
+                    current={formData.assignedTo}
+                    label={"Assign to team member"}
+                    options={Object.keys(teamMembers)}
                     onSelect={onTeamMemberSelect}
                     maxSelect={1}
                 />
@@ -268,7 +268,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
                         <Checkbox
                             checked={formData["status"] === "guest confirmed"}
                             onChange={(e) => {
-                                onGuestConfirmed(e.target.checked);               
+                                onGuestConfirmed(e.target.checked);
                             }}
                         />
                     }
@@ -277,7 +277,7 @@ export default function MealForm({selectedActivity, formData, handleFormDataChan
             </div>
 
             <div className="purchase-form-group">
-                <MyDatePicker 
+                <MyDatePicker
                     name={"startingAt"}
                     label="Start"
                     date={formData.startingAt}

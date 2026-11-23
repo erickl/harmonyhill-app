@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as todoService from "../services/todoService.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import * as utils from "../utils.js";
 import "./TodoScreen.css";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
@@ -10,22 +10,22 @@ import { useFilters } from "../context/FilterContext.js";
 import TodoComponent from './TodoComponent.js';
 
 export default function TodoScreen({ context }) {
-    const [todos,              setTodos              ] = useState([]   );
-    const [completedTodos,     setCompletedTodos     ] = useState([]   );
-    const [loading,            setLoading            ] = useState(true );
-    const [showCompletedTodos, setShowCompletedTodos ] = useState(false );
+    const [todos, setTodos] = useState([]);
+    const [completedTodos, setCompletedTodos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showCompletedTodos, setShowCompletedTodos] = useState(false);
 
-    const { onFilter   } = useFilters();
-    const { onError    } = useNotification();
-    const { onConfirm  } = useConfirmationModal();
-    const { onSuccess  } = useSuccessNotification();
+    const { onFilter } = useFilters();
+    const { onError } = useToast();
+    const { onConfirm } = useConfirmationModal();
+    const { onSuccess } = useSuccessNotification();
 
-    const handleDelete = async(todoToDelete) => {
-        if(!todoToDelete || utils.isEmpty(todoToDelete.id)) return;
-        
+    const handleDelete = async (todoToDelete) => {
+        if (!todoToDelete || utils.isEmpty(todoToDelete.id)) return;
+
         onConfirm(`Are you sure you want to delete todo ${todoToDelete.id}?`, async () => {
             const result = await todoService.remove(todoToDelete, onError);
-            if(result !== false) {
+            if (result !== false) {
                 let newTodos = utils.deepCopy(todos);
                 newTodos = newTodos.filter((todo) => todo.id !== todoToDelete.id);
                 setTodos(newTodos);
@@ -34,17 +34,17 @@ export default function TodoScreen({ context }) {
         });
     };
 
-    const toggleTodo = async(todo, isCompleted) => {
+    const toggleTodo = async (todo, isCompleted) => {
         const newTodo = { ...todo, isCompleted: isCompleted }
 
         const todoSort = (t1, t2) => {
-            if(utils.isDate(t1.deadlineAt) && utils.isDate(t2.deadlineAt)) {
+            if (utils.isDate(t1.deadlineAt) && utils.isDate(t2.deadlineAt)) {
                 return t1.deadlineAt.toMillis > t2.deadlineAt.toMillis;
             }
             else return false;
         };
 
-        if(isCompleted) {
+        if (isCompleted) {
             setTodos(prev => prev.filter(t => t.id !== newTodo.id));
             setCompletedTodos(prev => [...prev, newTodo].sort(todoSort));
         } else {
@@ -53,17 +53,17 @@ export default function TodoScreen({ context }) {
         }
     }
 
-    const handleExpandCompletedTodos = async() => {
-        if(!showCompletedTodos) {
-            const completedTodos_ = await todoService.get(null, {isCompleted : true}, onError);
+    const handleExpandCompletedTodos = async () => {
+        if (!showCompletedTodos) {
+            const completedTodos_ = await todoService.get(null, { isCompleted: true }, onError);
             setCompletedTodos(completedTodos_);
         }
         setShowCompletedTodos(!showCompletedTodos);
     }
 
     useEffect(() => {
-        const fetchTodos = async(isCompleted) => {
-            const todos_ = await todoService.get(null, {isCompleted : isCompleted}, onError);
+        const fetchTodos = async (isCompleted) => {
+            const todos_ = await todoService.get(null, { isCompleted: isCompleted }, onError);
             setTodos(todos_);
             setLoading(false);
         };
@@ -71,7 +71,7 @@ export default function TodoScreen({ context }) {
         fetchTodos(false);
     }, []);
 
-    if(loading) {
+    if (loading) {
         return (
             <p>Loading...</p>
         )
@@ -79,11 +79,11 @@ export default function TodoScreen({ context }) {
 
     const todosByDate = todos.reduce((map, todo) => {
         const date = todo.deadlineAt ? utils.to_www_ddMMM(todo.deadlineAt) : "Unscheduled";
-        if(!map[date]) map[date] = [];
+        if (!map[date]) map[date] = [];
         map[date].push(todo);
         return map;
     }, {});
-     
+
     return (
         <div className="fullscreen">
             <div className="card-header">
@@ -91,16 +91,16 @@ export default function TodoScreen({ context }) {
                     <VeganHamburgerButton />
                     <h2 className="card-title">Todo List</h2>
                 </div>
-            
+
                 <div className="card-header-right">
                     <div>
                         <div className="card-header-right-top-row">
                             <button className="add-button" onClick={() => context.onNavigate("add-todo")}>
-                                + 
+                                +
                             </button>
                         </div>
                     </div>
-                </div>  
+                </div>
             </div>
             <div className="card-content">
                 {Object.keys(todosByDate).map((date) => {
@@ -112,7 +112,7 @@ export default function TodoScreen({ context }) {
                             {todosByDate[date].map((todo) => {
                                 return (
                                     <React.Fragment key={todo.id}>
-                                        <TodoComponent 
+                                        <TodoComponent
                                             todo={todo}
                                             handleDelete={handleDelete}
                                             onToggleFromParent={toggleTodo}
@@ -120,7 +120,7 @@ export default function TodoScreen({ context }) {
                                         />
                                     </React.Fragment>
                                 )
-                            })} 
+                            })}
                         </React.Fragment>
                     </>);
                 })}
@@ -136,7 +136,7 @@ export default function TodoScreen({ context }) {
                     {completedTodos.map((todo) => {
                         return (
                             <React.Fragment key={todo.id}>
-                                <TodoComponent 
+                                <TodoComponent
                                     todo={todo}
                                     onToggleFromParent={toggleTodo}
                                     handleDelete={handleDelete}

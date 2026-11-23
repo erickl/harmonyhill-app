@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as expenseService from "../services/expenseService.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import * as userService from "../services/userService.js";
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
@@ -10,56 +10,56 @@ import MultipleChoiceList from './MultipleChoiceList.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import * as utils from "../utils.js";
 import "./AddExpenseScreen.css";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useCameraModal } from "../context/CameraContext.js";
 
 export default function AddExpensesScreen({ expenseToEdit, context }) {
     const emptyForm = {
-        photoUrl      : expenseToEdit ? expenseToEdit.photoUrl      : null,
-        amount        : expenseToEdit ? expenseToEdit.amount        : '',
-        purchasedBy   : expenseToEdit ? expenseToEdit.purchasedBy   : '',
-        purchasedAt   : expenseToEdit ? expenseToEdit.purchasedAt   : utils.today(),
-        category      : expenseToEdit ? expenseToEdit.category      : '',
-        index         : expenseToEdit ? expenseToEdit.index         : '',
-        activityId    : expenseToEdit ? expenseToEdit.activityId    : '',
-        bookingId     : expenseToEdit ? expenseToEdit.bookingId     : '',
-        paymentMethod : expenseToEdit ? expenseToEdit.paymentMethod : '',
-        description   : expenseToEdit ? expenseToEdit.description   : '',
-        comments      : expenseToEdit ? expenseToEdit.comments      : '',
+        photoUrl: expenseToEdit ? expenseToEdit.photoUrl : null,
+        amount: expenseToEdit ? expenseToEdit.amount : '',
+        purchasedBy: expenseToEdit ? expenseToEdit.purchasedBy : '',
+        purchasedAt: expenseToEdit ? expenseToEdit.purchasedAt : utils.today(),
+        category: expenseToEdit ? expenseToEdit.category : '',
+        index: expenseToEdit ? expenseToEdit.index : '',
+        activityId: expenseToEdit ? expenseToEdit.activityId : '',
+        bookingId: expenseToEdit ? expenseToEdit.bookingId : '',
+        paymentMethod: expenseToEdit ? expenseToEdit.paymentMethod : '',
+        description: expenseToEdit ? expenseToEdit.description : '',
+        comments: expenseToEdit ? expenseToEdit.comments : '',
     };
 
-    if(expenseToEdit) emptyForm.photo = emptyForm.photoUrl;
+    if (expenseToEdit) emptyForm.photo = emptyForm.photoUrl;
 
-    const [bookings,          setBookings         ] = useState([]       );
-    const [activities,        setActivities       ] = useState([]       );
-    const [teamMembers,       setTeamMembers      ] = useState([]       );
-    const [readyToSubmit,     setReadyToSubmit    ] = useState(false    );
-    const [validationError,   setValidationError  ] = useState(null     );
-    const [formData,          setFormData         ] = useState(emptyForm);
-    const [imageResetTrigger, setImageResetTrigger] = useState(0        );
+    const [bookings, setBookings] = useState([]);
+    const [activities, setActivities] = useState([]);
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [readyToSubmit, setReadyToSubmit] = useState(false);
+    const [validationError, setValidationError] = useState(null);
+    const [formData, setFormData] = useState(emptyForm);
+    const [imageResetTrigger, setImageResetTrigger] = useState(0);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
     const { onOpenCamera } = useCameraModal();
     const { permissions } = useUserPermissions();
 
     // todo: put in database
     const categories = {
-        'Food - Daily Market'  : {"name" : "Food - Daily Market"  },
-        'Food - Non-Market'    : {"name" : "Food - Non-Market"    },
-        'Laundry'              : {"name" : "Laundry"              },
-        'Pool'                 : {"name" : "Pool"                 },
-        'Other Villa Supplies' : {"name" : "Other Villa Supplies" },
-        'Guest Expenses'       : {"name" : "Guest Expenses"       },
-        'Utilities'            : {"name" : "Utilities"            },
-        'Maintenance'          : {"name" : "Maintenance"          },
-        'Donations'            : {"name" : "Donations"            },
-        'Assets'               : {"name" : "Assets"               },
-        'Tax & Accounting'     : {"name" : "Tax & Accounting"     },
-        'Guest Refunds'        : {"name" : "Guest Refunds"        },
-        'Other'                : {"name" : "Other"                },
+        'Food - Daily Market': { "name": "Food - Daily Market" },
+        'Food - Non-Market': { "name": "Food - Non-Market" },
+        'Laundry': { "name": "Laundry" },
+        'Pool': { "name": "Pool" },
+        'Other Villa Supplies': { "name": "Other Villa Supplies" },
+        'Guest Expenses': { "name": "Guest Expenses" },
+        'Utilities': { "name": "Utilities" },
+        'Maintenance': { "name": "Maintenance" },
+        'Donations': { "name": "Donations" },
+        'Assets': { "name": "Assets" },
+        'Tax & Accounting': { "name": "Tax & Accounting" },
+        'Guest Refunds': { "name": "Guest Refunds" },
+        'Other': { "name": "Other" },
     };
 
     const onValidationError = (error) => {
@@ -70,17 +70,17 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
         handleChange("photo", photo);
     }
 
-    const getBookingActivities = async(bookingId) => {
+    const getBookingActivities = async (bookingId) => {
         const booking = await bookingService.getOne(bookingId);
         const bookingActivities = await activityService.get(booking);
-            const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
+        const activitiesByName = utils.groupBy(bookingActivities, (activity) => {
             return `${utils.to_YYMMdd(activity.startingAt)} ${activity.displayName}`
         });
         setActivities(activitiesByName);
     };
 
-    const getBookings = async() => {
-        const filter = {"after": utils.today(-30), "before" : utils.today(10)};
+    const getBookings = async () => {
+        const filter = { "after": utils.today(-30), "before": utils.today(10) };
         const bookings = await bookingService.get(filter, onError);
         const bookingsByName = utils.groupBy(bookings, (booking) => {
             const house = booking.house === "harmony hill" ? "HH" : "JN";
@@ -105,7 +105,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
         fetchTeamMembers();
     }, []);
 
-    
+
     const needsGuestInfo = (formDataCategory) => {
         const category = formDataCategory.trim().toLowerCase();
         return category === "guest expenses" || category === "guest refunds";
@@ -120,28 +120,28 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
         const guestInfoNeeded = needsGuestInfo(formData.category);
         const activityInfoNeeded = needsActivityInfo(formData.category);
 
-        if(guestInfoNeeded && utils.isEmpty(bookings)) {
+        if (guestInfoNeeded && utils.isEmpty(bookings)) {
             getBookings();
         }
-        if(activityInfoNeeded && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
+        if (activityInfoNeeded && utils.isEmpty(activities) && !utils.isEmpty(formData.bookingId)) {
             getBookingActivities(formData.bookingId);
         }
 
-        if(!guestInfoNeeded) {
+        if (!guestInfoNeeded) {
             handleChange("_batch", {
-                "bookingId"  : null,
-                "activityId" : null
+                "bookingId": null,
+                "activityId": null
             });
         }
     }, [formData.category]);
 
     const onTeamMemberSelect = (teamMember) => {
         let name = null;
-        if(!teamMember) return;
-        
-        if(Array.isArray(teamMember) && teamMember.length > 0) {
+        if (!teamMember) return;
+
+        if (Array.isArray(teamMember) && teamMember.length > 0) {
             name = teamMember[0];
-        } else if(utils.exists(teamMember, "name")) {
+        } else if (utils.exists(teamMember, "name")) {
             name = teamMember.name;
         } else {
             name = teamMember;
@@ -149,8 +149,8 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
 
         // Description auto generated sometimes, by category & purchases
         handleChange("_batch", {
-            "description" : "",
-            "purchasedBy" : name,
+            "description": "",
+            "purchasedBy": name,
         });
     }
 
@@ -158,24 +158,24 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
         const name = category ? category.name : '';
 
         const change = {
-            "category"    : name,
+            "category": name,
             // Description auto generated sometimes, by category & purchases
-            "description" : "",
+            "description": "",
         }
 
         // Auto fill description in some cases
-        if(utils.isEmpty(formData.description) && !utils.isEmpty(category) && !utils.isEmpty(formData.purchasedBy)) {
-            if(name === "food - daily market") {
+        if (utils.isEmpty(formData.description) && !utils.isEmpty(category) && !utils.isEmpty(formData.purchasedBy)) {
+            if (name === "food - daily market") {
                 change.description = `Market Food, by ${formData.purchasedBy}`;
-            }   
-            if(name === "laundry") {
+            }
+            if (name === "laundry") {
                 change.description = `Laundry`;
             }
         }
 
         const guestInfoNeeded = needsGuestInfo(name);
 
-        if(!guestInfoNeeded) {
+        if (!guestInfoNeeded) {
             change["bookingId"] = null;
             change["activityId"] = null;
         }
@@ -191,11 +191,11 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
     const onBookingSelect = async (booking) => {
         const id = booking ? booking[0].id : '';
         handleChange("_batch", {
-            "bookingId"  : id,
-            "activityId" : null
+            "bookingId": id,
+            "activityId": null
         });
-        
-        if(needsActivityInfo(formData.category)) {
+
+        if (needsActivityInfo(formData.category)) {
             getBookingActivities(id);
         }
     }
@@ -215,14 +215,14 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
 
         setReadyToSubmit(validationResult);
 
-        if(validationResult === true) {
+        if (validationResult === true) {
             setValidationError(null);
         }
     }
 
     const handleChange = (field, value) => {
         context.setHasUnsavedChanges(true);
-        
+
         let nextFormData = {};
 
         if (field === "_batch" && typeof value === 'object' && value !== null) {
@@ -235,7 +235,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
             nextFormData = { ...formData, [field]: value };
         }
 
-        if(!utils.isEmpty(nextFormData)) {
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
 
@@ -244,37 +244,37 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
 
     const handleSubmit = async () => {
         try {
-            if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
-               
+            if (!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
+
             let result = false;
-            
-            if(expenseToEdit) {
+
+            if (expenseToEdit) {
                 result = await expenseService.update(expenseToEdit.id, formData, onError);
             } else {
                 result = await expenseService.add(formData, onError);
-            }         
+            }
 
-            if(result !== false) {
-                if(expenseToEdit) context.onClose();
+            if (result !== false) {
+                if (expenseToEdit) context.onClose();
                 else resetForm();
                 onSuccess();
             }
-        } catch(e) {
+        } catch (e) {
             onError(`Submit error: ${e.message}`);
-        }        
+        }
     };
 
     // todo: put in database
     const paymentMethods = ['Cash'];
 
-    if(permissions.isAdmin) {
+    if (permissions.isAdmin) {
         paymentMethods.push('Transfer');
     }
 
     // If there's only one choice, choose it automatically
     let currentPaymentMethod = formData.paymentMethod;
     const paymentMethodNames = Object.keys(paymentMethods);
-    if(paymentMethodNames.length === 1 && !currentPaymentMethod) {
+    if (paymentMethodNames.length === 1 && !currentPaymentMethod) {
         currentPaymentMethod = paymentMethodNames[0];
     }
 
@@ -284,7 +284,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                 <div>
                     <h2 className="card-title">Record New Expense</h2>
                 </div>
-            
+
                 <div>
                     {!expenseToEdit && (
                         <button className="add-button" onClick={() => context.onClose()}>
@@ -297,11 +297,11 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                 {formData.photo ? (<>
                     <div className="form-group">
                         <img
-                            src={formData.photo} 
-                            alt="Preview" 
+                            src={formData.photo}
+                            alt="Preview"
                         />
                     </div>
-                    
+
                     <button onClick={() => onOpenCamera(null, true, true, () => onConfirmPhoto)}>
                         Edit photo
                     </button>
@@ -315,38 +315,38 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                     />
 
                     <div className="purchase-form-group">
-                        <MultipleChoiceList 
-                            current={currentPaymentMethod} 
-                            label={"Payment Method"} 
-                            options={paymentMethods} 
+                        <MultipleChoiceList
+                            current={currentPaymentMethod}
+                            label={"Payment Method"}
+                            options={paymentMethods}
                             onSelect={onPaymentMethodSelect}
                             maxSelect={1}
                         />
                     </div>
-                    
+
                     <div className="purchase-form-group">
-                        <MultipleChoiceList 
-                            current={formData.purchasedBy} 
-                            label={"Purchased By"} 
-                            options={Object.keys(teamMembers)} 
+                        <MultipleChoiceList
+                            current={formData.purchasedBy}
+                            label={"Purchased By"}
+                            options={Object.keys(teamMembers)}
                             onSelect={onTeamMemberSelect}
                             maxSelect={1}
                         />
                     </div>
 
                     <div className="purchase-form-group">
-                        <Dropdown 
-                            label={"Category"} 
+                        <Dropdown
+                            label={"Category"}
                             options={categories}
                             current={formData.category}
                             onSelect={onCategorySelect}
                         />
                     </div>
 
-                    <MyDatePicker 
-                        name={"purchasedAt"} 
+                    <MyDatePicker
+                        name={"purchasedAt"}
                         label={"Purchase"}
-                        date={formData.purchasedAt} 
+                        date={formData.purchasedAt}
                         onChange={handleChange}
                         time={null}
                         useTime={false}
@@ -354,8 +354,8 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
 
                     {needsGuestInfo(formData.category) && (
                         <div className="purchase-form-group">
-                            <Dropdown 
-                                label={"Booking"} 
+                            <Dropdown
+                                label={"Booking"}
                                 options={bookings}
                                 current={formData.bookingId}
                                 onSelect={onBookingSelect}
@@ -365,8 +365,8 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
 
                     {needsActivityInfo(formData.category) && !utils.isEmpty(formData.bookingId) && (
                         <div className="purchase-form-group">
-                            <Dropdown 
-                                label={"Activity"} 
+                            <Dropdown
+                                label={"Activity"}
                                 options={activities}
                                 current={formData.activityId}
                                 onSelect={onActivitySelect}
@@ -389,7 +389,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                         value={formData.comments}
                         onChange={handleChange}
                     />
-                </>) : (  
+                </>) : (
                     <button onClick={() => onOpenCamera(null, true, true, () => onConfirmPhoto)}>
                         Add photo
                     </button>

@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useCameraModal } from '../context/CameraContext.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import { useImageCarousel } from '../context/ImageCarouselContext.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import Spinner from './Spinner.js';
 import { motion } from "framer-motion";
 import * as storageDao from "../daos/storageDao.js";
 import { Camera, Image } from 'lucide-react';
 import "./PhotoUploadButton.css";
 
-export default function PhotoUploadButton({path, photos, instructions, onUpload, enableUpload, isRequired}) {
+export default function PhotoUploadButton({ path, photos, instructions, onUpload, enableUpload, isRequired }) {
     const [photos_, setPhotos] = useState(photos);
     const [photoUploading, setPhotoUploading] = useState(false);
     const [animateButton, setAnimateButton] = useState(isRequired);
@@ -17,7 +17,7 @@ export default function PhotoUploadButton({path, photos, instructions, onUpload,
     const { onOpenCamera } = useCameraModal();
     const { onSuccess } = useSuccessNotification();
     const { onDisplayImages } = useImageCarousel();
-    const { onError } = useNotification();
+    const { onError } = useToast();
 
     useEffect(() => {
         // If photos are still required, animate the button to lead the user to use it
@@ -29,11 +29,11 @@ export default function PhotoUploadButton({path, photos, instructions, onUpload,
         setAnimateButton(isRequired);
     }, [isRequired]);
 
-    const uploadPhoto = async(photo) => {
+    const uploadPhoto = async (photo) => {
         const filename = `${path}/${Date.now()}`;
-        const options = {maxSize : 0.15};
+        const options = { maxSize: 0.15 };
         const url = await storageDao.upload(filename, photo, options, onError);
-        return {filename: filename, url: url};
+        return { filename: filename, url: url };
     }
 
     const onConfirmPhoto = async (photo) => {
@@ -42,13 +42,13 @@ export default function PhotoUploadButton({path, photos, instructions, onUpload,
 
             const fileData = await uploadPhoto(photo);
             const result = await onUpload(fileData);
-            
+
             if (result !== false) {
                 let newPhotos = [...photos_, result];
                 setPhotos(newPhotos);
                 onSuccess();
             }
-            
+
         } finally {
             setPhotoUploading(false);
         }

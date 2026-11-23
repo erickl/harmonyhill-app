@@ -1,5 +1,5 @@
 import React from "react";
-import { NotificationProvider } from "../context/NotificationContext.js";
+import { ToastProvider } from "../context/ToastContext.js";
 import { FilterProvider } from "../context/FilterContext.js";
 import { MenuProvider } from '../context/MenuContext.js';
 import { MarkDownProvider } from '../context/MarkDownContext.js';
@@ -19,37 +19,37 @@ import { GenericProvider } from "../context/GenericContext.js";
 export function AppProviders({ children }) {
     return (
         <UserPermissionProvider>
-        <ProgressProvider>
-        <SuccessNotificationProvider>
-        <NotificationProvider>
-        <ConfirmationProvider>
-        <FilterProvider>
-        <MenuProvider>
-        <MarkDownProvider>
-        <ItemsCounterProvider>
-        <CameraProvider>
-        <ImageCarouselProvider>
-        <DataTableProvider>
-        <MinibarTableProvider>
-        <InputProvider>
-        <IssueProvider>
-        <GenericProvider>
-          {children}
-        </GenericProvider>
-        </IssueProvider>
-        </InputProvider>
-        </MinibarTableProvider>
-        </DataTableProvider>
-        </ImageCarouselProvider>
-        </CameraProvider>
-        </ItemsCounterProvider>
-        </MarkDownProvider>
-        </MenuProvider>
-        </FilterProvider>
-        </ConfirmationProvider>
-        </NotificationProvider>
-        </SuccessNotificationProvider>
-        </ProgressProvider>
+            <ProgressProvider>
+                <SuccessNotificationProvider>
+                    <ToastProvider>
+                        <ConfirmationProvider>
+                            <FilterProvider>
+                                <MenuProvider>
+                                    <MarkDownProvider>
+                                        <ItemsCounterProvider>
+                                            <CameraProvider>
+                                                <ImageCarouselProvider>
+                                                    <DataTableProvider>
+                                                        <MinibarTableProvider>
+                                                            <InputProvider>
+                                                                <IssueProvider>
+                                                                    <GenericProvider>
+                                                                        {children}
+                                                                    </GenericProvider>
+                                                                </IssueProvider>
+                                                            </InputProvider>
+                                                        </MinibarTableProvider>
+                                                    </DataTableProvider>
+                                                </ImageCarouselProvider>
+                                            </CameraProvider>
+                                        </ItemsCounterProvider>
+                                    </MarkDownProvider>
+                                </MenuProvider>
+                            </FilterProvider>
+                        </ConfirmationProvider>
+                    </ToastProvider>
+                </SuccessNotificationProvider>
+            </ProgressProvider>
         </UserPermissionProvider>
     );
 }

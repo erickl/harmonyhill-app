@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import * as expenseService from "../services/expenseService.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import * as utils from "../utils.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import * as ledgerService from "../services/ledgerService.js";
 import * as issueService from "../services/issueService.js";
 import "./ExpensesScreen.css";
@@ -16,47 +16,47 @@ import { Filter, FilterX } from 'lucide-react';
 import { useFilters } from "../context/FilterContext.js";
 
 export default function ExpensesScreen({ context }) {
-    const [pettyCash,        setPettyCash       ] = useState(null );
-    const [expenseSum,       setExpenseSum      ] = useState(null );
+    const [pettyCash, setPettyCash] = useState(null);
+    const [expenseSum, setExpenseSum] = useState(null);
 
-    const [customInterval,        setCustomInterval]        = useState(null);
-    const [recentFilter,          setRecentFilter]          = useState(null);
-    const [issuesFilter,          setIssuesFilter]          = useState(null);
+    const [customInterval, setCustomInterval] = useState(null);
+    const [recentFilter, setRecentFilter] = useState(null);
+    const [issuesFilter, setIssuesFilter] = useState(null);
     const [pendingApprovalFilter, setPendingApprovalFilter] = useState(null);
-    const [pastFilter,            setPastFilter]            = useState(null);
-    const [showFilter,        setShowFilter        ] = useState(false);
+    const [pastFilter, setPastFilter] = useState(null);
+    const [showFilter, setShowFilter] = useState(false);
 
-    const { onFilter   } = useFilters();
-    const { onError    } = useNotification();
+    const { onFilter } = useFilters();
+    const { onError } = useToast();
     const { onProgress } = useProgressCounter();
-    const { permissions} = useUserPermissions();
+    const { permissions } = useUserPermissions();
 
     const filterHeaders = {
-        "after"  : "date",
-        "before" : "date",
-        "paymentMethod" : "string",
+        "after": "date",
+        "before": "date",
+        "paymentMethod": "string",
     };
 
     const onFilterValuesSubmit = (filterValues) => {
         setCustomInterval({
-            after  : filterValues.after,
-            before : filterValues.before
+            after: filterValues.after,
+            before: filterValues.before
         });
     };
 
-    const getDataForExport = async(filterValues, onProgress) => {
+    const getDataForExport = async (filterValues, onProgress) => {
         const rows = await expenseService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 
-    const handleReceiptsDownloadFilter = async() => {
+    const handleReceiptsDownloadFilter = async () => {
         const onFilterValuesSubmit = (filterValues) => {
             handlePicturesDownload(filterValues);
         };
         onFilter(filterHeaders, onFilterValuesSubmit);
     }
 
-    const handlePicturesDownload = async(filters) => {
+    const handlePicturesDownload = async (filters) => {
         const filename = `receipts`;
         const success = await expenseService.downloadExpenseReceipts(filename, filters, onProgress, onError);
         const x = 1; // todo, if success = true, display onSuccess?
@@ -64,12 +64,12 @@ export default function ExpensesScreen({ context }) {
 
     useEffect(() => {
         let filter = {};
-        if(!permissions.isAdmin) {
+        if (!permissions.isAdmin) {
             // While the manager just is concerned with petty cash, he has no reason to see all bank transfers
             filter["paymentMethod"] = "cash";
-        } 
+        }
 
-        const loadTotals = async() => {
+        const loadTotals = async () => {
             const pettyCashSum = await ledgerService.getPettyCashBalance(null, onError);
             setPettyCash(pettyCashSum);
             const expenseSum = await ledgerService.getCurrentTotalExpenses(filter, onError);
@@ -77,27 +77,27 @@ export default function ExpensesScreen({ context }) {
         }
 
         const loadData = async () => {
-            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);       
-            
+            const lastClosedPettyCashRecord = await ledgerService.getLastClosedPettyCashRecord(null, onError);
+
             // In Recent tab, display records from a week ago at the oldest
             const monthStart = utils.monthStart();
             const oldest = lastClosedPettyCashRecord ? lastClosedPettyCashRecord.closedAt : monthStart;
-            
+
             let recentFilterAfter = utils.today(-7);
-            if(oldest >= monthStart) {
+            if (oldest >= monthStart) {
                 recentFilterAfter = oldest;
             } else {
-                const pastFilter = {...filter, after: oldest, before: recentFilterAfter.plus({seconds : -1})};
+                const pastFilter = { ...filter, after: oldest, before: recentFilterAfter.plus({ seconds: -1 }) };
                 setPastFilter(pastFilter);
             }
 
-            const recentFilter = {...filter, after : recentFilterAfter};
+            const recentFilter = { ...filter, after: recentFilterAfter };
             setRecentFilter(recentFilter);
-  
-            const issuesFilter = { ...filter, "issue" : "attention"};
+
+            const issuesFilter = { ...filter, "issue": "attention" };
             setIssuesFilter(issuesFilter);
 
-            const pendingApprovalFilter = { ...filter, "issue" : "pending_approval"};
+            const pendingApprovalFilter = { ...filter, "issue": "pending_approval" };
             setPendingApprovalFilter(pendingApprovalFilter);
         }
 
@@ -106,7 +106,7 @@ export default function ExpensesScreen({ context }) {
     }, []);
 
     const downloadIconStyle = {
-        marginRight:"1rem"
+        marginRight: "1rem"
     }
 
     return (
@@ -126,41 +126,41 @@ export default function ExpensesScreen({ context }) {
                                 Total: {utils.formatDisplayPrice(expenseSum, true)}
                             </span>
                         )}
-                    </div>    
+                    </div>
                 </div>
-            
+
                 <div className="card-header-right">
                     <div>
                         <div className="card-header-right-top-row">
-                            
+
                             {permissions.isAdmin && (<>
-                                <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
+                                <SheetUploader label={""} onExportRequest={getDataForExport} filterHeaders={filterHeaders} />
                                 <ImageDown style={downloadIconStyle} onClick={() => handleReceiptsDownloadFilter()} />
                             </>)}
 
-                            {permissions.isAdmin && context.enableFilters && (<>    
-                                <Filter 
+                            {permissions.isAdmin && context.enableFilters && (<>
+                                <Filter
                                     onClick={() => onFilter(filterHeaders, onFilterValuesSubmit)}
                                 />
                                 {customInterval && (
-                                    <FilterX onClick={() => setCustomInterval(null)}/>
+                                    <FilterX onClick={() => setCustomInterval(null)} />
                                 )}
                             </>)}
 
                             {permissions.canAddIncomes && (
                                 <button className="add-button" onClick={() => context.onNavigate("add-expense")}>
-                                    + 
+                                    +
                                 </button>
                             )}
                         </div>
-                        
+
                     </div>
-                </div>  
+                </div>
             </div>
             <div className="card-content">
                 {context.enableRecordIssues && (<>
                     {pendingApprovalFilter && (
-                        <ExpenseList 
+                        <ExpenseList
                             context={context}
                             title={"Pending Approval"}
                             filter={pendingApprovalFilter}
@@ -170,7 +170,7 @@ export default function ExpensesScreen({ context }) {
                     )}
 
                     {issuesFilter && (
-                        <ExpenseList 
+                        <ExpenseList
                             context={context}
                             title={"Issues"}
                             filter={issuesFilter}
@@ -181,15 +181,15 @@ export default function ExpensesScreen({ context }) {
                 </>)}
 
                 {customInterval !== null ? (
-                    <ExpenseList 
-                        context={context} 
-                        title={"Custom"} 
-                        filter={customInterval} 
+                    <ExpenseList
+                        context={context}
+                        title={"Custom"}
+                        filter={customInterval}
                         expand={true}
-                    /> 
+                    />
                 ) : (<>
                     {recentFilter && (
-                        <ExpenseList 
+                        <ExpenseList
                             context={context}
                             title={"Recent"}
                             filter={recentFilter}
@@ -199,7 +199,7 @@ export default function ExpensesScreen({ context }) {
                     )}
 
                     {pastFilter && (
-                        <ExpenseList 
+                        <ExpenseList
                             context={context}
                             title={"Previous"}
                             filter={pastFilter}

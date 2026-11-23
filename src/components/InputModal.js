@@ -1,44 +1,44 @@
 import { useState, useEffect } from 'react';
 import TextInput from "./TextInput.js";
 import ButtonsFooter from "./ButtonsFooter.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import * as utils from "../utils.js";
 
-export default function InputModal({onSubmit, onClose}) {
-    const emptyForm = { 
-        comment : "",
+export default function InputModal({ onSubmit, onClose }) {
+    const emptyForm = {
+        comment: "",
     };
 
     const [formData, setFormData] = useState(emptyForm);
 
-    const [validationError,   setValidationError  ] = useState(null);
-    const [readyToSubmit,     setReadyToSubmit    ] = useState(true);
+    const [validationError, setValidationError] = useState(null);
+    const [readyToSubmit, setReadyToSubmit] = useState(true);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onSuccess } = useSuccessNotification();
 
     const handleSubmit = async () => {
         try {
-            if(!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
-            
-            const result = await onSubmit(formData);  
+            if (!readyToSubmit) return onError(`Not yet ready to submit. Missing obligatory data`);
 
-            if(result !== false) { 
+            const result = await onSubmit(formData);
+
+            if (result !== false) {
                 setFormData(emptyForm);
                 onClose();
                 onSuccess();
             }
-        } catch(e) {
+        } catch (e) {
             onError(`Submit error: ${e.message}`);
-        }        
+        }
     };
 
     const validateFormData = async (newFormData) => {
         setReadyToSubmit(true);
         // Add validation
         const validationResult = true;
-        if(validationResult === true) {
+        if (validationResult === true) {
             setValidationError(null);
         }
     }
@@ -56,7 +56,7 @@ export default function InputModal({onSubmit, onClose}) {
             nextFormData = { ...formData, [field]: value };
         }
 
-        if(!utils.isEmpty(nextFormData)) {
+        if (!utils.isEmpty(nextFormData)) {
             setFormData(nextFormData);
         }
 

@@ -1,23 +1,23 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
+import { useToast } from "../context/ToastContext.js";
 import * as utils from "../utils.js";
 import { motion } from "framer-motion";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 import "./TaskAcceptButton.css";
 
-export default function TaskAcceptButton({taskDate, status, assignedTo, isAccepted, handleClick}) {
+export default function TaskAcceptButton({ taskDate, status, assignedTo, isAccepted, handleClick }) {
     const [isAccepted_, setIsAccepted] = useState(isAccepted);
 
     const { user } = useUserPermissions();
-    const { onError } = useNotification();
+    const { onError } = useToast();
 
     const thisUserIsAssigned = user && (user.shortName === assignedTo || user.name === assignedTo);
 
-    const handleClick_ = async(newIsAccepted) => {
+    const handleClick_ = async (newIsAccepted) => {
         const result = await handleClick(newIsAccepted);
-        if(result === false) return false;
+        if (result === false) return false;
         return true;
     }
 

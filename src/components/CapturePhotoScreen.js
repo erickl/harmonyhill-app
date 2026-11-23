@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { XIcon } from 'lucide-react';
-import { RefreshCw, Camera, FolderOpen} from 'lucide-react';
+import { RefreshCw, Camera, FolderOpen } from 'lucide-react';
 import Spinner from './Spinner.js';
 
 export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onConfirmPhoto, useCamera, useAlbum, onClose }) {
@@ -13,7 +13,7 @@ export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onC
     const canvasRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
 
     const toggleFullScreen = () => {
         setPreviewImageFullScreen(prev => !prev);
@@ -47,14 +47,14 @@ export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onC
     const tryAccessCamera = async (setVideoStream) => {
         try {
             // Attempt 1: Strict 'exact' environment mode, using the back camera
-            const stream = await navigator.mediaDevices.getUserMedia({ video: {facingMode: { exact: "environment" } }});
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } });
             setVideoStream(stream);
         } catch (e) {
             await tryAccessLessStrictBackCamera(setVideoStream);
         }
     };
 
-    const tryAccessLessStrictBackCamera = async(setVideoStream) => {
+    const tryAccessLessStrictBackCamera = async (setVideoStream) => {
         try {
             // Attempt 2: Non-exact environment mode
             let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -64,7 +64,7 @@ export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onC
         }
     }
 
-    const tryAccessAnyCamera = async(setVideoStream) => {
+    const tryAccessAnyCamera = async (setVideoStream) => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             setVideoStream(stream);
@@ -79,7 +79,7 @@ export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onC
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                onSetPreviewImage(reader.result);   
+                onSetPreviewImage(reader.result);
             };
             reader.readAsDataURL(file);
             setVideoStream(null);
@@ -117,23 +117,23 @@ export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onC
             videoStream.getTracks().forEach(track => track.stop());
             setVideoStream(null);
         }
-        if(onClose) onClose();
+        if (onClose) onClose();
     };
 
     return (
-        <div style={{ display:"flex", flexDirection:"column"}}>
-            <div style={{ display:"flex", flexDirection:"row", justifyContent: 'space-between', width: '100%'}}>
-                <XIcon 
+        <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", flexDirection: "row", justifyContent: 'space-between', width: '100%' }}>
+                <XIcon
                     size={30}
-                    style={{ color:'#f44336'}}
+                    style={{ color: '#f44336' }}
                     onClick={handleCloseScreen}
                 />
-                
 
-                { videoStream == null && useCamera && (<>
-                    <RefreshCw 
+
+                {videoStream == null && useCamera && (<>
+                    <RefreshCw
                         size={30}
-                        style={{ }}
+                        style={{}}
                         onClick={handleOpenCamera}
                     />
                 </>)}
@@ -148,33 +148,33 @@ export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onC
             {/* Preview and Upload Captured Photo */}
             {previewImage && !videoStream && (
                 <div style={{ marginTop: '0.5rem' }}>
-                    <img 
-                        src={previewImage} 
-                        alt="Preview" 
-                        style={{ 
+                    <img
+                        src={previewImage}
+                        alt="Preview"
+                        style={{
                             cursor: "pointer",
                             maxWidth: previewImageFullScreen ? "100vw" : "100%",
-                            maxHeight: previewImageFullScreen ? "100vh" : "300px", 
-                            border: '1px solid grey' 
-                        }} 
+                            maxHeight: previewImageFullScreen ? "100vh" : "300px",
+                            border: '1px solid grey'
+                        }}
                         onClick={toggleFullScreen}
                     />
                 </div>
             )}
 
             {/* Hidden canvas for drawing the video frame */}
-            <canvas ref={canvasRef} style={{  marginTop: '2rem', display: 'none' }} />
-            
+            <canvas ref={canvasRef} style={{ marginTop: '2rem', display: 'none' }} />
+
             {videoStream && (
-                <video 
-                    ref={videoRef} autoPlay playsInline 
-                    style={{ marginTop: '2rem', maxWidth: '100%', maxHeight: '300px', border: '1px solid black' }} 
+                <video
+                    ref={videoRef} autoPlay playsInline
+                    style={{ marginTop: '2rem', maxWidth: '100%', maxHeight: '300px', border: '1px solid black' }}
                 />
             )}
 
             {!videoStream && !previewImage && (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '2rem', maxWidth: '100%', height: '300px', border: '1px solid black' }} >
-                    <Spinner size={40}/>
+                    <Spinner size={40} />
                 </div>
             )}
 
@@ -182,51 +182,51 @@ export default function CapturePhotoScreen({ instructions, onCaptureSuccess, onC
                 display: "flex",
                 flexDirection: "row",
                 gap: "10px", // Adds space between buttons
-                justifyContent: "center", 
-                marginTop: "15px" 
+                justifyContent: "center",
+                marginTop: "15px"
             }}>
                 {!previewImage && videoStream && (
-                    <button 
-                        onClick={handleTakePhoto} 
-                        style={{ 
-                            padding: '10px 15px', 
-                            border: '1px solid #007bff', 
+                    <button
+                        onClick={handleTakePhoto}
+                        style={{
+                            padding: '10px 15px',
+                            border: '1px solid #007bff',
                             borderRadius: '5px',
                             backgroundColor: '#007bff',
-                            cursor: 'pointer' 
+                            cursor: 'pointer'
                         }}
                     >
                         <Camera />
                     </button>
                 )}
 
-                { !previewImage && useAlbum && (
-                    <button 
+                {!previewImage && useAlbum && (
+                    <button
                         onClick={() => fileInputRef.current.click()}
-                        style={{ 
-                            padding: '10px 15px', 
-                            border: '1px solid #007bff', 
+                        style={{
+                            padding: '10px 15px',
+                            border: '1px solid #007bff',
                             borderRadius: '5px',
                             backgroundColor: '#007bff',
-                            cursor: 'pointer' 
+                            cursor: 'pointer'
                         }}
                     >
                         <FolderOpen />
                     </button>
                 )}
 
-                { previewImage && (
-                    <button 
+                {previewImage && (
+                    <button
                         onClick={() => {
                             onConfirm(previewImage);
                             handleCloseScreen();
                         }}
-                        style={{ 
-                            padding: '10px 15px', 
-                            border: '1px solid #007bff', 
+                        style={{
+                            padding: '10px 15px',
+                            border: '1px solid #007bff',
                             borderRadius: '5px',
                             backgroundColor: '#007bff',
-                            cursor: 'pointer' 
+                            cursor: 'pointer'
                         }}
                     >
                         Use

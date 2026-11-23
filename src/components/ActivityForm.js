@@ -5,7 +5,7 @@ import ProviderDropdown from "./ProviderDropdown.js";
 import * as utils from "../utils.js";
 import * as userService from "../services/userService.js";
 import TextInput from './TextInput.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import MultipleChoiceList from './MultipleChoiceList.js';
 import { Checkbox, FormControlLabel } from '@mui/material';
 
@@ -14,7 +14,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
     const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
 
     const onProviderSelect = (provider) => {
         const name = provider ? provider.name : '';
@@ -31,11 +31,11 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
     const onTeamMemberSelect = (teamMember) => {
         let name = null;
-        if(!teamMember) return;
-        
-        if(Array.isArray(teamMember) && teamMember.length > 0) {
+        if (!teamMember) return;
+
+        if (Array.isArray(teamMember) && teamMember.length > 0) {
             name = teamMember[0];
-        } else if(utils.exists(teamMember, "name")) {
+        } else if (utils.exists(teamMember, "name")) {
             name = teamMember.name;
         } else {
             name = teamMember;
@@ -117,7 +117,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 onChange={handleFormDataChange}
             />
 
-            <MultipleChoiceList 
+            <MultipleChoiceList
                 label={"Assign to team member"}
                 current={formData.assignedTo}
                 options={Object.keys(teamMembers)}

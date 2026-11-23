@@ -7,46 +7,46 @@ import IssueFlagButton from './IssueFlagButton.js';
 import * as bookingService from "../services/bookingService.js";
 import * as activityService from "../services/activityService.js";
 import * as issueService from "../services/issueService.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
-import { useNotification } from "../context/NotificationContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useSuccessNotification } from '../context/SuccessContext.js';
 import "./IncomeComponent.css";
 
-export default function IncomeComponent({income, handleDelete, context}) {
-    const [expanded,         setExpanded        ] = useState(false);
-    const [loading,          setLoading         ] = useState(false);
-    const [booking,          setBooking         ] = useState(null);
-    const [activity,         setActivity        ] = useState(null);
-    const [issue,            setIssue           ] = useState(null);
+export default function IncomeComponent({ income, handleDelete, context }) {
+    const [expanded, setExpanded] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [booking, setBooking] = useState(null);
+    const [activity, setActivity] = useState(null);
+    const [issue, setIssue] = useState(null);
 
-    const { permissions} = useUserPermissions();
-    const { onError    } = useNotification();
-    const { onSuccess  } = useSuccessNotification();
+    const { permissions } = useUserPermissions();
+    const { onError } = useToast();
+    const { onSuccess } = useSuccessNotification();
 
     const fetchBookingInfo = async (income) => {
-        if(!utils.isEmpty(income.bookingId)) {
+        if (!utils.isEmpty(income.bookingId)) {
             const booking_ = await bookingService.getOne(income.bookingId);
             setBooking(booking_)
 
-            if(income.activityId) {
+            if (income.activityId) {
                 const activity_ = await activityService.getOne(booking_, income.activityId);
-                setActivity(activity_)  
+                setActivity(activity_)
             }
         }
     };
 
-    const onFlagIssue = async(incomeToFlag, comment) => {
+    const onFlagIssue = async (incomeToFlag, comment) => {
         const result = await issueService.add(incomeToFlag, comment, onError);
-        if(result !== false) {
+        if (result !== false) {
             onSuccess();
         }
     }
 
-    const handleSetExpanded = async(income) => {
-        if(!expanded) {
-            setLoading(prev => !prev);  
+    const handleSetExpanded = async (income) => {
+        if (!expanded) {
+            setLoading(prev => !prev);
             await fetchBookingInfo(income);
-            if(income.issue === "attention") {
+            if (income.issue === "attention") {
                 const issue_ = await issueService.getLastIssue(income);
                 setIssue(issue_);
             }
@@ -58,7 +58,7 @@ export default function IncomeComponent({income, handleDelete, context}) {
     const incomeComponentClass = `income-box${income.deletedAt ? "-removed" : ""}`;
 
     return (
-        <div className={incomeComponentClass} onClick={()=> handleSetExpanded(income)}>
+        <div className={incomeComponentClass} onClick={() => handleSetExpanded(income)}>
             <div className="income-header">
                 <div className="income-header-left">
                     <div className="income-title">
@@ -73,18 +73,18 @@ export default function IncomeComponent({income, handleDelete, context}) {
                         {expanded ? '▼' : '▶'}
                     </div>
                 </div>
-            </div>  
-            
+            </div>
+
             <div>
                 {utils.to_ddMMYY(income.receivedAt, "/")}
             </div>
 
-            { expanded && loading ? (
+            {expanded && loading ? (
                 <Spinner />
             ) : expanded && !loading ? (
-                 <div className="income-body">
+                <div className="income-body">
                     {issue && !utils.isEmpty(issue.comment) && (
-                        <div style={{color:"red"}}>
+                        <div style={{ color: "red" }}>
                             Issue: {issue.comment}
                         </div>
                     )}
@@ -102,12 +102,12 @@ export default function IncomeComponent({income, handleDelete, context}) {
                     </div>)}
                     <div className="income-body-footer">
 
-                        { permissions.canEditIncomes && (
+                        {permissions.canEditIncomes && (
                             <div className="income-body-footer-icon">
-                                <Pencil   
+                                <Pencil
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        context.onNavigate("edit-income", {customer:booking, incomeToEdit:income});
+                                        context.onNavigate("edit-income", { customer: booking, incomeToEdit: income });
                                     }}
                                 />
                                 <p>Edit</p>
@@ -116,7 +116,7 @@ export default function IncomeComponent({income, handleDelete, context}) {
 
                         {permissions.canDeleteIncomes && (
                             <div className="income-body-footer-icon">
-                                <Trash2  
+                                <Trash2
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleDelete(income);
@@ -126,7 +126,7 @@ export default function IncomeComponent({income, handleDelete, context}) {
                             </div>
                         )}
                     </div>
-                    <MetaInfo document={income}/>
+                    <MetaInfo document={income} />
                 </div>
             ) : (<></>)}
         </div>

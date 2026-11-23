@@ -1,34 +1,34 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import "./ActivitiesScreen.css";
 import ActivitiesAllLists from './ActivitiesAllLists.js';
 import SheetUploader from './SheetUploader.js';
 import * as activityService from "../services/activityService.js";
 import * as mealService from "../services/mealService.js";
-import { useUserPermissions} from "../context/UserPermissionsContext.js";
+import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import VeganHamburgerButton from './VeganHamburgerButton.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import Switch from 'react-switch';
 
 /**
  * @param {*} param0 
  * @returns component for the activities of all customers
  */
-export default  function ActivitiesScreen({context}) { 
+export default function ActivitiesScreen({ context }) {
     const [includeTodos, setIncludeTodos] = useState(true);
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { permissions } = useUserPermissions();
 
     const filterHeaders = {
-        "after"  : "date",
-        "before" : "date",
+        "after": "date",
+        "before": "date",
     };
 
-    const getDataForExport = async(filterValues, onProgress) => {
+    const getDataForExport = async (filterValues, onProgress) => {
         const rows = await activityService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
 
-    const getMealDataForExport = async(filterValues, onProgress) => {
+    const getMealDataForExport = async (filterValues, onProgress) => {
         const rows = await mealService.toArrays(filterValues, onProgress, onError);
         return rows;
     }
@@ -39,14 +39,14 @@ export default  function ActivitiesScreen({context}) {
                 <div className='card-header-left'>
                     <VeganHamburgerButton />
                     <div className='card-header-title'>
-                        <h2 className="activities-card-title">Activities</h2> 
+                        <h2 className="activities-card-title">Activities</h2>
                         <label className='todo-switch'>
                             <Switch
                                 width={35}
                                 height={20}
                                 handleDiameter={14}
-                                onChange={() => setIncludeTodos(prev => !prev)} 
-                                checked={includeTodos} 
+                                onChange={() => setIncludeTodos(prev => !prev)}
+                                checked={includeTodos}
                             />
                             <span>Show todos</span>
                         </label>
@@ -54,18 +54,18 @@ export default  function ActivitiesScreen({context}) {
                 </div>
 
                 <div className="card-header-right">
-                    {permissions.isAdmin && (<div style={{display: "flex", }}>
-                        <SheetUploader label={"Activities"} onExportRequest={getDataForExport} filterHeaders={filterHeaders}/>
-                        <SheetUploader label={"Dishes"} onExportRequest={getMealDataForExport} filterHeaders={filterHeaders}/>
+                    {permissions.isAdmin && (<div style={{ display: "flex", }}>
+                        <SheetUploader label={"Activities"} onExportRequest={getDataForExport} filterHeaders={filterHeaders} />
+                        <SheetUploader label={"Dishes"} onExportRequest={getMealDataForExport} filterHeaders={filterHeaders} />
                     </div>)}
                 </div>
-            </div> 
+            </div>
 
-            <ActivitiesAllLists 
-                context={context} 
-                customer={null} 
+            <ActivitiesAllLists
+                context={context}
+                customer={null}
                 includeTodos={includeTodos}
-            />   
+            />
         </div>
     );
 };

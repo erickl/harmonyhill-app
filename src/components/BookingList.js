@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as bookingService from '../services/bookingService.js';
 import { useUserPermissions } from "../context/UserPermissionsContext.js";
 import * as utils from '../utils.js';
-import { useNotification } from "../context/NotificationContext.js";
+import { useToast } from "../context/ToastContext.js";
 import { useConfirmationModal } from "../context/ConfirmationContext.js";
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import * as userService from "../services/userService.js";
@@ -18,7 +18,7 @@ export default function BookingList({ context, title, filter, expand }) {
 
     const seeAllRef = useRef(null);
 
-    const { onError } = useNotification();
+    const { onError } = useToast();
     const { onConfirm } = useConfirmationModal();
     const { onSuccess } = useSuccessNotification();
     const { permissions } = useUserPermissions();
@@ -30,7 +30,7 @@ export default function BookingList({ context, title, filter, expand }) {
     const doSubscribe = title_ === "current" || title_ === "next month";
 
     const fetchCustomers = async (getAll = false) => {
-        if(doSubscribe) return;
+        if (doSubscribe) return;
 
         const filter_ = filter;
         if (getAll) {
@@ -47,7 +47,7 @@ export default function BookingList({ context, title, filter, expand }) {
     };
 
     const handleGetAllCustomers = () => {
-        if(doSubscribe) return;
+        if (doSubscribe) return;
         fetchCustomers(true);
     };
 
@@ -58,7 +58,7 @@ export default function BookingList({ context, title, filter, expand }) {
             const deleteBookingResult = await bookingService.remove(bookingToDelete, onError);
             if (deleteBookingResult !== false) {
                 // manual deletion not needed if there's a subscription
-                if(doSubscribe) return; 
+                if (doSubscribe) return;
                 let newCustomers = utils.deepCopy(customers);
                 newCustomers = newCustomers.filter((customer) => customer.id !== bookingToDelete.id);
                 setCustomers(newCustomers);
@@ -76,7 +76,7 @@ export default function BookingList({ context, title, filter, expand }) {
 
     useEffect(() => {
         if (!sectionIsExpanded) return;
-        
+
         const refresh = isPrevious;
         if (!refresh && customers.length > 0) return;
 
@@ -91,7 +91,7 @@ export default function BookingList({ context, title, filter, expand }) {
     }, [sectionIsExpanded]);
 
     useEffect(() => {
-        if(doSubscribe) {
+        if (doSubscribe) {
             bookingService.subscribe((liveBookings) => {
                 const enhancedLiveBookings = bookingService.enhanceBookings(liveBookings);
                 setCustomers(enhancedLiveBookings);
