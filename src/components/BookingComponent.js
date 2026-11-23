@@ -82,7 +82,9 @@ export default function BookingComponent({customer, handleDeleteBooking, context
                     { permissions.isAdmin && (<>
                         <p><span className="detail-label">Guest Paid:</span> {utils.formatDisplayPrice(customer.guestPaid)}</p>
                         <p><span className="detail-label">Host Payout:</span> {utils.formatDisplayPrice(customer.hostPayout)}</p>
-                        <p><span className="detail-label">Payment Comment:</span> {customer.paymentComment}</p>
+                        { customer.paymentComment && (
+                            <p><span className="detail-label">Payment Comment:</span> {customer.paymentComment}</p>
+                        )}
                     </>)}
                     <div className="booking-component-footer">
                         { permissions.canEditBookings && (
