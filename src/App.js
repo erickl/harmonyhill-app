@@ -27,6 +27,8 @@ import EditPurchaseScreen from './components/EditPurchaseScreen.js';
 import CustomerPurchasesScreen from './components/CustomerPurchasesScreen.js';
 import TodoScreen from './components/TodoScreen.js';
 import AddTodoScreen from './components/AddTodoScreen.js';
+import ActivitySelector from './components/ActivitySelector.js';
+import NotificationsMenu from './components/NotificationsMenu.js';
 
 //import * as migrationService from './services/dataMigrationService.js';
 
@@ -129,6 +131,7 @@ function App() {
         'removeInventory': RemoveInventoryScreen,
         'todo-list': TodoScreen,
         'add-todo': AddTodoScreen,
+        'add-activity' : ActivitySelector,
     };
 
     const ScreenToDisplay = SCREENS[currentScreen.name];
@@ -146,6 +149,7 @@ function App() {
         <div className="app-container">
             {isLoggedIn ? (<>
                 <SideMenu context={context} />
+                <NotificationsMenu context={context} />
 
                 {/* Active screen is not one of the bottom nav tabs */}
                 {!isBottomNavTab && (
