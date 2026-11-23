@@ -1,22 +1,21 @@
 import { useMenu } from '../context/MenuContext.js';
+import { useNotifications } from "../context/NotificationContext.js";
+import "./NotificationButton.css";
 import { Bell } from 'lucide-react';
 
 export default function NotificationButton() {
     const { toggle } = useMenu("notificationsMenu");
+    const { count } = useNotifications();
 
     return (
-        <Bell
-            onClick={toggle}
-            style={{
-                top: '1.8rem',
-                left: '1rem',
-                zIndex: 3000,
-                background: 'transparent',
-                color: 'black',
-                border: 'none',
-                fontSize: 28,
-                cursor: 'pointer',
-            }}
-        />
+        <div className="button">
+            <Bell
+                onClick={toggle}
+                className='bell'
+            />
+            {count > 0 && (
+                <p className="count">{count}</p>
+            )}
+        </div>
     );
 }

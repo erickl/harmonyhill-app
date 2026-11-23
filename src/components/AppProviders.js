@@ -15,6 +15,7 @@ import { UserPermissionProvider } from "../context/UserPermissionsContext.js";
 import { InputProvider } from "../context/InputContext.js";
 import { IssueProvider } from "../context/IssueContext.js";
 import { GenericProvider } from "../context/GenericContext.js";
+import { NotificationsProvider } from "../context/NotificationContext.js";
 
 export function AppProviders({ children }) {
     return (
@@ -22,31 +23,33 @@ export function AppProviders({ children }) {
             <ProgressProvider>
                 <SuccessNotificationProvider>
                     <ToastProvider>
-                        <ConfirmationProvider>
-                            <FilterProvider>
-                                <MenuProvider>
-                                    <MarkDownProvider>
-                                        <ItemsCounterProvider>
-                                            <CameraProvider>
-                                                <ImageCarouselProvider>
-                                                    <DataTableProvider>
-                                                        <MinibarTableProvider>
-                                                            <InputProvider>
-                                                                <IssueProvider>
-                                                                    <GenericProvider>
-                                                                        {children}
-                                                                    </GenericProvider>
-                                                                </IssueProvider>
-                                                            </InputProvider>
-                                                        </MinibarTableProvider>
-                                                    </DataTableProvider>
-                                                </ImageCarouselProvider>
-                                            </CameraProvider>
-                                        </ItemsCounterProvider>
-                                    </MarkDownProvider>
-                                </MenuProvider>
-                            </FilterProvider>
-                        </ConfirmationProvider>
+                        <NotificationsProvider>
+                            <ConfirmationProvider>
+                                <FilterProvider>
+                                    <MenuProvider>
+                                        <MarkDownProvider>
+                                            <ItemsCounterProvider>
+                                                <CameraProvider>
+                                                    <ImageCarouselProvider>
+                                                        <DataTableProvider>
+                                                            <MinibarTableProvider>
+                                                                <InputProvider>
+                                                                    <IssueProvider>
+                                                                        <GenericProvider>
+                                                                            {children}
+                                                                        </GenericProvider>
+                                                                    </IssueProvider>
+                                                                </InputProvider>
+                                                            </MinibarTableProvider>
+                                                        </DataTableProvider>
+                                                    </ImageCarouselProvider>
+                                                </CameraProvider>
+                                            </ItemsCounterProvider>
+                                        </MarkDownProvider>
+                                    </MenuProvider>
+                                </FilterProvider>
+                            </ConfirmationProvider>
+                        </NotificationsProvider>
                     </ToastProvider>
                 </SuccessNotificationProvider>
             </ProgressProvider>
