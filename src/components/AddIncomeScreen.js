@@ -12,6 +12,7 @@ import MultipleChoiceList from './MultipleChoiceList.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import TextInput from './TextInput.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
+import { useUserPermissions } from '../context/UserPermissionsContext.js';
 
 export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
     let bookingId = '';
@@ -62,6 +63,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
 
     const { onError } = useNotification();
     const {onSuccess} = useSuccessNotification();
+    const {permissions} = useUserPermissions();
 
     const onCategorySelect = (category) => {
         const name = category ? category.name : '';
@@ -172,7 +174,8 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
     }
 
     const getBookings = async() => {
-        const filter = {"after": utils.today(-30), "before" : utils.today(10)};
+        const filter = {"after": utils.today(-10)};
+        
         const bookings = await bookingService.get(filter, onError);
         const bookingsByName = utils.groupBy(bookings, (booking) => {
             const house = booking.house === "harmony hill" ? "HH" : "JN";
@@ -277,10 +280,9 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                         options={paymentMethods}
                         current={formData.paymentMethod}
                         onSelect={onPaymentMethodSelect}
+                        maxSelect={1}
                     />
                 </div>
-
-                
 
                 <MyDatePicker 
                     name={"receivedAt"}
