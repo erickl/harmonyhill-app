@@ -141,6 +141,10 @@ export async function getMealDishes(bookingId, mealId, filterOptions = {}, onErr
     return dishes;
 }
 
+export async function getOneFromSubCollection(activityId, onError) {
+    return await dao.getOneFromSubCollection("activities", activityId, onError);
+}
+
 export async function getOne(bookingId, id) {
     let path = [dao.constant.BOOKINGS, bookingId, dao.constant.ACTIVITIES];
     return await dao.getOne(path, id);

@@ -183,6 +183,12 @@ export async function getOne(booking, activityId) {
     return enhancedActivity;
 }
 
+export async function getOneActivity(activityId, onError) {
+    const activity = await activityDao.getOneFromSubCollection(activityId, onError);
+    const enhancedActivity = enhanceActivities(activity);
+    return enhancedActivity;
+}
+
 /**
  * @param {*} bookingId 
  * @param {*} activityData = {

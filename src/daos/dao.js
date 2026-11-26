@@ -199,6 +199,7 @@ export function sort(unsorted, fieldName, order = "asc") {
     }
 }
 
+// todo: id needs to be the entire doc path, which makes this function potentially superfluous
 export async function getOneFromSubCollection(collectionName, id, onError = null) {
     try {
         const q = query(

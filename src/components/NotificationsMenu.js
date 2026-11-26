@@ -3,7 +3,9 @@ import "./NotificationsMenu.css";
 import { useMenu } from '../context/MenuContext.js';
 import { useToast } from "../context/ToastContext.js";
 import { useNotifications } from "../context/NotificationContext.js";
+import NotificationForActivity from "./NotificationForActivity.js";
 import { XIcon } from 'lucide-react';
+import * as utils from "../utils.js";
 
 export default function NotificationsMenu({ }) {
 
@@ -42,16 +44,36 @@ export default function NotificationsMenu({ }) {
         >
             <div className="header">
                 <XIcon onClick={close} style={{ color: 'white', marginBottom: '1rem' }} />
-                <h2>Notifications</h2>
+                <h2 className="menu-title">Notifications</h2>
             </div>
 
             <div>
                 {notifications.map((notification, i) => {
+                    if(notification.count < 1) return <></>;
                     return (
                         <div
                             key={`notification-${i}`}
                         >
-                            {notification.name}: {notification.count}
+                            <div className="type">
+                                {notification.name}: {notification.count}
+                            </div>
+                            <div className="timestamp">
+                                {utils.to_ddMMM_HHmm(notification.createdAt)}
+                            </div>
+
+                            <div>
+                                {notification.ids.map((id, j) => {
+                                    if(notification.collectionName === "activities") {
+                                        return (
+                                            <div key={`notification-${i}-item-${j}`}>
+                                                <NotificationForActivity 
+                                                    id={id}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                })}
+                            </div>
                         </div>
                     );
                 })}
