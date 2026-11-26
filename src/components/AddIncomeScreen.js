@@ -92,9 +92,9 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
         setSelectedActivity(activity);
     }
 
-    const onPaymentMethodSelect = (paymentMethod) => {
+    const onPaymentMethodSelect = (fieldName, paymentMethod) => {
         const name = paymentMethod && Array.isArray(paymentMethod) ? paymentMethod[0] : paymentMethod;
-        handleChange("paymentMethod", name);
+        handleChange(fieldName, name);
     }
 
     const onBookingSelect = (bookings) => {
@@ -277,6 +277,7 @@ export default function AddIncomeScreen({ customer, incomeToEdit, context }) {
                 <div className="purchase-form-group">
                     <MultipleChoiceList
                         label={"Payment Method"}
+                        name={"paymentMethod"}
                         options={paymentMethods}
                         current={formData.paymentMethod}
                         onSelect={onPaymentMethodSelect}

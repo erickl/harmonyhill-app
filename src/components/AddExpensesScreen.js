@@ -135,7 +135,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
         }
     }, [formData.category]);
 
-    const onTeamMemberSelect = (teamMember) => {
+    const onTeamMemberSelect = (fieldName, teamMember) => {
         let name = null;
         if (!teamMember) return;
 
@@ -150,7 +150,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
         // Description auto generated sometimes, by category & purchases
         handleChange("_batch", {
             "description": "",
-            "purchasedBy": name,
+            [fieldName]: name,
         });
     }
 
@@ -183,9 +183,9 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
         handleChange("_batch", change);
     }
 
-    const onPaymentMethodSelect = (paymentMethod) => {
+    const onPaymentMethodSelect = (fieldName, paymentMethod) => {
         const name = paymentMethod && Array.isArray(paymentMethod) ? paymentMethod[0] : paymentMethod;
-        handleChange("paymentMethod", name);
+        handleChange(fieldName, name);
     }
 
     const onBookingSelect = async (booking) => {
@@ -318,6 +318,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                         <MultipleChoiceList
                             current={currentPaymentMethod}
                             label={"Payment Method"}
+                            name={"paymentMethod"}
                             options={paymentMethods}
                             onSelect={onPaymentMethodSelect}
                             maxSelect={1}
@@ -328,6 +329,7 @@ export default function AddExpensesScreen({ expenseToEdit, context }) {
                         <MultipleChoiceList
                             current={formData.purchasedBy}
                             label={"Purchased By"}
+                            name={"purchasedBy"}
                             options={Object.keys(teamMembers)}
                             onSelect={onTeamMemberSelect}
                             maxSelect={1}

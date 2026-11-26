@@ -119,7 +119,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
         }
     }, [formData.category]);
 
-    const onTeamMemberSelect = (teamMember) => {
+    const onTeamMemberSelect = (fieldName, teamMember) => {
         let name = null;
         if (!teamMember) return;
 
@@ -131,7 +131,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
             name = teamMember;
         }
 
-        handleChange("assignedTo", name);
+        handleChange(fieldName, name);
     }
 
     const onCategorySelect = (category) => {
@@ -250,6 +250,7 @@ export default function AddTodoScreen({ context, todoToEdit, onCreated, parent }
                 <div className="purchase-form-group">
                     <MultipleChoiceList
                         label={"Assign to team member"}
+                        name={"assignedTo"}
                         current={formData.assignedTo}
                         options={Object.keys(teamMembers)}
                         onSelect={onTeamMemberSelect}

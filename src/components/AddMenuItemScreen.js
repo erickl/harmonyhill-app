@@ -88,21 +88,21 @@ export default function AddMenuItemScreen({ context, itemToEdit }) {
         });
     };
 
-    const onCourseSelect = (newCourse) => {
+    const onCourseSelect = (fieldName, newCourse) => {
         const name = newCourse && Array.isArray(newCourse) ? newCourse[0] : newCourse;
         handleFormDataChange("course", name);
     }
 
-    const onMealSelect = (newMeals) => {
-        handleFormDataChange("meals", newMeals);
+    const onMealSelect = (fieldName, newMeals) => {
+        handleFormDataChange(fieldName, newMeals);
     }
 
-    const onHouseAvailabilitySelect = (newHouses) => {
-        handleFormDataChange("houseAvailabililty", newHouses);
+    const onHouseAvailabilitySelect = (fieldName, newHouses) => {
+        handleFormDataChange(fieldName, newHouses);
     }
 
-    const onAllergenSelect = (newAllergens) => {
-        handleFormDataChange("allergens", newAllergens);
+    const onAllergenSelect = (fieldName, newAllergens) => {
+        handleFormDataChange(fieldName, newAllergens);
     }
 
     const courses = {
@@ -172,6 +172,7 @@ export default function AddMenuItemScreen({ context, itemToEdit }) {
 
             <MultipleChoiceList
                 label={"Course"}
+                name={"course"}
                 options={Object.keys(courses)}
                 maxSelect={1}
                 current={formData.course}
@@ -188,6 +189,7 @@ export default function AddMenuItemScreen({ context, itemToEdit }) {
 
             <MultipleChoiceList
                 label={"Meals"}
+                name={"meals"}
                 options={mealCategories}
                 current={formData.meals}
                 onSelect={onMealSelect}
@@ -195,6 +197,7 @@ export default function AddMenuItemScreen({ context, itemToEdit }) {
 
             <MultipleChoiceList
                 label={"House Availability"}
+                name={"houseAvailability"}
                 options={houses}
                 current={formData.houseAvailability}
                 onSelect={onHouseAvailabilitySelect}
@@ -202,6 +205,7 @@ export default function AddMenuItemScreen({ context, itemToEdit }) {
 
             <MultipleChoiceList
                 label={"Allergens"}
+                name={allergens}
                 options={allergens}
                 current={formData.allergens}
                 onSelect={onAllergenSelect}

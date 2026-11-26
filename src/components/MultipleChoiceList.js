@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "./MultipleChoiceList.css";
 import * as utils from "../utils.js";
 
-export default function MultipleChoiceList({ label, current, options, maxSelect = Number.MAX_SAFE_INTEGER, onSelect }) {
+export default function MultipleChoiceList({ label, name, current, options, maxSelect = Number.MAX_SAFE_INTEGER, onSelect }) {
     const [selected, setSelected] = useState([]);
 
     useEffect(() => {
@@ -25,7 +25,7 @@ export default function MultipleChoiceList({ label, current, options, maxSelect 
             if(selected[0] === key) key = [];
             else key = [key];
             setSelected(key);
-            onSelect(key);
+            onSelect(name, key);
             return;
         }
 

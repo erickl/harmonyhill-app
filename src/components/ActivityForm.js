@@ -29,7 +29,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
         handleFormDataChange("needsProvider", checked);
     }
 
-    const onTeamMemberSelect = (teamMember) => {
+    const onTeamMemberSelect = (fieldName, teamMember) => {
         let name = null;
         if (!teamMember) return;
 
@@ -41,7 +41,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
             name = teamMember;
         }
 
-        handleFormDataChange("assignedTo", name);
+        handleFormDataChange(fieldName, name);
     }
 
     const statuses = {
@@ -119,6 +119,7 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
             <MultipleChoiceList
                 label={"Assign to team member"}
+                name={"assignedTo"}
                 current={formData.assignedTo}
                 options={Object.keys(teamMembers)}
                 onSelect={onTeamMemberSelect}

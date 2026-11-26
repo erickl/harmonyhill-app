@@ -24,7 +24,7 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
 
     const { onError } = useToast();
 
-    const onTeamMemberSelect = (teamMember) => {
+    const onTeamMemberSelect = (fieldName, teamMember) => {
         let name = null;
         if (!teamMember) return;
 
@@ -36,7 +36,7 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
             name = teamMember;
         }
 
-        handleFormDataChange("assignedTo", name);
+        handleFormDataChange(fieldName, name);
     }
 
     const onGuestConfirmed = (checked) => {
@@ -256,6 +256,7 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
                 <MultipleChoiceList
                     current={formData.assignedTo}
                     label={"Assign to team member"}
+                    name={"assignedTo"}
                     options={Object.keys(teamMembers)}
                     onSelect={onTeamMemberSelect}
                     maxSelect={1}
