@@ -97,6 +97,11 @@ export default function AddInventoryScreen({ context, inventory }) {
         handleInputChange("expense", expense);
     }
 
+    const onReasonSelect = (reason) => {
+        const name = reason ? reason.name : '';
+        handleInputChange("reason", name);
+    }
+
     useEffect(() => {
         const getExpenses = async () => {
             const filter = { after: utils.today(-30) };
@@ -132,7 +137,7 @@ export default function AddInventoryScreen({ context, inventory }) {
 
                 <div>
                     <Dropdown
-                        label={"Reason"}
+                        label={"Expense"}
                         current={form.expense ? form.expense.description : null}
                         options={expenses}
                         onSelect={onExpenseSelect}
@@ -141,10 +146,10 @@ export default function AddInventoryScreen({ context, inventory }) {
 
                 <div>
                     <Dropdown
-                        label={"Expense"}
-                        current={form.expense ? form.expense.description : null}
-                        options={expenses}
-                        onSelect={onExpenseSelect}
+                        label={"Reason"}
+                        current={form.reason}
+                        options={reasons}
+                        onSelect={onReasonSelect}
                     />
                 </div>
 
