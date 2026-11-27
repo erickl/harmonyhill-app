@@ -6,6 +6,7 @@ class ActivityStatus {
         "pending guest confirmation": 100,
         "guest confirmed":            200,
         "details missing":            300,
+        "awaiting review":            350, // a peer has to review the order input
         "please book with provider":  400,
         "assign staff":               500,
         "staff not confirmed":        600,
@@ -96,6 +97,7 @@ export const BookProvider             = new ActivityStatus("please book with pro
 export const AssignStaff              = new ActivityStatus("assign staff"               ); 
 export const StaffNotConfirmed        = new ActivityStatus("staff not confirmed"        ); 
 export const DetailsMissing           = new ActivityStatus("details missing"            ); 
+export const AwaitingReview           = new ActivityStatus("awaiting review"            ); 
 export const Started                  = new ActivityStatus("started"                    ); 
 export const Completed                = new ActivityStatus("completed"                  ); 
 export const AwaitingCommission       = new ActivityStatus("awaiting commission"        ); 

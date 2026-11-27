@@ -299,6 +299,10 @@ export function validate(customer, data, isUpdate, onError, onWarning) {
                 }
             }
         }
+
+        if(utils.isEmpty(data.reviewer)) {
+            return onError(`Select a team member to review your input`);
+        }
     } catch (e) {
         onError(`Unexpected error in meal form: ${e.message}`);
         return true; // A bug shouldn't prevent you from submitting a meal?
@@ -358,6 +362,10 @@ function mapMealObject(mealData) {
 
     if (utils.exists(mealData, "changeDescription")) {
         meal.changeDescription = mealData.changeDescription;
+    }
+
+    if (utils.exists(mealData, "reviewer")) {
+        meal.reviewer = mealData.reviewer;
     }
 
     return meal;

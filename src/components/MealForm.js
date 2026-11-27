@@ -9,9 +9,10 @@ import { useToast } from "../context/ToastContext.js";
 import MealFormDish from "./MealFormDish.js";
 import MultipleChoiceList from './MultipleChoiceList.js';
 import TextInput from './TextInput.js';
+import {useUserPermissions} from "../context/UserPermissionsContext.js";
 import { Checkbox, FormControlLabel } from '@mui/material';
 
-export default function MealForm({ selectedActivity, formData, handleFormDataChange }) {
+export default function MealForm({ context, selectedActivity, formData, handleFormDataChange }) {
 
     let meal = selectedActivity.subCategory;
     if (meal.includes("floating-breakfast")) meal = "breakfast";
@@ -23,6 +24,7 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
 
     const { onError } = useToast();
+    const {user, users, permissions} = useUserPermissions();
 
     const onTeamMemberSelect = (fieldName, teamMember) => {
         let name = null;
@@ -118,6 +120,11 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
         "pending guest confirmation": { "name": "Pending Guest Confirmation" },
         "guest confirmed": { "name": "Guest Confirmed" },
     };
+
+    // Cannot select yourself as the reviewer
+    const reviewers = Object.keys(teamMembers).filter((r) => {
+        return r !== user.name;
+    })
 
     return (
         <div>
@@ -286,6 +293,19 @@ export default function MealForm({ selectedActivity, formData, handleFormDataCha
                     onChange={handleFormDataChange}
                 />
             </div>
+
+            {context.enableGuestOrderPeerReviews && (
+                <div className="purchase-form-group">
+                    <MultipleChoiceList
+                        current={formData.reviewer}
+                        label={"Select someone to review your input"}
+                        name={"reviewer"}
+                        options={reviewers}
+                        onSelect={onTeamMemberSelect}
+                        maxSelect={1}
+                    />
+                </div>
+            )}        
         </div>
     );
 }

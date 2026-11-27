@@ -42,7 +42,7 @@ export default function MultipleChoiceList({ label, name, current, options, maxS
         }
        
         setSelected(newSelected);
-        onSelect(newSelected);
+        onSelect(name, newSelected);
     };
 
     return (

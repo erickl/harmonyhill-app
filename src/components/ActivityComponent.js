@@ -443,6 +443,12 @@ export default function ActivityComponent({ inputCustomer, activity, onActivityC
                             Issue: {issueComment.comment}
                         </div>
                     )}
+                    {status && !utils.isEmpty(status.message) && (
+                        <p>
+                            <span className="detail-label">Status: </span>
+                            <span className="notice-badge">{utils.capitalizeWords(status.message)}</span>
+                        </p>
+                    )}
                     {alert && !utils.isEmpty(alert.message) && (
                         <p>
                             <span className="detail-label">Alert: </span>

@@ -216,7 +216,7 @@ export async function add(booking, activityData, onError, writes = []) {
     activity.house = booking.house;
 
     // Can't do this in mapObject, because it's also used for updates
-    if(!utils.exists(activity, "isFree")) activity.isFree = false;
+    if (!utils.exists(activity, "isFree")) activity.isFree = false;
 
     const activityId = makeId(activity.startingAt, activity.house, activity.subCategory);
     const result = await activityDao.add(booking.id, activityId, activity, onError, writes);
@@ -513,6 +513,10 @@ function mapObject(data) {
         activity.changeDescription = data.changeDescription;
     }
 
+    if (utils.exists(data, "reviewer")) {
+        activity.reviewer = data.reviewer;
+    }
+
     return activity;
 }
 
@@ -552,6 +556,10 @@ export function validate(customer, data, isUpdate, onError, onWarning) {
         if (ActivityStatus.PendingGuestConfirmation.equals(data.status) && !utils.isEmpty(data.provider)) {
             onError(`Don't book a provider before the guest has confirmed`);
             return false;
+        }
+
+        if (utils.isEmpty(data.reviewer)) {
+            return onError(`Select a team member to review your input`);
         }
     } catch (e) {
         onError(`Unexpected error in activity form: ${e.message}`);
@@ -670,8 +678,39 @@ export function getAlert(activity, currentStatus, activityUnit, onError) {
 export async function getStatus(activity, activityInfo, onError) {
     if (activity == null) return ActivityStatus.None;
 
+    if (ActivityStatus.Started.equals(activity.status)) {
+        return ActivityStatus.Started;
+    }
+
+    if (ActivityStatus.Completed.equals(activity.status)) {
+        // Checking commissions and expenses only needed for external activities, with providers
+        if (activityInfo.internal !== true) {
+            const activityNeedsCommission = needsCommission(activity);
+            const activityHasCommission = await hasCommission(activity, onError);
+            if (activityNeedsCommission && !hasCommission) {
+                return ActivityStatus.AwaitingCommission;
+            } else if (!activityNeedsCommission && activityHasCommission) {
+                return ActivityStatus.RemoveCommission;
+            }
+
+            const activityNeedsExpense = needsExpense(activity);
+            const activityHasExpense = await hasExpense(activity, onError);
+            if (activityNeedsExpense && !activityHasExpense) {
+                return ActivityStatus.AwaitingExpense;
+            } else if (!activityNeedsExpense && activityHasExpense) {
+                return ActivityStatus.RemoveExpense;
+            }
+        }
+
+        return ActivityStatus.Completed;
+    }
+
     if (ActivityStatus.PendingGuestConfirmation.equals(activity.status)) {
         return ActivityStatus.PendingGuestConfirmation;
+    }
+
+    if(utils.isEmpty(activity.reviewedAt)) {
+        return ActivityStatus.AwaitingReview;
     }
 
     if (activity.needsProvider === true && utils.isEmpty(activity.provider)) {
@@ -711,34 +750,9 @@ export async function getStatus(activity, activityInfo, onError) {
         }
     }
 
-    if (ActivityStatus.Completed.equals(activity.status)) {
-        // Checking commissions and expenses only needed for external activities, with providers
-        if (activityInfo.internal !== true) {
-            const activityNeedsCommission = needsCommission(activity);
-            const activityHasCommission = await hasCommission(activity, onError);
-            if (activityNeedsCommission && !hasCommission) {
-                return ActivityStatus.AwaitingCommission;
-            } else if (!activityNeedsCommission && activityHasCommission) {
-                return ActivityStatus.RemoveCommission;
-            }
-
-            const activityNeedsExpense = needsExpense(activity);
-            const activityHasExpense = await hasExpense(activity, onError);
-            if (activityNeedsExpense && !activityHasExpense) {
-                return ActivityStatus.AwaitingExpense;
-            } else if (!activityNeedsExpense && activityHasExpense) {
-                return ActivityStatus.RemoveExpense;
-            }
-        }
-
-        return ActivityStatus.Completed;
-    }
-
     if (ActivityStatus.GuestConfirmed.equals(activity.status)) {
         return ActivityStatus.GoodToGo;
-    } else if (ActivityStatus.Started.equals(activity.status)) {
-        return ActivityStatus.Started;
-    }
+    } 
 
     return ActivityStatus.None;
 }
@@ -829,7 +843,7 @@ export function canReopenActivity(activity, status) {
     const isCompleted = ActivityStatus.Completed.equals(status);
     if (!isCompleted) return false;
 
-    if(!utils.isToday(activity.startingAt)) return false;
+    if (!utils.isToday(activity.startingAt)) return false;
 
     return true;
 }
@@ -844,14 +858,14 @@ export function canStartActivity(activity, status) {
 }
 
 export function canCompleteActivity(activity, status, stillRequirePhotos, minibarCount) {
-    if(!activity.startingAt) return false;
+    if (!activity.startingAt) return false;
 
     const activityRequiresMinibarCount = requiresMinibarCount(activity, minibarCount);
     if (activityRequiresMinibarCount) {
         return false;
     }
 
-    if(stillRequirePhotos) {
+    if (stillRequirePhotos) {
         return false;
     }
 

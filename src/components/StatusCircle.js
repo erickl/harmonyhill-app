@@ -8,6 +8,7 @@ import CommissionIcon from "./CommissionIcon.js";
 import ProviderIcon from "./ProviderIcon.js";
 import StartingTimeMissingIcon from "./StartingTimeMissingIcon.js";
 import AwaitGuestConfirmIcon from "./AwaitGuestConfirmIcon.js";
+import StatusAwaitingReviewIcon from "./StatusAwaitingReviewIcon.js";
 import * as utils from "../utils.js";
 
 export default function StatusCircle({status, message, onClick}) {
@@ -15,7 +16,10 @@ export default function StatusCircle({status, message, onClick}) {
 
     if(ActivityStatus.PendingGuestConfirmation.equals(status)) {
         icon = <AwaitGuestConfirmIcon />;
-    } else if(ActivityStatus.BookProvider.equals(status)) {
+    } else if(ActivityStatus.AwaitingReview.equals(status)) {
+        // todo: maybe we need a different symbol for this. Used to be <ProviderIcon />, but it's not really clear
+        icon = <StatusAwaitingReviewIcon />; 
+    }else if(ActivityStatus.BookProvider.equals(status)) {
         // todo: maybe we need a different symbol for this. Used to be <ProviderIcon />, but it's not really clear
         icon = <StatusNoStaffAssignedIcon />; 
     } else if(ActivityStatus.AssignStaff.equals(status)) {

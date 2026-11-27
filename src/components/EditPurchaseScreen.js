@@ -179,6 +179,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => 
                     {/* Display meal purchase form */}
                     {activityToEdit.category === "meal" ? (
                         <MealForm
+                            context={context}
                             selectedActivity={activityMenuItem}
                             formData={formData}
                             handleFormDataChange={handleFormDataChange}
@@ -186,6 +187,7 @@ const EditPurchaseScreen = ({ customer, activityToEdit, context, onSubmit }) => 
                         // Display form for all other activities
                     ) : (
                         <ActivityForm
+                            context={context}
                             selectedActivity={activityMenuItem}
                             formData={formData}
                             handleFormDataChange={handleFormDataChange}

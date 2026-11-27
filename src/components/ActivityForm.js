@@ -8,13 +8,15 @@ import TextInput from './TextInput.js';
 import { useToast } from "../context/ToastContext.js";
 import MultipleChoiceList from './MultipleChoiceList.js';
 import { Checkbox, FormControlLabel } from '@mui/material';
+import {useUserPermissions} from "../context/UserPermissionsContext.js";
 
-export default function ActivityForm({ selectedActivity, formData, handleFormDataChange }) {
+export default function ActivityForm({ context, selectedActivity, formData, handleFormDataChange }) {
     const [teamMembers, setTeamMembers] = useState([]);
 
     const custom = selectedActivity ? selectedActivity.subCategory === "custom" || selectedActivity.custom === true : false;
 
     const { onError } = useToast();
+    const {user, users, permissions} = useUserPermissions();
 
     const onProviderSelect = (provider) => {
         const name = provider ? provider.name : '';
@@ -82,6 +84,11 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
 
         fetchTeamMembers();
     }, []);
+
+    // Cannot select yourself as the reviewer
+    const reviewers = Object.keys(teamMembers).filter((r) => {
+        return r !== user.name;
+    })
 
     return (
         <div className='card-content'>
@@ -207,6 +214,19 @@ export default function ActivityForm({ selectedActivity, formData, handleFormDat
                 value={formData.comments}
                 onChange={handleFormDataChange}
             />
+
+            {context.enableGuestOrderPeerReviews && (
+                <div className="purchase-form-group">
+                    <MultipleChoiceList
+                        current={formData.reviewer}
+                        label={"Select someone to review your input"}
+                        name={"reviewer"}
+                        options={reviewers}
+                        onSelect={onTeamMemberSelect}
+                        maxSelect={1}
+                    />
+                </div>
+            )}        
         </div>
     );
 }

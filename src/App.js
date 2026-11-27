@@ -62,7 +62,7 @@ function App() {
     };
 
     useEffect(() => {
-        const checkApproval = async(user) => {
+        const checkApproval = async (user) => {
             const isApproved = await userService.isUserApproved(user.displayName);
             setIsLoggedIn(isApproved);
         }
@@ -124,14 +124,14 @@ function App() {
         'edit-customer-purchase': EditPurchaseScreen,
         'admin': AdminScreen,
         'menu': MenuScreen,
-        'add-menu-item' : AddMenuItemScreen,
+        'add-menu-item': AddMenuItemScreen,
         'userLogs': ChangeLogsComponent,
         'inventory': InventoryScreen,
         'addInventory': AddInventoryScreen,
         'removeInventory': RemoveInventoryScreen,
         'todo-list': TodoScreen,
         'add-todo': AddTodoScreen,
-        'add-activity' : ActivitySelector,
+        'add-activity': ActivitySelector,
     };
 
     const ScreenToDisplay = SCREENS[currentScreen.name];
@@ -141,8 +141,10 @@ function App() {
         onNavigate: onNavigate,
         onClose: onClose,
         setHasUnsavedChanges: setHasUnsavedChanges,
-        enableRecordIssues : true,
-        enableFilters : true,
+        enableRecordIssues: true,
+        enableFilters: true,
+        // todo: should be false if the team only has 1 person
+        enableGuestOrderPeerReviews: true,
     }
 
     return (

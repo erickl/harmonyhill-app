@@ -8,6 +8,7 @@ import MealForm from "./MealForm.js";
 import ConfirmOrderModal from './ConfirmOrderModal.js';
 import ButtonsFooter from './ButtonsFooter.js';
 import { useToast } from "../context/ToastContext.js";
+import { useUserPermissions } from '../context/UserPermissionsContext.js';
 import { useSuccessNotification } from "../context/SuccessContext.js";
 import * as ActivityStatus from "../models/ActivityStatus.js";
 
@@ -32,6 +33,10 @@ const AddPurchaseScreen = ({ customer, context }) => {
 
     const [loadingMenu, setLoadingMenu] = useState(true); // to indicate when data is being fetched
 
+    const { onError, onWarning } = useToast();
+    const { onSuccess } = useSuccessNotification();
+    const {permissions} = useUserPermissions();
+
     const initialForm = {
         startingAt: null, // important for Luxon Date time to reset to null, not empty string
         startingTime: null,
@@ -47,15 +52,14 @@ const AddPurchaseScreen = ({ customer, context }) => {
         dishes: [], // only not null when ordering meals, null for all other activities
         status: ActivityStatus.GuestConfirmed.name,
         statusCode: ActivityStatus.GuestConfirmed.code,
+        reviewer: permissions.isAdmin || !context.enableGuestOrderPeerReviews ? "-" : "",
+        reviewedAt: permissions.isAdmin || !context.enableGuestOrderPeerReviews ? utils.now() : null,
 
         // Auxiliary data
         house: customer.house,
         guestCount: customer.guestCount,
         internal: false,
     };
-
-    const { onError, onWarning } = useToast();
-    const { onSuccess } = useSuccessNotification();
 
     // State for the purchase form data
     const [formData, setFormData] = useState(initialForm);
@@ -213,6 +217,7 @@ const AddPurchaseScreen = ({ customer, context }) => {
                     {/* Display meal purchase form */}
                     {selectedActivity.category === "meal" ? (
                         <MealForm
+                            context={context}
                             selectedActivity={selectedActivity}
                             formData={formData}
                             handleFormDataChange={handleFormDataChange}
@@ -220,6 +225,7 @@ const AddPurchaseScreen = ({ customer, context }) => {
                         // Display form for all other activities
                     ) : (
                         <ActivityForm
+                            context={context}
                             selectedActivity={selectedActivity}
                             formData={formData}
                             handleFormDataChange={handleFormDataChange}
